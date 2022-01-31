@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Board: {{ board }}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    {% for topic in board.topics.all %}
+    <div class="col-sm">
+        {{ topic}}
+        <ul>
+            {% for post in topic.posts.all %}
+            <li>{{ post }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+    <div class="col-sm"></div>
+</div>
+
+{% endblock content %}
