@@ -6,12 +6,16 @@
 <div class="row">
     {% for topic in board.topics.all %}
     <div class="col-sm">
-        {{ topic}}
-        <ul>
-            {% for post in topic.posts.all %}
-            <li>{{ post }}</li>
-            {% endfor %}
-        </ul>
+        <h3>{{ topic}}</h3>
+
+        {% for post in topic.posts.all %}
+        <div class="card my-2">
+            <div class="card-body">
+                <p class="card-text">{{ post.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
     </div>
     {% endfor %}
     <div class="col-sm"></div>
