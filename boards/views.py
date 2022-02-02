@@ -25,6 +25,12 @@ class CreateBoardView(LoginRequiredMixin, generic.CreateView):
     fields = ['title', 'description']
     template_name = 'boards/board_form.html'
 
+    def form_valid(self, form):
+        board = form.save(commit=False)
+        board.owner = self.request.user
+        board.save()
+        return super(CreateBoardView, self).form_valid(form)
+
 class UpdateBoardView(LoginRequiredMixin, generic.UpdateView):
     model = Board
     fields = ['title', 'description']
