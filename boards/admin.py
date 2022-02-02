@@ -17,8 +17,8 @@ class PostInline(admin.TabularInline):
     extra = 1
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'uuid', 'created_at', 'updated_at',)
-    fields = ('title', 'description',)
+    list_display = ('title', 'description', 'owner', 'uuid', 'created_at', 'updated_at',)
+    fields = ('title', 'description', 'owner',)
     inlines =[TopicInline]
 
 @admin.register(Topic)
