@@ -1,14 +1,24 @@
 {% extends 'base_generic.html' %}
 
 {% block content %}
-{% if user.is_authenticated %}
+
 <p>
+    {% if user.is_authenticated %}
     <h4>Your boards ({{ user}}):</h4>
     <ul>
         {% for board in user.boards.all %}<li><a href="{{ board.get_absolute_url }}">{{ board }}</a> 
-        <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.pk %}"><i class="bi bi-pen"></i></a>
-        <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.pk %}"></a></li>{% endfor %}
-        {% endif %}
+        <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}"><i class="bi bi-pen"></i></a>
+        <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.slug %}"></a></li>{% endfor %}
     </ul>
+    {% endif %}
+    {% if perms.boards.can_view_all_boards %}
+    <h4>All boards:</h4>
+    <ul>
+        {% for board in boards %}<li><a href="{{ board.get_absolute_url }}">{{ board }}</a> 
+        <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}"><i class="bi bi-pen"></i></a>
+        <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.slug %}"></a></li>{% endfor %}
+    </ul>
+    {% endif %}
 </p>
+
 {% endblock content %}   

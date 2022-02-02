@@ -1,7 +1,4 @@
-from ast import arg
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
-from django.template import RequestContext
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -47,20 +44,23 @@ class CreateTopicView(LoginRequiredMixin, generic.CreateView):
     template_name = 'boards/topic_form.html'
 
     def form_valid(self, form):
-        form.instance.board_id = self.kwargs.get('board_pk')
+        form.instance.board_id = Board.objects.get_queryset().get(slug=self.kwargs['slug']).id
         return super(CreateTopicView, self).form_valid(form)
+
 
 class UpdateTopicView(LoginRequiredMixin, generic.UpdateView):
     model = Topic
     fields = ['subject']
     template_name = 'boards/topic_form.html'
 
+
+
 class DeleteTopicView(LoginRequiredMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
-    
+
     def get_success_url(self):
-        return reverse_lazy('boards:board', kwargs={'pk': self.object.board_id})
+        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']})
 
 class CreatePostView(generic.CreateView):
     model = Post
@@ -74,14 +74,16 @@ class CreatePostView(generic.CreateView):
         form.instance.session_key = self.request.session.session_key
         return super(CreatePostView, self).form_valid(form)
 
+
 class UpdatePostView(generic.UpdateView):
     model = Post
     fields = ['content']
     template_name = 'boards/post_form.html'
+
 
 class DeletePostView(generic.DeleteView):
     model = Post
     template_name = 'boards/post_confirm_delete.html'
 
     def get_success_url(self):
-        return reverse_lazy('boards:board', kwargs={'pk': self.object.topic.board_id})
+        return reverse_lazy('boards:topic', kwargs={'slug': self.kwargs['slug'],})

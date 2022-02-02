@@ -8,10 +8,10 @@
         {% for topic in board.topics.all %}
         <div class="col-sm">
             <h3>{{ topic }}</h3>
-            <small><a href="{% url 'boards:topic-update' board.pk topic.pk %}" class="text-muted">Edit</a> - <a href="{% url 'boards:topic-delete' board.pk topic.pk %}" class="text-danger">Delete</a></small>
+            <small><a href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted">Edit</a> - <a href="{% url 'boards:topic-delete' board.slug topic.pk %}" class="text-danger">Delete</a></small>
             <div class="card my-2">
                 <div class="card-body">
-                    <a href="{% url 'boards:post-create' board.pk topic.pk %}" class="card-link"><strong>Create post</strong></a>
+                    <a href="{% url 'boards:post-create' board.slug topic.pk %}" class="card-link"><strong>Create post</strong></a>
                 </div>
             </div>
             {% for post in topic.posts.all %}
@@ -23,8 +23,8 @@
                         </div>
                         {% if request.session.session_key == post.session_key or perms.boards.can_delete_post %}
                         <div class="ms-auto">
-                            <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.pk topic.pk post.pk %}"><i class="bi bi-pen"></i></a>
-                            <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.pk topic.pk post.pk %}"></a>
+                            <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.slug topic.pk post.pk %}"><i class="bi bi-pen"></i></a>
+                            <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.slug topic.pk post.pk %}"></a>
                         </div>
                         {% endif %}
                 </div>
@@ -36,7 +36,7 @@
 
         </div>
         {% endfor %}
-        <div class="col-sm"><a href="{% url 'boards:topic-create' board.pk %}">Create topic</a></div>
+        <div class="col-sm"><a href="{% url 'boards:topic-create' board.slug %}">Create topic</a></div>
     </p>
 </div>
 
