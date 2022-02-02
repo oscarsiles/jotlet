@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<p>
   <form action="" method="post">
     {% csrf_token %}
     <table>
@@ -8,4 +9,5 @@
     </table>
     <input type="submit" class="btn btn-success" value="Submit">
   </form>
+</p>
 {% endblock content %}

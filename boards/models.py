@@ -9,7 +9,7 @@ class Board(models.Model):
     title = models.CharField(max_length=50)
     uuid = ShortUUIDField(unique=True)
     description = models.CharField(max_length=100)
-    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,3 +48,6 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"pk": self.topic.board_id})
+
+    class Meta:
+        permissions = (('can_delete_post', "Can delete post"),)

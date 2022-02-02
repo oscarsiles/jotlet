@@ -1,4 +1,5 @@
 from ast import arg
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.template import RequestContext
 from django.urls import reverse_lazy
@@ -19,22 +20,22 @@ class BoardView(generic.DetailView):
     model = Board
     template_name = 'boards/board.html'
 
-class CreateBoardView(generic.CreateView):
+class CreateBoardView(LoginRequiredMixin, generic.CreateView):
     model = Board
     fields = ['title', 'description']
     template_name = 'boards/board_form.html'
 
-class UpdateBoardView(generic.UpdateView):
+class UpdateBoardView(LoginRequiredMixin, generic.UpdateView):
     model = Board
     fields = ['title', 'description']
     template_name = 'boards/board_form.html'
 
-class DeleteBoardView(generic.DeleteView):
+class DeleteBoardView(LoginRequiredMixin, generic.DeleteView):
     model = Board
     template_name = 'boards/board_confirm_delete.html'
     success_url = '/'
 
-class CreateTopicView(generic.CreateView):
+class CreateTopicView(LoginRequiredMixin, generic.CreateView):
     model = Topic
     fields = ['subject']
     template_name = 'boards/topic_form.html'
@@ -43,12 +44,12 @@ class CreateTopicView(generic.CreateView):
         form.instance.board_id = self.kwargs.get('board_pk')
         return super(CreateTopicView, self).form_valid(form)
 
-class UpdateTopicView(generic.UpdateView):
+class UpdateTopicView(LoginRequiredMixin, generic.UpdateView):
     model = Topic
     fields = ['subject']
     template_name = 'boards/topic_form.html'
 
-class DeleteTopicView(generic.DeleteView):
+class DeleteTopicView(LoginRequiredMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
     
