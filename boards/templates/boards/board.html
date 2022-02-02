@@ -20,10 +20,12 @@
                     <div>
                         <h5 class="card-title"></h5>
                     </div>
+                    {% comment %} {% if request.session.session_key == post.session_key %} {% endcomment %}
                     <div class="ms-auto">
                         <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.pk topic.pk post.pk %}"><i class="bi bi-pen"></i></a>
                         <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.pk topic.pk post.pk %}"></a>
                     </div>
+                    {% comment %} {% endif %} {% endcomment %}
                </div>
                 
                 <p class="card-text">{{ post.content }}</p>

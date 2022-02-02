@@ -4,8 +4,8 @@
   <form action="" method="post">
     {% csrf_token %}
     <table>
-    {{ form.as_table }}
+    {{ form }}
     </table>
-    <input type="submit" value="Submit">
+    <input type="submit" class="btn btn-success" value="Submit">
   </form>
 {% endblock content %}

@@ -1,5 +1,6 @@
 from ast import arg
 from django.shortcuts import render
+from django.template import RequestContext
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -61,6 +62,9 @@ class CreatePostView(generic.CreateView):
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get('topic_pk')
+        if not self.request.session.session_key: # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+        form.instance.session_key = self.request.session.session_key
         return super(CreatePostView, self).form_valid(form)
 
 class UpdatePostView(generic.UpdateView):

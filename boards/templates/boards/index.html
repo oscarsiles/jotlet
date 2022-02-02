@@ -2,9 +2,8 @@
 
 {% block content %}
 <ul>
-    <li><a href="{% url 'boards:board-create' %}">Create board</a></li>
     {% for board in boards %}<li><a href="{{ board.get_absolute_url }}">{{ board }}</a> 
-        <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.pk %}"><i class="bi bi-pen"></i></a>
-        <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.pk %}"></a></li>{% endfor %}
+    <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.pk %}"><i class="bi bi-pen"></i></a>
+    <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.pk %}"></a></li>{% endfor %}
 </ul>
 {% endblock content %}   

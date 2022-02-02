@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+{{ request.session.session_key }}
   <form action="" method="post">
     {% csrf_token %}
     <table>
