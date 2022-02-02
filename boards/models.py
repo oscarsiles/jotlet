@@ -26,7 +26,9 @@ class Board(models.Model):
         return reverse("boards:board", kwargs={"slug": self.slug})
 
     class Meta:
-        permissions = (('can_view_all_boards', "Can view all boards"),)
+        permissions = (
+            ('can_view_all_boards', "Can view all boards"),
+            )
     
 
 class Topic(models.Model):
@@ -58,8 +60,6 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"pk": self.topic.board.slug})
 
-    class Meta:
-        permissions = (('can_delete_post', "Can delete post"),)
 
 def slug_save(obj):
     """ A function to generate a 6 character numeric slug and see if it has been used."""

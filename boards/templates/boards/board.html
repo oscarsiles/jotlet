@@ -36,7 +36,7 @@
 
         </div>
         {% endfor %}
-        <div class="col-sm"><a href="{% url 'boards:topic-create' board.slug %}">Create topic</a></div>
+        <div class="col-sm">{% if request.user == board.owner or user.is_staff %}<a href="{% url 'boards:topic-create' board.slug %}">Create topic</a>{% endif %}</div>
     </p>
 </div>
 

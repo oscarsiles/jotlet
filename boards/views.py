@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -17,10 +17,13 @@ class BoardView(generic.DetailView):
     model = Board
     template_name = 'boards/board.html'
 
-class CreateBoardView(LoginRequiredMixin, generic.CreateView):
+class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Board
     fields = ['title', 'description']
     template_name = 'boards/board_form.html'
+
+    def test_func(self):
+        return self.request.user.has_perm('boards.add_board')
 
     def form_valid(self, form):
         board = form.save(commit=False)
@@ -38,26 +41,38 @@ class DeleteBoardView(LoginRequiredMixin, generic.DeleteView):
     template_name = 'boards/board_confirm_delete.html'
     success_url = '/'
 
-class CreateTopicView(LoginRequiredMixin, generic.CreateView):
+class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Topic
     fields = ['subject']
     template_name = 'boards/topic_form.html'
+    
+    def test_func(self):
+        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
         form.instance.board_id = Board.objects.get_queryset().get(slug=self.kwargs['slug']).id
         return super(CreateTopicView, self).form_valid(form)
 
 
-class UpdateTopicView(LoginRequiredMixin, generic.UpdateView):
+class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Topic
     fields = ['subject']
     template_name = 'boards/topic_form.html'
 
+    def test_func(self):
+        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        return self.request.user == board.owner or self.request.user.is_staff
 
 
-class DeleteTopicView(LoginRequiredMixin, generic.DeleteView):
+
+class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
+
+    def test_func(self):
+        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        return self.request.user == board.owner or self.request.user.is_staff
 
     def get_success_url(self):
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']})
@@ -78,18 +93,26 @@ class CreatePostView(generic.CreateView):
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
-class UpdatePostView(generic.UpdateView):
+class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     model = Post
     fields = ['content']
     template_name = 'boards/post_form.html'
+
+    def test_func(self):
+        post = Post.objects.get_queryset().get(pk=self.kwargs['pk'])
+        return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.change_post') or self.request.user.is_staff
 
     def get_success_url(self):
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
-class DeletePostView(generic.DeleteView):
+class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     model = Post
     template_name = 'boards/post_confirm_delete.html'
+
+    def test_func(self):
+        post = Post.objects.get_queryset().get(pk=self.kwargs['pk'])
+        return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.delete_post') or self.request.user.is_staff
 
     def get_success_url(self):
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
