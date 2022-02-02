@@ -74,11 +74,17 @@ class CreatePostView(generic.CreateView):
         form.instance.session_key = self.request.session.session_key
         return super(CreatePostView, self).form_valid(form)
 
+    def get_success_url(self):
+        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
+
 
 class UpdatePostView(generic.UpdateView):
     model = Post
     fields = ['content']
     template_name = 'boards/post_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
 class DeletePostView(generic.DeleteView):
@@ -86,4 +92,4 @@ class DeletePostView(generic.DeleteView):
     template_name = 'boards/post_confirm_delete.html'
 
     def get_success_url(self):
-        return reverse_lazy('boards:topic', kwargs={'slug': self.kwargs['slug'],})
+        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
