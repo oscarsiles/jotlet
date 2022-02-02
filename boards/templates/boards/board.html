@@ -10,11 +10,11 @@
         <div class="col-sm">
             <h3>{{ topic }}</h3>
             {% if request.user == board.owner or user.is_staff %}
-            <small><a href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted">Edit</a> - <a href="{% url 'boards:topic-delete' board.slug topic.pk %}" class="text-danger">Delete</a></small>
+            <small><a href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a href="{% url 'boards:topic-delete' board.slug topic.pk %}" class="text-danger">Delete</a></small>
             {% endif %}
             <div class="card my-2">
                 <div class="card-body">
-                    <a href="{% url 'boards:post-create' board.slug topic.pk %}" class="card-link"><strong>Create post</strong></a>
+                    <a href="{% url 'boards:post-create' board.slug topic.pk %}" class="card-link" data-bs-toggle="modal" data-bs-target="#MyModal"><strong>Create post</strong></a>
                 </div>
             </div>
             {% for post in topic.posts.all %}
@@ -26,8 +26,8 @@
                         </div>
                         {% if request.session.session_key == post.session_key or perms.boards.can_delete_post %}
                         <div class="ms-auto">
-                            <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.slug topic.pk post.pk %}"><i class="bi bi-pen"></i></a>
-                            <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.slug topic.pk post.pk %}"></a>
+                            <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
+                            <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
                         </div>
                         {% endif %}
                 </div>

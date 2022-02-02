@@ -9,7 +9,7 @@
         {% for board in user.boards.all %}
         <li class="list-group-item">
             <a href="{{ board.get_absolute_url }}">{{ board }}</a> 
-            <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}"><i class="bi bi-pen"></i></a>
+            <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
             <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.slug %}"></a>
         </li>
         {% endfor %}
@@ -24,7 +24,7 @@
         {% for board in boards %}
         <li class="list-group-item">
             <a href="{{ board.get_absolute_url }}">{{ board }}</a> ({{ board.owner }})
-            <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}"><i class="bi bi-pen"></i></a>
+            <a class="btn btn-link btn-sm" href="{% url 'boards:board-update' board.slug %}" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
             <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.slug %}"></a>
         </li>{% endfor %}
     </ul>

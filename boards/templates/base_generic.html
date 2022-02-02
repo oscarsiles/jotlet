@@ -13,7 +13,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">{% block navbar_title %}Jotlet{% endblock navbar_title %}</span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarText">
@@ -24,7 +24,7 @@
                         </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'boards:board-create' %}">Create board</a>
+                            <a class="nav-link" href="{% url 'boards:board-create' %}" data-bs-toggle="modal" data-bs-target="#MyModal">Create board</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -36,7 +36,7 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login'%}?next={{ request.path }}">Login</a>
+                            <a class="nav-link" href="{% url 'login'%}?next={{ request.path }}" data-bs-toggle="modal" data-bs-target="#MyModal">Login</a>
                         </li>
                     {% endif %}
                     </ul>
@@ -47,6 +47,32 @@
     <div class="container-fluid">
         {% block content %}{% endblock content %}
     </div>
+
+<!-- Modal -->
+<div class="modal fade" id="MyModal" tabindex="-1" aria-labelledby="MyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="MyModalLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          If you can read this, something went wrong.
+        </div>
+        {% comment %} <div class="modal-footer">
+        </div> {% endcomment %}
+      </div>
+    </div>
+  </div>
+  
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        $('#MyModal').on('show.bs.modal', function (e) {
+            $(this).find('.modal-title').text($(e.relatedTarget).text());
+            $(this).find('.modal-body').load(e.relatedTarget.href);
+          })
+    </script>
 </body>
 </html>
