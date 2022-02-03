@@ -1,0 +1,15 @@
+{% load crispy_forms_tags %}
+
+<p>
+  {% if request.session.session_key == post.session_key or perms.boards.can_delete_post or object is None %}
+  <form action="{{ request.build_absolute_uri }}" method="post">
+    {% csrf_token %}
+    <table>
+      {{ form|crispy }}
+    </table>
+    <input type="submit" value="Submit" class="btn btn-success">
+  </form>
+  {% else %}
+  You do not have permission to access this page.
+  {% endif %}
+</p>

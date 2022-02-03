@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<p>
+  <h2>Delete Topic</h2>
+  Are you sure you want to delete the following topic from <strong>{{ topic.get_board_name }}</strong>?
+  <h5>{{ topic }}</h5>
+
+  <form action="" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Yes, delete." class="btn btn-danger">
+  </form>
+</p>
+{% endblock content %}
