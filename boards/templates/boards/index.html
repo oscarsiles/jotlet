@@ -1,6 +1,12 @@
 {% extends 'base_generic.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
+
+<p>
+    {% crispy form %}
+</p>
 
 <p>
     {% if user.is_authenticated %}

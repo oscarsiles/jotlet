@@ -1,17 +1,41 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 
 from .models import Board, Topic, Post
+from .forms import SearchBoardsForm
 
 # Create your views here.
-class IndexView(generic.TemplateView):
+class IndexView(generic.FormView):
+    model = Board
     template_name = 'boards/index.html'
+
+    form_class = SearchBoardsForm
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form() 
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        self.form = form
+        try:
+            Board.objects.get(slug=self.form.cleaned_data['board_slug'])
+            return HttpResponseRedirect(self.get_success_url())
+        except:
+            return self.form_invalid(form)
     
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
+        context['form'] = self.get_form()
         context['boards'] = Board.objects.all()
         return context
+    
+    def get_success_url(self):
+        return reverse('boards:board', kwargs={'slug': self.form.cleaned_data['board_slug']})
 
 class BoardView(generic.DetailView):
     model = Board
