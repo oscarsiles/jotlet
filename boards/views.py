@@ -13,13 +13,6 @@ class IndexView(generic.FormView):
 
     form_class = SearchBoardsForm
 
-    def post(self, request, *args, **kwargs):
-        form = self.get_form() 
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
     def form_valid(self, form):
         self.form = form
         try:
