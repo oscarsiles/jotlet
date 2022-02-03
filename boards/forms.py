@@ -1,4 +1,3 @@
-
 from django import forms
 from django.core.validators import RegexValidator
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
@@ -6,7 +5,7 @@ slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 from .models import Board
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Fieldset, Layout, Submit
+from crispy_forms.layout import ButtonHolder, Layout, Submit
 from crispy_forms.bootstrap import PrependedText
 
 def validate_board_exists(board_slug):
@@ -16,7 +15,7 @@ def validate_board_exists(board_slug):
         raise forms.ValidationError("Board does not exist.")
 
 class SearchBoardsForm(forms.Form):
-    board_slug = forms.CharField(label="Board ID", help_text="Enter the board ID given as ######", validators=[slug_validator, validate_board_exists])
+    board_slug = forms.CharField(label="Board ID", help_text="Enter the board ID given as ######")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,3 +29,8 @@ class SearchBoardsForm(forms.Form):
             )
         )
     
+    def clean_board_slug(self):
+        board_slug = self.cleaned_data['board_slug'].replace(' ', '').replace('-', '')
+        slug_validator(board_slug)
+        validate_board_exists(board_slug)
+        return board_slug.replace(' ', '')
