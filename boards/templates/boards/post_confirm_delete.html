@@ -1,0 +1,14 @@
+<p>
+  {% if request.session.session_key == post.session_key or perms.boards.can_delete_post %}
+    Are you sure you want to delete the following post from <strong>{{ post.topic.subject }}</strong>?
+    <h5>{{ post }}</h5>
+</p>
+<p>
+<form action="{{ request.build_absolute_uri }}" method="POST">
+  {% csrf_token %}
+  <input type="submit" value="Yes, delete." class="btn btn-danger">
+</form>
+{% else %}
+You do not have permission to access this page.
+{% endif %}
+</p>

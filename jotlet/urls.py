@@ -22,5 +22,6 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('boards/', include('boards.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('', RedirectView.as_view(url='boards/')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

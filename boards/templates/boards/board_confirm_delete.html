@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<p>
+  {% if request.user == board.owner or request.user.is_staff or object is None %}
+  <h2>Delete Board</h2>
+  Are you sure you want to delete the board:
+  <h5>{{ board }}</h5>
+  {{ board.description }}
+
+  <form action="" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Yes, delete." class="btn btn-danger">
+  </form>
+{% endif %}
+</p>
+{% endblock content %}
