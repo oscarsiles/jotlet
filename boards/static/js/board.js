@@ -4,11 +4,13 @@ const board_slug = JSON.parse(document.getElementById('board_slug').textContent)
 const session_key = JSON.parse(document.getElementById('session_key').textContent);
 const can_delete_post = JSON.parse(document.getElementById('can_delete_post').textContent);
 
+var baseUrl = window.location.pathname.split('/')[1] == 'boards' ? window.location.host : window.location.host + "/" + window.location.pathname.split('/')[1];
+
 let boardSocket = null;
 
 function connect() {
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    boardSocket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/boards/" + board_slug + "/");
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";    
+    boardSocket = new WebSocket(ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/");
 
     boardSocket.onopen = function(e) {
         console.log("Successfully connected to the WebSocket.");
@@ -32,12 +34,12 @@ function connect() {
                 clone.querySelector('#topic-pk').id = 'topic-' + data.topic_pk;
                 clone.querySelector('#topic-pk-subject').innerHTML = data.topic_subject;
                 clone.querySelector('#topic-pk-subject').id = 'topic-' + data.topic_pk + '-subject';
-                clone.querySelector('#topic-pk-post-create-url').href = Urls['boards:post-create'](board_slug, data.topic_pk);
+                clone.querySelector('#topic-pk-post-create-url').href = Urls['boards:post-create'](board_slug, data.topic_pk).replace(window.location.host, baseUrl);
                 clone.querySelector('#topic-pk-post-create-url').id = 'topic-' + data.topic_pk + '-post-create-url';
                 try {
-                    clone.querySelector('#topic-pk-update-url').href = Urls['boards:topic_update'](board_slug, data.topic_pk);
+                    clone.querySelector('#topic-pk-update-url').href = Urls['boards:topic_update'](board_slug, data.topic_pk).replace(window.location.host, baseUrl);
                     clone.querySelector('#topic-pk-update-url').id = 'topic-' + data.topic_pk + '-update-url';
-                    clone.querySelector('#topic-pk-delete-url').href = Urls['boards:topic_delete'](board_slug, data.topic_pk);
+                    clone.querySelector('#topic-pk-delete-url').href = Urls['boards:topic_delete'](board_slug, data.topic_pk).replace(window.location.host, baseUrl);
                     clone.querySelector('#topic-pk-delete-url').id = 'topic-' + data.topic_pk + '-delete-url';
                 } catch (e) { // not owner or staff
                 }
@@ -55,9 +57,9 @@ function connect() {
                 clone.querySelector('#post-pk-text').innerHTML = data.post_content;
                 clone.querySelector('#post-pk-text').id = 'post-' + data.post_pk + '-text';
                 try {
-                    clone.querySelector('#post-pk-update-url').href = Urls['boards:post_update'](board_slug, data.topic_pk, data.post_pk);
+                    clone.querySelector('#post-pk-update-url').href = Urls['boards:post_update'](board_slug, data.topic_pk, data.post_pk).replace(window.location.host, baseUrl);
                     clone.querySelector('#post-pk-update-url').id = 'post-' + data.post_pk + '-update-url';
-                    clone.querySelector('#post-pk-delete-url').href = Urls['boards:post_delete'](board_slug, data.topic_pk, data.post_pk);
+                    clone.querySelector('#post-pk-delete-url').href = Urls['boards:post_delete'](board_slug, data.topic_pk, data.post_pk).replace(window.location.host, baseUrl);
                     clone.querySelector('#post-pk-delete-url').id = 'post-' + data.post_pk + '-delete-url';
                 } catch (e) { // not owner or staff
                 }

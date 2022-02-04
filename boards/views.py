@@ -61,7 +61,7 @@ class UpdateBoardView(LoginRequiredMixin, generic.UpdateView):
 class DeleteBoardView(LoginRequiredMixin, generic.DeleteView):
     model = Board
     template_name = 'boards/board_confirm_delete.html'
-    success_url = '/'
+    success_url = reverse_lazy('boards:index')
 
 class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Topic
