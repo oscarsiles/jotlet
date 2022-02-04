@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
@@ -6,7 +8,10 @@ from django.views import generic
 from .models import Board, Topic, Post
 from .forms import SearchBoardsForm
 
-# Create your views here.
+def channel_group_send(group_name, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(group_name, message)
+
 class IndexView(generic.FormView):
     model = Board
     template_name = 'boards/index.html'
@@ -71,6 +76,14 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         form.instance.board_id = Board.objects.get_queryset().get(slug=self.kwargs['slug']).id
         return super(CreateTopicView, self).form_valid(form)
 
+    def get_success_url(self) -> str:
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_created",
+            'topic_pk': self.object.pk,
+            'topic_subject': self.object.subject,
+            },
+        )
+        return super().get_success_url()
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Topic
@@ -81,7 +94,14 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
-
+    def get_success_url(self) -> str:
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_updated",
+            'topic_pk': self.object.pk,
+            'topic_subject': self.object.subject,
+            },
+        )
+        return super().get_success_url()
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Topic
@@ -92,6 +112,11 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_deleted",
+            'topic_pk': self.object.pk,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']})
 
 class CreatePostView(generic.CreateView):
@@ -107,6 +132,13 @@ class CreatePostView(generic.CreateView):
         return super(CreatePostView, self).form_valid(form)
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "post_created",
+            'topic_pk': self.kwargs.get('topic_pk'),
+            'post_pk': self.object.pk,
+            'post_content': self.object.content,
+            'post_session_key': self.request.session.session_key,
+            })
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
@@ -120,6 +152,12 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.change_post') or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "post_updated",
+            'post_pk': self.object.pk,
+            'post_content': self.object.content,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
@@ -132,4 +170,9 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.delete_post') or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "post_deleted",
+            'post_pk': self.object.pk,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
