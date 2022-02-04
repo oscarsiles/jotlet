@@ -31,6 +31,8 @@ function connect() {
                 t.content.querySelector('#post-pk').id = 'post-' + data.post_pk;
                 t.content.querySelector('#post-pk-text').innerHTML = data.post_content;
                 t.content.querySelector('#post-pk-text').id = 'post-' + data.post_pk + '-text';
+                t.content.querySelector('#post-pk-update-url').href = Urls['boards:post_update'](board_slug, data.topic_pk, data.post_pk);
+                t.content.querySelector('#post-pk-delete-url').href = Urls['boards:post_delete'](board_slug, data.topic_pk, data.post_pk);
                 var clone = document.importNode(t.content, true)
                 document.getElementById('topic-' + data.topic_pk).appendChild(clone);
                 break;
