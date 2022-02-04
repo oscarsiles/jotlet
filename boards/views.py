@@ -76,6 +76,14 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         form.instance.board_id = Board.objects.get_queryset().get(slug=self.kwargs['slug']).id
         return super(CreateTopicView, self).form_valid(form)
 
+    def get_success_url(self) -> str:
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_created",
+            'topic_pk': self.object.pk,
+            'topic_subject': self.object.subject,
+            },
+        )
+        return super().get_success_url()
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Topic
@@ -86,6 +94,15 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
+    def get_success_url(self) -> str:
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_updated",
+            'topic_pk': self.object.pk,
+            'topic_subject': self.object.subject,
+            },
+        )
+        return super().get_success_url()
+
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
@@ -95,6 +112,11 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "topic_deleted",
+            'topic_pk': self.object.pk,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']})
 
 class CreatePostView(generic.CreateView):
