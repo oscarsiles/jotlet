@@ -35,6 +35,15 @@ class BoardConsumer(WebsocketConsumer):
             self.channel_name,
         )
 
+    def topic_created(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def topic_updated(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def topic_deleted(self, event):
+        self.send(text_data=json.dumps(event))
+
     def post_created(self, event):
         self.send(text_data=json.dumps(event))
 

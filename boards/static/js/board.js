@@ -26,14 +26,38 @@ function connect() {
         console.log(data);
 
         switch (data.type) {
+            case "topic_created":
+                var clone = document.importNode(document.querySelector('#topicTemplate').content, true)
+                clone.querySelector('#topic-pk').id = 'topic-' + data.topic_pk;
+                clone.querySelector('#topic-pk-subject').innerHTML = data.topic_subject;
+                clone.querySelector('#topic-pk-subject').id = 'topic-' + data.topic_pk + '-subject';
+                try {
+                    clone.querySelector('#topic-pk-update-url').href = Urls['boards:topic_update'](board_slug, data.topic_pk);
+                    clone.querySelector('#topic-pk-update-url').id = 'topic-' + data.topic_pk + '-update-url';
+                    clone.querySelector('#topic-pk-delete-url').href = Urls['boards:topic_delete'](board_slug, data.topic_pk);
+                    clone.querySelector('#topic-pk-delete-url').id = 'topic-' + data.topic_pk + '-delete-url';
+                } catch (e) { // not owner or staff
+                }
+                $(clone).insertBefore('#topic-create');
+                break;
+            case "topic_updated":
+                $('#topic-' + data.topic_pk + "-subject").html(data.topic_subject);
+                break;
+            case "topic_deleted":
+                document.getElementById('topic-' + data.topic_pk).remove();
+                break;
             case "post_created":
-                var t = document.querySelector('#cardTemplate')
-                t.content.querySelector('#post-pk').id = 'post-' + data.post_pk;
-                t.content.querySelector('#post-pk-text').innerHTML = data.post_content;
-                t.content.querySelector('#post-pk-text').id = 'post-' + data.post_pk + '-text';
-                t.content.querySelector('#post-pk-update-url').href = Urls['boards:post_update'](board_slug, data.topic_pk, data.post_pk);
-                t.content.querySelector('#post-pk-delete-url').href = Urls['boards:post_delete'](board_slug, data.topic_pk, data.post_pk);
-                var clone = document.importNode(t.content, true)
+                var clone = document.importNode(document.querySelector('#cardTemplate').content, true)
+                clone.querySelector('#post-pk').id = 'post-' + data.post_pk;
+                clone.querySelector('#post-pk-text').innerHTML = data.post_content;
+                clone.querySelector('#post-pk-text').id = 'post-' + data.post_pk + '-text';
+                try {
+                    clone.querySelector('#post-pk-update-url').href = Urls['boards:post_update'](board_slug, data.topic_pk, data.post_pk);
+                    clone.querySelector('#post-pk-update-url').id = 'post-' + data.post_pk + '-update-url';
+                    clone.querySelector('#post-pk-delete-url').href = Urls['boards:post_delete'](board_slug, data.topic_pk, data.post_pk);
+                    clone.querySelector('#post-pk-delete-url').id = 'post-' + data.post_pk + '-delete-url';
+                } catch (e) { // not owner or staff
+                }
                 document.getElementById('topic-' + data.topic_pk).appendChild(clone);
                 break;
             case "post_updated":
