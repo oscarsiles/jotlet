@@ -7,7 +7,8 @@ const can_delete_post = JSON.parse(document.getElementById('can_delete_post').te
 let boardSocket = null;
 
 function connect() {
-    boardSocket = new WebSocket("ws://" + window.location.host + "/ws/boards/" + board_slug + "/");
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+    boardSocket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/boards/" + board_slug + "/");
 
     boardSocket.onopen = function(e) {
         console.log("Successfully connected to the WebSocket.");
