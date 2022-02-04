@@ -11,7 +11,7 @@
         <div class="col-sm" id="topic-{{ topic.pk }}">
             <h3 id="topic-{{ topic.pk }}-subject">{{ topic }}</h3>
             {% if request.user == board.owner or user.is_staff %}
-            <small><a id="topic-{{ topic.pk }}-update-url" href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a id="topic-{{ topic.pk }}-delete-url" href="{% url 'boards:topic-delete' board.slug topic.pk %}" class="text-danger">Delete</a></small>
+            <small><a id="topic-{{ topic.pk }}-update-url" href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a id="topic-{{ topic.pk }}-delete-url" href="{% url 'boards:topic-delete' board.slug topic.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal" class="text-danger">Delete</a></small>
             {% endif %}
             <div class="card my-2">
                 <div class="card-body">

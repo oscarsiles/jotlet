@@ -31,6 +31,8 @@ function connect() {
                 clone.querySelector('#topic-pk').id = 'topic-' + data.topic_pk;
                 clone.querySelector('#topic-pk-subject').innerHTML = data.topic_subject;
                 clone.querySelector('#topic-pk-subject').id = 'topic-' + data.topic_pk + '-subject';
+                clone.querySelector('#topic-pk-post-create-url').href = Urls['boards:post-create'](board_slug, data.topic_pk);
+                clone.querySelector('#topic-pk-post-create-url').id = 'topic-' + data.topic_pk + '-post-create-url';
                 try {
                     clone.querySelector('#topic-pk-update-url').href = Urls['boards:topic_update'](board_slug, data.topic_pk);
                     clone.querySelector('#topic-pk-update-url').id = 'topic-' + data.topic_pk + '-update-url';
