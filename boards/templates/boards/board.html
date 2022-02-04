@@ -1,4 +1,5 @@
 {% extends "base_generic.html" %}
+{% load static %}
 
 {% block title %}Board: {{ board }}{% endblock title %}
 {% block navbar_title %}{{ board.slug }} - {{ board }}{% endblock navbar_title %}
@@ -7,7 +8,7 @@
 <div class="row">
     <p>
         {% for topic in board.topics.all %}
-        <div class="col-sm">
+        <div class="col-sm" id="topic-{{ topic.pk }}">
             <h3>{{ topic }}</h3>
             {% if request.user == board.owner or user.is_staff %}
             <small><a href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a href="{% url 'boards:topic-delete' board.slug topic.pk %}" class="text-danger">Delete</a></small>
@@ -18,7 +19,7 @@
                 </div>
             </div>
             {% for post in topic.posts.all %}
-            <div class="card my-2">
+            <div class="card my-2" id="post-{{ post.pk }}">
                 <div class="card-body">
                     <div class="d-flex">
                         <div>
@@ -42,5 +43,9 @@
         <div class="col-sm">{% if request.user == board.owner or user.is_staff %}<a href="{% url 'boards:topic-create' board.slug %}" data-bs-toggle="modal" data-bs-target="#MyModal">Create topic</a>{% endif %}</div>
     </p>
 </div>
+{{ board.pk|json_script:"board_id" }}
+{{ board.slug|json_script:"board_slug" }}
 
 {% endblock content %}
+
+{% block script %}<script src="{% static 'js/board.js' %}"></script>{% endblock script %}
