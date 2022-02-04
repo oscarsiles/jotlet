@@ -35,21 +35,10 @@ class BoardConsumer(WebsocketConsumer):
             self.channel_name,
         )
 
-    # def receive(self, text_data=None, bytes_data=None):
-    #     text_data_json = json.loads(text_data)
-    #     post_pk = text_data_json['post_pk']
-    #     topic_pk = text_data_json['topic_pk']
-
-    #     # async_to_sync(self.channel_layer.group_send)(
-    #     #     self.board_group_name,
-    #     #     {
-    #     #         'type': 'post_created',
-    #     #         'post_pk': post_pk,
-    #     #         'topic_pk': topic_pk,
-    #     #     }
-    #     # )
-
     def post_created(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def post_updated(self, event):
         self.send(text_data=json.dumps(event))
 
     def post_deleted(self, event):

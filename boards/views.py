@@ -8,7 +8,10 @@ from django.views import generic
 from .models import Board, Topic, Post
 from .forms import SearchBoardsForm
 
-# Create your views here.
+def channel_group_send(group_name, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(group_name, message)
+
 class IndexView(generic.FormView):
     model = Board
     template_name = 'boards/index.html'
@@ -107,14 +110,13 @@ class CreatePostView(generic.CreateView):
         return super(CreatePostView, self).form_valid(form)
 
     def get_success_url(self):
-        channel_layer = get_channel_layer()
-        group_name = f"board_{self.kwargs.get('slug')}"
-        async_to_sync(channel_layer.group_send)(group_name, {
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
             'type': "post_created",
             'topic_pk': self.kwargs.get('topic_pk'),
             'post_pk': self.object.pk,
-            },
-        )
+            'post_content': self.object.content,
+            'post_session_key': self.request.session.session_key,
+            })
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
@@ -128,6 +130,12 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.change_post') or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': "post_updated",
+            'post_pk': self.object.pk,
+            'post_content': self.object.content,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
@@ -140,9 +148,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.delete_post') or self.request.user.is_staff
 
     def get_success_url(self):
-        channel_layer = get_channel_layer()
-        group_name = f"board_{self.kwargs.get('slug')}"
-        async_to_sync(channel_layer.group_send)(group_name, {
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
             'type': "post_deleted",
             'post_pk': self.object.pk,
             },
