@@ -32,8 +32,7 @@
                         </div>
                         {% endif %}
                 </div>
-                    
-                    <p class="card-text">{{ post.content }}</p>
+                    <p class="card-text" id="post-{{ post.pk }}-text">{{ post.content }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -43,9 +42,31 @@
         <div class="col-sm">{% if request.user == board.owner or user.is_staff %}<a href="{% url 'boards:topic-create' board.slug %}" data-bs-toggle="modal" data-bs-target="#MyModal">Create topic</a>{% endif %}</div>
     </p>
 </div>
-{{ board.pk|json_script:"board_id" }}
 {{ board.slug|json_script:"board_slug" }}
+{{ request.session.session_key|json_script:"session_key" }}
+{{ perms.boards.can_delete_post|json_script:"can_delete_post" }}
 
+<template id="cardTemplate">
+    <div class="card my-2" id="post-pk">
+        <div class="card-body">
+            <div class="d-flex">
+                <div>
+                    <h5 class="card-title"></h5>
+                </div>
+                {% if request.session.session_key == post.session_key or perms.boards.can_delete_post %}
+                <div class="ms-auto">
+                    <a id="post-pk-edit-url" class="btn btn-link btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
+                    <a id="post-pk-delete-url" class="btn btn-close btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
+                </div>
+                {% endif %}
+        </div>
+            <p class="card-text" id="post-pk-text"></p>
+        </div>
+    </div>
+</template>
 {% endblock content %}
 
+
 {% block script %}<script src="{% static 'js/board.js' %}"></script>{% endblock script %}
+
+

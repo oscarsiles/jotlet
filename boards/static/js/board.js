@@ -1,6 +1,8 @@
 console.log("Sanity check from board.js.");
 
 const board_slug = JSON.parse(document.getElementById('board_slug').textContent);
+const session_key = JSON.parse(document.getElementById('session_key').textContent);
+const can_delete_post = JSON.parse(document.getElementById('can_delete_post').textContent);
 
 let boardSocket = null;
 
@@ -25,10 +27,19 @@ function connect() {
 
         switch (data.type) {
             case "post_created":
-                console.log(data.topic_pk);
+                var t = document.querySelector('#cardTemplate')
+                t.content.querySelector('#post-pk').id = 'post-' + data.post_pk;
+                t.content.querySelector('#post-pk-text').innerHTML = data.post_content;
+                t.content.querySelector('#post-pk-text').id = 'post-' + data.post_pk + '-text';
+                var clone = document.importNode(t.content, true)
+                document.getElementById('topic-' + data.topic_pk).appendChild(clone);
+                break;
+            case "post_updated":
+                $('#post-' + data.post_pk + "-text").html(data.post_content);
                 break;
             case "post_deleted":
                 document.getElementById('post-' + data.post_pk).remove();
+                break;
             default:
                 console.error("Unknown message type!");
                 break;
