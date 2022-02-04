@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
@@ -81,8 +83,6 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
-
-
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
@@ -107,6 +107,14 @@ class CreatePostView(generic.CreateView):
         return super(CreatePostView, self).form_valid(form)
 
     def get_success_url(self):
+        channel_layer = get_channel_layer()
+        group_name = f"board_{self.kwargs.get('slug')}"
+        async_to_sync(channel_layer.group_send)(group_name, {
+            'type': "post_created",
+            'topic_pk': self.kwargs.get('topic_pk'),
+            'post_pk': self.object.pk,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
 
 
@@ -132,4 +140,11 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.delete_post') or self.request.user.is_staff
 
     def get_success_url(self):
+        channel_layer = get_channel_layer()
+        group_name = f"board_{self.kwargs.get('slug')}"
+        async_to_sync(channel_layer.group_send)(group_name, {
+            'type': "post_deleted",
+            'post_pk': self.object.pk,
+            },
+        )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
