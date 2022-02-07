@@ -26,7 +26,6 @@ function connect() {
 
     boardSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log(data);
 
         switch (data.type) {
             case "topic_created":

@@ -16,3 +16,9 @@
   </form>
 </p>
 <div id="createTopic-div"></div>
+
+{% if form.instance.pk != None %}
+  <h5 id="modal-title-div" hx-swap-oob="true">Edit Post</h5>
+  {% else %}
+  <h5 id="modal-title-div" hx-swap-oob="true">Create Post</h5>
+{% endif %}
