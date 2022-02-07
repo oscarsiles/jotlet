@@ -20,8 +20,8 @@
                         {{ board.description }}
                     </div>
                     <span>
-                        <a class="btn btn-link btn-sm link-dark" href="{% url 'boards:board-update' board.slug %}" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-pen"></i></a>
-                        <a class="btn btn-close btn-sm" href="{% url 'boards:board-delete' board.slug %}"></a>
+                        <button class="btn btn-link btn-sm shadow-none text-black" hx-get="{% url 'boards:board-update' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-pen"></i></button>
+                        <button class="btn btn-close btn-sm" hx-get="{% url 'boards:board-delete' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"></button>
                     </span>
                 </li>
                 {% endfor %}
