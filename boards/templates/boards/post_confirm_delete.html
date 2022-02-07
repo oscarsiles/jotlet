@@ -3,8 +3,10 @@
   <h5>{{ post }}</h5>
 </p>
 <p>
-<form action="{{ request.build_absolute_uri }}" method="POST">
+<form hx-post="{{ request.build_absolute_uri }}" hx-swap="none">
   {% csrf_token %}
-  <input type="submit" value="Yes, delete." class="btn btn-danger">
+  <input type="submit" value="Yes, delete." class="btn btn-danger" data-bs-dismiss="modal">
 </form>
 </p>
+
+<h5 id="modal-title-div" hx-swap-oob="true">Delete Post</h5>
