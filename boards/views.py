@@ -69,11 +69,11 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     template_name = 'boards/topic_form.html'
     
     def test_func(self):
-        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        board = Board.objects.get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
-        form.instance.board_id = Board.objects.get_queryset().get(slug=self.kwargs['slug']).id
+        form.instance.board_id = Board.objects.get(slug=self.kwargs['slug']).id
         return super(CreateTopicView, self).form_valid(form)
 
     def get_success_url(self) -> str:
@@ -83,7 +83,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
             'topic_subject': self.object.subject,
             },
         )
-        return super().get_success_url()
+        return reverse_lazy('boards:htmx-topic-fetch', kwargs={'pk': self.object.pk})
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Topic
@@ -91,7 +91,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
     template_name = 'boards/topic_form.html'
 
     def test_func(self):
-        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        board = Board.objects.get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_success_url(self) -> str:
@@ -101,14 +101,14 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
             'topic_subject': self.object.subject,
             },
         )
-        return super().get_success_url()
+        return reverse_lazy('boards:htmx-topic-fetch', kwargs={'pk': self.object.pk})
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Topic
     template_name = 'boards/topic_confirm_delete.html'
 
     def test_func(self):
-        board = Board.objects.get_queryset().get(slug=self.kwargs['slug'])
+        board = Board.objects.get(slug=self.kwargs['slug'])
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_success_url(self):
@@ -139,7 +139,7 @@ class CreatePostView(generic.CreateView):
             'post_content': self.object.content,
             'post_session_key': self.request.session.session_key,
             })
-        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
+        return reverse_lazy('boards:htmx-post-fetch', kwargs={'pk': self.object.pk})
 
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
@@ -148,7 +148,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     template_name = 'boards/post_form.html'
 
     def test_func(self):
-        post = Post.objects.get_queryset().get(pk=self.kwargs['pk'])
+        post = Post.objects.get(pk=self.kwargs['pk'])
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.change_post') or self.request.user.is_staff
 
     def get_success_url(self):
@@ -158,7 +158,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             'post_content': self.object.content,
             },
         )
-        return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
+        return reverse_lazy('boards:htmx-post-fetch', kwargs={'pk': self.object.pk})
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
@@ -166,7 +166,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     template_name = 'boards/post_confirm_delete.html'
 
     def test_func(self):
-        post = Post.objects.get_queryset().get(pk=self.kwargs['pk'])
+        post = Post.objects.get(pk=self.kwargs['pk'])
         return self.request.session.session_key == post.session_key or self.request.user.has_perm('boards.delete_post') or self.request.user.is_staff
 
     def get_success_url(self):
@@ -176,3 +176,21 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
             },
         )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
+
+# HTMX Stuff
+
+class HtmxPostFetch(generic.TemplateView):
+    template_name = 'boards/components/post.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = Post.objects.get(pk=self.kwargs['pk'])
+        return context
+
+class HtmxTopicFetch(generic.TemplateView):
+    template_name = 'boards/components/topic.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['topic'] = Topic.objects.get(pk=self.kwargs['pk'])
+        return context

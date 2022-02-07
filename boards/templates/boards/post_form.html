@@ -1,22 +1,18 @@
 {% load crispy_forms_tags %}
 
-{% load static %}
-
 <p>
-  {% if request.session.session_key == post.session_key or perms.boards.can_delete_post or object is None %}
-  <form action="{{ request.build_absolute_uri }}" method="post" id="post-form">
+  <form hx-post="{{ request.build_absolute_uri }}" 
+  {% if form.instance.pk != None %}
+  hx-target="#post-{{ form.instance.pk }}" hx-swap="outerHTML"
+  {% else %}
+  hx-target="#newCard-{{ view.kwargs.topic_pk }}-div" hx-swap="beforebegin"
+  {% endif %}
+  >
     {% csrf_token %}
     <table>
       {{ form|crispy }}
     </table>
-    <input type="submit" value="Submit" class="btn btn-success">
+    <input type="submit" value="Submit" class="btn btn-success" data-bs-dismiss="modal">
   </form>
-  {% else %}
-  You do not have permission to access this page.
-  {% endif %}
 </p>
-
-{{ request.session.session_key|json_script:"session_key" }}
-{{ view.kwargs.topic_pk|json_script:"topic_pk" }}
-
-<script src="{% static 'js/post.js' %}"></script>
+<div id="createTopic-div"></div>

@@ -8,74 +8,21 @@
 <p>
     <div class="row" id="board-{{ board.slug }}">
         {% for topic in board.topics.all %}
-        <div class="col-sm" id="topic-{{ topic.pk }}">
-            <h3 id="topic-{{ topic.pk }}-subject">{{ topic }}</h3>
+            {% include 'boards/components/topic.html' %}
+        {% if forloop.last or request.htmx %}
+        <div class="col-sm" id="newTopic-div">
             {% if request.user == board.owner or user.is_staff %}
-            <small><a id="topic-{{ topic.pk }}-update-url" href="{% url 'boards:topic-update' board.slug topic.pk %}" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a id="topic-{{ topic.pk }}-delete-url" href="{% url 'boards:topic-delete' board.slug topic.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal" class="text-danger">Delete</a></small>
+            <div id="createTopic-div"></div>
+            <span class="btn btn-outline-primary" hx-get="{% url 'boards:topic-create' topic.board.slug %}" hx-trigger="click" hx-target="#createTopic-div" hx-swap="innerHTML">Create topic</span>
             {% endif %}
-            <div class="card my-2">
-                <div class="card-body">
-                    <a id="topic-{{ topic.pk }}-create-url" href="{% url 'boards:post-create' board.slug topic.pk %}" class="card-link" data-bs-toggle="modal" data-bs-target="#MyModal"><strong>Create post</strong></a>
-                </div>
-            </div>
-            {% for post in topic.posts.all %}
-            <div class="card my-2" id="post-{{ post.pk }}">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div>
-                            <h5 class="card-title"></h5>
-                        </div>
-                        {% if request.session.session_key == post.session_key or perms.boards.delete_post or request.user == board.owner %}
-                        <div class="ms-auto">
-                            <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
-                            <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
-                        </div>
-                        {% endif %}
-                </div>
-                    <p class="card-text" id="post-{{ post.pk }}-text">{{ post.content }}</p>
-                </div>
-            </div>
-            {% endfor %}
-
         </div>
+        {% endif %}
         {% endfor %}
-        <div class="col-sm" id="topic-create">{% if request.user == board.owner or user.is_staff %}<a href="{% url 'boards:topic-create' board.slug %}" data-bs-toggle="modal" data-bs-target="#MyModal">Create topic</a>{% endif %}</div>
     </div>
 </p>
 {{ board.slug|json_script:"board_slug" }}
 {{ request.session.session_key|json_script:"session_key" }}
 
-<template id="topicTemplate">
-    <div class="col-sm" id="topic-pk">
-        <h3 id="topic-pk-subject"></h3>
-        {% if request.user == board.owner or user.is_staff %}
-        <small><a id="topic-pk-update-url" href="" class="text-muted" data-bs-toggle="modal" data-bs-target="#MyModal">Edit</a> - <a id="topic-pk-delete-url" href="" class="text-danger">Delete</a></small>
-        {% endif %}
-        <div class="card my-2">
-            <div class="card-body">
-                <a id="topic-pk-post-create-url" href="" class="card-link" data-bs-toggle="modal" data-bs-target="#MyModal"><strong>Create post</strong></a>
-            </div>
-        </div>
-    </div>
-</template>
-<template id="cardTemplate">
-    <div class="card my-2" id="post-pk">
-        <div class="card-body">
-            <div class="d-flex">
-                <div>
-                    <h5 class="card-title"></h5>
-                </div>
-                {% if perms.boards.delete_post or request.user == board.owner %}
-                <div class="ms-auto">
-                    <a id="post-pk-update-url" class="btn btn-link btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
-                    <a id="post-pk-delete-url" class="btn btn-close btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
-                </div>
-                {% endif %}
-        </div>
-            <p class="card-text" id="post-pk-text"></p>
-        </div>
-    </div>
-</template>
 {% endblock content %}
 
 
