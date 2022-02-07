@@ -25,7 +25,7 @@
                         <div>
                             <h5 class="card-title"></h5>
                         </div>
-                        {% if request.session.session_key == post.session_key or perms.boards.can_delete_post %}
+                        {% if request.session.session_key == post.session_key or perms.boards.delete_post or request.user == board.owner %}
                         <div class="ms-auto">
                             <a class="btn btn-link btn-sm" href="{% url 'boards:post-update' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
                             <a class="btn btn-close btn-sm" href="{% url 'boards:post-delete' board.slug topic.pk post.pk %}" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
@@ -44,7 +44,6 @@
 </p>
 {{ board.slug|json_script:"board_slug" }}
 {{ request.session.session_key|json_script:"session_key" }}
-{{ perms.boards.can_delete_post|json_script:"can_delete_post" }}
 
 <template id="topicTemplate">
     <div class="col-sm" id="topic-pk">
@@ -66,7 +65,7 @@
                 <div>
                     <h5 class="card-title"></h5>
                 </div>
-                {% if perms.boards.can_delete_post %}
+                {% if perms.boards.delete_post or request.user == board.owner %}
                 <div class="ms-auto">
                     <a id="post-pk-update-url" class="btn btn-link btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"><i class="bi bi-pen"></i></a>
                     <a id="post-pk-delete-url" class="btn btn-close btn-sm" href="" data-bs-toggle="modal" data-bs-target="#MyModal"></a>
@@ -84,5 +83,3 @@
 <script src="{% static 'js/reverse.js' %}"></script>
 <script src="{% static 'js/board.js' %}"></script>
 {% endblock script %}
-
-
