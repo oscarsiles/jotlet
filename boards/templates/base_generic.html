@@ -50,10 +50,10 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="MyModalLabel">Modal title</h5>
+          <h5 class="modal-title" id="MyModalTitle">Modal title</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" id="modal-body-div">
           If you can read this, something went wrong.
         </div>
         {% comment %} <div class="modal-footer">
@@ -67,10 +67,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/htmx.org@1.6.1"></script>
     <script>
-        $('#MyModal').on('show.bs.modal', function (e) {
-            $(this).find('.modal-title').text($(e.relatedTarget).text());
-            $(this).find('.modal-body').load(e.relatedTarget.href);
-          })
+      document.body.addEventListener('htmx:configRequest', (e) => {
+        e.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+      })
     </script>
     {% block script %}{% endblock script %}
 </body>
