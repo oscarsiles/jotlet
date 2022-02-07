@@ -1,0 +1,21 @@
+<div class="col-sm" id="topic-{{ topic.pk }}">
+    <h3 id="topic-{{ topic.pk }}-subject">{{ topic }}</h3>
+    {% if request.user == board.owner or user.is_staff %}
+    <small>
+        <button id="topic-{{ topic.pk }}-update-url" hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link shadow-none text-muted">Edit</button>
+        <button id="topic-{{ topic.pk }}-delete-url" hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link shadow-none text-danger">Delete</button>
+    </small>
+    {% endif %}
+    <div class="card my-2">
+        <div class="card-body">
+            <button id="topic-{{ topic.pk }}-create-url" hx-get="{% url 'boards:post-create' topic.board.slug topic.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link shadow-none card-link"><strong>Create post</strong></button>
+        </div>
+    </div>
+    {% for post in topic.posts.all %}
+        {% include 'boards/components/post.html' %}
+    {% endfor %}
+        <div id="newCard-{{ topic.pk }}-div" hx-trigger="postCreated" hx-target="this" hx-swap="beforebegin" hidden=true></div>
+</div>
+{% if request.htmx %}
+<div id="createTopic-div" hx-swap-oob="true"></div>
+{% endif %}
