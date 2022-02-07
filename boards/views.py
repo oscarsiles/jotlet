@@ -39,6 +39,14 @@ class BoardView(generic.DetailView):
     model = Board
     template_name = 'boards/board.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(BoardView, self).get_context_data(**kwargs)
+        context['topics'] = Topic.objects.filter(board=self.object)
+
+        if not self.request.session.session_key: # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+        return context
+
 class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Board
     fields = ['title', 'description']
@@ -81,6 +89,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
             'type': "topic_created",
             'topic_pk': self.object.pk,
             'topic_subject': self.object.subject,
+            'session_key': self.request.session.session_key,
             },
         )
         return reverse_lazy('boards:htmx-topic-fetch', kwargs={'pk': self.object.pk})
@@ -99,6 +108,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
             'type': "topic_updated",
             'topic_pk': self.object.pk,
             'topic_subject': self.object.subject,
+            'session_key': self.request.session.session_key,
             },
         )
         return reverse_lazy('boards:htmx-topic-fetch', kwargs={'pk': self.object.pk})
@@ -115,6 +125,7 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         channel_group_send(f"board_{self.kwargs.get('slug')}", {
             'type': "topic_deleted",
             'topic_pk': self.object.pk,
+            'session_key': self.request.session.session_key,
             },
         )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']})
@@ -126,8 +137,6 @@ class CreatePostView(generic.CreateView):
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get('topic_pk')
-        if not self.request.session.session_key: # if session is not set yet (i.e. anonymous user)
-            self.request.session.create()
         form.instance.session_key = self.request.session.session_key
         return super(CreatePostView, self).form_valid(form)
 
@@ -137,7 +146,7 @@ class CreatePostView(generic.CreateView):
             'topic_pk': self.kwargs.get('topic_pk'),
             'post_pk': self.object.pk,
             'post_content': self.object.content,
-            'post_session_key': self.request.session.session_key,
+            'session_key': self.request.session.session_key,
             })
         return reverse_lazy('boards:htmx-post-fetch', kwargs={'pk': self.object.pk})
 
@@ -156,6 +165,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             'type': "post_updated",
             'post_pk': self.object.pk,
             'post_content': self.object.content,
+            'session_key': self.request.session.session_key,
             },
         )
         return reverse_lazy('boards:htmx-post-fetch', kwargs={'pk': self.object.pk})
@@ -173,6 +183,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         channel_group_send(f"board_{self.kwargs.get('slug')}", {
             'type': "post_deleted",
             'post_pk': self.object.pk,
+            'session_key': self.request.session.session_key,
             },
         )
         return reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug'],})
