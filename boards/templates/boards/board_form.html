@@ -1,7 +1,6 @@
 {% load crispy_forms_tags %}
 
 <p>
-  {% if request.user == board.owner or request.user.is_staff or object is None %}
   <form action="{{ request.build_absolute_uri }}" method="post">
     {% csrf_token %}
     <table>
@@ -9,7 +8,10 @@
     </table>
     <input type="submit" value="Submit" class="btn btn-success">
   </form>
-  {% else %}
-  You are not the owner of this board.
-  {% endif %}
 </p>
+
+{% if form.instance.pk != None %}
+  <h5 id="modal-title-div" hx-swap-oob="true">Edit Board</h5>
+  {% else %}
+  <h5 id="modal-title-div" hx-swap-oob="true">Create Board</h5>
+{% endif %}

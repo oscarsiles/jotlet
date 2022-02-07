@@ -21,7 +21,7 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'boards:board-create' %}" data-bs-toggle="modal" data-bs-target="#modal-div">Create board</a>
+                            <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:board-create' %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div">Create board</button>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -33,7 +33,7 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login'%}?next={{ request.path }}" data-bs-toggle="modal" data-bs-target="#modal-div">Login</a>
+                            <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'login'%}?next={{ request.path }}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div">Login</button>
                         </li>
                     {% endif %}
                     </ul>
