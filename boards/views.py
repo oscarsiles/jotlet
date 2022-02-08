@@ -205,3 +205,12 @@ class HtmxTopicFetch(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context['topic'] = Topic.objects.get(pk=self.kwargs['pk'])
         return context
+
+
+class QrView(generic.TemplateView):
+    template_name = 'boards/components/qr.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['url'] = self.request.build_absolute_uri(reverse_lazy('boards:board', kwargs={'slug': self.kwargs['slug']}))
+        return context

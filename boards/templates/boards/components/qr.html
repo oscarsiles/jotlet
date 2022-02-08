@@ -1,0 +1,10 @@
+{% load qr_code %}
+<div class="d-flex justify-content-center">
+    {% qr_from_text url size=8 image_format="png" error_correction="H" %}
+    {% comment %} <img src="{% qr_url_from_text url size=8 image_format="png" error_correction="H" %}%" alt="QR Code"> {% endcomment %}
+</div>
+<div class="d-flex">
+    <button class="btn btn-primary" value="Close" data-bs-dismiss="modal">Close</button>
+</div>
+
+<h5 id="modal-title-div" hx-swap-oob="true">QR Code</h5>

@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from django.views import generic
 
 from . import views
@@ -10,6 +10,7 @@ urlpatterns = [
     path('htmx/posts/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
     path('htmx/topics/<int:pk>/fetch/', views.HtmxTopicFetch.as_view(), name='htmx-topic-fetch'),
     path('modal/', generic.TemplateView.as_view(template_name='boards/components/modal.html'), name='modal'),
+    path('qr/board/<slug:slug>/', views.QrView.as_view(), name='qr-board'),
     path('<slug:slug>/', views.BoardView.as_view(), name='board'),
     path('<slug:slug>/update/', views.UpdateBoardView.as_view(), name='board-update'),
     path('<slug:slug>/delete/', views.DeleteBoardView.as_view(), name='board-delete'),
