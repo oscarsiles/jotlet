@@ -28,6 +28,10 @@ function connect() {
         const data = JSON.parse(e.data);
 
         switch (data.type) {
+            case "session_connected":
+            case "session_disconnected":
+                htmx.find('#board-online-sessions').textContent = data.sessions
+                break;
             case "topic_created":
                 if (session_key != data.session_key) {
                     let newTopic = htmx.find('#newTopic-div');
