@@ -207,8 +207,13 @@ class HtmxTopicFetch(generic.TemplateView):
         return context
 
 
-class QrView(generic.TemplateView):
+class QrView(UserPassesTestMixin, generic.TemplateView):
     template_name = 'boards/components/qr.html'
+
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs['slug'])
+        return self.request.user == board.owner or self.request.user.is_staff
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

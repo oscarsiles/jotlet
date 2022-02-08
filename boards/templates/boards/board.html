@@ -4,9 +4,11 @@
 {% block title %}Board: {{ board }}{% endblock title %}
 {% block navbar_title %}{{ board.slug }} - {{ board }}{% endblock navbar_title %}
 {% block navbar-items %}
+{% if request.user == board.owner or user.is_staff %}
 <li class="nav-item">
     <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:qr-board' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-qr-code"></i></button>
 </li>
+{% endif %}
 {% endblock navbar-items %}
 
 {% block content %}
