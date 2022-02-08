@@ -28,3 +28,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='boards/')),
     path('reverse.js', views.urls_js, name='reverse_js'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if settings.DEBUG:
+    # static files (images, css, javascript, etc.)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
