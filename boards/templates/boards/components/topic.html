@@ -1,5 +1,5 @@
 <div class="col-sm" id="topic-{{ topic.pk }}">
-    <h3 id="topic-{{ topic.pk }}-subject">{{ topic }}</h3>
+    <h3 class="text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h3>
     {% if request.user == board.owner or user.is_staff %}
     <small>
         <button id="topic-{{ topic.pk }}-update-url" hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link shadow-none text-muted">Edit</button>

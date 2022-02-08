@@ -2,7 +2,15 @@
 {% load static %}
 
 {% block title %}Board: {{ board }}{% endblock title %}
-{% block navbar_title %}{{ board.slug }} - {{ board }}{% endblock navbar_title %}
+{% block navbar_title %}
+<div class="d-flex flex-column text-break">
+    <div class="d-flex">
+        {{ board.slug }} - {{ board }}
+        <h6><span class="badge bg-secondary mx-2 align-middle">14</span></h6>
+    </div>
+    <small>{{ board.description }}</small>
+</div>
+{% endblock navbar_title %}
 {% block navbar-items %}
 {% if request.user == board.owner or user.is_staff %}
 <li class="nav-item">
