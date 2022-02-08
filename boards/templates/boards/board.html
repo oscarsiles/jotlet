@@ -5,7 +5,7 @@
 {% block navbar_title %}{{ board.slug }} - {{ board }}{% endblock navbar_title %}
 {% block navbar-items %}
 <li class="nav-item">
-    <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:qr-board' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div">QR</button>
+    <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:qr-board' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-qr-code"></i></button>
 </li>
 {% endblock navbar-items %}
 
