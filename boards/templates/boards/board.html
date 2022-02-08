@@ -16,15 +16,13 @@
     <div class="row" id="board-{{ board.slug }}">
         {% for topic in board.topics.all %}
             {% include 'boards/components/topic.html' %}
-        {% if forloop.last or request.htmx %}
+        {% endfor %}
         <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
             {% if request.user == board.owner or user.is_staff %}
-            <div id="createTopic-div"></div>
-            <span class="btn btn-outline-primary" hx-get="{% url 'boards:topic-create' topic.board.slug %}" hx-trigger="click" hx-target="#createTopic-div" hx-swap="innerHTML">Create topic</span>
+                <button class="btn btn-outline-primary" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-div">Create topic</button>
             {% endif %}
         </div>
-        {% endif %}
-        {% endfor %}
+        
     </div>
 </p>
 {{ board.slug|json_script:"board_slug" }}
