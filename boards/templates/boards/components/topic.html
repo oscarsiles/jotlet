@@ -16,6 +16,3 @@
     {% endfor %}
         <div id="newCard-{{ topic.pk }}-div" hx-trigger="postCreated" hx-target="this" hx-swap="beforebegin" hidden=true></div>
 </div>
-{% if request.htmx %}
-<div id="createTopic-div" hx-swap-oob="true"></div>
-{% endif %}
