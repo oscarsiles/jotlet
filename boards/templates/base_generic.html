@@ -30,6 +30,9 @@
                             {{ user }}
                           </a>
                           <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="navbarDropdownMenuLink">
+                            {% if user.is_staff %}
+                            <li><a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="{% url 'logout'%}?next={{ request.path }}">Logout</a></li>
                           </ul>
                       </li>
