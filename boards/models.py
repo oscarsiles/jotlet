@@ -58,6 +58,10 @@ class Board(models.Model):
 class BoardPreferences(models.Model):
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     background = models.ForeignKey('Image', on_delete=models.SET_NULL, null=True, blank=True, related_name="background")
+    background_color = models.CharField(max_length=7, default="#ffffff", null=True, blank=True)
+    background_opacity = models.FloatField(default=1.0, null=True, blank=True)
+    enable_latex = models.BooleanField(default=False)
+    require_approval = models.BooleanField(default=False)
 
 class Topic(models.Model):
     subject = models.CharField(max_length=50)
