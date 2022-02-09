@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('attribution', models.CharField(blank=True, max_length=100, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('photo', models.ImageField(upload_to=boards.models.get_upload_path)),
+                ('photo', models.ImageField(upload_to=boards.models.get_image_upload_path)),
                 ('type', models.CharField(choices=[('b', 'Background')], default='b', help_text='Image type', max_length=1)),
             ],
         ),
