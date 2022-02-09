@@ -25,11 +25,12 @@ def slug_save(obj):
                 # create another slug and check it again
                 obj.slug = get_random_string(6)
 
-def get_upload_path(instance, filename):
+def get_image_upload_path(instance, filename):
     name, ext = filename.split('.')
-    file_path = '{type}/{name}.{ext}'.format(
+    file_path = 'images/{type}/{name}.{ext}'.format(
          type=instance.type, name=instance.uuid, ext=ext) 
     return file_path
+
 class Board(models.Model):
     title = models.CharField(max_length=50)
     uuid = ShortUUIDField(unique=True)
@@ -93,7 +94,7 @@ class Image(models.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    image = models.ImageField(upload_to=get_upload_path)
+    image = models.ImageField(upload_to=get_image_upload_path)
 
     IMAGE_TYPE = (
         ('b', 'Background'),
