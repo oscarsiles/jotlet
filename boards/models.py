@@ -93,7 +93,7 @@ class Image(models.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    photo = models.ImageField(upload_to=get_upload_path)
+    image = models.ImageField(upload_to=get_upload_path)
 
     IMAGE_TYPE = (
         ('b', 'Background'),
