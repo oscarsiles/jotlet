@@ -34,15 +34,20 @@ function connect() {
                 break;
             case "topic_created":
                 if (session_key != data.session_key) {
-                    let newTopic = htmx.find('#newTopic-div');
+                    var newTopic = htmx.find('#newTopic-div');
                     newTopic.setAttribute('hx-get', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk));
                     htmx.process(newTopic);
                     htmx.trigger(newTopic, 'topicCreated')
                 }
                 break;
             case "topic_updated":
+                var div = '#post-' + data.post_pk + '-text';
                 if (session_key != data.session_key) {
                     htmx.find('#topic-' + data.topic_pk + "-subject").textContent = data.topic_subject;
+                }
+
+                if (window.MathJax != null) {
+                    window.MathJax.typesetPromise([div]).catch((err) => console.log(err.message));
                 }
                 break;
             case "topic_deleted":
@@ -50,15 +55,20 @@ function connect() {
                 break;
             case "post_created":
                 if (session_key != data.session_key) {
-                    let newCard = htmx.find('#newCard-' + data.topic_pk + '-div');
+                    var newCard = htmx.find('#newCard-' + data.topic_pk + '-div');
                     newCard.setAttribute('hx-get', pathName + Urls['boards:htmx-post-fetch'](data.post_pk));
                     htmx.process(newCard);
                     htmx.trigger(newCard, 'postCreated');
                 }
                 break;
             case "post_updated":
+                var div = '#post-' + data.post_pk + '-text';
                 if (session_key != data.session_key) {
-                    htmx.find('#post-' + data.post_pk + "-text").textContent = data.post_content;
+                    htmx.find(div).textContent = data.post_content;
+                }
+                
+                if (window.MathJax != null) {
+                    window.MathJax.typesetPromise([div]).catch((err) => console.log(err.message));
                 }
                 break;
             case "post_deleted":
@@ -67,6 +77,7 @@ function connect() {
             default:
                 console.error("Unknown message type!");
                 break;
+            
         }
     };
 
@@ -77,3 +88,9 @@ function connect() {
     }
 }
 connect();
+
+htmx.onLoad(function(elt){
+    if (window.MathJax != null) {
+        window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
+    }
+});
