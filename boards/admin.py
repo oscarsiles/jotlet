@@ -1,12 +1,17 @@
 from django.contrib import admin
 
 
-from .models import Board, Post, Topic
+from .models import Board, BoardPreferences, Image, Post, Topic
 
 # Register your models here.
 # admin.site.register(Board)
 # admin.site.register(Topic)
 # admin.site.register(Post)
+admin.site.register(Image)
+
+class BoardPreferencesInline(admin.TabularInline):
+    model = BoardPreferences
+    extra = 0
 
 class TopicInline(admin.TabularInline):
     model = Topic
@@ -19,7 +24,7 @@ class PostInline(admin.TabularInline):
 class BoardAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'owner', 'uuid', 'created_at', 'updated_at',)
     fields = ('title', 'description', 'owner',)
-    inlines =[TopicInline]
+    inlines =[TopicInline, BoardPreferencesInline]
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
