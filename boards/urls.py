@@ -7,8 +7,9 @@ app_name = 'boards'
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('create/', views.CreateBoardView.as_view(), name='board-create'),
-    path('htmx/posts/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
-    path('htmx/topics/<int:pk>/fetch/', views.HtmxTopicFetch.as_view(), name='htmx-topic-fetch'),
+    path('htmx/board/<slug:slug>/', views.HtmxBoardFetch.as_view(), name='htmx-board-fetch'),
+    path('htmx/topic/<int:pk>/fetch/', views.HtmxTopicFetch.as_view(), name='htmx-topic-fetch'),
+    path('htmx/post/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
     path('modal/', generic.TemplateView.as_view(template_name='boards/components/modal.html'), name='modal'),
     path('qr/board/<slug:slug>/', views.QrView.as_view(), name='qr-board'),
     path('<slug:slug>/', views.BoardView.as_view(), name='board'),

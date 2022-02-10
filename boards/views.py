@@ -190,12 +190,12 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
 # HTMX Stuff
 
-class HtmxPostFetch(generic.TemplateView):
-    template_name = 'boards/components/post.html'
+class HtmxBoardFetch(generic.TemplateView):
+    template_name = 'boards/components/board_partial.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['post'] = Post.objects.get(pk=self.kwargs['pk'])
+        context['board'] = Board.objects.get(slug=self.kwargs['slug'])
         return context
 
 class HtmxTopicFetch(generic.TemplateView):
@@ -205,7 +205,14 @@ class HtmxTopicFetch(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context['topic'] = Topic.objects.get(pk=self.kwargs['pk'])
         return context
+        
+class HtmxPostFetch(generic.TemplateView):
+    template_name = 'boards/components/post.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = Post.objects.get(pk=self.kwargs['pk'])
+        return context
 
 class QrView(UserPassesTestMixin, generic.TemplateView):
     template_name = 'boards/components/qr.html'

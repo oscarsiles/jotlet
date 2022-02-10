@@ -1,0 +1,22 @@
+{% if board.preferences.background %}
+<style>
+    #main-content-div{
+    background-image: url("{{ board.preferences.background.image.url }}");
+    background-size: cover;
+    {% comment %} opacity: {{ board.preferences.background_opacity }}; {% endcomment %}
+    }
+</style>
+{% endif %}
+    <div class="row" id="board-{{ board.slug }}">
+        {% for topic in board.topics.all %}
+            {% include 'boards/components/topic.html' %}
+        {% endfor %}
+        <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
+            {% if request.user == board.owner or user.is_staff %}
+                <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-div">Create topic</button>
+            {% endif %}
+        </div>
+        
+    </div>
+{{ board.slug|json_script:"board_slug" }}
+{{ request.session.session_key|json_script:"session_key" }}

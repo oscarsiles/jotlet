@@ -1,11 +1,36 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+
+import uuid
 
 from shortuuidfield import ShortUUIDField
 
 # Create your models here.
+
+def slug_save(obj):
+    """ A function to generate a 6 character numeric slug and see if it has been used."""
+    if not obj.slug: # if there isn't a slug
+        obj.slug = get_random_string(6, '0123456789') # create one
+        slug_is_wrong = True  
+        while slug_is_wrong: # keep checking until we have a valid slug
+            slug_is_wrong = False
+            other_objs_with_slug = type(obj).objects.filter(slug=obj.slug)
+            if len(other_objs_with_slug) > 0:
+                # if any other objects have current slug
+                slug_is_wrong = True
+            if slug_is_wrong:
+                # create another slug and check it again
+                obj.slug = get_random_string(6)
+
+def get_image_upload_path(instance, filename):
+    name, ext = filename.split('.')
+    file_path = 'images/{type}/{name}.{ext}'.format(
+         type=instance.type, name=instance.uuid, ext=ext) 
+    return file_path
+
 class Board(models.Model):
     title = models.CharField(max_length=50)
     uuid = ShortUUIDField(unique=True)
@@ -30,6 +55,13 @@ class Board(models.Model):
             ('can_view_all_boards', "Can view all boards"),
             )
     
+class BoardPreferences(models.Model):
+    board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
+    background = models.ForeignKey('Image', on_delete=models.SET_NULL, null=True, blank=True, related_name="background")
+    background_color = models.CharField(max_length=7, default="#ffffff", null=True, blank=True)
+    background_opacity = models.FloatField(default=1.0, null=True, blank=True)
+    enable_latex = models.BooleanField(default=False)
+    require_approval = models.BooleanField(default=False)
 
 class Topic(models.Model):
     subject = models.CharField(max_length=50)
@@ -60,18 +92,19 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"pk": self.topic.board.slug})
 
+class Image(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=50)
+    attribution = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    image = models.ImageField(upload_to=get_image_upload_path)
 
-def slug_save(obj):
-    """ A function to generate a 6 character numeric slug and see if it has been used."""
-    if not obj.slug: # if there isn't a slug
-        obj.slug = get_random_string(6, '0123456789') # create one
-        slug_is_wrong = True  
-        while slug_is_wrong: # keep checking until we have a valid slug
-            slug_is_wrong = False
-            other_objs_with_slug = type(obj).objects.filter(slug=obj.slug)
-            if len(other_objs_with_slug) > 0:
-                # if any other objects have current slug
-                slug_is_wrong = True
-            if slug_is_wrong:
-                # create another slug and check it again
-                obj.slug = get_random_string(6)
+    IMAGE_TYPE = (
+        ('b', 'Background'),
+    )
+
+    type = models.CharField(max_length=1, choices=IMAGE_TYPE, default='b', help_text="Image type")
+
+    def __str__(self):
+        return self.title
