@@ -4,7 +4,9 @@ from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 
-import uuid
+from PIL import Image as PILImage
+
+import os, uuid
 
 from shortuuidfield import ShortUUIDField
 
@@ -26,10 +28,17 @@ def slug_save(obj):
                 obj.slug = get_random_string(6)
 
 def get_image_upload_path(instance, filename):
-    name, ext = filename.split('.')
+    name, ext = os.path.splitext(filename)
     file_path = 'images/{type}/{name}.{ext}'.format(
          type=instance.type, name=instance.uuid, ext=ext) 
     return file_path
+
+def resize_image(im, base_width=3840):
+    width, height = im.size
+    if width > base_width:
+        new_height = int((height / width) * base_width)
+        im = im.resize((base_width, new_height), PILImage.ANTIALIAS)
+    return im
 
 class Board(models.Model):
     title = models.CharField(max_length=50)
@@ -108,3 +117,10 @@ class Image(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+       super(Image, self).save(*args, **kwargs)
+       instance = self.image
+       im = resize_image(PILImage.open(instance.path))
+       im.save(instance.path,quality=80,optimize=True)
+       return instance
