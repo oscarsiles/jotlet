@@ -26,6 +26,7 @@ function connect() {
 
     boardSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        console.log(data);
 
         switch (data.type) {
             case "session_connected":
@@ -34,42 +35,43 @@ function connect() {
                 break;
             case "topic_created":
                 if (session_key != data.session_key) {
-                    var newTopic = htmx.find('#newTopic-div');
-                    newTopic.setAttribute('hx-get', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk));
-                    htmx.process(newTopic);
-                    htmx.trigger(newTopic, 'topicCreated')
+                    htmx.ajax('GET', pathName + Urls['boards:htmx-board-fetch'](board_slug), '#main-content-div');
+                    // let newTopic = htmx.find('#newTopic-div');
+                    // newTopic.setAttribute('hx-get', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk));
+                    // htmx.process(newTopic);
+                    // htmx.trigger(newTopic, 'topicCreated')
                 }
                 break;
             case "topic_updated":
-                var div = '#post-' + data.post_pk + '-text';
+                let divTopic = '#topic-' + data.topic_pk + '-subject';
                 if (session_key != data.session_key) {
-                    htmx.find('#topic-' + data.topic_pk + "-subject").textContent = data.topic_subject;
+                    htmx.find(divTopic).textContent = data.topic_subject;
                 }
 
-                if (window.MathJax != null) {
-                    window.MathJax.typesetPromise([div]).catch((err) => console.log(err.message));
-                }
+                mathjaxTypeset(divTopic);
                 break;
             case "topic_deleted":
                 htmx.find('#topic-' + data.topic_pk).remove();
                 break;
             case "post_created":
                 if (session_key != data.session_key) {
-                    var newCard = htmx.find('#newCard-' + data.topic_pk + '-div');
-                    newCard.setAttribute('hx-get', pathName + Urls['boards:htmx-post-fetch'](data.post_pk));
-                    htmx.process(newCard);
-                    htmx.trigger(newCard, 'postCreated');
+                    let topicDiv = htmx.find('#topic-' + data.topic_pk);
+                    htmx.ajax('GET', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk), topicDiv);
+                    // Need to wait for HTMX to be fixed to do a single-post load
+                    // let newCard = htmx.find('#topic-' + data.topic_pk).lastElementChild;
+                    // newCard.setAttribute('hx-get', pathName + Urls['boards:htmx-post-fetch'](data.post_pk));
+                    // htmx.process(newCard);
+                    // htmx.trigger(newCard, 'postCreated');
+                    // newCard.removeAttribute('hx-get');
                 }
                 break;
             case "post_updated":
-                var div = '#post-' + data.post_pk + '-text';
+                let divPost = '#post-' + data.post_pk + '-text';
                 if (session_key != data.session_key) {
-                    htmx.find(div).textContent = data.post_content;
+                    htmx.find(divPost).textContent = data.post_content;
                 }
                 
-                if (window.MathJax != null) {
-                    window.MathJax.typesetPromise([div]).catch((err) => console.log(err.message));
-                }
+                mathjaxTypeset(divPost);
                 break;
             case "post_deleted":
                 htmx.find('#post-' + data.post_pk).remove();
@@ -90,7 +92,12 @@ function connect() {
 connect();
 
 htmx.onLoad(function(elt){
+    mathjaxTypeset(elt);
+});
+
+function mathjaxTypeset(elt) {
     if (window.MathJax != null) {
         window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
     }
-});
+}
+

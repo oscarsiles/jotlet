@@ -1,5 +1,5 @@
 <div class="col-sm" id="topic-{{ topic.pk }}">
-    <div class="card my-2">
+    <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>
             {% if request.user == board.owner or user.is_staff %}
@@ -8,7 +8,7 @@
             {% endif %}
         </div>
     </div>
-    <div class="card my-2">
+    <div class="card my-2" id="topic-{{ topic.pk }}-create">
         <div class="card-body">
             <button id="topic-{{ topic.pk }}-create-url" hx-get="{% url 'boards:post-create' topic.board.slug topic.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link shadow-none card-link"><strong>Create post</strong></button>
         </div>
