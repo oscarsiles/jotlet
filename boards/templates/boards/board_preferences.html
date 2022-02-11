@@ -1,0 +1,37 @@
+<script type="text/javascript"> 
+    var toggleBackgroundOptions = function (bg_type) {
+        switch (bg_type) {
+            case 'i':
+                console.log('i');
+                htmx.find('#div_id_background_image').style.display = 'block';
+                htmx.find('#div_id_background_opacity').style.display = 'block';
+                htmx.find('#div_id_background_color').style.display = 'none';
+                break;
+            case 'c':
+                console.log('c');
+                htmx.find('#div_id_background_color').style.display = 'block';
+                htmx.find('#div_id_background_image').style.display = 'none';
+                htmx.find('#div_id_background_opacity').style.display = 'none';
+                break;
+        }
+    };
+
+    htmx.on('form', "htmx:load", function(evt) {
+        var background_type = document.getElementById('id_background_type').value;
+        toggleBackgroundOptions(background_type);
+    });
+
+    var el = document.getElementById('id_background_type');
+    el.addEventListener('change', function(evt) {
+        var background_type = document.getElementById('id_background_type').value;
+        toggleBackgroundOptions(evt.target.value);
+    });
+</script> 
+
+{% load crispy_forms_tags %}
+
+<p>
+    {% crispy form %}
+</p>
+
+<h5 id="modal-title-div" hx-swap-oob="true">Board Preferences</h5>

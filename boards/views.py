@@ -2,11 +2,14 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
-from .models import Board, Topic, Post
-from .forms import SearchBoardsForm
+from .forms import BoardPreferencesForm, SearchBoardsForm
+from .http import HTTPResponseHXRedirect
+from .models import Board, BoardPreferences, Topic, Post
+
 
 def channel_group_send(group_name, message):
     channel_layer = get_channel_layer()
@@ -46,6 +49,35 @@ class BoardView(generic.DetailView):
         if not self.request.session.session_key: # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
         return context
+
+class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+    model = BoardPreferences
+    template_name = 'boards/board_preferences.html'
+ 
+    form_class = BoardPreferencesForm
+
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs['slug'])
+        return self.request.user == board.owner or self.request.user.is_staff
+
+    def get_object(self): # needed to prevent 'slug' FieldError
+        board = Board.objects.get(slug=self.kwargs['slug'])
+        return board.preferences
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(BoardPreferencesView, self).get_form_kwargs(**kwargs)
+        kwargs['slug'] = self.kwargs['slug']
+        return kwargs
+
+    def form_valid(self, form):
+        super(BoardPreferencesView, self).form_valid(form)
+        channel_group_send(f"board_{self.kwargs.get('slug')}", {
+            'type': 'board_preferences_changed',
+        })
+        return HTTPResponseHXRedirect(self.get_success_url())
+
+    def get_success_url(self, **kwargs):
+        return reverse('boards:board', kwargs={'slug': self.kwargs['slug']})
 
 class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Board

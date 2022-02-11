@@ -1,22 +1,24 @@
-{% if board.preferences.background %}
 <style>
     #main-content-div{
-    background-image: url("{{ board.preferences.background.image.url }}");
+    {% if board.preferences.background_type == 'i' %}
+    {% load mathfilters %}
+    background-image: linear-gradient(rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}}), rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}})), url("{{ board.preferences.background_image.image.url }}");
     background-size: cover;
-    {% comment %} opacity: {{ board.preferences.background_opacity }}; {% endcomment %}
+    {% else %}
+    background-color: {{ board.preferences.background_color }};
+    {% endif %}
     }
 </style>
-{% endif %}
-    <div class="row" id="board-{{ board.slug }}">
-        {% for topic in board.topics.all %}
-            {% include 'boards/components/topic.html' %}
-        {% endfor %}
-        <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
-            {% if request.user == board.owner or user.is_staff %}
-                <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-div">Create topic</button>
-            {% endif %}
-        </div>
-        
+<div class="row" id="board-{{ board.slug }}">
+    {% for topic in board.topics.all %}
+        {% include 'boards/components/topic.html' %}
+    {% endfor %}
+    <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
+        {% if request.user == board.owner or user.is_staff %}
+            <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-div">Create topic</button>
+        {% endif %}
     </div>
+    
+</div>
 {{ board.slug|json_script:"board_slug" }}
 {{ request.session.session_key|json_script:"session_key" }}
