@@ -62,6 +62,9 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def get_object(self): # needed to prevent 'slug' FieldError
         board = Board.objects.get(slug=self.kwargs['slug'])
+        if not BoardPreferences.objects.filter(board=board).exists():
+            board.preferences = BoardPreferences.objects.create(board=board)
+            BoardPreferences.save(board.preferences)
         return board.preferences
 
     def get_form_kwargs(self, **kwargs):
