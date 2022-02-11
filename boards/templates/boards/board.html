@@ -16,6 +16,9 @@
 <li class="nav-item">
     <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:qr-board' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-qr-code"></i></button>
 </li>
+<li class="nav-item">
+  <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:board-preferences' board.slug %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div"><i class="bi bi-gear"></i></button>
+</li>
 {% endif %}
 {% endblock navbar-items %}
 

@@ -63,14 +63,26 @@ class Board(models.Model):
         permissions = (
             ('can_view_all_boards', "Can view all boards"),
             )
-    
+
+BACKGROUND_TYPE = (
+    ('c', 'Color'),
+    ('i', 'Image'),
+)
 class BoardPreferences(models.Model):
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
-    background = models.ForeignKey('Image', on_delete=models.SET_NULL, null=True, blank=True, related_name="background")
-    background_color = models.CharField(max_length=7, default="#ffffff", null=True, blank=True)
-    background_opacity = models.FloatField(default=1.0, null=True, blank=True)
+    background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default='c')
+    background_image = models.ForeignKey('Image', on_delete=models.SET_NULL, null=True, blank=True, related_name="background")
+    background_color = models.CharField(max_length=7, default="#ffffff")
+    background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
     require_approval = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.board.title + " preferences"
+
+    def get_absolute_url(self):
+        return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
+    
 
 class Topic(models.Model):
     subject = models.CharField(max_length=50)
