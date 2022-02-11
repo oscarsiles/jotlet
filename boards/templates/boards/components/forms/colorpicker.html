@@ -1,0 +1,15 @@
+{% load crispy_forms_field %}
+
+<{% if tag %}{{ tag }}{% else %}div{% endif %} id="div_{{ field.auto_id }}" class="mb-3{% if field|is_checkbox and form_show_labels %} form-check{% else %}{% if 'form-horizontal' in form_class %} row{% endif %}{% endif %}{% if wrapper_class %} {{ wrapper_class }}{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
+    {% if field.label and not field|is_checkbox and form_show_labels %}
+    <label {% if field.id_for_label and not field|is_radioselect %}for="{{ field.id_for_label }}"{% endif %} class="{% if 'form-horizontal' in form_class %}col-form-label{% else %}form-label{% endif %}{% if label_class %} {{ label_class }}{% endif %}{% if field.field.required %} requiredField{% endif %}">
+        {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+        </label>
+    {% endif %}
+    <div>
+        <div class="input-group">
+            <span class="input-group-text">{{ crispy_prepended_text }}</span>
+            <input type="color" name="{{ field.name }}" class="form-control form-control-color" id="{{ field.auto_id }}" value="{{ field.value }}" title="Choose your color"></input>
+        </div>
+    </div>
+</{% if tag %}{{ tag }}{% else %}div{% endif %}>

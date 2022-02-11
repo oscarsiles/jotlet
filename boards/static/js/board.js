@@ -75,6 +75,8 @@ function connect() {
             case "post_deleted":
                 htmx.find('#post-' + data.post_pk).remove();
                 break;
+            case "board_preferences_changed":
+                break; // implement later
             default:
                 console.error("Unknown message type!");
                 break;

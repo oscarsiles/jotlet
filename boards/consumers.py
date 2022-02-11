@@ -81,3 +81,6 @@ class BoardConsumer(WebsocketConsumer):
 
     def post_deleted(self, event):
         self.send(text_data=json.dumps(event))
+
+    def board_preferences_changed(self, event):
+        self.send(text_data=json.dumps(event))
