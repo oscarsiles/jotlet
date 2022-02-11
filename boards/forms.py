@@ -36,7 +36,6 @@ class BoardPreferencesForm(forms.ModelForm):
             'hx-post': reverse('boards:board-preferences', kwargs={'slug': self.slug}),
             'hx-swap': 'this',
             }
-        # self.helper.form_action = reverse('boards:board-preferences', kwargs={'slug': self.slug})
 
         self.helper.layout = Layout(
             PrependedText('background_type', 'Background Type', placeholder='Background Type'),
