@@ -30,7 +30,7 @@ def slug_save(obj):
 def get_image_upload_path(instance, filename):
     name, ext = os.path.splitext(filename)
     file_path = 'images/{type}/{name}.{ext}'.format(
-         type=instance.type, name=instance.uuid, ext=ext) 
+         type=instance.type, name=instance.uuid, ext=ext.replace('.', '')) 
     return file_path
 
 def resize_image(im, base_width=3840):
@@ -136,3 +136,7 @@ class Image(models.Model):
        im = resize_image(PILImage.open(instance.path))
        im.save(instance.path,quality=80,optimize=True)
        return instance
+
+    def get_board_usage_count(self):
+        return BoardPreferences.objects.filter(background_type='i').filter(background_image=self).count()
+    get_board_usage_count.short_description = 'Board Usage Count'
