@@ -43,7 +43,7 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText('background_image', 'Background Image', placeholder='Background Image'),
             PrependedText('background_opacity', 'Background Opacity', placeholder='Background Image Opacity'),
             PrependedText('enable_latex', 'Enable LaTeX', wrapper_class='d-flex flex-row', css_class='form-check-input my-0', style='height: auto;'),
-            PrependedText('require_approval', 'Require Approval', wrapper_class='d-flex flex-row', css_class='form-check-input my-0', style='height: auto;'),
+            PrependedText('require_approval', 'Posts Require Approval', wrapper_class='d-flex flex-row', css_class='form-check-input my-0', style='height: auto;'),
             ButtonHolder(
                 Submit('submit', 'Save', css_class='btn btn-success')
             )
