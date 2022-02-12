@@ -7,7 +7,7 @@ slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 from .models import Board, BACKGROUND_TYPE, BoardPreferences
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Layout, Submit
+from crispy_forms.layout import ButtonHolder, Div, HTML, Layout, Submit
 from crispy_forms.bootstrap import Field, PrependedText
 
 
@@ -75,7 +75,11 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class="form-check-input my-0",
                 style="height: auto;",
             ),
-            ButtonHolder(Submit("submit", "Save", css_class="btn btn-success")),
+            Div(
+                ButtonHolder(Submit("submit", "Save", css_class="btn btn-success")),
+                ButtonHolder(HTML('<a href="" class="btn btn-danger" data-bs-dismiss="modal">Cancel</a>')),
+                css_class='d-flex flex-row justify-content-between',
+            ),
         )
 
     def clean_background_opacity(self):
