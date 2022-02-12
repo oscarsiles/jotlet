@@ -58,9 +58,9 @@
   <script src="https://unpkg.com/htmx.org@1.6.1"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
   <script>
-    {% comment %} htmx.on('hidden.bs.modal', function(e) {
+    htmx.on('hidden.bs.modal', function(e) {
       htmx.find('#modal-1-div').outerHTML = `{% include 'boards/components/modal.html' with num='1' %}`;
-    }); {% endcomment %}
+    });
 
     $(document).on('show.bs.modal', '.modal', function() {
       const zIndex = 1040 + 10 * $('.modal:visible').length;
