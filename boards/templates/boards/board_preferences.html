@@ -1,4 +1,6 @@
 <script type="text/javascript"> 
+    var modal = bootstrap.Modal.getInstance(document.getElementById("modal-1-div"));
+
     var toggleBackgroundOptions = function (bg_type) {
         switch (bg_type) {
             case 'i':
@@ -15,8 +17,16 @@
     };
 
     htmx.on('form', "htmx:load", function(evt) {
+        modal._config.backdrop = 'static';
+        modal._config.keyboard = false;
+
         var background_type = document.getElementById('id_background_type').value;
         toggleBackgroundOptions(background_type);
+    });
+
+    htmx.on('hide.bs.modal', function(evt) {
+        modal._config.backdrop = true;
+        modal._config.keyboard = true;
     });
 
     var el = document.getElementById('id_background_type');
@@ -28,6 +38,7 @@
 
 {% load crispy_forms_tags %}
 
+<button class="btn btn-primary" hx-get="{% url 'boards:board-create' %}" hx-target="#modal-2-body-div" data-bs-toggle="modal" data-bs-target="#modal-2-div">Create board</button>
 {% crispy form %}
 
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
