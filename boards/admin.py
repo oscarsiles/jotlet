@@ -16,6 +16,7 @@ class TopicInline(admin.TabularInline):
 class PostInline(admin.TabularInline):
     model = Post
     extra = 1
+
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'owner', 'uuid', 'created_at', 'updated_at',)
@@ -36,3 +37,6 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('title', 'get_board_usage_count', 'created_at', 'updated_at')
+    fields = ('image_tag', 'title', 'attribution' ,'image', 'type')
+
+    readonly_fields = ['image_tag']

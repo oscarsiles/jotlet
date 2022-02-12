@@ -3,6 +3,8 @@ from django.db import models
 from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.safestring import mark_safe
+from sorl.thumbnail import get_thumbnail
 
 from PIL import Image as PILImage
 
@@ -140,3 +142,9 @@ class Image(models.Model):
     def get_board_usage_count(self):
         return BoardPreferences.objects.filter(background_type='i').filter(background_image=self).count()
     get_board_usage_count.short_description = 'Board Usage Count'
+
+    def image_tag(self):
+        from django.utils.html import escape
+        return mark_safe(u'<img src="%s" />' % escape(get_thumbnail(self.image, '150').url))
+    image_tag.short_description = 'Image'
+    image_tag.allow_tags = True
