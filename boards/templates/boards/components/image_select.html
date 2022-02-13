@@ -1,0 +1,19 @@
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for image in images %}
+    <div class="col">
+        <div class="card">
+          <img src="{{ image.get_thumbnail_url }}" class="card-img-top" alt="{{ image }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ image     }}</h5>
+            <p class="card-text">{{ image }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+</div>
+
+<div class="modal-footer" id="modal-2-footer-div" hx-swap-oob="true">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modal-1-div">Select Image</button>
+</div>
+
+<h5 id="modal-2-title-div" hx-swap-oob="true">{% if type == 'b' %}Background{% else %}Image{% endif %} Select</h5>
