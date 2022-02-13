@@ -1,5 +1,9 @@
-<div class="modal fade" id="modal-{{ num }}-div" tabindex="-1">
-	<div class="modal-dialog">
+<div class="modal fade" id="modal-{{ num }}-div" tabindex="-1" 
+{% if num == 2 %}
+data-bs-backdrop="static" data-bs-keyboard="false"
+{% endif %}
+>
+	<div class="modal-dialog modal-dialog-scrollable">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="modal-{{ num }}-title-div">Loading...</h5>
@@ -12,8 +16,8 @@
 					</div>
 				</div>
 			</div>
-		{% comment %} <div class="modal-{{ num }}-footer">
-		</div> {% endcomment %}
+			<div class="modal-footer" id="modal-{{ num }}-footer-div">
+			</div>
 		</div>
 	</div>
 </div>

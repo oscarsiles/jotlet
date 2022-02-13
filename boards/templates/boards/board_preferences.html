@@ -24,6 +24,11 @@
         toggleBackgroundOptions(background_type);
     });
 
+    htmx.on('show.bs.modal', function(evt) {
+        modal._config.backdrop = 'static';
+        modal._config.keyboard = false;
+    });
+
     htmx.on('hide.bs.modal', function(evt) {
         modal._config.backdrop = true;
         modal._config.keyboard = true;
@@ -38,7 +43,7 @@
 
 {% load crispy_forms_tags %}
 
-<button class="btn btn-primary" hx-get="{% url 'boards:board-create' %}" hx-target="#modal-2-body-div" data-bs-toggle="modal" data-bs-target="#modal-2-div">Create board</button>
+<button class="btn btn-primary" hx-get="{% url 'boards:htmx-image-select' 'b' %}" hx-target="#modal-2-body-div" data-bs-toggle="modal" data-bs-target="#modal-2-div">Create board</button>
 {% crispy form %}
 
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
