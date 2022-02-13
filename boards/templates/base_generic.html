@@ -61,12 +61,6 @@
     htmx.on('hidden.bs.modal', function(e) {
       htmx.find('#modal-1-div').outerHTML = `{% include 'boards/components/modal.html' with num='1' %}`;
     });
-
-    $(document).on('show.bs.modal', '.modal', function() {
-      const zIndex = 1040 + 10 * $('.modal:visible').length;
-      $(this).css('z-index', zIndex);
-      setTimeout(() => $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack'));
-    });
   </script>
   {% block script %}{% endblock script %}
 </body>
