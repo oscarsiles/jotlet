@@ -143,8 +143,11 @@ class Image(models.Model):
         return BoardPreferences.objects.filter(background_type='i').filter(background_image=self).count()
     get_board_usage_count.short_description = 'Board Usage Count'
 
+    def get_thumbnail_url(self):
+        return get_thumbnail(self.image, '150x100', crop='center').url
+
     def image_tag(self):
         from django.utils.html import escape
-        return mark_safe(u'<img src="%s" />' % escape(get_thumbnail(self.image, '150').url))
+        return mark_safe(u'<img src="%s" />' % escape(self.get_thumbnail_url()))
     image_tag.short_description = 'Image'
     image_tag.allow_tags = True
