@@ -7,8 +7,9 @@ from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
+from jotlet.http import HTTPResponseHXRedirect
+
 from .forms import BoardPreferencesForm, SearchBoardsForm
-from .http import HTTPResponseHXRedirect
 from .models import Board, BoardPreferences, Image, Topic, Post
 
 

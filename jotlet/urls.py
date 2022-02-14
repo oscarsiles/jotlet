@@ -19,15 +19,18 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
-from django_reverse_js import views
+from . import views
+
+from django_reverse_js import views as views_djrjs
 
 urlpatterns = (
     [
         path("admin/", admin.site.urls),
         path("boards/", include("boards.urls")),
+        path("accounts/login/", views.JotletLoginView.as_view(), name="login"),
         path("accounts/", include("django.contrib.auth.urls")),
         path("", RedirectView.as_view(url="boards/")),
-        path("reverse.js", views.urls_js, name="reverse_js"),
+        path("reverse.js", views_djrjs.urls_js, name="reverse_js"),
     ]
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
