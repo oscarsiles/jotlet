@@ -16,9 +16,9 @@ class BoardConsumer(WebsocketConsumer):
         self.board_group_name = None
 
     def connect(self):
-        self.board_slug = self.scope['url_route']['kwargs']['slug']
-        self.board_group_name = f'board_{self.board_slug}'
-        
+        self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
+        self.board_group_name = f"board_{self.board_slug}"
+
         self.accept()
 
         try:
@@ -34,9 +34,9 @@ class BoardConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name,
             {
-                'type': 'session_connected',
-                'sessions': cache.get(self.board_group_name),
-            }
+                "type": "session_connected",
+                "sessions": cache.get(self.board_group_name),
+            },
         )
 
     def disconnect(self, code):
@@ -51,9 +51,9 @@ class BoardConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name,
             {
-                'type': 'session_disconnected',
-                'sessions': cache.get(self.board_group_name),
-            }
+                "type": "session_disconnected",
+                "sessions": cache.get(self.board_group_name),
+            },
         )
 
         async_to_sync(self.channel_layer.group_discard)(

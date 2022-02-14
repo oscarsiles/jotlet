@@ -1,13 +1,12 @@
 <p>
-  Are you sure you want to delete the board:
-  <h5>{{ board }}</h5>
-  {{ board.description }}
+    Are you sure you want to delete the board:
+    <h5>{{ board }}</h5>
+    {{ board.description }}
 </p>
 <p>
-  <form action="{% url 'boards:board-delete' board.slug %}" method="POST">
-    {% csrf_token %}
-    <input type="submit" value="Yes, delete." class="btn btn-danger">
-  </form>
+    <form action="{% url 'boards:board-delete' board.slug %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Yes, delete." class="btn btn-danger">
+    </form>
 </p>
-
 <h5 id="modal-1-title-div" hx-swap-oob="true">Delete Board</h5>
