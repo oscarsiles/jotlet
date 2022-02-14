@@ -8,7 +8,7 @@ from .models import Board, BACKGROUND_TYPE, BoardPreferences
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Div, HTML, Layout, Submit
-from crispy_forms.bootstrap import Field, PrependedText
+from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 
 
 def validate_board_exists(board_slug):
@@ -29,21 +29,40 @@ class BoardPreferencesForm(forms.ModelForm):
         exclude = ["board"]
         labels = {
             "enable_latex": "Enable LaTeX",
+            "require_approval": "Posts Require Approval",
         }
 
     def __init__(self, *args, **kwargs):
         self.slug = kwargs.pop("slug")
         super().__init__(*args, **kwargs)
+        self.fields["background_type"] = forms.ChoiceField(
+            choices=BACKGROUND_TYPE,
+            widget=forms.RadioSelect,
+            label=False,
+        )
         self.helper = FormHelper()
         self.helper.form_show_labels = False
+        self.helper.form_id = "board-preferences-form"
         self.helper.attrs = {
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
             "hx-swap": "this",
         }
 
         self.helper.layout = Layout(
-            PrependedText(
-                "background_type", "Background Type", placeholder="Background Type"
+            Div(  # Div for background type (blame Bootstrap + crispy forms)
+                Div(
+                    Div(
+                        HTML('<span class="input-group-text">Background Type</span>'),
+                        InlineRadios(
+                            "background_type",
+                            wrapper_class="form-control",
+                            id="id_background_type",
+                            css_class="",
+                        ),
+                        css_class="input-group",
+                    ),
+                ),
+                css_class="mb-3",
             ),
             PrependedText(
                 "background_color",
@@ -51,7 +70,9 @@ class BoardPreferencesForm(forms.ModelForm):
                 template="boards/components/forms/colorpicker.html",
             ),
             PrependedText(
-                "background_image", "Background Image", placeholder="Background Image"
+                "background_image",
+                "Background Image",
+                template="boards/components/forms/imagepicker.html",
             ),
             PrependedText(
                 "background_opacity",
@@ -75,11 +96,7 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class="form-check-input my-0",
                 style="height: auto;",
             ),
-            Div(
-                ButtonHolder(Submit("submit", "Save", css_class="btn btn-success")),
-                ButtonHolder(HTML('<a href="" class="btn btn-danger" data-bs-dismiss="modal">Cancel</a>')),
-                css_class='d-flex flex-row justify-content-between',
-            ),
+            ButtonHolder(Submit("submit", "Save", hidden="true")), # Hidden submit button, use modal one to trigger form submit
         )
 
     def clean_background_opacity(self):

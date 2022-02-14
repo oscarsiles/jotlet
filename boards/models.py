@@ -71,6 +71,8 @@ BACKGROUND_TYPE = (
     ('i', 'Image'),
 )
 class BoardPreferences(models.Model):
+
+
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default='c')
     background_image = models.ForeignKey('Image', on_delete=models.SET_NULL, null=True, blank=True, related_name="background")
@@ -128,6 +130,9 @@ class Image(models.Model):
     )
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default='b', help_text="Image type")
+
+    class Meta:
+        ordering = ['title']
 
     def __str__(self):
         return self.title

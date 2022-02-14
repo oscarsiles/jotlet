@@ -1,3 +1,4 @@
+<div class="modal-body" id="modal-1-body-div" hx-swap-oob="true">
 <script type="text/javascript"> 
     var modal = bootstrap.Modal.getInstance(document.getElementById("modal-1-div"));
 
@@ -16,11 +17,12 @@
         }
     };
 
-    htmx.on('form', "htmx:load", function(evt) {
+    htmx.on('#modal-1-body-div', 'htmx:load', function(evt) {
         modal._config.backdrop = 'static';
         modal._config.keyboard = false;
-
-        var background_type = document.getElementById('id_background_type').value;
+        $('#div_id_background_type').removeClass('mb-3');
+        
+        var background_type = $('#id_background_type input[type="radio"]:checked').val();
         toggleBackgroundOptions(background_type);
     });
 
@@ -43,7 +45,12 @@
 
 {% load crispy_forms_tags %}
 
-<button class="btn btn-primary" hx-get="{% url 'boards:htmx-image-select' 'b' %}" hx-target="#modal-2-body-div" data-bs-toggle="modal" data-bs-target="#modal-2-div">Create board</button>
 {% crispy form %}
+</div>
+
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary" form="board-preferences-form">Save changes</button>
+</div>
 
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
