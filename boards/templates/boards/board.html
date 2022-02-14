@@ -4,17 +4,15 @@
     Board: {{ board }}
 {% endblock title %}
 {% block navbar_title %}
-    <div class="d-flex flex-column text-break">
-        <div class="d-flex">
-            {{ board.slug }} - {{ board }}
-            <h6>
-                <span class="badge bg-secondary mx-2 align-middle"
-                      id="board-online-sessions">0</span>
-            </h6>
-        </div>
-        <span class="fs-6">{{ board.description }}</span>
-    </div>
+    {{ board.slug }} - {{ board }}
+    <h6>
+        <span class="badge bg-secondary mx-2 align-middle"
+              id="board-online-sessions">0</span>
+    </h6>
 {% endblock navbar_title %}
+{% block navbar_subtitle %}
+    {{ board.description }}
+{% endblock navbar_subtitle %}
 {% block navbar-items %}
     {% if request.user == board.owner or user.is_staff %}
         <li class="nav-item">
