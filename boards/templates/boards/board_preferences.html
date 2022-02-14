@@ -1,5 +1,4 @@
-<div class="modal-body" id="modal-1-body-div" hx-swap-oob="true">
-    <script type="text/javascript">
+<script type="text/javascript">
     var modal = bootstrap.Modal.getInstance(
       document.getElementById("modal-1-div")
     );
@@ -45,10 +44,9 @@
       var background_type = document.getElementById("id_background_type").value;
       toggleBackgroundOptions(evt.target.value);
     });
-    </script>
-    {% load crispy_forms_tags %}
-    {% crispy form %}
-</div>
+</script>
+{% load crispy_forms_tags %}
+{% crispy form %}
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
     <button type="submit" class="btn btn-primary" form="board-preferences-form">Save changes</button>
