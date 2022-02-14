@@ -18,7 +18,7 @@ let boardSocket = null;
 
 function connect() {
   var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-  boardSocket = new WebSocket(
+  boardSocket = new RobustWebSocket(
     ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/"
   );
 
