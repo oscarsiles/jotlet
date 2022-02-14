@@ -9,22 +9,22 @@ var pathName = window.location.pathname.split('/')[1] == 'boards' ? '' : '/' + w
 let boardSocket = null;
 
 function connect() {
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";    
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     boardSocket = new WebSocket(ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/");
 
-    boardSocket.onopen = function(e) {
+    boardSocket.onopen = function (e) {
         console.log("Successfully connected to the WebSocket.");
     }
 
-    boardSocket.onclose = function(e) {
+    boardSocket.onclose = function (e) {
         console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
-        setTimeout(function() {
+        setTimeout(function () {
             console.log("Reconnecting...");
             connect();
         }, 2000);
     };
 
-    boardSocket.onmessage = function(e) {
+    boardSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
 
         switch (data.type) {
@@ -32,59 +32,51 @@ function connect() {
             case "session_disconnected":
                 htmx.find('#board-online-sessions').textContent = data.sessions
                 break;
+            case "board_preferences_changed":
             case "topic_created":
                 if (session_key != data.session_key) {
-                    htmx.ajax('GET', pathName + Urls['boards:htmx-board-fetch'](board_slug), '#main-content-div');
-                    // let newTopic = htmx.find('#newTopic-div');
-                    // newTopic.setAttribute('hx-get', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk));
-                    // htmx.process(newTopic);
-                    // htmx.trigger(newTopic, 'topicCreated')
+                    let boardDiv = '#board-' + board_slug;
+                    htmx.trigger(htmx.find(boardDiv), 'topicCreated');
                 }
                 break;
             case "topic_updated":
-                let divTopic = '#topic-' + data.topic_pk + '-subject';
+                let topicDiv = '#topic-' + data.topic_pk;
                 if (session_key != data.session_key) {
-                    htmx.find(divTopic).textContent = data.topic_subject;
+                    htmx.trigger(htmx.find(topicDiv), 'topicUpdated');
                 }
 
-                mathjaxTypeset(divTopic);
+                mathjaxTypeset(topicDiv);
                 break;
             case "topic_deleted":
                 htmx.find('#topic-' + data.topic_pk).remove();
                 break;
             case "post_created":
                 if (session_key != data.session_key) {
-                    let topicDiv = htmx.find('#topic-' + data.topic_pk);
-                    htmx.ajax('GET', pathName + Urls['boards:htmx-topic-fetch'](data.topic_pk), topicDiv);
-                    // Need to wait for HTMX to be fixed to do a single-post load
-                    // let newCard = htmx.find('#topic-' + data.topic_pk).lastElementChild;
-                    // newCard.setAttribute('hx-get', pathName + Urls['boards:htmx-post-fetch'](data.post_pk));
-                    // htmx.process(newCard);
-                    // htmx.trigger(newCard, 'postCreated');
-                    // newCard.removeAttribute('hx-get');
+                    let topicDiv = '#topic-' + data.topic_pk;
+                    htmx.trigger(htmx.find(topicDiv), 'postCreated');
                 }
                 break;
+            case "post_approved":
+            case "post_unapproved":
             case "post_updated":
-                let divPost = '#post-' + data.post_pk + '-text';
-                if (session_key != data.session_key) {
-                    htmx.find(divPost).textContent = data.post_content;
+                let postDiv = '#post-' + data.post_pk;
+                if (session_key != data.session_key ) {
+                    htmx.trigger(htmx.find(postDiv), 'postUpdated');
                 }
-                
-                mathjaxTypeset(divPost);
+
+                mathjaxTypeset(postDiv);
                 break;
             case "post_deleted":
                 htmx.find('#post-' + data.post_pk).remove();
                 break;
-            case "board_preferences_changed":
-                break; // implement later
             default:
-                console.error("Unknown message type!");
+                console.error("Unknown message type: " + data);
                 break;
-            
+
         }
     };
 
-    boardSocket.onerror = function(err) {
+    boardSocket.onerror = function (err) {
         console.log("WebSocket encountered an error: " + err.message);
         console.log("Closing the socket.");
         boardSocket.close();
@@ -92,7 +84,7 @@ function connect() {
 }
 connect();
 
-htmx.onLoad(function(elt){
+htmx.onLoad(function (elt) {
     mathjaxTypeset(elt);
 });
 
@@ -101,6 +93,6 @@ function mathjaxTypeset(elt) {
         if (window.MathJax != null) {
             window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
         }
-    } catch (err) {};
+    } catch (err) { };
 }
 
