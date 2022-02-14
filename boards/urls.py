@@ -10,6 +10,7 @@ urlpatterns = [
     path('htmx/board/<slug:slug>/', views.HtmxBoardFetch.as_view(), name='htmx-board-fetch'),
     path('htmx/topic/<int:pk>/fetch/', views.HtmxTopicFetch.as_view(), name='htmx-topic-fetch'),
     path('htmx/post/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
+    path('htmx/post/<int:pk>/toggleApproval/', views.HtmxPostToggleApproval.as_view(), name='htmx-post-toggle-approval'),
     path('htmx/image_select/<str:type>', views.HtmxImageSelect.as_view(), name='htmx-image-select'),
     path('qr/board/<slug:slug>/', views.QrView.as_view(), name='qr-board'),
     path('<slug:slug>/', views.BoardView.as_view(), name='board'),

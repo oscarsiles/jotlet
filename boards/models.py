@@ -108,6 +108,7 @@ class Post(models.Model):
     content = models.TextField(max_length=400)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name='posts')
     session_key = models.CharField(max_length=40, null=True, blank=True)
+    approved = models.BooleanField(default=True);
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
