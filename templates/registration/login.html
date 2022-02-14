@@ -1,36 +1,47 @@
-{% extends form.errors|yesno:"base_generic.html,blank.html" %}
-{% load crispy_forms_tags %}
-{% block content %}
-    {% if form.errors %}
-        <div class="col-sm-4">
-            <p>
-                Your username and password didn't match. Please try again.
-            </p>
-        {% else %}
-            <h5 id="modal-1-title-div" hx-swap-oob="true">Login</h5>
-            <div>
-            {% endif %}
-            {% if next %}
-                {% if user.is_authenticated %}
-                    <p>
-                        Your account doesn't have access to this page. To proceed,
-                        please login with an account that has access.
-                    </p>
-                {% else %}
-                    {% comment %} <p>Please login to see this page.</p> {% endcomment %}
-                {% endif %}
-            {% endif %}
-            <form method="post" action="{% url 'login' %}">
-                {% csrf_token %}
-                <table>
-                    {{ form|crispy }}
-                </table>
-                <input type="submit" value="Login" class="btn btn-success"/>
-                <input type="hidden" name="next" value="{{ next }}" />
-            </form>
-            {# Assumes you setup the password_reset view in your URLconf #}
-            <p>
-                <a href="{% url 'password_reset' %}">Lost password?</a>
-            </p>
+{% if form.errors %}
+    <div class="alert alert-danger pb-0">{{ form.non_field_errors|escape }}</div>
+{% else %}
+    <div id="login-form-div">
+    {% endif %}
+    <form id="login-form"
+          class="pb-2"
+          hx-post="{% url 'login' %}"
+          hx-target="#login-form-div"
+          hx-swap="innerHTML">
+        {% comment %} {% csrf_token %} {% endcomment %}
+        <div class="form-floating mb-3">
+            <input type="text"
+                   class="form-control"
+                   id="id_username"
+                   name="username"
+                   placeholder="Username"
+                   required>
+            <label for="id_username">{{ form.username.label_tag }}</label>
         </div>
-    {% endblock content %}
+        <div class="form-floating">
+            <input type="password"
+                   class="form-control"
+                   id="id_password"
+                   name="password"
+                   placeholder="Password"
+                   required>
+            <label for="id_password">{{ form.password.label_tag }}</label>
+        </div>
+        <input type="submit" value="Login" hidden="true"/>
+        <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+    <button class="btn btn-outline-primary"
+            id="password-reset-button"
+            hx-get="{% url 'password_reset' %}"
+            hx-target="#modal-1-body-div"
+            hx-swap="innerHTML">
+        Lost password?
+    </button>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">Login</h5>
+<div id="modal-1-footer-div"
+     class="modal-footer"
+     hx-swap="outerHTML"
+     hx-swap-oob="true">
+    <input type="submit" value="Login" form="login-form" class="btn btn-success"/>
+</div>
