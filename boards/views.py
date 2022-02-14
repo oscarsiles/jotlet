@@ -1,7 +1,8 @@
+from http.client import HTTPResponse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
@@ -297,7 +298,43 @@ class HtmxPostFetch(generic.TemplateView):
         return context
 
 
-class HtmxImageSelect(generic.TemplateView):
+class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+    def test_func(self):
+        return (
+            self.request.user.has_perm("boards.delete_post")
+            or self.request.user.is_staff
+        ) and Post.objects.get(
+            pk=self.kwargs["pk"]
+        ).topic.board.preferences.require_approval
+
+    def get(self, request, *args, **kwargs):
+        post = Post.objects.get(pk=self.kwargs["pk"])
+        post.approved = not post.approved
+        post.save()
+        if post.approved:
+            channel_group_send(
+                f"board_{post.topic.board.slug}",
+                {
+                    "type": "post_approved",
+                    "post_pk": post.pk,
+                    "session_key": self.request.session.session_key,
+                },
+            )
+        else:
+            channel_group_send(
+                f"board_{post.topic.board.slug}",
+                {
+                    "type": "post_unapproved",
+                    "post_pk": post.pk,
+                    "session_key": self.request.session.session_key,
+                },
+            )
+        return HttpResponseRedirect(
+            reverse("boards:htmx-post-fetch", kwargs={"pk": post.pk})
+        )
+
+
+class HtmxImageSelect(LoginRequiredMixin, generic.TemplateView):
     template_name = "boards/components/image_select.html"
 
     def get_context_data(self, **kwargs):
