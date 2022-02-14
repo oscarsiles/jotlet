@@ -139,6 +139,9 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"pk": self.topic.board.slug})
 
+    class Meta:
+        permissions = (("can_approve_posts", "Can approve posts"),)
+
 
 class Image(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

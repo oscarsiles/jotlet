@@ -23,13 +23,6 @@ def approve_all_posts(sender, instance, created, **kwargs):
             post.save()
 
 
-@receiver(post_save, sender=Post)
-def set_initial_approval(sender, instance, created, **kwargs):
-    if created:
-        instance.approved = not instance.topic.board.preferences.require_approval
-        instance.save()
-
-
 @receiver(cleanup_pre_delete)
 def sorl_delete(**kwargs):
     delete(kwargs["file"])
