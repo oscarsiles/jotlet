@@ -4,17 +4,17 @@
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
-     {% if not post.approved and not post.session_key == request.session.session_key and not perms.boards.delete_post and not user.is_staff %}hidden="true"{% endif %}>
-    {% if post.approved or post.session_key == request.session.session_key or perms.boards.delete_post or user.is_staff %}
+     {% if not post.approved and not post.session_key == request.session.session_key and not perms.boards.can_approve_posts and not request.user == post.topic.board.owner %}hidden="true"{% endif %}>
+    {% if post.approved or post.session_key == request.session.session_key or perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
                     <h5 class="card-title"></h5>
                 </div>
-                {% if request.session.session_key == post.session_key or perms.boards.delete_post or request.user == board.owner %}
+                {% if request.session.session_key == post.session_key or perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval  %}
-                            {% if perms.boards.delete_post or request.user.is_staff %}
+                            {% if perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
                                 <button hx-get="{% url 'boards:htmx-post-toggle-approval' post.pk %}"
                                         hx-trigger="click"
                                         hx-target="#post-{{ post.pk }}"

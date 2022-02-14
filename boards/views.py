@@ -197,6 +197,13 @@ class CreatePostView(generic.CreateView):
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get("topic_pk")
         form.instance.session_key = self.request.session.session_key
+        if form.instance.topic.board.preferences.require_approval:
+            form.instance.approved = (
+                self.request.user.has_perm("boards.can_approve_posts")
+                or self.request.user == form.instance.topic.board.owner
+                or self.request.user.is_staff
+            )
+
         return super(CreatePostView, self).form_valid(form)
 
     def get_success_url(self):
@@ -300,12 +307,12 @@ class HtmxPostFetch(generic.TemplateView):
 
 class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     def test_func(self):
+        post = Post.objects.get(pk=self.kwargs["pk"])
         return (
-            self.request.user.has_perm("boards.delete_post")
+            self.request.user.has_perm("boards.can_approve_posts")
+            or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
-        ) and Post.objects.get(
-            pk=self.kwargs["pk"]
-        ).topic.board.preferences.require_approval
+        ) and post.topic.board.preferences.require_approval
 
     def get(self, request, *args, **kwargs):
         post = Post.objects.get(pk=self.kwargs["pk"])
