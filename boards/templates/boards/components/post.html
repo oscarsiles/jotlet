@@ -6,8 +6,8 @@
             </div>
             {% if request.session.session_key == post.session_key or perms.boards.delete_post or request.user == board.owner %}
             <div class="ms-auto">
-                <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.topic.pk post.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-link btn-sm text-black shadow-none"><i class="bi bi-pen"></i></button>
-                <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.topic.pk post.pk %}" hx-target="#modal-body-div" data-bs-toggle="modal" data-bs-target="#modal-div" class="btn btn-close btn-sm shadow-none"></button>
+                <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.topic.pk post.pk %}" hx-target="#modal-1-body-div" data-bs-toggle="modal" data-bs-target="#modal-1-div" class="btn btn-link btn-sm text-black shadow-none"><i class="bi bi-pen"></i></button>
+                <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.topic.pk post.pk %}" hx-target="#modal-1-body-div" data-bs-toggle="modal" data-bs-target="#modal-1-div" class="btn btn-close btn-sm shadow-none"></button>
             </div>
             {% endif %}
     </div>

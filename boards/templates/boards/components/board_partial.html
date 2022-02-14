@@ -15,7 +15,11 @@
     {% endfor %}
     <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
         {% if request.user == board.owner or user.is_staff %}
-            <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-div">Create topic</button>
+            <div class="card my-2" id="newTopic-card-div">
+                <div class="card-body">
+                    <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-1-div">Create topic</button>
+                </div>
+            </div>
         {% endif %}
     </div>
     
