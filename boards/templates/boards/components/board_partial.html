@@ -1,28 +1,42 @@
-<style>
-    #main-content-div{
-    {% if board.preferences.background_type == 'i' %}
-    {% load mathfilters %}
-    background-image: linear-gradient(rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}}), rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}})), url("{{ board.preferences.background_image.image.url }}");
-    background-size: cover;
-    {% else %}
-    background-color: {{ board.preferences.background_color }};
-    {% endif %}
-    }
-</style>
-<div class="row" id="board-{{ board.slug }}">
+<div class="row"
+     id="board-{{ board.slug }}"
+     hx-get="{% url 'boards:htmx-board-fetch' board.slug %}"
+     hx-trigger="topicCreated"
+     hx-swap="outerHTML">
+    <style>
+        #main-content-div{
+        {% if board.preferences.background_type == 'i' %}
+        {% load mathfilters %}
+        background-image: linear-gradient(rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}}), rgba(255,255,255,{{ 1|sub:board.preferences.background_opacity}})), url("{{ board.preferences.background_image.image.url }}");
+        background-size: cover;
+        {% else %}
+        background-color: {{ board.preferences.background_color }};
+        {% endif %}
+        }
+    </style>
     {% for topic in board.topics.all %}
         {% include 'boards/components/topic.html' %}
     {% endfor %}
-    <div class="col-sm" id="newTopic-div" hx-trigger="topicCreated" hx-target="#newTopic-div" hx-swap="beforebegin">
+    <div class="col-sm"
+         id="newTopic-div"
+         hx-trigger="topicCreated"
+         hx-target="#newTopic-div"
+         hx-swap="beforebegin">
         {% if request.user == board.owner or user.is_staff %}
             <div class="card my-2" id="newTopic-card-div">
                 <div class="card-body">
-                    <button class="btn btn-outline-primary my-2" hx-get="{% url 'boards:topic-create' board.slug %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#modal-1-div">Create topic</button>
+                    <button class="btn btn-outline-primary my-2"
+                            hx-get="{% url 'boards:topic-create' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        Create topic
+                    </button>
                 </div>
             </div>
         {% endif %}
     </div>
-    
 </div>
 {{ board.slug|json_script:"board_slug" }}
 {{ request.session.session_key|json_script:"session_key" }}

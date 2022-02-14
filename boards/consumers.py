@@ -16,15 +16,15 @@ class BoardConsumer(WebsocketConsumer):
         self.board_group_name = None
 
     def connect(self):
-        self.board_slug = self.scope['url_route']['kwargs']['slug']
-        self.board_group_name = f'board_{self.board_slug}'
+        self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
+        self.board_group_name = f"board_{self.board_slug}"
 
         self.accept()
 
-        if not cache.get(self.board_group_name):
-            cache.add(self.board_group_name, 0)
-        
-        cache.incr(self.board_group_name)
+        try:
+            cache.incr(self.board_group_name)
+        except:
+            cache.add(self.board_group_name, 1)
 
         async_to_sync(self.channel_layer.group_add)(
             self.board_group_name,
@@ -34,23 +34,26 @@ class BoardConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name,
             {
-                'type': 'session_connected',
-                'sessions': cache.get(self.board_group_name),
-            }
+                "type": "session_connected",
+                "sessions": cache.get(self.board_group_name),
+            },
         )
 
     def disconnect(self, code):
         cache.decr(self.board_group_name)
 
-        if cache.get(self.board_group_name) == 0:
-            cache.delete(self.board_group_name)
+        try:
+            if cache.get(self.board_group_name) == 0:
+                cache.delete(self.board_group_name)
+        except:
+            pass
 
         async_to_sync(self.channel_layer.group_send)(
             self.board_group_name,
             {
-                'type': 'session_disconnected',
-                'sessions': cache.get(self.board_group_name),
-            }
+                "type": "session_disconnected",
+                "sessions": cache.get(self.board_group_name),
+            },
         )
 
         async_to_sync(self.channel_layer.group_discard)(
@@ -80,6 +83,12 @@ class BoardConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(event))
 
     def post_deleted(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def post_approved(self, event):
+        self.send(text_data=json.dumps(event))
+
+    def post_unapproved(self, event):
         self.send(text_data=json.dumps(event))
 
     def board_preferences_changed(self, event):

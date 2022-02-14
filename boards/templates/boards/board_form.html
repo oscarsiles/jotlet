@@ -1,17 +1,15 @@
 {% load crispy_forms_tags %}
-
 <p>
-  <form action="{{ request.build_absolute_uri }}" method="post">
-    {% csrf_token %}
-    <table>
-      {{ form|crispy }}
-    </table>
-    <input type="submit" value="Submit" class="btn btn-success">
-  </form>
+    <form action="{{ request.build_absolute_uri }}" method="post">
+        {% csrf_token %}
+        <table>
+            {{ form|crispy }}
+        </table>
+        <input type="submit" value="Submit" class="btn btn-success">
+    </form>
 </p>
-
 {% if form.instance.pk != None %}
-  <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Board</h5>
-  {% else %}
-  <h5 id="modal-1-title-div" hx-swap-oob="true">Create Board</h5>
+    <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Board</h5>
+{% else %}
+    <h5 id="modal-1-title-div" hx-swap-oob="true">Create Board</h5>
 {% endif %}

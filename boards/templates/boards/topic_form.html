@@ -1,23 +1,19 @@
 {% load crispy_forms_tags %}
-
 <p>
-  <form hx-post="{{ request.build_absolute_uri }}" 
-  {% if form.instance.pk != None %}
-  hx-target="#topic-{{ form.instance.pk }}" hx-swap="outerHTML"
-  {% else %}
-  hx-target="#newTopic-div" hx-swap="beforebegin"
-  {% endif %}
-  >
-    {% csrf_token %}
-    <table>
-      {{ form|crispy }}
-    </table>
-    <input type="submit" value="Submit" class="btn btn-success" data-bs-dismiss="modal">
-  </form>
+    <form hx-post="{{ request.build_absolute_uri }}"
+          {% if form.instance.pk != None %} hx-target="#topic-{{ form.instance.pk }}" hx-swap="outerHTML" {% else %} hx-target="#newTopic-div" hx-swap="beforebegin" {% endif %}>
+        {% csrf_token %}
+        <table>
+            {{ form|crispy }}
+        </table>
+        <input type="submit"
+               value="Submit"
+               class="btn btn-success"
+               data-bs-dismiss="modal">
+    </form>
 </p>
-
 {% if form.instance.pk != None %}
-  <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Topic</h5>
-  {% else %}
-  <h5 id="modal-1-title-div" hx-swap-oob="true">Create Topic</h5>
+    <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Topic</h5>
+{% else %}
+    <h5 id="modal-1-title-div" hx-swap-oob="true">Create Topic</h5>
 {% endif %}

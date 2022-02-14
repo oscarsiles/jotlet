@@ -1,12 +1,14 @@
 <p>
-  Are you sure you want to delete the following post from <strong>{{ post.topic.subject }}</strong>?
-  <h5>{{ post }}</h5>
+    Are you sure you want to delete the following post from <strong>{{ post.topic.subject }}</strong>?
+    <h5>{{ post }}</h5>
 </p>
 <p>
-<form hx-post="{{ request.build_absolute_uri }}" hx-swap="none">
-  {% csrf_token %}
-  <input type="submit" value="Yes, delete." class="btn btn-danger" data-bs-dismiss="modal">
-</form>
+    <form hx-post="{{ request.build_absolute_uri }}" hx-swap="none">
+        {% csrf_token %}
+        <input type="submit"
+               value="Yes, delete."
+               class="btn btn-danger"
+               data-bs-dismiss="modal">
+    </form>
 </p>
-
 <h5 id="modal-1-title-div" hx-swap-oob="true">Delete Post</h5>
