@@ -1,98 +1,110 @@
 console.log("Sanity check from board.js.");
 
-var board_slug = JSON.parse(document.getElementById('board_slug').textContent);
-var session_key = JSON.parse(document.getElementById('session_key').textContent);
+var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
+var session_key = JSON.parse(
+  document.getElementById("session_key").textContent
+);
 
-var baseUrl = window.location.pathname.split('/')[1] == 'boards' ? window.location.host : window.location.host + "/" + window.location.pathname.split('/')[1];
-var pathName = window.location.pathname.split('/')[1] == 'boards' ? '' : '/' + window.location.pathname.split('/')[1];
+var baseUrl =
+  window.location.pathname.split("/")[1] == "boards"
+    ? window.location.host
+    : window.location.host + "/" + window.location.pathname.split("/")[1];
+var pathName =
+  window.location.pathname.split("/")[1] == "boards"
+    ? ""
+    : "/" + window.location.pathname.split("/")[1];
 
 let boardSocket = null;
 
 function connect() {
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    boardSocket = new WebSocket(ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/");
+  var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+  boardSocket = new WebSocket(
+    ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/"
+  );
 
-    boardSocket.onopen = function (e) {
-        console.log("Successfully connected to the WebSocket.");
-    }
+  boardSocket.onopen = function (e) {
+    console.log("Successfully connected to the WebSocket.");
+  };
 
-    boardSocket.onclose = function (e) {
-        console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
-        setTimeout(function () {
-            console.log("Reconnecting...");
-            connect();
-        }, 2000);
-    };
+  boardSocket.onclose = function (e) {
+    console.log(
+      "WebSocket connection closed unexpectedly. Trying to reconnect in 2s..."
+    );
+    setTimeout(function () {
+      console.log("Reconnecting...");
+      connect();
+    }, 2000);
+  };
 
-    boardSocket.onmessage = function (e) {
-        const data = JSON.parse(e.data);
+  boardSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
 
-        switch (data.type) {
-            case "session_connected":
-            case "session_disconnected":
-                htmx.find('#board-online-sessions').textContent = data.sessions
-                break;
-            case "board_preferences_changed":
-            case "topic_created":
-                if (session_key != data.session_key) {
-                    let boardDiv = '#board-' + board_slug;
-                    htmx.trigger(htmx.find(boardDiv), 'topicCreated');
-                }
-                break;
-            case "topic_updated":
-                let topicDiv = '#topic-' + data.topic_pk;
-                if (session_key != data.session_key) {
-                    htmx.trigger(htmx.find(topicDiv), 'topicUpdated');
-                }
-
-                mathjaxTypeset(topicDiv);
-                break;
-            case "topic_deleted":
-                htmx.find('#topic-' + data.topic_pk).remove();
-                break;
-            case "post_created":
-                if (session_key != data.session_key) {
-                    let topicDiv = '#topic-' + data.topic_pk;
-                    htmx.trigger(htmx.find(topicDiv), 'postCreated');
-                }
-                break;
-            case "post_approved":
-            case "post_unapproved":
-            case "post_updated":
-                let postDiv = '#post-' + data.post_pk;
-                if (session_key != data.session_key ) {
-                    htmx.trigger(htmx.find(postDiv), 'postUpdated');
-                }
-
-                mathjaxTypeset(postDiv);
-                break;
-            case "post_deleted":
-                htmx.find('#post-' + data.post_pk).remove();
-                break;
-            default:
-                console.error("Unknown message type: " + data);
-                break;
-
+    switch (data.type) {
+      case "session_connected":
+      case "session_disconnected":
+        htmx.find("#board-online-sessions").textContent = data.sessions;
+        break;
+      case "board_preferences_changed":
+      case "topic_created":
+        if (session_key != data.session_key) {
+          let boardDiv = "#board-" + board_slug;
+          htmx.trigger(htmx.find(boardDiv), "topicCreated");
         }
-    };
+        break;
+      case "topic_updated":
+        let topicDiv = "#topic-" + data.topic_pk;
+        if (session_key != data.session_key) {
+          htmx.trigger(htmx.find(topicDiv), "topicUpdated");
+        }
 
-    boardSocket.onerror = function (err) {
-        console.log("WebSocket encountered an error: " + err.message);
-        console.log("Closing the socket.");
-        boardSocket.close();
+        mathjaxTypeset(topicDiv);
+        break;
+      case "topic_deleted":
+        htmx.find("#topic-" + data.topic_pk).remove();
+        break;
+      case "post_created":
+        if (session_key != data.session_key) {
+          let topicDiv = "#topic-" + data.topic_pk;
+          htmx.trigger(htmx.find(topicDiv), "postCreated");
+        }
+        break;
+      case "post_approved":
+      case "post_unapproved":
+      case "post_updated":
+        let postDiv = "#post-" + data.post_pk;
+        if (session_key != data.session_key) {
+          htmx.trigger(htmx.find(postDiv), "postUpdated");
+        }
+
+        mathjaxTypeset(postDiv);
+        break;
+      case "post_deleted":
+        htmx.find("#post-" + data.post_pk).remove();
+        break;
+      default:
+        console.error("Unknown message type: " + data);
+        break;
     }
+  };
+
+  boardSocket.onerror = function (err) {
+    console.log("WebSocket encountered an error: " + err.message);
+    console.log("Closing the socket.");
+    boardSocket.close();
+  };
 }
 connect();
 
 htmx.onLoad(function (elt) {
-    mathjaxTypeset(elt);
+  mathjaxTypeset(elt);
 });
 
 function mathjaxTypeset(elt) {
-    try {
-        if (window.MathJax != null) {
-            window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
-        }
-    } catch (err) { };
+  try {
+    if (window.MathJax != null) {
+      window.MathJax.typesetPromise([elt]).catch((err) =>
+        console.log(err.message)
+      );
+    }
+  } catch (err) {}
 }
-

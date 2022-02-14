@@ -9,25 +9,25 @@
     $("#img-id_background_image").attr('src', $(this).attr('url'));
   });
 </script>
-
 <div class="card-group row row-cols-1 row-cols-md-2 g-4" id="image-select">
     {% for image in images %}
-    <div class="col">
-        <div class="card">
-          <div class="card-img-top">
-          <input class="form-check-input d-none" type="radio" name="flexRadioDefault" url="{{ image.get_thumbnail_url }}" id="{{ image.uuid }}">
-          <label class="form-check-label d-flex" for="{{ image.uuid }}">
-            <img class="w-100" src="{{ image.get_thumbnail_url }}" alt="{{ image }}">
-          </label>
+        <div class="col">
+            <div class="card">
+                <div class="card-img-top">
+                    <input class="form-check-input d-none"
+                           type="radio"
+                           name="flexRadioDefault"
+                           url="{{ image.get_thumbnail_url }}"
+                           id="{{ image.uuid }}">
+                    <label class="form-check-label d-flex" for="{{ image.uuid }}">
+                        <img class="w-100" src="{{ image.get_thumbnail_url }}" alt="{{ image }}">
+                    </label>
+                </div>
+                <div class="card-footer">{{ image }}</div>
+            </div>
         </div>
-        <div class="card-footer">
-          {{ image }}
-        </div>
-      </div>
-    </div>
     {% endfor %}
 </div>
-
 <style>
   .card-img-top {
     position: inherit;
@@ -44,9 +44,16 @@
       opacity: 0.5;
     }
 </style>
-
 <div class="modal-footer" id="modal-2-footer-div" hx-swap-oob="true">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-1-div">Select Image</button>
+    <button class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modal-1-div">Select Image</button>
 </div>
-
-<h5 id="modal-2-title-div" hx-swap-oob="true">{% if type == 'b' %}Background{% else %}Image{% endif %} Select</h5>
+<h5 id="modal-2-title-div" hx-swap-oob="true">
+    {% if type == 'b' %}
+        Background
+    {% else %}
+        Image
+    {% endif %}
+    Select
+</h5>

@@ -299,13 +299,13 @@ class HtmxPostFetch(generic.TemplateView):
 
 
 class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.View):
-
     def test_func(self):
         return (
-            (self.request.user.has_perm("boards.delete_post")
-            or self.request.user.is_staff)
-            and Post.objects.get(pk=self.kwargs["pk"]).topic.board.preferences.require_approval
-        )
+            self.request.user.has_perm("boards.delete_post")
+            or self.request.user.is_staff
+        ) and Post.objects.get(
+            pk=self.kwargs["pk"]
+        ).topic.board.preferences.require_approval
 
     def get(self, request, *args, **kwargs):
         post = Post.objects.get(pk=self.kwargs["pk"])
@@ -329,7 +329,9 @@ class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
                     "session_key": self.request.session.session_key,
                 },
             )
-        return HttpResponseRedirect(reverse("boards:htmx-post-fetch", kwargs={"pk": post.pk}))
+        return HttpResponseRedirect(
+            reverse("boards:htmx-post-fetch", kwargs={"pk": post.pk})
+        )
 
 
 class HtmxImageSelect(LoginRequiredMixin, generic.TemplateView):

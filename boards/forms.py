@@ -96,7 +96,9 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class="form-check-input my-0",
                 style="height: auto;",
             ),
-            ButtonHolder(Submit("submit", "Save", hidden="true")), # Hidden submit button, use modal one to trigger form submit
+            ButtonHolder(
+                Submit("submit", "Save", hidden="true")
+            ),  # Hidden submit button, use modal one to trigger form submit
         )
 
     def clean_background_opacity(self):

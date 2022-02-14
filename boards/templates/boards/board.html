@@ -1,37 +1,48 @@
 {% extends "base_generic.html" %}
 {% load static %}
-
-{% block title %}Board: {{ board }}{% endblock title %}
+{% block title %}
+    Board: {{ board }}
+{% endblock title %}
 {% block navbar_title %}
-<div class="d-flex flex-column text-break">
-    <div class="d-flex">
-        {{ board.slug }} - {{ board }}
-        <h6><span class="badge bg-secondary mx-2 align-middle" id="board-online-sessions">0</span></h6>
+    <div class="d-flex flex-column text-break">
+        <div class="d-flex">
+            {{ board.slug }} - {{ board }}
+            <h6>
+                <span class="badge bg-secondary mx-2 align-middle"
+                      id="board-online-sessions">0</span>
+            </h6>
+        </div>
+        <span class="fs-6">{{ board.description }}</span>
     </div>
-    <span class="fs-6">{{ board.description }}</span>
-</div>
 {% endblock navbar_title %}
 {% block navbar-items %}
-{% if request.user == board.owner or user.is_staff %}
-<li class="nav-item">
-    <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:qr-board' board.slug %}" hx-target="#modal-1-body-div" data-bs-toggle="modal" data-bs-target="#modal-1-div"><i class="bi bi-qr-code"></i></button>
-</li>
-<li class="nav-item">
-  <button class="btn btn-link shadow-none nav-link" hx-get="{% url 'boards:board-preferences' board.slug %}" hx-target="#modal-1-body-div" data-bs-toggle="modal" data-bs-target="#modal-1-div"><i class="bi bi-gear"></i></button>
-</li>
-{% endif %}
+    {% if request.user == board.owner or user.is_staff %}
+        <li class="nav-item">
+            <button class="btn btn-link shadow-none nav-link"
+                    hx-get="{% url 'boards:qr-board' board.slug %}"
+                    hx-target="#modal-1-body-div"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-1-div">
+                <i class="bi bi-qr-code"></i>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-link shadow-none nav-link"
+                    hx-get="{% url 'boards:board-preferences' board.slug %}"
+                    hx-target="#modal-1-body-div"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-1-div">
+                <i class="bi bi-gear"></i>
+            </button>
+        </li>
+    {% endif %}
 {% endblock navbar-items %}
-
 {% block content %}
-{% include 'boards/components/board_partial.html' %}
+    {% include 'boards/components/board_partial.html' %}
 {% endblock content %}
-
-
-
-
 {% block script %}
-{% if board.preferences.enable_latex %}
-    <script>
+    {% if board.preferences.enable_latex %}
+        <script>
     MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']]
@@ -40,11 +51,10 @@
         fontCache: 'global'
       }
     };
-    </script>
-    <script type="text/javascript" id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js">
-    </script>
-{% endif %}
+        </script>
+        <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js">
+        </script>
+    {% endif %}
     <script src="{% url 'reverse_js' %}" type="text/javascript"></script>
     <script src="{% static 'js/board.js' %}"></script>
 {% endblock script %}
