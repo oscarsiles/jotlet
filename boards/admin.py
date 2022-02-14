@@ -4,10 +4,6 @@ from django.contrib import admin
 from .models import Board, BoardPreferences, Image, Post, Topic
 
 # Register your models here.
-# admin.site.register(Board)
-# admin.site.register(Topic)
-# admin.site.register(Post)
-admin.site.register(Image)
 
 class BoardPreferencesInline(admin.TabularInline):
     model = BoardPreferences
@@ -20,6 +16,7 @@ class TopicInline(admin.TabularInline):
 class PostInline(admin.TabularInline):
     model = Post
     extra = 1
+
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'owner', 'uuid', 'created_at', 'updated_at',)
@@ -36,3 +33,10 @@ class TopicAdmin(admin.ModelAdmin):
 class PostAdmin(admin.ModelAdmin):
     list_display = ('content', 'topic', 'created_at', 'updated_at')
     fields = ('content', 'topic',)
+
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin):
+    list_display = ('title', 'get_board_usage_count', 'created_at', 'updated_at')
+    fields = ('image_tag', 'title', 'attribution' ,'image', 'type')
+
+    readonly_fields = ['image_tag']

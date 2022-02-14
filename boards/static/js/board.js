@@ -97,8 +97,10 @@ htmx.onLoad(function(elt){
 });
 
 function mathjaxTypeset(elt) {
-    if (window.MathJax != null) {
-        window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
-    }
+    try {
+        if (window.MathJax != null) {
+            window.MathJax.typesetPromise([elt]).catch((err) => console.log(err.message));
+        }
+    } catch (err) {};
 }
 

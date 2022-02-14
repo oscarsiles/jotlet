@@ -1,16 +1,27 @@
-<div id="modal-backdrop" class="modal-backdrop fade show" style="display:block;"></div>
-<div id="modal" class="modal fade show" tabindex="-1" style="display:block;">
-	<div class="modal-dialog modal-dialog-centered">
-	  <div class="modal-content">
-		<div class="modal-header">
-		  <h5 class="modal-title">Modal title</h5>
+<div class="modal fade" id="modal-{{ num }}-div" tabindex="-1" 
+{% if num == 2 %}
+data-bs-backdrop="static" data-bs-keyboard="false"
+{% endif %}
+>
+	<div class="modal-dialog modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modal-{{ num }}-title-div">Loading...</h5>
+				{% if num == 1 %}
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				{% elif num == 2 %}
+					<button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modal-1-div" aria-label="Close"></button>
+				{% endif %}
+			</div>
+			<div class="modal-body" id="modal-{{ num }}-body-div">
+				<div class="d-flex justify-content-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer" id="modal-{{ num }}-footer-div" hidden="true">
+			</div>
 		</div>
-		<div class="modal-body">
-		  <p>Modal body text goes here.</p>
-		</div>
-		<div class="modal-footer">
-		  <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
-		</div>
-	  </div>
 	</div>
-  </div>
+</div>
