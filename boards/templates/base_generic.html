@@ -26,9 +26,18 @@
             <nav class="navbar navbar-expand-lg navbar-light bg-light p-0">
                 <div class="container-fluid p-0">
                     <a class="navbar-brand mb-0 h1" href="{% url 'boards:index' %}">
-                        {% block navbar_title %}
-                            Jotlet
-                        {% endblock navbar_title %}
+                        <div class="d-flex flex-column text-break">
+                            <div class="d-flex">
+                                {% block navbar_title %}
+                                    Jotlet
+                                {% endblock navbar_title %}
+                            </div>
+                            <span class="fs-6">
+                                {% block navbar_subtitle %}
+                                    An open-source ---let alternative
+                                {% endblock navbar_subtitle %}
+                            </span>
+                        </div>
                     </a>
                     <button class="navbar-toggler"
                             type="button"
