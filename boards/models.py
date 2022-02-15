@@ -180,7 +180,7 @@ class Image(models.Model):
     get_board_usage_count.short_description = "Board Usage Count"
 
     def get_thumbnail_url(self):
-        return get_thumbnail(self.image, "150x100", crop="center").url
+        return get_thumbnail(self.image, "300x200", crop="center").url
 
     def image_tag(self):
         from django.utils.html import escape
