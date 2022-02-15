@@ -40,9 +40,8 @@ class BoardConsumer(WebsocketConsumer):
         )
 
     def disconnect(self, code):
-        cache.decr(self.board_group_name)
-
         try:
+            cache.decr(self.board_group_name)
             if cache.get(self.board_group_name) == 0:
                 cache.delete(self.board_group_name)
         except:
