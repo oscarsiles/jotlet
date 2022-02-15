@@ -101,7 +101,9 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     template_name = "boards/board_form.html"
 
     def test_func(self):
-        return self.request.user.has_perm("boards.add_board")
+        return (
+            self.request.user.has_perm("boards.add_board") or self.request.user.is_staff
+        )
 
     def form_valid(self, form):
         board = form.save(commit=False)
@@ -110,16 +112,32 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         return super(CreateBoardView, self).form_valid(form)
 
 
-class UpdateBoardView(LoginRequiredMixin, generic.UpdateView):
+class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Board
     fields = ["title", "description"]
     template_name = "boards/board_form.html"
 
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs["slug"])
+        return (
+            self.request.user.has_perm("boards.change_board")
+            or self.request.user == board.owner
+            or self.request.user.is_staff
+        )
 
-class DeleteBoardView(LoginRequiredMixin, generic.DeleteView):
+
+class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Board
     template_name = "boards/board_confirm_delete.html"
     success_url = reverse_lazy("boards:index")
+
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs["slug"])
+        return (
+            self.request.user.has_perm("boards.delete_board")
+            or self.request.user == board.owner
+            or self.request.user.is_staff
+        )
 
 
 class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):

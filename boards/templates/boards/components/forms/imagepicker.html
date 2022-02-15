@@ -4,7 +4,7 @@
 {% else %}
     <div {% endif %}
          id="div_{{ field.auto_id }}"
-         class="mb-3 {% if field|is_checkbox and form_show_labels %} form-check {% else %} {% if 'form-horizontal' in form_class %}row{% endif %} {% endif %} {% if wrapper_class %}{{ wrapper_class }}{% endif %} {% if field.css_classes %}{{ field.css_classes }}{% endif %} ">
+         class="mb-3 {% if field|is_checkbox and form_show_labels %}form-check{% else %}{% if 'form-horizontal' in form_class %}row{% endif %}{% endif %}{% if wrapper_class %}{{ wrapper_class }}{% endif %}{% if field.css_classes %}{{ field.css_classes }}{% endif %}{% if field.errors %} has-danger{% endif %}">
         {% if field.label and not field|is_checkbox and form_show_labels %}
             <label {% if field.id_for_label and not field|is_radioselect %}for="{{ field.id_for_label }}"{% endif %}
                    class="{% if 'form-horizontal' in form_class %}col-form-label{% else %}form-label{% endif %}{% if label_class %} {{ label_class }}{% endif %}{% if field.field.required %} requiredField{% endif %}">
@@ -15,20 +15,38 @@
         <div>
             <div class="input-group">
                 <span class="input-group-text">{{ crispy_prepended_text }}</span>
-                <img class="border border-1 border-end rounded-end"
-                     style="border: 1px solid #ced4da !important;"
+                {% if object.background_image == None %}
+                    <button class="btn btn-outline-primary rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
+                            type="button"
+                            value="Select image..."
+                            hx-get="{% url 'boards:htmx-image-select' 'b' %}"
+                            hx-target="#modal-2-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-2-div"
+                            id="button-{{ field.auto_id }}">
+                        Select image...
+                    </button>
+                {% endif %}
+                <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
                      src="{{ object.background_image.get_thumbnail_url }}"
                      alt="{{ object.background_image }}"
                      hx-get="{% url 'boards:htmx-image-select' 'b' %}"
                      hx-target="#modal-2-body-div"
                      data-bs-toggle="modal"
                      data-bs-target="#modal-2-div"
-                     id="img-{{ field.auto_id }}">
+                     id="img-{{ field.auto_id }}"
+                     {% if object.background_image == None %}style="display: none;"{% endif %}>
                 <input type="text"
                        name="{{ field.name }}"
-                       value="{{ field.value }}"
+                       value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}"
                        id="{{ field.auto_id }}"
                        hidden="true">
+                {% if field.errors  %}
+                    <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
+                          class="invalid-feedback">
+                        <strong>{{ field.errors.0 }}</strong>
+                    </span>
+                {% endif %}
             </div>
         </div>
         {% if tag %}

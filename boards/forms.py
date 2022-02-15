@@ -45,7 +45,8 @@ class BoardPreferencesForm(forms.ModelForm):
         self.helper.form_id = "board-preferences-form"
         self.helper.attrs = {
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
-            "hx-swap": "this",
+            "hx-target": "#modal-1-body-div",
+            "hx-swap": "innerHTML",
         }
 
         self.helper.layout = Layout(
@@ -104,6 +105,12 @@ class BoardPreferencesForm(forms.ModelForm):
     def clean_background_opacity(self):
         value = self.cleaned_data["background_opacity"]
         validate_percentage(value)
+        return value
+
+    def clean_background_image(self):
+        value = self.cleaned_data["background_image"]
+        if value == None:
+            value == ""
         return value
 
 
