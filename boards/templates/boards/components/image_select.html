@@ -5,8 +5,10 @@
   });
 
   $(".form-check-input").click(function(){
+    $('#button-id_background_image').hide();
     $("#id_background_image").attr('value', $(this).attr('id'));
     $("#img-id_background_image").attr('src', $(this).attr('url'));
+    $('#img-id_background_image').show();
   });
 </script>
 <div class="card-group row row-cols-1 row-cols-md-2 g-4" id="image-select">
