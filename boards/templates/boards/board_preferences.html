@@ -20,7 +20,6 @@
 
     htmx.on("#modal-1-body-div", "htmx:load", function (evt) {
       modal._config.backdrop = "static";
-      modal._config.keyboard = false;
       $("#div_id_background_type").removeClass("mb-3");
 
       var background_type = $(
@@ -31,12 +30,10 @@
 
     htmx.on("show.bs.modal", function (evt) {
       modal._config.backdrop = "static";
-      modal._config.keyboard = false;
     });
 
     htmx.on("hide.bs.modal", function (evt) {
       modal._config.backdrop = true;
-      modal._config.keyboard = true;
     });
 
     var el = document.getElementById("id_background_type");

@@ -1,17 +1,29 @@
 {% load crispy_forms_tags %}
-<p>
-    <form hx-post="{{ request.build_absolute_uri }}"
-          {% if form.instance.pk != None %} hx-target="#post-{{ form.instance.pk }}" hx-swap="outerHTML" {% else %} hx-target="#newCard-{{ view.kwargs.topic_pk }}-div" hx-swap="beforebegin" {% endif %}>
-        {% csrf_token %}
-        <table>
-            {{ form|crispy }}
-        </table>
-        <input type="submit"
-               value="Submit"
-               class="btn btn-success"
-               data-bs-dismiss="modal">
-    </form>
-</p>
+<form hx-post="{{ request.build_absolute_uri }}"
+      {% if form.instance.pk != None %} hx-target="#post-{{ form.instance.pk }}" hx-swap="outerHTML" {% else %} hx-target="#newCard-{{ view.kwargs.topic_pk }}-div" hx-swap="beforebegin" {% endif %}
+      id="post-form">
+    {% csrf_token %}
+    <table>
+        {{ form|crispy }}
+    </table>
+</form>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button"
+            class="btn btn-default"
+            data-bs-dismiss="modal"
+            tabindex="-1">Close</button>
+    <button type="submit"
+            class="btn btn-success"
+            form="post-form"
+            data-bs-dismiss="modal"
+            tabindex="0">
+        {% if form.instance.pk != None %}
+            Save changes
+        {% else %}
+            Create post
+        {% endif %}
+    </button>
+</div>
 <div id="createTopic-div"></div>
 {% if form.instance.pk != None %}
     <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Post</h5>
