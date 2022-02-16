@@ -1,6 +1,6 @@
 <div class="row"
      id="board-{{ board.slug }}"
-     hx-get="{% url 'boards:htmx-board-fetch' board.slug %}"
+     hx-get="{% url 'boards:board-fetch' board.slug %}"
      hx-trigger="topicCreated"
      hx-swap="outerHTML">
     <style>

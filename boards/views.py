@@ -39,9 +39,7 @@ class IndexView(generic.FormView):
         return context
 
     def get_success_url(self):
-        return reverse(
-            "boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]}
-        )
+        return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
 
 
 class BoardView(generic.DetailView):
@@ -52,9 +50,7 @@ class BoardView(generic.DetailView):
         context = super(BoardView, self).get_context_data(**kwargs)
         context["topics"] = Topic.objects.filter(board=self.object)
 
-        if (
-            not self.request.session.session_key
-        ):  # if session is not set yet (i.e. anonymous user)
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
         return context
 
@@ -101,9 +97,7 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     template_name = "boards/board_form.html"
 
     def test_func(self):
-        return (
-            self.request.user.has_perm("boards.add_board") or self.request.user.is_staff
-        )
+        return self.request.user.has_perm("boards.add_board") or self.request.user.is_staff
 
     def form_valid(self, form):
         board = form.save(commit=False)
@@ -163,7 +157,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
                 "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:htmx-topic-fetch", kwargs={"pk": self.object.pk})
+        return reverse_lazy("boards:topic-fetch", kwargs={"slug": self.object.board.slug, "pk": self.object.pk})
 
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -185,7 +179,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
                 "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:htmx-topic-fetch", kwargs={"pk": self.object.pk})
+        return reverse_lazy("boards:topic-fetch", kwargs={"slug": self.object.board.slug, "pk": self.object.pk})
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
@@ -236,7 +230,7 @@ class CreatePostView(generic.CreateView):
                 "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:htmx-post-fetch", kwargs={"pk": self.object.pk})
+        return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
 
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
@@ -262,7 +256,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
                 "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:htmx-post-fetch", kwargs={"pk": self.object.pk})
+        return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
@@ -287,17 +281,14 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
             },
         )
         return reverse_lazy(
-            "boards:board",
-            kwargs={
-                "slug": self.kwargs["slug"],
-            },
+            "boards:board", kwargs={"slug": self.object.topic.board.slug, "slug": self.kwargs["slug"]}
         )
 
 
 # HTMX Stuff
 
 
-class HtmxBoardFetch(generic.TemplateView):
+class BoardFetchView(generic.TemplateView):
     template_name = "boards/components/board_partial.html"
 
     def get_context_data(self, **kwargs):
@@ -306,7 +297,7 @@ class HtmxBoardFetch(generic.TemplateView):
         return context
 
 
-class HtmxTopicFetch(generic.TemplateView):
+class TopicFetchView(generic.TemplateView):
     template_name = "boards/components/topic.html"
 
     def get_context_data(self, **kwargs):
@@ -315,7 +306,7 @@ class HtmxTopicFetch(generic.TemplateView):
         return context
 
 
-class HtmxPostFetch(generic.TemplateView):
+class PostFetchView(generic.TemplateView):
     template_name = "boards/components/post.html"
 
     def get_context_data(self, **kwargs):
@@ -324,7 +315,7 @@ class HtmxPostFetch(generic.TemplateView):
         return context
 
 
-class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     def test_func(self):
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
@@ -356,11 +347,11 @@ class HtmxPostToggleApproval(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
                 },
             )
         return HttpResponseRedirect(
-            reverse("boards:htmx-post-fetch", kwargs={"pk": post.pk})
+            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
         )
 
 
-class HtmxImageSelect(LoginRequiredMixin, generic.TemplateView):
+class ImageSelectView(LoginRequiredMixin, generic.TemplateView):
     template_name = "boards/components/image_select.html"
 
     def get_context_data(self, **kwargs):

@@ -1,7 +1,7 @@
 {% load cache %}
 <div class="col-sm"
      id="topic-{{ topic.pk }}"
-     hx-get="{% url 'boards:htmx-topic-fetch' topic.pk %}"
+     hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
      hx-trigger="topicUpdated, postCreated"
      hx-target="this"
      hx-swap="outerHTML">
