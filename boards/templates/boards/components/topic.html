@@ -1,3 +1,4 @@
+{% load cache %}
 <div class="col-sm"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:htmx-topic-fetch' topic.pk %}"
@@ -6,49 +7,55 @@
      hx-swap="outerHTML">
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
+            {% cache 600 topic topic.pk using='redis-cache' %}
             <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>
-            {% if request.user == board.owner or user.is_staff %}
-                <button id="topic-{{ topic.pk }}-update-url"
-                        hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div"
-                        class="btn btn-link shadow-none text-muted ps-0">
-                    Edit
-                </button>
-                <button id="topic-{{ topic.pk }}-delete-url"
-                        hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div"
-                        class="btn btn-link shadow-none text-danger px-0">
-                    Delete
-                </button>
-            {% endif %}
-        </div>
-    </div>
-    <div class="card my-2" id="topic-{{ topic.pk }}-create">
-        <div class="card-body">
-            <button id="topic-{{ topic.pk }}-create-url"
-                    hx-get="{% url 'boards:post-create' topic.board.slug topic.pk %}"
+        {% endcache %}
+        {% if request.user == board.owner or user.is_staff %}
+            <button id="topic-{{ topic.pk }}-update-url"
+                    hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
                     hx-target="#modal-1-body-div"
                     hx-swap="innerHTML"
                     data-bs-toggle="modal"
                     data-bs-target="#modal-1-div"
-                    class="btn btn-link shadow-none card-link">
-                <strong>Create post</strong>
+                    class="btn btn-link shadow-none text-muted ps-0">
+                Edit
             </button>
-        </div>
+            <button id="topic-{{ topic.pk }}-delete-url"
+                    hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}"
+                    hx-target="#modal-1-body-div"
+                    hx-swap="innerHTML"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-1-div"
+                    class="btn btn-link shadow-none text-danger px-0">
+                Delete
+            </button>
+        {% endif %}
     </div>
-    {% for post in topic.posts.all %}
-        {% include 'boards/components/post.html' %}
-    {% endfor %}
-    <div id="newCard-{{ topic.pk }}-div"
-         hx-trigger="postCreated"
-         hx-target="this"
-         hx-swap="beforebegin"
-         hidden
-         true></div>
 </div>
+{% cache 600 topic_create topic.pk using='redis-cache' %}
+<div class="card my-2" id="topic-{{ topic.pk }}-create">
+    <div class="card-body">
+        <button id="topic-{{ topic.pk }}-create-url"
+                hx-get="{% url 'boards:post-create' topic.board.slug topic.pk %}"
+                hx-target="#modal-1-body-div"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#modal-1-div"
+                class="btn btn-link shadow-none card-link">
+            <strong>Create post</strong>
+        </button>
+    </div>
+</div>
+{% endcache %}
+{% for post in topic.posts.all %}
+    {% include 'boards/components/post.html' %}
+{% endfor %}
+{% cache 600 topic_newCard topic.pk using='redis-cache' %}
+<div id="newCard-{{ topic.pk }}-div"
+     hx-trigger="postCreated"
+     hx-target="this"
+     hx-swap="beforebegin"
+     hidden
+     true></div>
+</div>
+{% endcache %}
