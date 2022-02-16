@@ -1,6 +1,5 @@
 from django.urls import include, path
 from django.views import generic
-from django.views.decorators.cache import cache_page
 
 from . import views
 
@@ -13,10 +12,10 @@ urlpatterns = [
     path('htmx/post/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
     path('htmx/post/<int:pk>/toggleApproval/', views.HtmxPostToggleApproval.as_view(), name='htmx-post-toggle-approval'),
     path('htmx/image_select/<str:type>', views.HtmxImageSelect.as_view(), name='htmx-image-select'),
-    path('qr/board/<slug:slug>/', cache_page(3600, key_prefix='qr', cache='redis-cache')(views.QrView.as_view()), name='qr-board'),
     path('<slug:slug>/', views.BoardView.as_view(), name='board'),
     path('<slug:slug>/update/', views.UpdateBoardView.as_view(), name='board-update'),
     path('<slug:slug>/delete/', views.DeleteBoardView.as_view(), name='board-delete'),
+    path('<slug:slug>/qr/', views.QrView.as_view(), name='board-qr'),
     path('<slug:slug>/preferences/', views.BoardPreferencesView.as_view(), name='board-preferences'),
     path('<slug:slug>/topics/create/', views.CreateTopicView.as_view(), name='topic-create'),
     path('<slug:slug>/topics/<int:pk>/update/', views.UpdateTopicView.as_view(), name='topic-update'),
