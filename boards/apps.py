@@ -10,4 +10,3 @@ class BoardsConfig(AppConfig):
         from .signals import populate_models
 
         populate_models(sender=self)
-        # post_migrate.connect(populate_models, sender=self)
