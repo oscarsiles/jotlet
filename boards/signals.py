@@ -1,11 +1,15 @@
 import os
 
+from django.core.cache import cache, caches
+from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_cleanup.signals import cleanup_pre_delete
 from sorl.thumbnail import delete
 
-from .models import Board, BoardPreferences, Post
+from .models import Board, BoardPreferences, Post, Topic
+
+cache_redis = caches["redis-cache"]
 
 
 @receiver(post_save, sender=Board)
@@ -21,6 +25,15 @@ def approve_all_posts(sender, instance, created, **kwargs):
         for post in posts:
             post.approved = True
             post.save()
+
+
+@receiver(post_save, sender=Post)
+def post_saved(sender, instance, created, **kwargs):
+    keyPost = make_template_fragment_key("post", [instance.pk])
+    try:
+        cache_redis.delete(keyPost)
+    except:
+        raise Exception(f"Could not delete cache: post-{instance.pk}")
 
 
 @receiver(cleanup_pre_delete)

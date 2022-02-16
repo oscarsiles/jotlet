@@ -1,3 +1,4 @@
+{% load cache %}
 <div class="card my-2"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:htmx-post-fetch' post.pk %}"
@@ -46,9 +47,11 @@
                     </div>
                 {% endif %}
             </div>
+            {% cache 600 post post.pk using='redis-cache' %}
             <p class="card-text text-break" id="post-{{ post.pk }}-text">
                 {{ post.content }}
             </p>
-        </div>
-    {% endif %}
+        {% endcache %}
+    </div>
+{% endif %}
 </div>
