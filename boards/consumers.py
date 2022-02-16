@@ -8,8 +8,6 @@ from .models import Board, Post, Topic
 
 
 class BoardConsumer(WebsocketConsumer):
-    logger = logging.getLogger("mylogger")
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.board_slug = None
@@ -24,7 +22,7 @@ class BoardConsumer(WebsocketConsumer):
         try:
             cache.incr(self.board_group_name)
         except:
-            cache.add(self.board_group_name, 1)
+            cache.add(self.board_group_name, 1, 86400)
 
         async_to_sync(self.channel_layer.group_add)(
             self.board_group_name,
