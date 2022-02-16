@@ -1,7 +1,7 @@
 <div class="col-sm"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:htmx-topic-fetch' topic.pk %}"
-     hx-trigger="postCreated"
+     hx-trigger="topicUpdated, postCreated"
      hx-target="this"
      hx-swap="outerHTML">
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
