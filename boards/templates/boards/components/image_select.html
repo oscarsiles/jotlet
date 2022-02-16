@@ -6,7 +6,7 @@
     $('#' + selectedValue).prop("checked",true);
   });
 
-  $(".form-check-input").click(function(){
+  $("#image-select.form-check-input").click(function(){
     $('#button-id_background_image').hide();
     $("#id_background_image").attr('value', $(this).attr('id'));
     $("#img-id_background_image").attr('src', $(this).attr('url'));
