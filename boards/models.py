@@ -34,9 +34,7 @@ def slug_save(obj):
 
 def get_image_upload_path(instance, filename):
     name, ext = os.path.splitext(filename)
-    file_path = "images/{type}/{name}.{ext}".format(
-        type=instance.type, name=instance.uuid, ext=ext.replace(".", "")
-    )
+    file_path = "images/{type}/{name}.{ext}".format(type=instance.type, name=instance.uuid, ext=ext.replace(".", ""))
     return file_path
 
 
@@ -53,9 +51,7 @@ class Board(models.Model):
     uuid = ShortUUIDField(unique=True)
     slug = models.SlugField(max_length=6, unique=True, null=True)
     description = models.CharField(max_length=100)
-    owner = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards"
-    )
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -81,12 +77,8 @@ BACKGROUND_TYPE = (
 
 class BoardPreferences(models.Model):
 
-    board = models.OneToOneField(
-        Board, on_delete=models.CASCADE, related_name="preferences"
-    )
-    background_type = models.CharField(
-        max_length=1, choices=BACKGROUND_TYPE, default="c"
-    )
+    board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
+    background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = models.ForeignKey(
         "Image",
         on_delete=models.SET_NULL,
@@ -108,9 +100,7 @@ class BoardPreferences(models.Model):
 
 class Topic(models.Model):
     subject = models.CharField(max_length=50)
-    board = models.ForeignKey(
-        Board, on_delete=models.CASCADE, null=True, related_name="topics"
-    )
+    board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -126,9 +116,7 @@ class Topic(models.Model):
 
 class Post(models.Model):
     content = models.TextField(max_length=400)
-    topic = models.ForeignKey(
-        Topic, on_delete=models.CASCADE, null=True, related_name="posts"
-    )
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,9 +142,7 @@ class Image(models.Model):
 
     IMAGE_TYPE = (("b", "Background"),)
 
-    type = models.CharField(
-        max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type"
-    )
+    type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
 
     class Meta:
         ordering = ["title"]
@@ -172,11 +158,7 @@ class Image(models.Model):
         return instance
 
     def get_board_usage_count(self):
-        return (
-            BoardPreferences.objects.filter(background_type="i")
-            .filter(background_image=self)
-            .count()
-        )
+        return BoardPreferences.objects.filter(background_type="i").filter(background_image=self).count()
 
     get_board_usage_count.short_description = "Board Usage Count"
 
