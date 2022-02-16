@@ -1,5 +1,6 @@
 from django.urls import include, path
 from django.views import generic
+from django.views.decorators.cache import cache_page
 
 from . import views
 
@@ -12,7 +13,7 @@ urlpatterns = [
     path('htmx/post/<int:pk>/fetch/', views.HtmxPostFetch.as_view(), name='htmx-post-fetch'),
     path('htmx/post/<int:pk>/toggleApproval/', views.HtmxPostToggleApproval.as_view(), name='htmx-post-toggle-approval'),
     path('htmx/image_select/<str:type>', views.HtmxImageSelect.as_view(), name='htmx-image-select'),
-    path('qr/board/<slug:slug>/', views.QrView.as_view(), name='qr-board'),
+    path('qr/board/<slug:slug>/', cache_page(3600, key_prefix='qr', cache='redis-cache')(views.QrView.as_view()), name='qr-board'),
     path('<slug:slug>/', views.BoardView.as_view(), name='board'),
     path('<slug:slug>/update/', views.UpdateBoardView.as_view(), name='board-update'),
     path('<slug:slug>/delete/', views.DeleteBoardView.as_view(), name='board-delete'),
