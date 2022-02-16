@@ -27,6 +27,15 @@ def approve_all_posts(sender, instance, created, **kwargs):
             post.save()
 
 
+@receiver(post_save, sender=Topic)
+def post_saved(sender, instance, created, **kwargs):
+    keyTopic = make_template_fragment_key("topic", [instance.pk])
+    try:
+        cache_redis.delete(keyTopic)
+    except:
+        raise Exception(f"Could not delete cache: topic-{instance.pk}")
+
+
 @receiver(post_save, sender=Post)
 def post_saved(sender, instance, created, **kwargs):
     keyPost = make_template_fragment_key("post", [instance.pk])
