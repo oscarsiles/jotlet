@@ -3,6 +3,7 @@ from django.db import models
 from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from sorl.thumbnail import get_thumbnail
 
@@ -183,8 +184,6 @@ class Image(models.Model):
         return get_thumbnail(self.image, "300x200", crop="center").url
 
     def image_tag(self):
-        from django.utils.html import escape
-
         return mark_safe('<img src="%s" />' % escape(self.get_thumbnail_url()))
 
     image_tag.short_description = "Image"
