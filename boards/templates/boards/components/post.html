@@ -1,7 +1,7 @@
 {% load cache %}
 <div class="card my-2"
      id="post-{{ post.pk }}"
-     hx-get="{% url 'boards:htmx-post-fetch' post.pk %}"
+     hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
@@ -16,7 +16,7 @@
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval  %}
                             {% if perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
-                                <button hx-get="{% url 'boards:htmx-post-toggle-approval' post.pk %}"
+                                <button hx-get="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
                                         hx-target="#post-{{ post.pk }}"
                                         hx-swap="outerHTML"
@@ -29,7 +29,7 @@
                                 </button>
                             {% endif %}
                         {% endif %}
-                        <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.topic.pk post.pk %}"
+                        <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.pk %}"
                                 hx-target="#modal-1-body-div"
                                 hx-swap="innerHTML"
                                 data-bs-toggle="modal"
@@ -37,7 +37,7 @@
                                 class="btn btn-link btn-sm text-black shadow-none p-1">
                             <i class="bi bi-pen"></i>
                         </button>
-                        <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.topic.pk post.pk %}"
+                        <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.pk %}"
                                 hx-target="#modal-1-body-div"
                                 hx-swap="innerHTML"
                                 data-bs-toggle="modal"
