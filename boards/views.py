@@ -44,7 +44,7 @@ class IndexView(generic.FormView):
 
 class BoardView(generic.DetailView):
     model = Board
-    template_name = "boards/board.html"
+    template_name = "boards/board_index.html"
 
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
@@ -289,7 +289,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
 
 class BoardFetchView(generic.TemplateView):
-    template_name = "boards/components/board_partial.html"
+    template_name = "boards/components/board.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

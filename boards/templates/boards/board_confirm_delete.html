@@ -3,10 +3,13 @@
     <h5>{{ board }}</h5>
     {{ board.description }}
 </p>
-<p>
-    <form action="{% url 'boards:board-delete' board.slug %}" method="POST">
-        {% csrf_token %}
-        <input type="submit" value="Yes, delete." class="btn btn-danger">
-    </form>
-</p>
+<form action="{% url 'boards:board-delete' board.slug %}"
+      method="POST"
+      id="board-delete-form">
+    {% csrf_token %}
+</form>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-danger" form="board-delete-form">Delete</button>
+</div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">Delete Board</h5>

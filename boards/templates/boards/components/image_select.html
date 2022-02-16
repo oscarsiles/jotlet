@@ -12,6 +12,18 @@
     $("#img-id_background_image").attr('src', $(this).attr('url'));
     $('#img-id_background_image').show();
   });
+
+  var modal1 = bootstrap.Modal.getInstance(document.getElementById('modal-1-div'));
+  var modal2 = bootstrap.Modal.getInstance(document.getElementById('modal-2-div'));
+
+  function escape_pressed(event){
+    if(event.key === "Escape"){
+      modal2.hide();
+      modal1.show();
+      document.removeEventListener('keydown', escape_pressed);
+    };
+  };
+  document.addEventListener('keydown', escape_pressed);
 </script>
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select">
