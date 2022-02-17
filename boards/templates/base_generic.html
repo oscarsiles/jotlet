@@ -124,19 +124,19 @@
         <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/robust-websocket@1.0.0/robust-websocket.js"></script>
         <script>
-    htmx.on('hidden.bs.modal', function(e) {
-      var modal2 = bootstrap.Modal.getInstance(document.getElementById("modal-2-div"));
-      var modal2_isShown = false;
-      try { modal2_isShown = modal2._isShown; } catch(err) { };
-      
-      if (!modal2_isShown && e.target.id == 'modal-1-div') {
-        htmx.find('#modal-1-div').outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
-      };
+            htmx.on('hidden.bs.modal', function(e) {
+            var modal2 = bootstrap.Modal.getInstance(document.getElementById("modal-2-div"));
+            var modal2_isShown = false;
+            try { modal2_isShown = modal2._isShown; } catch(err) { };
+            
+            if (!modal2_isShown && e.target.id == 'modal-1-div') {
+                htmx.find('#modal-1-div').outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
+            };
 
-      if (e.target.id == 'modal-2-div') {
-        htmx.find('#modal-2-div').outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
-      };
-    });
+            if (e.target.id == 'modal-2-div') {
+                htmx.find('#modal-2-div').outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
+            };
+            });
         </script>
         {% block script %}
         {% endblock script %}
