@@ -1,3 +1,5 @@
+{% load account socialaccount %}
+{% get_providers as socialaccount_providers %}
 {% if socialaccount_providers %}
     <p>
         Please sign in with one
