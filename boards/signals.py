@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -29,6 +30,15 @@ def populate_models(sender, **kwargs):
 
     for perm in permissions:
         moderators.permissions.add(perm)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def add_default_user_permissions(sender, instance, created, **kwargs):
+    if created:
+        perm_list = ["add_board"]
+        for perm in perm_list:
+            perm = Permission.objects.get(content_type__app_label=BoardsConfig.name, codename=perm)
+            instance.user_permissions.add(perm)
 
 
 @receiver(post_save, sender=Board)

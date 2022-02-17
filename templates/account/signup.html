@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+<form id="signup-form"
+      class="pb-2"
+      hx-post="{% url 'account_login' %}"
+      hx-target="#modal-1-body-div"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button class="btn btn-success" type="submit" hidden="true"></button>
+</form>
+<div id="modal-1-footer-div"
+     class="modal-footer"
+     hx-swap="outerHTML"
+     hx-swap-oob="true">
+    <input type="submit"
+           value="Sign Up"
+           form="signup-form"
+           class="btn btn-success"/>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">Signup</h5>

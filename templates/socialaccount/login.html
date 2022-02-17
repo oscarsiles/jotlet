@@ -1,0 +1,31 @@
+{% load socialaccount %}
+<p>
+    {% if process == "connect" %}
+        You are about to connect a new third party account from <strong>{{ provider.name }}</strong>.
+    {% else %}
+        You are about to sign in using a third party account from <strong>{{ provider.name }}</strong>.
+    {% endif %}
+</p>
+<form action="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+      method="post"
+      id="login-form">
+    {% csrf_token %}
+    <button type="submit" hidden="true">Continue</button>
+</form>
+<div id="modal-1-footer-div"
+     class="modal-footer"
+     hx-swap="outerHTML"
+     hx-swap-oob="true">
+    <input type="submit"
+           value="Continue"
+           form="login-form"
+           class="btn btn-success"/>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">
+    {% if process == "connect" %}
+        Connect {{ provider.name }}
+    {% else %}
+        Sign in via {{ provider.name }}
+    {% endif %}
+</h5>
+{% include "socialaccount/snippets/login_extra.html" %}
