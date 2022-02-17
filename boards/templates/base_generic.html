@@ -60,6 +60,8 @@
                                             Create board
                                         </button>
                                     </li>
+                                {% endif %}
+                                {% if request.user.is_authenticated %}
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle"
                                            href="#"
@@ -77,15 +79,27 @@
                                                 </li>
                                             {% endif %}
                                             <li>
-                                                <a class="dropdown-item"
-                                                   href="{% url 'logout' %}?next={{ request.path }}">Logout</a>
+                                                <button class="btn btn-link shadow-none nav-link"
+                                                        hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
+                                                        hx-target="#modal-1-body-div"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modal-1-div">
+                                                    Change Password
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="btn btn-link shadow-none nav-link"
+                                                        hx-post="{% url 'account_logout' %}?next={{ request.path }}"
+                                                        hx-target="body">
+                                                    Logout
+                                                </button>
                                             </li>
                                         </ul>
                                     </li>
                                 {% else %}
                                     <li class="nav-item">
                                         <button class="btn btn-link shadow-none nav-link"
-                                                hx-get="{% url 'login' %}?next={{ request.path }}"
+                                                hx-get="{% url 'account_login' %}?next={{ request.path }}"
                                                 hx-target="#modal-1-body-div"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modal-1-div">
