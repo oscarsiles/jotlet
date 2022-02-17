@@ -1,0 +1,34 @@
+{% load socialaccount %}
+{% load static %}
+{% get_providers as socialaccount_providers %}
+{% for provider in socialaccount_providers %}
+    {% with "images/providers/"|add:provider.id|add:".svg" as svg_url %}
+        {% if provider.id == "openid" %}
+            {% for brand in provider.get_brands %}
+                <li>
+                    <form action="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+                          method="post"
+                          id="login-{{ provider.id }}-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn shadow-none">
+                            <a title="{{ brand.name }}"
+                               class="link-primary socialaccount_provider {{ provider.id }} {{ brand.id }}">{{ brand.name }}</a>
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        {% endif %}
+        <li>
+            <form action="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+                  method="post"
+                  id="login-{{ provider.id }}-form">
+                {% csrf_token %}
+                <button type="submit" class="btn shadow-none">
+                    <img src="{% static svg_url %}"
+                         alt=""
+                         class="socialaccount_provider {{ provider.id }}">
+                </button>
+            </form>
+        </li>
+    {% endwith %}
+{% endfor %}
