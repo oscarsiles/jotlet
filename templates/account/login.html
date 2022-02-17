@@ -1,0 +1,51 @@
+{% if socialaccount_providers %}
+    <p>
+        Please sign in with one
+        of your existing third party accounts. Or,
+        <a class="link-primary"
+           hx-get="{% url 'account_signup' %}"
+           hx-target="#modal-1-body-div"
+           hx-swap="innerHTML">sign up</a>
+        for a {{ site.name }} account and sign in below:
+    </p>
+    <div class="socialaccount_ballot">
+        <ul class="socialaccount_providers">
+            {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+        </ul>
+        <div class="login-or">or</div>
+    </div>
+    {% include "socialaccount/snippets/login_extra.html" %}
+{% else %}
+    <p>
+        If you have not created an account yet, then please
+        <a class="link-primary"
+           hx-get="{% url 'account_signup' %}"
+           hx-target="#modal-1-body-div"
+           hx-swap="innerHTML">sign up</a>
+        first.
+    </p>
+{% endif %}
+<form id="login-form"
+      class="pb-2"
+      hx-post="{% url 'account_login' %}"
+      hx-target="#modal-1-body-div"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    {% load crispy_forms_tags %}
+    {{ form|crispy }}
+    <button class="btn btn-success" type="submit" hidden="true">Login</button>
+</form>
+<button class="btn btn-outline-primary"
+        id="password-reset-button"
+        hx-get="{% url 'account_reset_password' %}"
+        hx-target="#modal-1-body-div"
+        hx-swap="innerHTML">
+    Lost password?
+</button>
+<div id="modal-1-footer-div"
+     class="modal-footer"
+     hx-swap="outerHTML"
+     hx-swap-oob="true">
+    <input type="submit" value="Login" form="login-form" class="btn btn-success"/>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">Login</h5>
