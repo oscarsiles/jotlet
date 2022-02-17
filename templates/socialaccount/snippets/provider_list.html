@@ -10,7 +10,7 @@
                           method="post"
                           id="login-{{ provider.id }}-form">
                         {% csrf_token %}
-                        <button type="submit" class="btn shadow-none">
+                        <button type="submit" class="btn shadow-none m-2 p-0">
                             <a title="{{ brand.name }}"
                                class="link-primary socialaccount_provider {{ provider.id }} {{ brand.id }}">{{ brand.name }}</a>
                         </button>
@@ -23,7 +23,7 @@
                   method="post"
                   id="login-{{ provider.id }}-form">
                 {% csrf_token %}
-                <button type="submit" class="btn shadow-none">
+                <button type="submit" class="btn shadow-none m-2 p-0">
                     <img src="{% static svg_url %}"
                          alt=""
                          class="socialaccount_provider {{ provider.id }}">
