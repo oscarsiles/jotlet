@@ -7,6 +7,9 @@ class BoardsConfig(AppConfig):
     name = "boards"
 
     def ready(self):
-        from .signals import populate_models
+        try:
+            from .signals import populate_models
 
-        populate_models(sender=self)
+            populate_models(sender=self)
+        except:
+            pass
