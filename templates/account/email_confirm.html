@@ -10,7 +10,9 @@
             </p>
             <form hx-post="{% url 'account_confirm_email' confirmation.key %}"
                   hx-target="#modal-1-body-div"
-                  hx-swap="innerHTML">
+                  hx-swap="innerHTML"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-1-div">
                 {% csrf_token %}
                 <button class="btn btn-primary" type="submit">Confirm</button>
             </form>
