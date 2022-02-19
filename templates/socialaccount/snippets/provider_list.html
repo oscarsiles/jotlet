@@ -2,8 +2,8 @@
 {% load static %}
 {% get_providers as socialaccount_providers %}
 <div class="socialaccount_ballot ">
-    <div class="row text-secondary justify-content-center">Sign in with a third party</div>
-    <ul class="socialaccount_providers flex-column list-unstyled justify-content-center">
+    <div class="d-flex text-secondary justify-content-center">Sign in with a third party</div>
+    <div class="socialaccount_providers d-grid gap-2 my-2">
         {% for provider in socialaccount_providers %}
             {% with "images/providers/"|add:provider.id|add:".svg" as svg_url %}
                 {% if provider.id == "openid" %}
@@ -11,7 +11,7 @@
                         <li>
                             <form action="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
                                   method="post"
-                                  class="row"
+                                  class=""
                                   id="login-{{ provider.id }}-form">
                                 {% csrf_token %}
                                 <button type="submit" class="btn shadow-none my-2 p-0">
@@ -22,20 +22,20 @@
                         </li>
                     {% endfor %}
                 {% endif %}
-                <li>
+                <div class="row">
                     <form action="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
                           method="post"
-                          class="row"
+                          class="d-flex flex-fill justify-content-center"
                           id="login-{{ provider.id }}-form">
                         {% csrf_token %}
-                        <button type="submit" class="btn shadow-none my-2 p-0">
+                        <button type="submit" class="btn shadow-none col-sm-6 align-self-center p-0">
                             <img src="{% static svg_url %}"
                                  alt=""
-                                 class="socialaccount_provider {{ provider.id }}">
+                                 class="img-fluid w-100 socialaccount_provider {{ provider.id }}">
                         </button>
                     </form>
-                </li>
+                </div>
             {% endwith %}
         {% endfor %}
-    </ul>
+    </div>
 </div>
