@@ -1,6 +1,6 @@
 from allauth.account.views import LoginView, PasswordChangeView, PasswordSetView, SignupView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 from jotlet.http import HTTPResponseHXRedirect
