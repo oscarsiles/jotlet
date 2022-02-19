@@ -16,22 +16,24 @@
 {% block navbar-items %}
     {% if request.user == board.owner or user.is_staff %}
         <li class="nav-item">
-            <button class="btn btn-link shadow-none nav-link"
-                    hx-get="{% url 'boards:board-qr' board.slug %}"
-                    hx-target="#modal-1-body-div"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div">
+            <a class="nav-link"
+               role="button"
+               hx-get="{% url 'boards:board-qr' board.slug %}"
+               hx-target="#modal-1-body-div"
+               data-bs-toggle="modal"
+               data-bs-target="#modal-1-div">
                 <i class="bi bi-qr-code"></i>
-            </button>
+            </a>
         </li>
         <li class="nav-item">
-            <button class="btn btn-link shadow-none nav-link"
-                    hx-get="{% url 'boards:board-preferences' board.slug %}"
-                    hx-target="#modal-1-body-div"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div">
+            <a class="nav-link"
+               role="button"
+               hx-get="{% url 'boards:board-preferences' board.slug %}"
+               hx-target="#modal-1-body-div"
+               data-bs-toggle="modal"
+               data-bs-target="#modal-1-div">
                 <i class="bi bi-gear"></i>
-            </button>
+            </a>
         </li>
     {% endif %}
 {% endblock navbar-items %}
