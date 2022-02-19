@@ -33,11 +33,7 @@
             <hr>
         </div>
     </div>
-    <div class="socialaccount_ballot">
-        <ul class="socialaccount_providers d-flex list-unstyled justify-content-center">
-            {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-        </ul>
-    </div>
+    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
     {% include "socialaccount/snippets/login_extra.html" %}
 {% else %}
     <p>
