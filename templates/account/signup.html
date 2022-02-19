@@ -12,13 +12,17 @@
                       {% if show_modal %} hx-post="{% url 'account_signup' %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} method="post" {% endif %}>
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <button class="btn btn-success" type="submit">Submit</button>
-                </form>
+                    <div class="d-flex-column">
+                        <div class="d-flex justify-content-center">
+                            <button class="btn btn-success flex-fill" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-        {% if show_modal %}
-            <h5 id="modal-1-title-div" hx-swap-oob="true">Create Account</h5>
-        {% else %}
+            {% if show_modal %}
+                <h5 id="modal-1-title-div" hx-swap-oob="true">Create Account</h5>
+            {% else %}
+            </div>
         </div>
     {% endif %}
 {% endblock content %}

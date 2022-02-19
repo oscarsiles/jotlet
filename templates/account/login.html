@@ -18,19 +18,22 @@
                             id="password-reset-button"
                             hx-get="{% url 'account_reset_password' %}"
                             hx-target="#modal-1-body-div"
-                            hx-swap="innerHTML">
-                        Lost password?
+                            hx-swap="innerHTML"
+                            {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
+                        Forgot Password
+                    </button>
+                    <div class="col-auto my-auto text-secondary">/</div>
+                    <button class="btn link-secondary shadow-none"
+                            id="password-reset-button"
+                            hx-get="{% url 'account_signup' %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
+                        Sign Up
                     </button>
                 </div>
             </div>
         </form>
-        <p>
-            If you have not created an account yet, then please
-            <a class="link link-primary"
-               role="button"
-               {% if show_modal %} hx-get="{% url 'account_signup' %}" hx-trigger="click" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} href="{% url 'account_signup' %}" {% endif %}>sign up</a>
-            first.
-        </p>
         {% if socialaccount_providers %}
             <div class="row">
                 <div class="col">
