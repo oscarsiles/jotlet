@@ -1,28 +1,27 @@
 {% extends show_modal|yesno:"blank.html,base_generic.html" %}
 {% block content %}
     {% load crispy_forms_tags %}
-    <div>
-        {% if not show_modal %}
-            <h2>Create Account</h2>
-            <div class="row">
-                <div class="col-sm-8 col-md-6 col-lg-4">
-                {% endif %}
-                <form id="signup-form"
-                      class="pb-2"
-                      {% if show_modal %} hx-post="{% url 'account_signup' %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} method="post" {% endif %}>
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <div class="d-flex-column">
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-success flex-fill" type="submit">Submit</button>
-                        </div>
-                    </form>
+    {% if not show_modal %}
+        <div class="d-flex justify-content-center">
+            <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
+                 style="width: 400px;">
+                <h2>Create Account</h2>
+            {% endif %}
+            <form id="signup-form"
+                  class="pb-2"
+                  {% if show_modal %} hx-post="{% url 'account_signup' %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} method="post" {% endif %}>
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-flex-column">
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-success flex-fill" type="submit">Submit</button>
+                    </div>
                 </div>
-            </div>
-            {% if show_modal %}
-                <h5 id="modal-1-title-div" hx-swap-oob="true">Create Account</h5>
-            {% else %}
+            </form>
+            {% if not show_modal %}
             </div>
         </div>
+    {% else %}
+        <h5 id="modal-1-title-div" hx-swap-oob="true">Create Account</h5>
     {% endif %}
 {% endblock content %}
