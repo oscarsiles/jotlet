@@ -19,18 +19,12 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
-from . import views
-
 from django_reverse_js import views as views_djrjs
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("boards/", include("boards.urls")),
-    path("accounts/login/", views.JotletLoginView.as_view(), name="account_login"),
-    path("accounts/signup/", views.JotletSignupView.as_view(), name="account_signup"),
-    path("accounts/password/change/", views.JotletChangePasswordView.as_view(), name="account_change_password"),
-    path("accounts/password/set/", views.JotletSetPasswordView.as_view(), name="account_set_password"),
-    path("accounts/", include("allauth.urls")),
+    path("accounts/", include("accounts.urls")),
     path("", RedirectView.as_view(url="boards/")),
     path("reverse.js", views_djrjs.urls_js, name="reverse_js"),
 ]
