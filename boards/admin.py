@@ -64,3 +64,8 @@ class ImageAdmin(admin.ModelAdmin):
     fields = ("image_tag", "title", "attribution", "image", "type")
 
     readonly_fields = ["image_tag"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # editing an existing object
+            return self.readonly_fields + ["image"]
+        return self.readonly_fields
