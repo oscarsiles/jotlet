@@ -5,7 +5,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.decorators.cache import cache_control
 
 from jotlet.http import HTTPResponseHXRedirect
 
@@ -55,6 +57,7 @@ class BoardView(generic.DetailView):
         return context
 
 
+@method_decorator(cache_control(public=True), name="dispatch")
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
     template_name = "boards/board_preferences.html"
@@ -351,6 +354,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         )
 
 
+@method_decorator(cache_control(public=True), name="dispatch")
 class ImageSelectView(LoginRequiredMixin, generic.TemplateView):
     template_name = "boards/components/image_select.html"
 
