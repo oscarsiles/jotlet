@@ -1,4 +1,8 @@
+from io import BytesIO
+from pathlib import Path
+
 from django.contrib.auth.models import User
+from django.core.files import File
 from django.db import models
 from django.forms import UUIDField
 from django.urls import reverse
@@ -38,12 +42,23 @@ def get_image_upload_path(instance, filename):
     return file_path
 
 
-def resize_image(im, base_width=3840):
-    width, height = im.size
-    if width > base_width:
-        new_height = int((height / width) * base_width)
-        im = im.resize((base_width, new_height), PILImage.ANTIALIAS)
-    return im
+def resize_image(image, width=3840, height=2160):
+    # Open the image using Pillow
+    img = PILImage.open(image)
+    # check if either the width or height is greater than the max
+    if img.width > width or img.height > height:
+        output_size = (width, height)
+        # Create a new resized “thumbnail” version of the image with Pillow
+        img.thumbnail(output_size, PILImage.ANTIALIAS)
+        # Find the file name of the image
+        img_filename = Path(image.file.name).name
+        # Save the resized image into the buffer, noting the correct file type
+        buffer = BytesIO()
+        img.save(buffer, format=img.format, quality=80, optimize=True)
+        # Wrap the buffer in File object
+        file_object = File(buffer)
+        # Save the new resized file as usual, which will save to S3 using django-storages
+        image.save(img_filename, file_object)
 
 
 class Board(models.Model):
@@ -151,11 +166,9 @@ class Image(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        super(Image, self).save(*args, **kwargs)
-        instance = self.image
-        im = resize_image(PILImage.open(instance.path))
-        im.save(instance.path, quality=80, optimize=True)
-        return instance
+        if not self.created_at:
+            resize_image(self.image)
+        return super(Image, self).save(*args, **kwargs)
 
     def get_board_usage_count(self):
         return BoardPreferences.objects.filter(background_type="i").filter(background_image=self).count()
