@@ -1,5 +1,5 @@
 {% load cache %}
-{% cache 3600 image_select type using='redis-cache' %}
+{% cache 3600 image_select type %}
 <script type="text/javascript">
   htmx.on('htmx:load', function() {
     selectedValue = $('#id_background_image').attr('value');
