@@ -47,7 +47,7 @@
                     </div>
                 {% endif %}
             </div>
-            {% cache 600 post post.pk using='redis-cache' %}
+            {% cache 600 post post.pk %}
             <p class="card-text text-break" id="post-{{ post.pk }}-text">
                 {{ post.content }}
             </p>

@@ -3,7 +3,7 @@ from django.conf import settings
 
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache, caches
+from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -13,8 +13,6 @@ from sorl.thumbnail import delete
 from boards.apps import BoardsConfig
 
 from .models import Board, BoardPreferences, Image, Post, Topic
-
-cache_redis = caches["redis-cache"]
 
 
 def populate_models(sender, **kwargs):
@@ -57,10 +55,11 @@ def approve_all_posts(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=Topic)
-def post_saved(sender, instance, created, **kwargs):
+def topic_saved(sender, instance, created, **kwargs):
     keyTopic = make_template_fragment_key("topic", [instance.pk])
     try:
-        cache_redis.delete(keyTopic)
+        if cache.get(keyTopic) is not None:
+            cache.delete(keyTopic)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
 
@@ -69,7 +68,7 @@ def post_saved(sender, instance, created, **kwargs):
 def post_saved(sender, instance, created, **kwargs):
     keyPost = make_template_fragment_key("post", [instance.pk])
     try:
-        cache_redis.delete(keyPost)
+        cache.delete(keyPost)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 
@@ -79,7 +78,7 @@ def post_saved(sender, instance, created, **kwargs):
 def update_image_select(sender, instance, **kwargs):
     keyImageSelect = make_template_fragment_key("image_select", [instance.type])
     try:
-        cache_redis.delete(keyImageSelect)
+        cache.delete(keyImageSelect)
     except:
         raise Exception(f"Could not delete cache: image_select-{instance.type}")
 

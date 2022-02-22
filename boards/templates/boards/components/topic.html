@@ -7,7 +7,7 @@
      hx-swap="outerHTML">
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
-            {% cache 600 topic topic.pk using='redis-cache' %}
+            {% cache 600 topic topic.pk %}
             <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>
         {% endcache %}
         {% if request.user == board.owner or user.is_staff %}
@@ -32,7 +32,7 @@
         {% endif %}
     </div>
 </div>
-{% cache 600 topic_create topic.pk using='redis-cache' %}
+{% cache 600 topic_create topic.pk  %}
 <div class="card my-2" id="topic-{{ topic.pk }}-create">
     <div class="card-body">
         <button id="topic-{{ topic.pk }}-create-url"
@@ -50,7 +50,7 @@
 {% for post in topic.posts.all %}
     {% include 'boards/components/post.html' %}
 {% endfor %}
-{% cache 600 topic_newCard topic.pk using='redis-cache' %}
+{% cache 600 topic_newCard topic.pk  %}
 <div id="newCard-{{ topic.pk }}-div"
      hx-trigger="postCreated"
      hx-target="this"

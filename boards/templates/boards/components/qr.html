@@ -1,5 +1,5 @@
 {% load cache %}
-{% cache 3600 qr view.kwargs.slug using='redis-cache' %}
+{% cache 3600 qr view.kwargs.slug %}
 {% load qr_code %}
 <div class="d-flex justify-content-center">
     {% qr_from_text url size=8 image_format="png" error_correction="H" %}

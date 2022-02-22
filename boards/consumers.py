@@ -2,13 +2,14 @@ import json, logging
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.core.cache import cache
+from django.core.cache import caches
+
+cache = caches["mem-cache"]
 
 from .models import Board, Post, Topic
 
 
 class BoardConsumer(AsyncWebsocketConsumer):
-
     async def connect(self):
         self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
         self.board_group_name = f"board_{self.board_slug}"
@@ -30,7 +31,7 @@ class BoardConsumer(AsyncWebsocketConsumer):
                 "sessions": cache.get(self.board_group_name),
             },
         )
-        
+
         await self.accept()
 
     async def disconnect(self, code):
