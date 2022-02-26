@@ -37,7 +37,8 @@ class IndexView(generic.FormView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         context["form"] = self.get_form()
-        context["boards"] = Board.objects.all()
+        if self.request.user.is_staff:
+            context["all_boards"] = Board.objects.all()
         return context
 
     def get_success_url(self):
