@@ -1,10 +1,11 @@
 from tkinter import W
 from django.urls import reverse
-from django_fakeredis import FakeRedis
-
 from django.test import TestCase
 
 from django.contrib.auth.models import User
+
+from django_fakeredis import FakeRedis
+
 from boards.models import Board, BoardPreferences, Topic, Post
 
 
@@ -12,7 +13,6 @@ class BoardModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
 
     def test_title_max_length(self):
@@ -32,38 +32,6 @@ class BoardModelTest(TestCase):
     def test_slug_format(self):
         slug = Board.objects.get(id=1).slug
         self.assertRegex(slug, r"^\d{6}$")
-
-    # permissions
-    def test_anonymous_user_permissions(self):
-        board = Board.objects.get(id=1)
-        response = self.client.get(reverse("boards:board-create"))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:board-fetch", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_other_user_permissions(self):
-        login = self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(id=1)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
-        self.assertEqual(str(response.context["user"]), "testuser2")
-        self.assertEqual(response.status_code, 403)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 403)
-
-    def test_owner_permissions(self):
-        login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(id=1)
-        response = self.client.get(reverse("boards:board-create"))
-        self.assertEqual(str(response.context["user"]), "testuser1")
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 200)
 
     def test_board_remain_after_user_delete(self):
         user = User.objects.get(username="testuser1")
