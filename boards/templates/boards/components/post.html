@@ -16,7 +16,7 @@
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval  %}
                             {% if perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
-                                <button hx-get="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
+                                <button hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
                                         hx-target="#post-{{ post.pk }}"
                                         hx-swap="outerHTML"
