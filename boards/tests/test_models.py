@@ -39,6 +39,7 @@ class BoardModelTest(TestCase):
         user.delete()
         board_count_after = Board.objects.count()
         self.assertEqual(board_count_before, board_count_after)
+        self.assertIsNone(Board.objects.get(id=1).owner)
 
     def test_get_absolute_url(self):
         board = Board.objects.get(id=1)
@@ -99,46 +100,40 @@ class TopicModelTest(TestCase):
         topic = Topic.objects.get(id=1)
         self.assertEqual(topic.get_absolute_url(), f"/boards/{topic.board.slug}/")
 
-    # permissions
-    @FakeRedis("django.core.cache.cache")
-    def test_anonymous_user_permissions(self):
-        board = Board.objects.get(id=1)
-        topic = Topic.objects.get(board=board)
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 302)
-        response = self.client.get(reverse("boards:topic-fetch", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_other_user_permissions(self):
-        login = self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(id=1)
-        topic = Topic.objects.get(board=board)
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
-        self.assertEqual(str(response.context["user"]), "testuser2")
-        self.assertEqual(response.status_code, 403)
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 403)
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 403)
-
-    def test_owner_permissions(self):
-        login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(id=1)
-        topic = Topic.objects.get(board=board)
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
-        self.assertEqual(str(response.context["user"]), "testuser1")
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": board.slug, "pk": topic.id}))
-        self.assertEqual(response.status_code, 200)
-
     def test_topic_deleted_after_board_delete(self):
         board = Board.objects.get(id=1)
         topic = Topic.objects.get(board=board)
         board.delete()
         self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+
+
+class PostModelTest(TestCase):
+    @classmethod
+    @FakeRedis("django.core.cache.cache")
+    def setUpTestData(cls):
+        # Create two users
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
+        board = Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        Post.objects.create(content="Test Post", topic=topic)
+        Post.objects.create(content="Test Post 2", topic=topic)
+
+    def test_message_max_length(self):
+        post = Post.objects.get(id=1)
+        max_length = post._meta.get_field("content").max_length
+        self.assertEqual(max_length, 400)
+
+    def test_object_name_is_message(self):
+        post = Post.objects.get(id=1)
+        self.assertEqual(str(post), post.content)
+
+    def test_get_absolute_url(self):
+        post = Post.objects.get(id=1)
+        self.assertEqual(post.get_absolute_url(), f"/boards/{post.topic.board.slug}/")
+
+    def test_post_deleted_after_topic_delete(self):
+        topic = Topic.objects.get(id=1)
+        post = Post.objects.get(id=1)
+        topic.delete()
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post.id)
