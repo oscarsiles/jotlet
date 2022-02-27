@@ -141,10 +141,12 @@ class Post(models.Model):
         return self.content
 
     def get_absolute_url(self):
-        return reverse("boards:board", kwargs={"pk": self.topic.board.slug})
+        return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
 
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
+
+IMAGE_TYPE = (("b", "Background"),)
 
 
 class Image(models.Model):
@@ -154,8 +156,6 @@ class Image(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=get_image_upload_path)
-
-    IMAGE_TYPE = (("b", "Background"),)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
 
