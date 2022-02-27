@@ -1,9 +1,8 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches:
-      - 'master'
+  repository_dispatch:
+    types: [django-test-pass]
 
 jobs:
   docker:
