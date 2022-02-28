@@ -44,7 +44,7 @@ class IndexViewTest(TestCase):
         self.assertFormError(response, "form", "board_slug", "Board does not exist.")
 
     def test_board_search_no_slug(self):
-        response = self.client.post(reverse("boards:index"), {})
+        response = self.client.post(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
 
@@ -61,7 +61,6 @@ class IndexViewTest(TestCase):
         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
         response = self.client.get(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(response.context.get("all_boards"))
         self.assertEqual(len(response.context.get("all_boards")), 11)
 
 
