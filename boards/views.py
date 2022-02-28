@@ -28,11 +28,7 @@ class IndexView(generic.FormView):
 
     def form_valid(self, form):
         self.form = form
-        try:
-            Board.objects.get(slug=self.form.cleaned_data["board_slug"])
-            return HttpResponseRedirect(self.get_success_url())
-        except:
-            return self.form_invalid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
