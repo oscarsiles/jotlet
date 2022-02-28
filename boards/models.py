@@ -109,6 +109,13 @@ class BoardPreferences(models.Model):
     def __str__(self):
         return self.board.title + " preferences"
 
+    def save(self, *args, **kwargs):
+        if self.background_type == "c" or (
+            self.background_image.type != "b" if self.background_image is not None else True
+        ):
+            self.background_image = None
+        super(BoardPreferences, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
@@ -146,7 +153,8 @@ class Post(models.Model):
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
 
-IMAGE_TYPE = (("b", "Background"),)
+
+IMAGE_TYPE = (("b", "Background"), ("p", "Post"))
 
 
 class Image(models.Model):
@@ -175,11 +183,11 @@ class Image(models.Model):
 
     get_board_usage_count.short_description = "Board Usage Count"
 
-    def get_thumbnail_url(self):
-        return get_thumbnail(self.image, "300x200", crop="center").url
+    def get_thumbnail(self):
+        return get_thumbnail(self.image, "300x200", crop="center", quality=80)
 
     def image_tag(self):
-        return mark_safe('<img src="%s" />' % escape(self.get_thumbnail_url()))
+        return mark_safe('<img src="%s" />' % escape(self.get_thumbnail().url))
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True

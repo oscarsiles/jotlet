@@ -34,10 +34,10 @@
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
-                           url="{{ image.get_thumbnail_url }}"
+                           url="{{ image.get_thumbnail.url }}"
                            id="{{ image.uuid }}">
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
-                        <img class="w-100" src="{{ image.get_thumbnail_url }}" alt="{{ image }}">
+                        <img class="w-100" src="{{ image.get_thumbnail.url }}" alt="{{ image }}">
                     </label>
                 </div>
                 <div class="card-footer">{{ image }}</div>
