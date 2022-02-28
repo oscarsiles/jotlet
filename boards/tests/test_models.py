@@ -75,7 +75,6 @@ class BoardPreferencesModelTest(TestCase):
 
 class TopicModelTest(TestCase):
     @classmethod
-    @FakeRedis("django.core.cache.cache")
     def setUpTestData(cls):
         # Create two users
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -111,7 +110,6 @@ class TopicModelTest(TestCase):
 
 class PostModelTest(TestCase):
     @classmethod
-    @FakeRedis("django.core.cache.cache")
     def setUpTestData(cls):
         # Create two users
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -151,7 +149,6 @@ class PostModelTest(TestCase):
 
 class ImageModelTest(TestCase):
     @classmethod
-    @FakeRedis("django.core.cache.cache")
     def setUpTestData(cls):
         module_dir = os.path.dirname(__file__)
         image_path = os.path.join(module_dir, "images/white.jpg")
@@ -201,7 +198,6 @@ class ImageModelTest(TestCase):
                 else:
                     self.assertEqual(img.get_board_usage_count(), 0)
 
-    @FakeRedis("django.core.cache.cache")
     def test_thumbnail_url_and_dimensions(self):
         from sorl.thumbnail import get_thumbnail
 
@@ -214,7 +210,6 @@ class ImageModelTest(TestCase):
                 self.assertEqual(thumbnail.height, 200)
                 self.assertIn("/media/cache/", thumbnail.url)
 
-    @FakeRedis("django.core.cache.cache")
     def test_image_tag(self):
         for type, text in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)

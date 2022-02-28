@@ -147,10 +147,8 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "KEY_PREFIX": "jotlet",
-        "symmetric_encryption_keys": [SECRET_KEY],
     },
     "mem-cache": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
