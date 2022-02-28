@@ -6,8 +6,6 @@ from django.test import TestCase
 
 from django.contrib.auth.models import User
 
-from django_fakeredis import FakeRedis
-
 from boards.models import Board, BoardPreferences, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
 
 

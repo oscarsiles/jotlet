@@ -10,8 +10,6 @@ from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 
-from django_fakeredis import FakeRedis
-
 from boards.models import Board, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
 from boards.routing import websocket_urlpatterns
 
