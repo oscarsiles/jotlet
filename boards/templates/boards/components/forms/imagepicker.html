@@ -28,7 +28,7 @@
                     </button>
                 {% endif %}
                 <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
-                     src="{{ object.background_image.get_thumbnail_url }}"
+                     src="{{ object.background_image.get_thumbnail.url }}"
                      alt="{{ object.background_image }}"
                      hx-get="{% url 'boards:image-select' 'b' %}"
                      hx-target="#modal-2-body-div"

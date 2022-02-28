@@ -1,4 +1,6 @@
-from tkinter import W
+import os
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.test import TestCase
 
@@ -6,7 +8,7 @@ from django.contrib.auth.models import User
 
 from django_fakeredis import FakeRedis
 
-from boards.models import Board, BoardPreferences, Topic, Post
+from boards.models import Board, BoardPreferences, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
 
 
 class BoardModelTest(TestCase):
@@ -119,12 +121,12 @@ class PostModelTest(TestCase):
         Post.objects.create(content="Test Post", topic=topic)
         Post.objects.create(content="Test Post 2", topic=topic)
 
-    def test_message_max_length(self):
+    def test_content_max_length(self):
         post = Post.objects.get(id=1)
         max_length = post._meta.get_field("content").max_length
         self.assertEqual(max_length, 400)
 
-    def test_object_name_is_message(self):
+    def test_object_name_is_content(self):
         post = Post.objects.get(id=1)
         self.assertEqual(str(post), post.content)
 
@@ -137,3 +139,84 @@ class PostModelTest(TestCase):
         post = Post.objects.get(id=1)
         topic.delete()
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post.id)
+
+    def test_post_deleted_after_board_delete(self):
+        board = Board.objects.get(id=1)
+        post1 = Post.objects.get(id=1)
+        post2 = Post.objects.get(id=2)
+        board.delete()
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post1.id)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
+
+
+class ImageModelTest(TestCase):
+    @classmethod
+    @FakeRedis("django.core.cache.cache")
+    def setUpTestData(cls):
+        module_dir = os.path.dirname(__file__)
+        image_path = os.path.join(module_dir, "images/white.jpg")
+        for type, text in IMAGE_TYPE:
+            for orientation in ["horizontal", "vertical"]:
+                image_path = os.path.join(module_dir, f"images/white_{orientation}.png")
+                img = Image(
+                    type=type,
+                    image=SimpleUploadedFile(
+                        name=f"{type}.png",
+                        content=open(image_path, "rb").read(),
+                        content_type="image/png",
+                    ),
+                    title=f"{text} - {orientation}",
+                )
+                img.save()
+
+    def test_image_name_is_title(self):
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                self.assertEqual(str(img), img.title)
+
+    def test_image_url(self):
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                self.assertEqual(img.image.url, f"/media/images/{type}/{img.uuid}.png")
+
+    def test_image_max_dimensions(self):
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                self.assertLessEqual(img.image.width, 3840)
+                self.assertLessEqual(img.image.height, 2160)
+
+    def test_get_board_usage_count(self):
+        board = Board.objects.create(title="Test Board", description="Test Board Description")
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                board.preferences.background_image = img
+                board.preferences.background_type = "i"
+                board.preferences.save()
+                if type == "b":
+                    self.assertEqual(img.get_board_usage_count(), 1)
+                else:
+                    self.assertEqual(img.get_board_usage_count(), 0)
+
+    @FakeRedis("django.core.cache.cache")
+    def test_thumbnail_url_and_dimensions(self):
+        from sorl.thumbnail import get_thumbnail
+
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                thumbnail = img.get_thumbnail()
+                self.assertIsNotNone(thumbnail)
+                self.assertEqual(thumbnail.width, 300)
+                self.assertEqual(thumbnail.height, 200)
+                self.assertIn("/media/cache/", thumbnail.url)
+
+    @FakeRedis("django.core.cache.cache")
+    def test_image_tag(self):
+        for type, text in IMAGE_TYPE:
+            imgs = Image.objects.filter(type=type)
+            for img in imgs:
+                self.assertEqual(f'<img src="{img.get_thumbnail().url}" />', img.image_tag())
