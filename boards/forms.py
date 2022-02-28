@@ -115,9 +115,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
 
 class SearchBoardsForm(forms.Form):
-    board_slug = forms.CharField(
-        label="Board ID", help_text="Enter the board ID given as ######"
-    )
+    board_slug = forms.CharField(label="Board ID", help_text="Enter the board ID given as ######")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
