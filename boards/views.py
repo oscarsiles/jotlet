@@ -28,11 +28,7 @@ class IndexView(generic.FormView):
 
     def form_valid(self, form):
         self.form = form
-        try:
-            Board.objects.get(slug=self.form.cleaned_data["board_slug"])
-            return HttpResponseRedirect(self.get_success_url())
-        except:
-            return self.form_invalid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
@@ -213,6 +209,8 @@ class CreatePostView(generic.CreateView):
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get("topic_pk")
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
         form.instance.session_key = self.request.session.session_key
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = (
@@ -243,10 +241,13 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     template_name = "boards/post_form.html"
 
     def test_func(self):
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.change_post")
+            or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
 
@@ -268,10 +269,13 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     template_name = "boards/post_confirm_delete.html"
 
     def test_func(self):
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.delete_post")
+            or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
 
@@ -328,7 +332,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
             or self.request.user.is_staff
         ) and post.topic.board.preferences.require_approval
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         post = Post.objects.get(pk=self.kwargs["pk"])
         post.approved = not post.approved
         post.save()

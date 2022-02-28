@@ -109,6 +109,13 @@ class BoardPreferences(models.Model):
     def __str__(self):
         return self.board.title + " preferences"
 
+    def save(self, *args, **kwargs):
+        if self.background_type == "c" or (
+            self.background_image.type != "b" if self.background_image is not None else True
+        ):
+            self.background_image = None
+        super(BoardPreferences, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
@@ -141,10 +148,13 @@ class Post(models.Model):
         return self.content
 
     def get_absolute_url(self):
-        return reverse("boards:board", kwargs={"pk": self.topic.board.slug})
+        return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
 
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
+
+
+IMAGE_TYPE = (("b", "Background"), ("p", "Post"))
 
 
 class Image(models.Model):
@@ -154,8 +164,6 @@ class Image(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=get_image_upload_path)
-
-    IMAGE_TYPE = (("b", "Background"),)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
 
@@ -175,11 +183,11 @@ class Image(models.Model):
 
     get_board_usage_count.short_description = "Board Usage Count"
 
-    def get_thumbnail_url(self):
-        return get_thumbnail(self.image, "300x200", crop="center").url
+    def get_thumbnail(self):
+        return get_thumbnail(self.image, "300x200", crop="center", quality=80)
 
     def image_tag(self):
-        return mark_safe('<img src="%s" />' % escape(self.get_thumbnail_url()))
+        return mark_safe('<img src="%s" />' % escape(self.get_thumbnail().url))
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
