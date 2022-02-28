@@ -683,15 +683,15 @@ class ImageSelectViewTest(TestCase):
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         module_dir = os.path.dirname(__file__)
-        image_path = os.path.join(module_dir, "images/white.jpg")
+        image_path = os.path.join(module_dir, "images/white_horizontal.png")
         for type, text in IMAGE_TYPE:
             for i in range(5):
                 image = Image(
                     type=type,
                     image=SimpleUploadedFile(
-                        name=f"{type}-{i}.jpg",
+                        name=f"{type}-{i}.png",
                         content=open(image_path, "rb").read(),
-                        content_type="image/jpeg",
+                        content_type="image/png",
                     ),
                     title=f"{text} {i}",
                 )
