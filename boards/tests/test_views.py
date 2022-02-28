@@ -6,9 +6,14 @@ from django.urls import reverse
 
 from django.contrib.auth.models import Permission, User
 
+from channels.db import database_sync_to_async
+from channels.routing import URLRouter
+from channels.testing import WebsocketCommunicator
+
 from django_fakeredis import FakeRedis
 
 from boards.models import Board, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
+from boards.routing import websocket_urlpatterns
 
 
 class IndexViewTest(TestCase):
@@ -75,11 +80,14 @@ class BoardViewTest(TestCase):
 
 
 class BoardPreferencesViewTest(TestCase):
+    board_preferences_changed_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        cls.board_preferences_changed_url = reverse("boards:board-preferences", kwargs={"slug": board.slug})
 
     def test_board_preferences_anonymous_permissions(self):
         board = Board.objects.get(id=1)
@@ -98,6 +106,30 @@ class BoardPreferencesViewTest(TestCase):
         board = Board.objects.get(id=1)
         response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
+
+    async def test_preferences_changed_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        response = await database_sync_to_async(self.client.post)(
+            self.board_preferences_changed_url,
+            data={
+                "background_type": "c",
+                "background_color": "#ffffff",
+                "background_image": "",
+                "background_opacity": "0.5",
+                "require_approval": True,
+                "enable_latex": True,
+            },
+        )
+        message = await communicator.receive_from()
+        self.assertIn("board_preferences_changed", message)
+        self.assertEqual(response.headers["HX-Redirect"], f"/boards/{board.slug}/")
 
 
 class CreateBoardViewTest(TestCase):
@@ -248,11 +280,14 @@ class DeleteBoardViewTest(TestCase):
 
 
 class TopicCreateViewTest(TestCase):
+    topic_created_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        cls.topic_created_url = reverse("boards:topic-create", kwargs={"slug": board.slug})
 
     def test_anonymous_permissions(self):
         board = Board.objects.get(id=1)
@@ -308,14 +343,34 @@ class TopicCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "subject", "Ensure this value has at most 50 characters (it has 100).")
 
+    async def test_topic_created_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        response = await database_sync_to_async(self.client.post)(
+            self.topic_created_url, data={"subject": "Test Topic"}
+        )
+        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
+        message = await communicator.receive_from()
+        self.assertIn("topic_created", message)
+        self.assertIn(f'"topic_pk": {topic.id}', message)
+
 
 class TopicUpdateViewTest(TestCase):
+    topic_updated_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
+        cls.topic_updated_url = reverse("boards:topic-update", kwargs={"slug": board.slug, "pk": topic.pk})
 
     def test_anonymous_permissions(self):
         topic = Topic.objects.get(id=1)
@@ -371,14 +426,34 @@ class TopicUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "subject", "Ensure this value has at most 50 characters (it has 100).")
 
+    async def test_topic_updated_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
+        response = await database_sync_to_async(self.client.post)(
+            self.topic_updated_url, data={"subject": "Test Topic NEW"}
+        )
+        message = await communicator.receive_from()
+        self.assertIn("topic_updated", message)
+        self.assertIn(f'"topic_pk": {topic.id}', message)
+
 
 class TopicDeleteViewTest(TestCase):
+    topic_deleted_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
+        cls.topic_deleted_url = reverse("boards:topic-delete", kwargs={"slug": board.slug, "pk": topic.id})
 
     def test_anonymous_permissions(self):
         topic = Topic.objects.get(id=1)
@@ -408,14 +483,32 @@ class TopicDeleteViewTest(TestCase):
         response = self.client.post(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
         self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
 
+    async def test_topic_deleted_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
+        response = await database_sync_to_async(self.client.post)(self.topic_deleted_url)
+        message = await communicator.receive_from()
+        self.assertIn("topic_deleted", message)
+        self.assertIn(f'"topic_pk": {topic.id}', message)
+
 
 class PostCreateViewTest(TestCase):
+    post_create_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
+        cls.post_create_url = reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.id})
 
     def test_anonymous_permissions(self):
         topic = Topic.objects.get(id=1)
@@ -463,8 +556,25 @@ class PostCreateViewTest(TestCase):
         post = Post.objects.get(content="Test Post user2")
         self.assertEqual(post.approved, False)
 
+    async def test_post_created_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        response = await database_sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
+        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        message = await communicator.receive_from()
+        self.assertIn("post_created", message)
+        self.assertIn(f'"post_pk": {post.id}', message)
+
 
 class PostUpdateViewTest(TestCase):
+    post_updated_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -475,6 +585,7 @@ class PostUpdateViewTest(TestCase):
             content="Test Post",
             topic=topic,
         )
+        cls.post_updated_url = reverse("boards:post-update", kwargs={"slug": board.slug, "pk": post.id})
 
     def test_anonymous_permissions(self):
         response = self.client.post(
@@ -512,8 +623,27 @@ class PostUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Post.objects.get(id=1).content, "Test Post NEW")
 
+    async def test_post_updated_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        response = await database_sync_to_async(self.client.post)(
+            self.post_updated_url, data={"content": "Test Post NEW"}
+        )
+        message = await communicator.receive_from()
+        self.assertIn("post_updated", message)
+        self.assertIn(f'"post_pk": {post.id}', message)
+
 
 class PostDeleteViewTest(TestCase):
+    post_deleted_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -521,6 +651,7 @@ class PostDeleteViewTest(TestCase):
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic)
+        cls.post_deleted_url = reverse("boards:post-delete", kwargs={"slug": board.slug, "pk": post.id})
 
     def test_anonymous_permissions(self):
         response = self.client.post(reverse("boards:post-delete", kwargs={"slug": "test-board", "pk": 1}))
@@ -550,6 +681,21 @@ class PostDeleteViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Post.objects.count(), 0)
+
+    async def test_post_deleted_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        response = await database_sync_to_async(self.client.post)(self.post_deleted_url)
+        message = await communicator.receive_from()
+        self.assertIn("post_deleted", message)
+        self.assertIn(f'"post_pk": {post.id}', message)
 
 
 class BoardFetchViewTest(TestCase):
@@ -637,6 +783,8 @@ class PostFetchViewTest(TestCase):
 
 
 class PostToggleApprovalViewTest(TestCase):
+    post_approval_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -645,6 +793,7 @@ class PostToggleApprovalViewTest(TestCase):
         board.preferences.save()
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
+        cls.post_approval_url = reverse("boards:post-toggle-approval", kwargs={"slug": board.slug, "pk": post.id})
 
     def test_post_toggle_approval_anonymous(self):
         post = Post.objects.get(content="Test Post")
@@ -676,6 +825,30 @@ class PostToggleApprovalViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
+        response = self.client.post(
+            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Post.objects.get(content="Test Post").approved)
+
+    async def test_post_toggle_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, subprotocol = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        response = await database_sync_to_async(self.client.post)(self.post_approval_url)
+        message = await communicator.receive_from()
+        self.assertIn("post_approved", message)
+        self.assertIn(f'"post_pk": {post.id}', message)
+        response = await database_sync_to_async(self.client.post)(self.post_approval_url)
+        message = await communicator.receive_from()
+        self.assertIn("post_unapproved", message)
+        self.assertIn(f'"post_pk": {post.id}', message)
 
 
 class ImageSelectViewTest(TestCase):
