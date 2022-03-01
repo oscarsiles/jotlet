@@ -4,11 +4,15 @@ from django.urls import reverse
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
+from django.contrib.auth.models import User
+
 from .models import Board, BACKGROUND_TYPE, BoardPreferences
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Div, HTML, Layout, Submit
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
+
+from tagify.fields import TagField
 
 
 def validate_board_exists(board_slug):
@@ -24,6 +28,13 @@ def validate_percentage(percentage):
 
 
 class BoardPreferencesForm(forms.ModelForm):
+    moderators = TagField(
+        label="Moderators",
+        required=False,
+        place_holder="Add Moderators By Username",
+        delimiters=" ",
+    )
+
     class Meta:
         model = BoardPreferences
         exclude = ["board"]
@@ -35,6 +46,12 @@ class BoardPreferencesForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.slug = kwargs.pop("slug")
         super().__init__(*args, **kwargs)
+
+        moderator_list = []
+        for user in self.instance.moderators.all():
+            moderator_list.append(user.username)
+        self.initial["moderators"] = moderator_list
+
         self.fields["background_type"] = forms.ChoiceField(
             choices=BACKGROUND_TYPE,
             widget=forms.RadioSelect,
@@ -97,6 +114,10 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class="form-check-input my-0",
                 style="height: auto;",
             ),
+            PrependedText(
+                "moderators",
+                "Moderators",
+            ),
             ButtonHolder(
                 Submit("submit", "Save", hidden="true")
             ),  # Hidden submit button, use modal one to trigger form submit
@@ -111,6 +132,17 @@ class BoardPreferencesForm(forms.ModelForm):
         value = self.cleaned_data["background_image"]
         if value == None:
             value == ""
+        return value
+
+    def clean_moderators(self):
+        moderators = self.cleaned_data["moderators"]
+        value = []
+        for moderator in moderators:
+            try:
+                user = User.objects.get(username=moderator)
+                value.append(user)
+            except User.DoesNotExist:
+                pass
         return value
 
 
