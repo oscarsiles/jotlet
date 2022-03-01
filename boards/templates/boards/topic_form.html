@@ -1,7 +1,5 @@
 {% load crispy_forms_tags %}
-<form hx-post="{{ request.build_absolute_uri }}"
-      {% if form.instance.pk != None %} hx-target="#topic-{{ form.instance.pk }}" hx-swap="outerHTML" {% else %} hx-target="#newTopic-div" hx-swap="beforebegin" {% endif %}
-      id="topic-form">
+<form hx-post="{{ request.build_absolute_uri }}" id="topic-form">
     {% csrf_token %}
     <table>
         {{ form|crispy }}
