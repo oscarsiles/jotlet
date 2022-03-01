@@ -18,8 +18,7 @@
                             {% if perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
                                 <button hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
-                                        hx-target="#post-{{ post.pk }}"
-                                        hx-swap="outerHTML"
+                                        hx-target="this"
                                         class="btn btn-link text-black shadow-none p-1">
                                     {% if not post.approved %}
                                         <i class="bi bi-hand-thumbs-up"></i>

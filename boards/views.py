@@ -1,4 +1,3 @@
-from http.client import HTTPResponse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -145,19 +144,15 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
     def form_valid(self, form):
         form.instance.board_id = Board.objects.get(slug=self.kwargs["slug"]).id
-        return super(CreateTopicView, self).form_valid(form)
-
-    def get_success_url(self) -> str:
+        super(CreateTopicView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
                 "type": "topic_created",
                 "topic_pk": self.object.pk,
-                "topic_subject": self.object.subject,
-                "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:topic-fetch", kwargs={"slug": self.object.board.slug, "pk": self.object.pk})
+        return HttpResponse("")
 
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -169,17 +164,16 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         board = Board.objects.get(slug=self.kwargs["slug"])
         return self.request.user == board.owner or self.request.user.is_staff
 
-    def get_success_url(self) -> str:
+    def form_valid(self, form):
+        super(UpdateTopicView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
                 "type": "topic_updated",
                 "topic_pk": self.object.pk,
-                "topic_subject": self.object.subject,
-                "session_key": self.request.session.session_key,
             },
         )
-        return reverse_lazy("boards:topic-fetch", kwargs={"slug": self.object.board.slug, "pk": self.object.pk})
+        return HttpResponse("")
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
@@ -196,7 +190,6 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
             {
                 "type": "topic_deleted",
                 "topic_pk": self.object.pk,
-                "session_key": self.request.session.session_key,
             },
         )
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
@@ -228,8 +221,6 @@ class CreatePostView(generic.CreateView):
                 "type": "post_created",
                 "topic_pk": self.kwargs.get("topic_pk"),
                 "post_pk": self.object.pk,
-                "post_content": self.object.content,
-                "session_key": self.request.session.session_key,
             },
         )
         return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
@@ -257,8 +248,6 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             {
                 "type": "post_updated",
                 "post_pk": self.object.pk,
-                "post_content": self.object.content,
-                "session_key": self.request.session.session_key,
             },
         )
         return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
@@ -285,7 +274,6 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
             {
                 "type": "post_deleted",
                 "post_pk": self.object.pk,
-                "session_key": self.request.session.session_key,
             },
         )
         return reverse_lazy(
@@ -342,7 +330,6 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
                 {
                     "type": "post_approved",
                     "post_pk": post.pk,
-                    "session_key": self.request.session.session_key,
                 },
             )
         else:
@@ -351,7 +338,6 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
                 {
                     "type": "post_unapproved",
                     "post_pk": post.pk,
-                    "session_key": self.request.session.session_key,
                 },
             )
         return HttpResponseRedirect(
