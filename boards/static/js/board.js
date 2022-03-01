@@ -1,9 +1,6 @@
 console.log("Sanity check from board.js.");
 
 var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
-var session_key = JSON.parse(
-  document.getElementById("session_key").textContent
-);
 
 var baseUrl =
   window.location.pathname.split("/")[1] == "boards"
@@ -46,16 +43,12 @@ function connect() {
         break;
       case "board_preferences_changed":
       case "topic_created":
-        if (session_key != data.session_key) {
-          let boardDiv = "#board-" + board_slug;
-          htmx.trigger(htmx.find(boardDiv), "topicCreated");
-        }
+        var boardDiv = "#board-" + board_slug;
+        htmx.trigger(htmx.find(boardDiv), "topicCreated");
         break;
       case "topic_updated":
-        let topicDiv = "#topic-" + data.topic_pk;
-        if (session_key != data.session_key) {
-          htmx.trigger(htmx.find(topicDiv), "topicUpdated");
-        }
+        var topicDiv = "#topic-" + data.topic_pk;
+        htmx.trigger(htmx.find(topicDiv), "topicUpdated");
 
         mathjaxTypeset(topicDiv);
         break;
@@ -63,18 +56,14 @@ function connect() {
         htmx.find("#topic-" + data.topic_pk).remove();
         break;
       case "post_created":
-        if (session_key != data.session_key) {
-          let topicDiv = "#topic-" + data.topic_pk;
-          htmx.trigger(htmx.find(topicDiv), "postCreated");
-        }
+        var topicDiv = "#topic-" + data.topic_pk;
+        htmx.trigger(htmx.find(topicDiv), "postCreated");
         break;
       case "post_approved":
       case "post_unapproved":
       case "post_updated":
-        let postDiv = "#post-" + data.post_pk;
-        if (session_key != data.session_key) {
-          htmx.trigger(htmx.find(postDiv), "postUpdated");
-        }
+        var postDiv = "#post-" + data.post_pk;
+        htmx.trigger(htmx.find(postDiv), "postUpdated");
 
         mathjaxTypeset(postDiv);
         break;
