@@ -105,6 +105,7 @@ class BoardPreferences(models.Model):
     background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
     require_approval = models.BooleanField(default=False)
+    moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
 
     def __str__(self):
         return self.board.title + " preferences"
