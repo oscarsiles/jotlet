@@ -316,7 +316,7 @@ class TopicCreateViewTest(TestCase):
             reverse("boards:topic-create", kwargs={"slug": board.slug}),
             data={"subject": "Test Topic"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic"))
 
     def test_topic_create_blank(self):
@@ -399,7 +399,7 @@ class TopicUpdateViewTest(TestCase):
             reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}),
             data={"subject": "Test Topic NEW"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic NEW"))
 
     def test_topic_update_blank(self):
