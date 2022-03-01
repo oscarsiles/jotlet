@@ -23,7 +23,6 @@ def channel_group_send(group_name, message):
 class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
-
     form_class = SearchBoardsForm
 
     def form_valid(self, form):
@@ -59,7 +58,6 @@ class BoardView(generic.DetailView):
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
     template_name = "boards/board_preferences.html"
-
     form_class = BoardPreferencesForm
 
     def test_func(self):
