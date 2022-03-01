@@ -1,8 +1,9 @@
 from asgiref.sync import async_to_sync
+from random import randint
+
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -22,7 +23,6 @@ def channel_group_send(group_name, message):
 class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
-
     form_class = SearchBoardsForm
 
     def form_valid(self, form):
@@ -47,6 +47,7 @@ class BoardView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context["topics"] = Topic.objects.filter(board=self.object)
+        context["random_int"] = randint(0, 999999)
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
@@ -57,7 +58,6 @@ class BoardView(generic.DetailView):
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
     template_name = "boards/board_preferences.html"
-
     form_class = BoardPreferencesForm
 
     def test_func(self):
@@ -208,6 +208,7 @@ class CreatePostView(generic.CreateView):
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = (
                 self.request.user.has_perm("boards.can_approve_posts")
+                or self.request.user in form.instance.topic.board.preferences.moderators.all()
                 or self.request.user == form.instance.topic.board.owner
                 or self.request.user.is_staff
             )
@@ -238,6 +239,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.change_post")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
@@ -264,6 +266,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.delete_post")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
@@ -316,6 +319,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
             self.request.user.has_perm("boards.can_approve_posts")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         ) and post.topic.board.preferences.require_approval
@@ -360,7 +364,11 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
 
     def test_func(self):
         board = Board.objects.get(slug=self.kwargs["slug"])
-        return self.request.user == board.owner or self.request.user.is_staff
+        return (
+            self.request.user == board.owner
+            or self.request.user in board.preferences.moderators.all()
+            or self.request.user.is_staff
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

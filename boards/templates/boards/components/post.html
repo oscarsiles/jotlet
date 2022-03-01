@@ -5,20 +5,19 @@
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
-     {% if not post.approved and not post.session_key == request.session.session_key and not perms.boards.can_approve_posts and not request.user == post.topic.board.owner %}hidden="true"{% endif %}>
-    {% if post.approved or post.session_key == request.session.session_key or perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
+     {% if not post.approved and not post.session_key == request.session.session_key and not perms.boards.can_approve_posts and not request.user in post.topic.board.preferences.moderators.all and not request.user == post.topic.board.owner %}hidden="true"{% endif %}>
+    {% if post.approved or post.session_key == request.session.session_key or perms.boards.can_approve_posts or request.user in post.topic.board.preferences.moderators.all or request.user == post.topic.board.owner %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
                     <h5 class="card-title"></h5>
                 </div>
-                {% if request.session.session_key == post.session_key or perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
+                {% if request.session.session_key == post.session_key or perms.boards.can_approve_posts or request.user in post.topic.board.preferences.moderators.all or request.user == post.topic.board.owner %}
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval  %}
-                            {% if perms.boards.can_approve_posts or request.user == post.topic.board.owner %}
+                            {% if perms.boards.can_approve_posts or request.user in post.topic.board.preferences.moderators.all or request.user == post.topic.board.owner %}
                                 <button hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
-                                        hx-target="this"
                                         class="btn btn-link text-black shadow-none p-1">
                                     {% if not post.approved %}
                                         <i class="bi bi-hand-thumbs-up"></i>

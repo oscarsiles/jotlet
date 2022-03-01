@@ -91,7 +91,6 @@ BACKGROUND_TYPE = (
 
 
 class BoardPreferences(models.Model):
-
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = models.ForeignKey(
@@ -105,6 +104,7 @@ class BoardPreferences(models.Model):
     background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
     require_approval = models.BooleanField(default=False)
+    moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
 
     def __str__(self):
         return self.board.title + " preferences"
