@@ -208,6 +208,7 @@ class CreatePostView(generic.CreateView):
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = (
                 self.request.user.has_perm("boards.can_approve_posts")
+                or self.request.user in form.instance.topic.board.preferences.moderators.all()
                 or self.request.user == form.instance.topic.board.owner
                 or self.request.user.is_staff
             )
@@ -238,6 +239,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.change_post")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
@@ -264,6 +266,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.delete_post")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         )
@@ -316,6 +319,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
             self.request.user.has_perm("boards.can_approve_posts")
+            or self.request.user in post.topic.board.preferences.moderators.all()
             or self.request.user == post.topic.board.owner
             or self.request.user.is_staff
         ) and post.topic.board.preferences.require_approval
@@ -360,7 +364,11 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
 
     def test_func(self):
         board = Board.objects.get(slug=self.kwargs["slug"])
-        return self.request.user == board.owner or self.request.user.is_staff
+        return (
+            self.request.user == board.owner
+            or self.request.user in board.preferences.moderators.all()
+            or self.request.user.is_staff
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
