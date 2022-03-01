@@ -35,17 +35,6 @@ class BoardPreferencesForm(forms.ModelForm):
         delimiters=" ",
     )
 
-    def clean_moderators(self):
-        data = self.cleaned_data["moderators"]
-        value = []
-        for moderator in data:
-            try:
-                user = User.objects.get(username=moderator)
-                value.append(user)
-            except User.DoesNotExist:
-                pass
-        return value
-
     class Meta:
         model = BoardPreferences
         exclude = ["board"]
@@ -143,6 +132,17 @@ class BoardPreferencesForm(forms.ModelForm):
         value = self.cleaned_data["background_image"]
         if value == None:
             value == ""
+        return value
+
+    def clean_moderators(self):
+        moderators = self.cleaned_data["moderators"]
+        value = []
+        for moderator in moderators:
+            try:
+                user = User.objects.get(username=moderator)
+                value.append(user)
+            except User.DoesNotExist:
+                pass
         return value
 
 
