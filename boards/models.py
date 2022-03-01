@@ -91,7 +91,6 @@ BACKGROUND_TYPE = (
 
 
 class BoardPreferences(models.Model):
-
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = models.ForeignKey(
