@@ -1,8 +1,9 @@
 from asgiref.sync import async_to_sync
+from random import randint
+
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -47,6 +48,7 @@ class BoardView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context["topics"] = Topic.objects.filter(board=self.object)
+        context["random_int"] = randint(0, 999999)
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
