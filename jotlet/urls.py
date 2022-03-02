@@ -29,6 +29,9 @@ urlpatterns = [
     path("reverse.js", views_djrjs.urls_js, name="reverse_js"),
 ]
 
+if settings.PROMETHEUS_ENABLED:
+    urlpatterns += (path(settings.PROMETHEUS_PATH, include("django_prometheus.urls")),)
+
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

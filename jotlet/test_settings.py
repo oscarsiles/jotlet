@@ -158,3 +158,5 @@ CACHES = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "testing@test.com"
+
+PROMETHEUS_ENABLED = False
