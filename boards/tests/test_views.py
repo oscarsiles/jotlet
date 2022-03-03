@@ -573,9 +573,11 @@ class PostCreateViewTest(TestCase):
         self.assertIn("session_connected", message)
         response = await database_sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
         post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        self.assertIsNotNone(post)
+        topic = await database_sync_to_async(Topic.objects.get)(id=1)
         message = await communicator.receive_from()
         self.assertIn("post_created", message)
-        self.assertIn(f'"topic_pk": {post.topic.id}', message)
+        self.assertIn(f'"topic_pk": {topic.id}', message)
 
 
 class PostUpdateViewTest(TestCase):
