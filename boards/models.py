@@ -116,6 +116,9 @@ class BoardPreferences(models.Model):
             self.background_image = None
         super(BoardPreferences, self).save(*args, **kwargs)
 
+    def get_inverse_opacity(self):
+        return round(1.0 - self.background_opacity, 2)
+
     def get_absolute_url(self):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 

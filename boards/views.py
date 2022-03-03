@@ -213,18 +213,16 @@ class CreatePostView(generic.CreateView):
                 or self.request.user.is_staff
             )
 
-        return super(CreatePostView, self).form_valid(form)
+        super(CreatePostView, self).form_valid(form)
 
-    def get_success_url(self):
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
                 "type": "post_created",
                 "topic_pk": self.kwargs.get("topic_pk"),
-                "post_pk": self.object.pk,
             },
         )
-        return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
+        return HttpResponse("")
 
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
@@ -244,7 +242,8 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             or self.request.user.is_staff
         )
 
-    def get_success_url(self):
+    def form_valid(self, form):
+        super(UpdatePostView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -252,7 +251,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
                 "post_pk": self.object.pk,
             },
         )
-        return reverse_lazy("boards:post-fetch", kwargs={"slug": self.object.topic.board.slug, "pk": self.object.pk})
+        return HttpResponse("")
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
@@ -328,25 +327,16 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post = Post.objects.get(pk=self.kwargs["pk"])
         post.approved = not post.approved
         post.save()
-        if post.approved:
-            channel_group_send(
-                f"board_{post.topic.board.slug}",
-                {
-                    "type": "post_approved",
-                    "post_pk": post.pk,
-                },
-            )
-        else:
-            channel_group_send(
-                f"board_{post.topic.board.slug}",
-                {
-                    "type": "post_unapproved",
-                    "post_pk": post.pk,
-                },
-            )
-        return HttpResponseRedirect(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+
+        channel_group_send(
+            f"board_{post.topic.board.slug}",
+            {
+                "type": "post_updated",
+                "post_pk": post.pk,
+            },
         )
+
+        return HttpResponse("")
 
 
 @method_decorator(cache_control(public=True), name="dispatch")
