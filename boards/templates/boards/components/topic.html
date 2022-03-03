@@ -7,10 +7,11 @@
      hx-swap="outerHTML">
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
-            {% cache 600 topic topic.pk %}
+            {% cache 3600 topic topic.pk %}
             <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>
         {% endcache %}
         {% if request.user == board.owner or user.is_staff %}
+            {% cache 3600 topic-buttons topic.pk %}
             <button id="topic-{{ topic.pk }}-update-url"
                     hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
                     hx-target="#modal-1-body-div"
@@ -29,10 +30,11 @@
                     class="btn btn-link shadow-none text-danger px-0">
                 Delete
             </button>
-        {% endif %}
-    </div>
+        {% endcache %}
+    {% endif %}
 </div>
-{% cache 600 topic_create topic.pk  %}
+</div>
+{% cache 3600 topic-create-post topic.pk  %}
 <div class="card my-2" id="topic-{{ topic.pk }}-create">
     <div class="card-body">
         <button id="topic-{{ topic.pk }}-create-url"
@@ -50,7 +52,7 @@
 {% for post in topic.posts.all %}
     {% include 'boards/components/post.html' %}
 {% endfor %}
-{% cache 600 topic_newCard topic.pk  %}
+{% cache 3600 topic-newCard topic.pk  %}
 <div id="newCard-{{ topic.pk }}-div"
      hx-trigger="postCreated"
      hx-target="this"
