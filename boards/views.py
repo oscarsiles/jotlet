@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
 
-from jotlet.http import HTTPResponseHXRedirect
+from django_htmx.http import HttpResponseClientRefresh
 
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Topic, Post
@@ -84,10 +84,7 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
                 "type": "board_preferences_changed",
             },
         )
-        return HTTPResponseHXRedirect(self.get_success_url())
-
-    def get_success_url(self, **kwargs):
-        return reverse("boards:board", kwargs={"slug": self.kwargs["slug"]})
+        return HttpResponseClientRefresh()
 
 
 class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):

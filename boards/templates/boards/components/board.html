@@ -45,7 +45,9 @@
 {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
 {% if board.preferences.enable_latex %}
     {% cache 3600 board-preferences-latex %}
-    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js"></script>
+    {% load static %}
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="{% static 'mathjax/tex-mml-chtml.js' %}"></script>
     <script>
         MathJax = {
             tex: {

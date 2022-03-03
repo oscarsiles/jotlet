@@ -125,7 +125,8 @@ class BoardPreferencesViewTest(TestCase):
         )
         message = await communicator.receive_from()
         self.assertIn("board_preferences_changed", message)
-        self.assertEqual(response.headers["HX-Redirect"], f"/boards/{board.slug}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers["HX-Refresh"])
 
 
 class CreateBoardViewTest(TestCase):
