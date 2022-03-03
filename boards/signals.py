@@ -52,7 +52,7 @@ def approve_all_posts(sender, instance, created, **kwargs):
     posts = Post.objects.filter(topic__board=instance.board)
     for post in posts:
         invalidate_obj(post)
-        if not instance.require_approval and not post.approved:  # approval turned off - approve all posts
+        if not instance.require_approval:  # approval turned off - approve all posts
             post.approved = True
             post.save()
 
