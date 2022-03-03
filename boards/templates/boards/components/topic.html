@@ -49,7 +49,7 @@
     </div>
 </div>
 {% endcache %}
-{% for post in topic.posts.all %}
+{% for post in topic.posts.all|dictsort:"pk" %}
     {% include 'boards/components/post.html' %}
 {% endfor %}
 {% cache 3600 topic-newCard topic.pk  %}

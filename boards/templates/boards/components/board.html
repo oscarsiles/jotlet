@@ -16,7 +16,7 @@
         }
     </style>
 {% endcache %}
-{% for topic in board.topics.all %}
+{% for topic in board.topics.all|dictsort:"pk" %}
     {% include 'boards/components/topic.html' %}
 {% endfor %}
 <div class="col-sm"
