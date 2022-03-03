@@ -517,10 +517,10 @@ class PostCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
             reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id}),
-            data={"content": "Test Message"},
+            data={"content": "Test Message anon"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(Post.objects.get(content="Test Message"))
+        self.assertEqual(Post.objects.get(id=1).content, "Test Message anon")
 
     def test_post_session_key(self):
         topic = Topic.objects.get(id=1)
