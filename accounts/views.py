@@ -3,7 +3,7 @@ from allauth.account.views import LoginView, PasswordChangeView, PasswordSetView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
-from jotlet.http import HTTPResponseHXRedirect
+from django_htmx.http import HttpResponseClientRedirect
 
 
 class JotletLoginView(LoginView):
@@ -19,7 +19,7 @@ class JotletLoginView(LoginView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        return HTTPResponseHXRedirect(self.get_success_url())
+        return HttpResponseClientRedirect(self.get_success_url())
 
 
 class JotletSignupView(SignupView):
@@ -34,13 +34,13 @@ class JotletSignupView(SignupView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        return HTTPResponseHXRedirect(self.get_success_url())
+        return HttpResponseClientRedirect(response.get("Location"))
 
 
 class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):
     def form_valid(self, form):
         response = super().form_valid(form)
-        return HTTPResponseHXRedirect(self.get_success_url())
+        return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):
         next_url = self.request.POST.get("next", None)
@@ -53,7 +53,7 @@ class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):
 class JotletSetPasswordView(PasswordSetView):
     def form_valid(self, form):
         response = super().form_valid(form)
-        return HTTPResponseHXRedirect(self.get_success_url())
+        return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):
         next_url = self.request.POST.get("next", None)
