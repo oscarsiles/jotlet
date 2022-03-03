@@ -7,6 +7,8 @@ from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+
+from cacheops import invalidate_obj, invalidate_model, invalidate_all
 from django_cleanup.signals import cleanup_pre_delete
 from sorl.thumbnail import delete
 
@@ -47,9 +49,10 @@ def create_board_preferences(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=BoardPreferences)
 def approve_all_posts(sender, instance, created, **kwargs):
-    if not instance.require_approval:  # approval turned off - approve all posts
-        posts = Post.objects.filter(topic__board=instance.board).filter(approved=False)
-        for post in posts:
+    posts = Post.objects.filter(topic__board=instance.board)
+    for post in posts:
+        invalidate_obj(post)
+        if not instance.require_approval and not post.approved:  # approval turned off - approve all posts
             post.approved = True
             post.save()
 
