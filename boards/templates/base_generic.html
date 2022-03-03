@@ -12,6 +12,7 @@
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+        <link href="{% static 'css/tagify.css' %}" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
         <link rel="icon"
               href="{% static 'images/favicon.svg' %}"
@@ -121,10 +122,12 @@
         </div>
         {% include 'boards/components/modal.html' with num=1 %}
         {% include 'boards/components/modal.html' with num=2 %}
-        <script src="{% static 'js/jquery-3.6.0.slim.min.js' %}"></script>
         <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
+        <script src="{% static 'js/jquery-3.6.0.slim.min.js' %}"></script>
         <script src="{% static 'js/robust-websocket.js' %}"></script>
+        <script src="{% static 'js/tagify.min.js' %}"></script>
+        <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
         <script>
             htmx.on('hidden.bs.modal', function(e) {
             var modal2 = bootstrap.Modal.getInstance(document.getElementById("modal-2-div"));
