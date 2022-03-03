@@ -57,21 +57,47 @@ def approve_all_posts(sender, instance, created, **kwargs):
             post.save()
 
 
-@receiver(post_save, sender=Topic)
-def topic_saved(sender, instance, created, **kwargs):
-    keyTopic = make_template_fragment_key("topic", [instance.pk])
+@receiver(post_save, sender=BoardPreferences)
+def invalidate_board_preferences_cache(sender, instance, created, **kwargs):
+    keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.pk])
     try:
-        if cache.get(keyTopic) is not None:
-            cache.delete(keyTopic)
+        if cache.get(keyBoardPreferences1):
+            cache.delete(keyBoardPreferences1)
+    except:
+        raise Exception(f"Could not delete cache: board-{instance.pk}")
+
+
+@receiver(post_save, sender=Topic)
+def invalidate_topic_template_cache(sender, instance, created, **kwargs):
+    keyTopic1 = make_template_fragment_key("topic", [instance.pk])
+    keyTopic2 = make_template_fragment_key("topic-buttons", [instance.pk])
+    keyTopic3 = make_template_fragment_key("topic-create-post", [instance.pk])
+    keyTopic4 = make_template_fragment_key("topic-newCard", [instance.pk])
+    try:
+        if cache.get(keyTopic1) is not None:
+            cache.delete(keyTopic1)
+        if cache.get(keyTopic2) is not None:
+            cache.delete(keyTopic2)
+        if cache.get(keyTopic3) is not None:
+            cache.delete(keyTopic3)
+        if cache.get(keyTopic4) is not None:
+            cache.delete(keyTopic4)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
 
 
 @receiver(post_save, sender=Post)
-def post_saved(sender, instance, created, **kwargs):
-    keyPost = make_template_fragment_key("post", [instance.pk])
+def invalidate_post_template_cache(sender, instance, created, **kwargs):
+    keyPost1 = make_template_fragment_key("post", [instance.pk])
+    keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
+    keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
     try:
-        cache.delete(keyPost)
+        if cache.get(keyPost1) is not None:
+            cache.delete(keyPost1)
+        if cache.get(keyPost2) is not None:
+            cache.delete(keyPost2)
+        if cache.get(keyPost3) is not None:
+            cache.delete(keyPost3)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 
@@ -81,7 +107,8 @@ def post_saved(sender, instance, created, **kwargs):
 def update_image_select(sender, instance, **kwargs):
     keyImageSelect = make_template_fragment_key("image_select", [instance.type])
     try:
-        cache.delete(keyImageSelect)
+        if cache.get(keyImageSelect) is not None:
+            cache.delete(keyImageSelect)
     except:
         raise Exception(f"Could not delete cache: image_select-{instance.type}")
 

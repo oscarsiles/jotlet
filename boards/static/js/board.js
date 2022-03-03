@@ -16,21 +16,22 @@ let boardSocket = null;
 function connect() {
   var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
   boardSocket = new RobustWebSocket(
-    ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/"
+    ws_scheme + "://" + baseUrl + "/ws/boards/" + board_slug + "/",
+    null,
+    {
+      timeout: 5000,
+      shouldReconnect: function (event, ws) {
+        console.log(
+          "WebSocket connection closed unexpectedly. Trying to reconnect..."
+        );
+        if (event.code === 1008 || event.code === 1011) return;
+        return [0, 3000, 10000][ws.attempts];
+      },
+    }
   );
 
   boardSocket.onopen = function (e) {
     console.log("Successfully connected to the WebSocket.");
-  };
-
-  boardSocket.onclose = function (e) {
-    console.log(
-      "WebSocket connection closed unexpectedly. Trying to reconnect in 2s..."
-    );
-    setTimeout(function () {
-      console.log("Reconnecting...");
-      connect();
-    }, 2000);
   };
 
   boardSocket.onmessage = function (e) {
@@ -59,8 +60,6 @@ function connect() {
         var topicDiv = "#topic-" + data.topic_pk;
         htmx.trigger(htmx.find(topicDiv), "postCreated");
         break;
-      case "post_approved":
-      case "post_unapproved":
       case "post_updated":
         var postDiv = "#post-" + data.post_pk;
         htmx.trigger(htmx.find(postDiv), "postUpdated");
@@ -84,16 +83,17 @@ function connect() {
 }
 connect();
 
-htmx.onLoad(function (elt) {
-  mathjaxTypeset(elt);
-});
-
 function mathjaxTypeset(elt) {
+  var mathjax_enabled = JSON.parse(
+    document.getElementById("mathjax_enabled").textContent
+  );
   try {
-    if (window.MathJax != null) {
+    if (window.MathJax != null && mathjax_enabled) {
       window.MathJax.typesetPromise([elt]).catch((err) =>
         console.log(err.message)
       );
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+  }
 }

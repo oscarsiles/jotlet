@@ -43,19 +43,5 @@
     {% include 'boards/components/board.html' %}
 {% endblock content %}
 {% block script %}
-    {% if board.preferences.enable_latex %}
-        <script>
-    MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-      },
-      svg: {
-        fontCache: 'global'
-      }
-    };
-        </script>
-        <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-svg.js">
-        </script>
-    {% endif %}
     <script src="{% static 'js/board.js' %}?rand={{ random_int }}"></script>
 {% endblock script %}
