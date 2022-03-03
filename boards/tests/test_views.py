@@ -519,7 +519,7 @@ class PostCreateViewTest(TestCase):
             reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id}),
             data={"content": "Test Message"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(Post.objects.get(content="Test Message"))
 
     def test_post_session_key(self):
@@ -575,7 +575,7 @@ class PostCreateViewTest(TestCase):
         post = await database_sync_to_async(Post.objects.get)(content="Test Post")
         message = await communicator.receive_from()
         self.assertIn("post_created", message)
-        self.assertIn(f'"post_pk": {post.id}', message)
+        self.assertIn(f'"topic_pk": {post.topic.id}', message)
 
 
 class PostUpdateViewTest(TestCase):
@@ -607,7 +607,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post anon NEW"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(Post.objects.get(id=2).content, "Test Post anon NEW")
 
     def test_other_user_permissions(self):
@@ -629,7 +629,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post NEW"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(Post.objects.get(id=1).content, "Test Post NEW")
 
     def test_owner_permissions(self):
@@ -643,7 +643,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post NEW"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(Post.objects.get(id=1).content, "Test Post NEW")
 
     async def test_post_updated_websocket_message(self):
@@ -872,12 +872,12 @@ class PostToggleApprovalViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
 
     def test_post_toggle_approval_owner(self):
@@ -887,12 +887,12 @@ class PostToggleApprovalViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
 
     async def test_post_toggle_websocket_message(self):
@@ -907,11 +907,11 @@ class PostToggleApprovalViewTest(TestCase):
         post = await database_sync_to_async(Post.objects.get)(content="Test Post")
         response = await database_sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
-        self.assertIn("post_approved", message)
+        self.assertIn("post_updated", message)
         self.assertIn(f'"post_pk": {post.id}', message)
         response = await database_sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
-        self.assertIn("post_unapproved", message)
+        self.assertIn("post_updated", message)
         self.assertIn(f'"post_pk": {post.id}', message)
 
 
