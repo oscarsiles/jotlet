@@ -16,8 +16,10 @@
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval  %}
                             {% if perms.boards.can_approve_posts or request.user in post.topic.board.preferences.moderators.all or request.user == post.topic.board.owner %}
+                                {% cache 3600 post-approve-button post.pk post.approved %}
                                 <button hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
+                                        hx-swap="none"
                                         class="btn btn-link text-black shadow-none p-1">
                                     {% if not post.approved %}
                                         <i class="bi bi-hand-thumbs-up"></i>
@@ -25,31 +27,34 @@
                                         <i class="bi bi-hand-thumbs-down"></i>
                                     {% endif %}
                                 </button>
-                            {% endif %}
+                            {% endcache %}
                         {% endif %}
-                        <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.pk %}"
-                                hx-target="#modal-1-body-div"
-                                hx-swap="innerHTML"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal-1-div"
-                                class="btn btn-link btn-sm text-black shadow-none p-1">
-                            <i class="bi bi-pen"></i>
-                        </button>
-                        <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.pk %}"
-                                hx-target="#modal-1-body-div"
-                                hx-swap="innerHTML"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal-1-div"
-                                class="btn btn-close btn-sm shadow-none p-1">
-                        </button>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                    {% cache 3600 post-buttons post.pk %}
+                    <button hx-get="{% url 'boards:post-update' post.topic.board.slug post.pk %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div"
+                            class="btn btn-link btn-sm text-black shadow-none p-1">
+                        <i class="bi bi-pen"></i>
+                    </button>
+                    <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.pk %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div"
+                            class="btn btn-close btn-sm shadow-none p-1">
+                    </button>
+                {% endcache %}
             </div>
-            {% cache 600 post post.pk %}
-            <p class="card-text text-break" id="post-{{ post.pk }}-text">
-                {{ post.content }}
-            </p>
-        {% endcache %}
+        {% endif %}
     </div>
+    {% cache 3600 post post.pk %}
+    <p class="card-text text-break" id="post-{{ post.pk }}-text">
+        {{ post.content }}
+    </p>
+{% endcache %}
+</div>
 {% endif %}
 </div>

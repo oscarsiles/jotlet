@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     "django_reverse_js",
     "django_htmx",
     "qr_code",
-    "mathfilters",
     "sorl.thumbnail",
     "tagify",
     "accounts",
