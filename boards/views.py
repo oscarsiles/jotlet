@@ -189,7 +189,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "topicCreated": None,
+                        "topicUpdated": None,
                         "showMessage": {
                             "message": f'Topic "{self.object.subject}" updated',
                         },
@@ -223,7 +223,7 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "topicCreated": None,
+                        "topicDeleted": None,
                         "showMessage": {
                             "message": f'Topic "{topic_subject}" Deleted',
                             "color": "danger",
@@ -269,7 +269,7 @@ class CreatePostView(generic.CreateView):
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "topicCreated": None,
+                        "postCreated": None,
                         "showMessage": {
                             "message": "Post Created",
                         },
@@ -310,7 +310,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "topicCreated": None,
+                        "postUpdated": None,
                         "showMessage": {
                             "message": "Post Updated",
                         },
@@ -337,12 +337,13 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         )
 
     def form_valid(self, form):
+        post_pk = self.object.pk
         super(DeletePostView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
                 "type": "post_deleted",
-                "post_pk": self.object.pk,
+                "post_pk": post_pk,
             },
         )
         return HttpResponse(
@@ -350,7 +351,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "topicCreated": None,
+                        "postDeleted": None,
                         "showMessage": {
                             "message": "Post Deleted",
                             "color": "danger",
