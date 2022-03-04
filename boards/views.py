@@ -149,7 +149,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
                 "topic_pk": self.object.pk,
             },
         )
-        return HttpResponse("")
+        return HttpResponse(status=204)
 
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -170,7 +170,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
                 "topic_pk": self.object.pk,
             },
         )
-        return HttpResponse("")
+        return HttpResponse(status=204)
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
@@ -219,7 +219,7 @@ class CreatePostView(generic.CreateView):
                 "topic_pk": self.kwargs.get("topic_pk"),
             },
         )
-        return HttpResponse("")
+        return HttpResponse(status=204)
 
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
@@ -248,7 +248,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
                 "post_pk": self.object.pk,
             },
         )
-        return HttpResponse("")
+        return HttpResponse(status=204)
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
@@ -333,7 +333,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
             },
         )
 
-        return HttpResponse("")
+        return HttpResponse(status=204)
 
 
 @method_decorator(cache_control(public=True), name="dispatch")
