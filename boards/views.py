@@ -1,3 +1,5 @@
+import json
+
 from asgiref.sync import async_to_sync
 from random import randint
 
@@ -149,7 +151,19 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
                 "topic_pk": self.object.pk,
             },
         )
-        return HttpResponse(status=204)
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": f'Topic "{self.object.subject}" created',
+                        },
+                    }
+                )
+            },
+        )
 
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -170,7 +184,19 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
                 "topic_pk": self.object.pk,
             },
         )
-        return HttpResponse(status=204)
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": f'Topic "{self.object.subject}" updated',
+                        },
+                    }
+                )
+            },
+        )
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
@@ -181,14 +207,33 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         board = Board.objects.get(slug=self.kwargs["slug"])
         return self.request.user == board.owner or self.request.user.is_staff
 
-    def get_success_url(self):
+    def form_valid(self, form):
+        topic_pk = self.object.pk
+        topic_subject = self.object.subject
+        super(DeleteTopicView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
                 "type": "topic_deleted",
-                "topic_pk": self.object.pk,
+                "topic_pk": topic_pk,
             },
         )
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": f'Topic "{topic_subject}" Deleted',
+                            "color": "danger",
+                        },
+                    }
+                )
+            },
+        )
+
+    def get_success_url(self):
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
@@ -219,7 +264,19 @@ class CreatePostView(generic.CreateView):
                 "topic_pk": self.kwargs.get("topic_pk"),
             },
         )
-        return HttpResponse(status=204)
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": "Post Created",
+                        },
+                    }
+                )
+            },
+        )
 
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
@@ -248,7 +305,19 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
                 "post_pk": self.object.pk,
             },
         )
-        return HttpResponse(status=204)
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": "Post Updated",
+                        },
+                    }
+                )
+            },
+        )
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
@@ -267,7 +336,8 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
             or self.request.user.is_staff
         )
 
-    def get_success_url(self):
+    def form_valid(self, form):
+        super(DeletePostView, self).form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -275,9 +345,23 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
                 "post_pk": self.object.pk,
             },
         )
-        return reverse_lazy(
-            "boards:board", kwargs={"slug": self.object.topic.board.slug, "slug": self.kwargs["slug"]}
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicCreated": None,
+                        "showMessage": {
+                            "message": "Post Deleted",
+                            "color": "danger",
+                        },
+                    }
+                )
+            },
         )
+
+    def get_success_url(self):
+        return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
 # HTMX Stuff
