@@ -50,8 +50,6 @@ function connect() {
       case "topic_updated":
         var topicDiv = "#topic-" + data.topic_pk;
         htmx.trigger(htmx.find(topicDiv), "topicUpdated");
-
-        mathjaxTypeset(topicDiv);
         break;
       case "topic_deleted":
         htmx.find("#topic-" + data.topic_pk).remove();
@@ -63,8 +61,6 @@ function connect() {
       case "post_updated":
         var postDiv = "#post-" + data.post_pk;
         htmx.trigger(htmx.find(postDiv), "postUpdated");
-
-        mathjaxTypeset(postDiv);
         break;
       case "post_deleted":
         htmx.find("#post-" + data.post_pk).remove();
