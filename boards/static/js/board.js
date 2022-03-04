@@ -78,18 +78,3 @@ function connect() {
   };
 }
 connect();
-
-function mathjaxTypeset(elt) {
-  var mathjax_enabled = JSON.parse(
-    document.getElementById("mathjax_enabled").textContent
-  );
-  try {
-    if (window.MathJax != null && mathjax_enabled) {
-      window.MathJax.typesetPromise([elt]).catch((err) =>
-        console.log(err.message)
-      );
-    }
-  } catch (err) {
-    console.log(err);
-  }
-}
