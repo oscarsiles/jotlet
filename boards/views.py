@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 from random import randint
 
 from channels.layers import get_channel_layer
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -28,7 +28,7 @@ class IndexView(FormMixin, ProcessFormView, generic.ListView):
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
     context_object_name = "boards"
-    paginate_by = 1
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         queryset = kwargs.pop("object_list", None)
@@ -42,6 +42,22 @@ class IndexView(FormMixin, ProcessFormView, generic.ListView):
 
     def get_success_url(self):
         return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
+
+
+class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
+    model = Board
+    template_name = "boards/index_allboards.html"
+    context_object_name = "boards"
+    paginate_by = 8
+    permission_required = "boards.can_view_all_boards"
+
+    def get_context_data(self, **kwargs):
+        queryset = kwargs.pop("object_list", None)
+        if queryset is None:
+            self.object_list = self.model.objects.all()
+        context = super().get_context_data(**kwargs)
+        context["all_boards"] = True
+        return context
 
 
 class BoardView(generic.DetailView):

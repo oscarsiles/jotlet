@@ -12,6 +12,11 @@
                     {% include 'boards/components/board_list.html' %}
                 {% endif %}
             </p>
+            <p>
+                {% if perms.boards.can_view_all_boards %}
+                    <a class="btn btn-primary" href="{% url 'boards:index-all' %}">All Boards</a>
+                {% endif %}
+            </p>
         </div>
     </div>
 {% endblock content %}
