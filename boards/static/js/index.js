@@ -1,8 +1,10 @@
-const toastElement = document.getElementById("toast");
-const toastBody = document.getElementById("toast-body");
-const toastClose = document.getElementById("toast-close");
+var toastElement = document.getElementById("toast");
+var toastBody = document.getElementById("toast-body");
+var toastClose = document.getElementById("toast-close");
 
-const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+var toast = bootstrap.Toast.getOrCreateInstance(toastElement, {
+  delay: 3000,
+});
 
 htmx.on("showMessage", (e) => {
   toastBody.innerText = e.detail.message;

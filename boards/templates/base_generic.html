@@ -116,34 +116,19 @@
                     </div>
                 </div>
             </nav>
-            <div class="d-sm-flex justify-content-center overflow-auto flex-grow-1 px-2"
+            <div class="flex-column justify-content-center overflow-auto flex-grow-1 px-2"
                  id="main-content-div">
+                {% include 'boards/components/messages.html' %}
                 {% block content %}
                 {% endblock content %}
-                <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                    <div id="toast"
-                         class=""
-                         role="alert"
-                         aria-live="assertive"
-                         aria-atomic="true">
-                        <div class="d-flex">
-                            <div id="toast-body" class="toast-body"></div>
-                            <button id="toast-close"
-                                    type="button"
-                                    class="me-2 m-auto btn-close btn-close-white"
-                                    data-bs-dismiss="toast"
-                                    aria-label="Close">
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                {% include 'boards/components/toast.html' %}
             </div>
         </div>
         {% include 'boards/components/modal.html' with num=1 %}
         {% include 'boards/components/modal.html' with num=2 %}
         <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
-        <script src="{% static 'js/jquery-3.6.0.slim.min.js' %}"></script>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'js/robust-websocket.js' %}"></script>
         <script src="{% static 'js/tagify.min.js' %}"></script>
         <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
