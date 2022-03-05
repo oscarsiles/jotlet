@@ -317,7 +317,7 @@ class TopicCreateViewTest(TestCase):
             reverse("boards:topic-create", kwargs={"slug": board.slug}),
             data={"subject": "Test Topic"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic"))
 
     def test_topic_create_blank(self):
@@ -400,7 +400,7 @@ class TopicUpdateViewTest(TestCase):
             reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}),
             data={"subject": "Test Topic NEW"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic NEW"))
 
     def test_topic_update_blank(self):
@@ -520,7 +520,7 @@ class PostCreateViewTest(TestCase):
             reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id}),
             data={"content": "Test Message anon"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.get(id=1).content, "Test Message anon")
 
     def test_post_session_key(self):
@@ -610,7 +610,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post anon NEW"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.get(id=2).content, "Test Post anon NEW")
 
     def test_other_user_permissions(self):
@@ -632,7 +632,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post NEW"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.get(id=1).content, "Test Post NEW")
 
     def test_owner_permissions(self):
@@ -646,7 +646,7 @@ class PostUpdateViewTest(TestCase):
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
             data={"content": "Test Post NEW"},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.get(id=1).content, "Test Post NEW")
 
     async def test_post_updated_websocket_message(self):
@@ -708,7 +708,7 @@ class PostDeleteViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-delete", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
 
     def test_owner_permissions(self):
@@ -717,7 +717,7 @@ class PostDeleteViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-delete", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
 
     async def test_post_deleted_websocket_message(self):
@@ -875,12 +875,12 @@ class PostToggleApprovalViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
 
     def test_post_toggle_approval_owner(self):
@@ -890,12 +890,12 @@ class PostToggleApprovalViewTest(TestCase):
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
 
     async def test_post_toggle_websocket_message(self):
