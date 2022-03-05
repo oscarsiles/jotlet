@@ -4,6 +4,7 @@
             <div class="ms-2">
                 <div class="fw-bold">
                     <a href="{{ board.get_absolute_url }}">{{ board }}</a>
+                    {% if all_boards is not None %}({{ board.owner }}){% endif %}
                 </div>
                 <div class="">{{ board.description }}</div>
             </div>

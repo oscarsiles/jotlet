@@ -6,6 +6,7 @@ from . import views
 app_name = "boards"
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
+    path("all/", views.IndexAllBoardsView.as_view(), name="index-all"),
     path("create/", views.CreateBoardView.as_view(), name="board-create"),
     path("image_select/<str:type>/", views.ImageSelectView.as_view(), name="image-select"),
     path("<slug:slug>/", views.BoardView.as_view(), name="board"),
