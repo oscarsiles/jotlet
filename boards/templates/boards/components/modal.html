@@ -1,3 +1,5 @@
+{% load cache %}
+{% cache 3600 modal num %}
 <div class="modal fade"
      id="modal-{{ num }}-div"
      tabindex="-1"
@@ -33,3 +35,4 @@
         </div>
     </div>
 </div>
+{% endcache %}

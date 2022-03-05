@@ -88,7 +88,7 @@ def invalidate_topic_template_cache(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Post)
 def invalidate_post_template_cache(sender, instance, created, **kwargs):
-    keyPost1 = make_template_fragment_key("post", [instance.pk])
+    keyPost1 = make_template_fragment_key("post-content", [instance.pk])
     keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
     keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
     try:
@@ -105,12 +105,15 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Image)
 @receiver(post_delete, sender=Image)
 def update_image_select(sender, instance, **kwargs):
-    keyImageSelect = make_template_fragment_key("image_select", [instance.type])
+    keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
+    keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
     try:
-        if cache.get(keyImageSelect) is not None:
-            cache.delete(keyImageSelect)
+        if cache.get(keyImageSelect1) is not None:
+            cache.delete(keyImageSelect1)
+        if cache.get(keyImageSelect2) is not None:
+            cache.delete(keyImageSelect2)
     except:
-        raise Exception(f"Could not delete cache: image_select-{instance.type}")
+        raise Exception(f"Could not delete cache: image-select-{instance.type}")
 
 
 @receiver(cleanup_pre_delete)

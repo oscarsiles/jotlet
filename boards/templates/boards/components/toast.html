@@ -1,3 +1,5 @@
+{% load cache %}
+{% cache 3600 toast %}
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="toast"
          class="toast align-items-center border-0 text-white bg-primary"
@@ -15,3 +17,4 @@
         </div>
     </div>
 </div>
+{% endcache %}
