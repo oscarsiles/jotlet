@@ -1,5 +1,5 @@
 {% load cache %}
-<div class="d-sm-flex flex-grow-1 justify-content-between gap-2"
+<div class="d-sm-flex flex-grow-1 justify-content-between gap-3 px-2"
      id="board-{{ board.slug }}"
      hx-get="{% url 'boards:board-fetch' board.slug %}"
      hx-trigger="topicCreated"
