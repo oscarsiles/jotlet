@@ -10,6 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
+from django.views.generic.edit import FormMixin, ProcessFormView
 
 from django_htmx.http import HttpResponseClientRefresh
 
@@ -22,21 +23,22 @@ def channel_group_send(group_name, message):
     async_to_sync(channel_layer.group_send)(group_name, message)
 
 
-class IndexView(generic.FormView):
+class IndexView(FormMixin, ProcessFormView, generic.ListView):
     model = Board
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
+    context_object_name = "boards"
+    paginate_by = 1
+
+    def get_context_data(self, **kwargs):
+        queryset = kwargs.pop("object_list", None)
+        if queryset is None:
+            self.object_list = self.model.objects.filter(owner=self.request.user)
+        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         self.form = form
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context["form"] = self.get_form()
-        if self.request.user.is_staff:
-            context["all_boards"] = Board.objects.all()
-        return context
 
     def get_success_url(self):
         return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
