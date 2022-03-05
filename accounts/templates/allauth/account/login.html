@@ -35,6 +35,9 @@
                                 {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
                             Sign Up
                         </button>
+                        <input type="hidden"
+                               name="{{ redirect_field_name }}"
+                               value="{{ redirect_field_value }}"/>
                     </div>
                 </div>
             </form>

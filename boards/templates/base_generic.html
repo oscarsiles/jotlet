@@ -116,34 +116,45 @@
                     </div>
                 </div>
             </nav>
-            <div class="d-sm-flex justify-content-center overflow-auto flex-grow-1 px-2"
+            <div class="flex-column justify-content-center overflow-auto flex-grow-1 px-2"
                  id="main-content-div">
+                {% include 'boards/components/messages.html' %}
                 {% block content %}
                 {% endblock content %}
+                {% include 'boards/components/toast.html' %}
             </div>
         </div>
         {% include 'boards/components/modal.html' with num=1 %}
         {% include 'boards/components/modal.html' with num=2 %}
         <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
-        <script src="{% static 'js/jquery-3.6.0.slim.min.js' %}"></script>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'js/robust-websocket.js' %}"></script>
         <script src="{% static 'js/tagify.min.js' %}"></script>
         <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
+        <script src="{% static 'js/index.js' %}"></script>
         <script>
-            htmx.on('hidden.bs.modal', function(e) {
-            var modal2 = bootstrap.Modal.getInstance(document.getElementById("modal-2-div"));
-            var modal2_isShown = false;
-            try { modal2_isShown = modal2._isShown; } catch(err) { };
-            
-            if (!modal2_isShown && e.target.id == 'modal-1-div') {
-                htmx.find('#modal-1-div').outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
-            };
-
-            if (e.target.id == 'modal-2-div') {
-                htmx.find('#modal-2-div').outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
-            };
-            });
+            htmx.on("hidden.bs.modal", function (e) {
+                var modal2 = bootstrap.Modal.getInstance(
+                  document.getElementById("modal-2-div")
+                );
+                var modal2_isShown = false;
+                try {
+                  modal2_isShown = modal2._isShown;
+                } catch (err) {}
+              
+                if (!modal2_isShown && e.target.id == "modal-1-div") {
+                  htmx.find(
+                    "#modal-1-div"
+                  ).outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
+                }
+              
+                if (e.target.id == "modal-2-div") {
+                  htmx.find(
+                    "#modal-2-div"
+                  ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
+                }
+              });
         </script>
         {% block script %}
         {% endblock script %}
