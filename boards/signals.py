@@ -1,14 +1,13 @@
 import os
-from django.conf import settings
 
+from cacheops import invalidate_all, invalidate_model, invalidate_obj
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-
-from cacheops import invalidate_obj, invalidate_model, invalidate_all
 from django_cleanup.signals import cleanup_pre_delete
 from sorl.thumbnail import delete
 
@@ -88,7 +87,7 @@ def invalidate_topic_template_cache(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Post)
 def invalidate_post_template_cache(sender, instance, created, **kwargs):
-    keyPost1 = make_template_fragment_key("post", [instance.pk])
+    keyPost1 = make_template_fragment_key("post-content", [instance.pk])
     keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
     keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
     try:
@@ -105,12 +104,15 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Image)
 @receiver(post_delete, sender=Image)
 def update_image_select(sender, instance, **kwargs):
-    keyImageSelect = make_template_fragment_key("image_select", [instance.type])
+    keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
+    keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
     try:
-        if cache.get(keyImageSelect) is not None:
-            cache.delete(keyImageSelect)
+        if cache.get(keyImageSelect1) is not None:
+            cache.delete(keyImageSelect1)
+        if cache.get(keyImageSelect2) is not None:
+            cache.delete(keyImageSelect2)
     except:
-        raise Exception(f"Could not delete cache: image_select-{instance.type}")
+        raise Exception(f"Could not delete cache: image-select-{instance.type}")
 
 
 @receiver(cleanup_pre_delete)

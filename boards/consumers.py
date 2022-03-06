@@ -1,4 +1,5 @@
-import json, logging
+import json
+import logging
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -77,12 +78,6 @@ class BoardConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
 
     async def post_deleted(self, event):
-        await self.send(text_data=json.dumps(event))
-
-    async def post_approved(self, event):
-        await self.send(text_data=json.dumps(event))
-
-    async def post_unapproved(self, event):
         await self.send(text_data=json.dumps(event))
 
     async def board_preferences_changed(self, event):

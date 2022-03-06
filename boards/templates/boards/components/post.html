@@ -50,7 +50,7 @@
             </div>
         {% endif %}
     </div>
-    {% cache 3600 post post.pk %}
+    {% cache 3600 post-content post.pk %}
     <p class="card-text text-break" id="post-{{ post.pk }}-text">
         {{ post.content }}
     </p>
