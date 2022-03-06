@@ -21,3 +21,4 @@ django-prometheus==2.2.0
 django-redis==5.2.0
 django-cachalot==2.5.1
 django-cacheops==6.0
+hypercorn==0.13.2
