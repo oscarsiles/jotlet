@@ -1,6 +1,5 @@
-import os
 import mimetypes
-
+import os
 from pathlib import Path
 
 mimetypes.add_type("text/javascript", ".js", True)

@@ -1,9 +1,8 @@
-from django.core.cache import caches
-from django.test import TestCase
-
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
+from django.core.cache import caches
+from django.test import TestCase
 
 from boards.models import Board
 from boards.routing import websocket_urlpatterns

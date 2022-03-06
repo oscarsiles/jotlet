@@ -4,15 +4,13 @@ from django.urls import reverse
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
-from django.contrib.auth.models import User
-
-from .models import Board, BACKGROUND_TYPE, BoardPreferences
-
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Div, HTML, Layout, Submit
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
-
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
+from django.contrib.auth.models import User
 from tagify.fields import TagField
+
+from .models import BACKGROUND_TYPE, Board, BoardPreferences
 
 
 def validate_board_exists(board_slug):
