@@ -1,21 +1,23 @@
 import json
-
-from asgiref.sync import async_to_sync
 from random import randint
 
+from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
 from django.views.generic.edit import FormMixin, ProcessFormView
-
 from django_htmx.http import HttpResponseClientRefresh
 
 from .forms import BoardPreferencesForm, SearchBoardsForm
-from .models import Board, BoardPreferences, Image, Topic, Post
+from .models import Board, BoardPreferences, Image, Post, Topic
 
 
 def channel_group_send(group_name, message):
@@ -48,15 +50,15 @@ class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
     model = Board
     template_name = "boards/index_allboards.html"
     context_object_name = "boards"
-    paginate_by = 8
+    paginate_by = 10
     permission_required = "boards.can_view_all_boards"
 
     def get_context_data(self, **kwargs):
         queryset = kwargs.pop("object_list", None)
         if queryset is None:
-            self.object_list = self.model.objects.all()
+            self.object_list = self.model.objects.all().order_by("-created_at")
         context = super().get_context_data(**kwargs)
-        context["all_boards"] = True
+        context["is_all_boards"] = True
         return context
 
 

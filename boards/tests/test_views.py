@@ -1,17 +1,14 @@
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
-from django.urls import reverse
-
-from django.contrib.auth.models import Permission, User
-
+from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, Image, Post, Topic
+from boards.routing import websocket_urlpatterns
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
-
-from boards.models import Board, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
-from boards.routing import websocket_urlpatterns
+from django.contrib.auth.models import Permission, User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
 
 
 class IndexViewTest(TestCase):
@@ -46,20 +43,26 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
 
+
+class IndexAllBoardsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
+        for i in range(10):
+            Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user1)
+
     def test_board_non_staff_all_boards(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index"))
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNone(response.context.get("all_boards"))
+        response = self.client.get(reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNone(response.context.get("boards"))
 
     def test_board_staff_all_boards(self):
-        test_user2 = User.objects.create_user(username="testuser2", password="1X<ISRUkw+tuK", is_staff=True)
-        for i in range(10):
-            Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user2)
         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index"))
+        response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context.get("all_boards")), 11)
+        self.assertEqual(len(response.context.get("boards")), 10)
 
 
 class BoardViewTest(TestCase):
