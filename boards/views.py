@@ -1,20 +1,23 @@
 import json
-
-from asgiref.sync import async_to_sync
 from random import randint
 
+from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
-
+from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
 
 from .forms import BoardPreferencesForm, SearchBoardsForm
-from .models import Board, BoardPreferences, Image, Topic, Post
+from .models import Board, BoardPreferences, Image, Post, Topic
 
 
 def channel_group_send(group_name, message):
@@ -22,24 +25,42 @@ def channel_group_send(group_name, message):
     async_to_sync(channel_layer.group_send)(group_name, message)
 
 
-class IndexView(generic.FormView):
+class IndexView(FormMixin, ProcessFormView, generic.ListView):
     model = Board
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
+    context_object_name = "boards"
+    paginate_by = 5
+    object_list = ""
+
+    def get_context_data(self, **kwargs):
+        queryset = kwargs.pop("object_list", None)
+        if queryset is None and self.request.user.is_authenticated:
+            self.object_list = self.model.objects.filter(owner=self.request.user).order_by("created_at")
+        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         self.form = form
         return HttpResponseRedirect(self.get_success_url())
 
-    def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        context["form"] = self.get_form()
-        if self.request.user.is_staff:
-            context["all_boards"] = Board.objects.all()
-        return context
-
     def get_success_url(self):
         return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
+
+
+class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
+    model = Board
+    template_name = "boards/index_allboards.html"
+    context_object_name = "boards"
+    paginate_by = 10
+    permission_required = "boards.can_view_all_boards"
+
+    def get_context_data(self, **kwargs):
+        queryset = kwargs.pop("object_list", None)
+        if queryset is None:
+            self.object_list = self.model.objects.all().order_by("created_at")
+        context = super().get_context_data(**kwargs)
+        context["is_all_boards"] = True
+        return context
 
 
 class BoardView(generic.DetailView):

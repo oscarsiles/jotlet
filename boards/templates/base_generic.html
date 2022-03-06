@@ -1,3 +1,5 @@
+{% load static %}
+{% load cache %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -6,9 +8,9 @@
                 Jotlet
             {% endblock title %}
         </title>
+        {% cache 3600 board-header %}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        {% load static %}
         <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
               rel="stylesheet"
@@ -20,120 +22,122 @@
               rel="icon"
               sizes="any"
               type="image/svg+xml">
-    </head>
-    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-        <div class="container-fluid vh-100 d-flex flex-column p-0">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
-                <div class="container-fluid">
-                    <a class="navbar-brand mb-0 h1" href="{% url 'boards:index' %}">
-                        <div class="d-flex flex-column text-break">
-                            <div class="d-flex">
-                                {% block navbar_title %}
-                                    Jotlet
-                                {% endblock navbar_title %}
-                            </div>
-                            <span class="fs-6">
-                                {% block navbar_subtitle %}
-                                    An open-source ---let alternative
-                                {% endblock navbar_subtitle %}
-                            </span>
+    {% endcache %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
+            <div class="container-fluid">
+                <a class="navbar-brand mb-0 h1" href="{% url 'boards:index' %}">
+                    <div class="d-flex flex-column text-break">
+                        <div class="d-flex">
+                            {% block navbar_title %}
+                                Jotlet
+                            {% endblock navbar_title %}
                         </div>
-                    </a>
-                    <button class="navbar-toggler"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#navbarText">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarText">
-                        <span class="ms-auto">
-                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                                {% block navbar-items %}
-                                {% endblock navbar-items %}
-                                {% if perms.boards.add_board %}
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           role="button"
-                                           hx-get="{% url 'boards:board-create' %}"
-                                           hx-target="#modal-1-body-div"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#modal-1-div">
-                                            Create board
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                {% if request.user.is_authenticated %}
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle"
-                                           href="#"
-                                           id="navbarDropdownMenuLink"
-                                           role="button"
-                                           data-bs-toggle="dropdown"
-                                           aria-expanded="false">
-                                            {{ user }}
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-lg-end"
-                                            aria-labelledby="navbarDropdownMenuLink">
-                                            {% if user.is_staff %}
-                                                <li>
-                                                    <a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a>
-                                                </li>
-                                            {% endif %}
-                                            <li>
-                                                <a class="dropdown-item"
-                                                   role="button"
-                                                   hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
-                                                   hx-target="#modal-1-body-div"
-                                                   data-bs-toggle="modal"
-                                                   data-bs-target="#modal-1-div">
-                                                    Change Password
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item"
-                                                   role="button"
-                                                   hx-post="{% url 'account_logout' %}?next={{ request.path }}"
-                                                   hx-target="body">
-                                                    Logout
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                {% else %}
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           role="button"
-                                           hx-get="{% url 'account_login' %}?next={{ request.path }}"
-                                           hx-target="#modal-1-body-div"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#modal-1-div">
-                                            Login
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
+                        <span class="fs-6">
+                            {% block navbar_subtitle %}
+                                An open-source ---let alternative
+                            {% endblock navbar_subtitle %}
                         </span>
                     </div>
+                </a>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarText">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarText">
+                    <span class="ms-auto">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            {% block navbar-items %}
+                            {% endblock navbar-items %}
+                            {% if perms.boards.add_board %}
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       role="button"
+                                       hx-get="{% url 'boards:board-create' %}"
+                                       hx-target="#modal-1-body-div"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal-1-div">
+                                        Create board
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if request.user.is_authenticated %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle"
+                                       href="#"
+                                       id="navbarDropdownMenuLink"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        {{ user }}
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-lg-end"
+                                        aria-labelledby="navbarDropdownMenuLink">
+                                        {% if user.is_staff %}
+                                            <li>
+                                                <a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a>
+                                            </li>
+                                        {% endif %}
+                                        <li>
+                                            <a class="dropdown-item"
+                                               role="button"
+                                               hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
+                                               hx-target="#modal-1-body-div"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#modal-1-div">
+                                                Change Password
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               role="button"
+                                               hx-post="{% url 'account_logout' %}?next={{ request.path }}"
+                                               hx-target="body">
+                                                Logout
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       role="button"
+                                       hx-get="{% url 'account_login' %}?next={{ request.path }}"
+                                       hx-target="#modal-1-body-div"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal-1-div">
+                                        Login
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </span>
                 </div>
-            </nav>
-            <div class="flex-column justify-content-center overflow-auto flex-grow-1 px-2"
-                 id="main-content-div">
-                {% include 'boards/components/messages.html' %}
-                {% block content %}
-                {% endblock content %}
-                {% include 'boards/components/toast.html' %}
             </div>
+        </nav>
+        <div class="flex-column justify-content-center overflow-auto flex-grow-1 p-2"
+             id="main-content-div">
+            {% include 'boards/components/messages.html' %}
+            {% block content %}
+            {% endblock content %}
+            {% include 'boards/components/toast.html' %}
         </div>
-        {% include 'boards/components/modal.html' with num=1 %}
-        {% include 'boards/components/modal.html' with num=2 %}
-        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-        <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
-        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-        <script src="{% static 'js/robust-websocket.js' %}"></script>
-        <script src="{% static 'js/tagify.min.js' %}"></script>
-        <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
-        <script src="{% static 'js/index.js' %}"></script>
-        <script>
+    </div>
+    {% include 'boards/components/modal.html' with num=1 %}
+    {% include 'boards/components/modal.html' with num=2 %}
+    {% cache 3600 board-scripts %}
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/robust-websocket.js' %}"></script>
+    <script src="{% static 'js/tagify.min.js' %}"></script>
+    <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
+    <script src="{% static 'js/index.js' %}"></script>
+    <script>
             htmx.on("hidden.bs.modal", function (e) {
                 var modal2 = bootstrap.Modal.getInstance(
                   document.getElementById("modal-2-div")
@@ -155,8 +159,9 @@
                   ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
                 }
               });
-        </script>
-        {% block script %}
-        {% endblock script %}
-    </body>
+    </script>
+{% endcache %}
+{% block script %}
+{% endblock script %}
+</body>
 </html>

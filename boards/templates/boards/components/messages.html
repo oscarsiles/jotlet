@@ -1,4 +1,4 @@
-<div class="d-grid gap-2 p-2">
+<div class="d-grid gap-2">
     {% for message in messages %}
         <div id="alert"
              class="alert {{ message.tags }} alert-dismissible my-0"
@@ -12,7 +12,7 @@
         {% if forloop.last %}
             <script>
             setTimeout(function () {
-                $("#alert").slideUp();
+                $("div[id=alert]").slideUp();
               }, 5000);
             </script>
         {% endif %}

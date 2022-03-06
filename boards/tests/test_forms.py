@@ -1,9 +1,7 @@
-from django.test import TestCase
-
-from django.contrib.auth.models import User
-
 from boards.forms import BoardPreferencesForm, SearchBoardsForm
 from boards.models import Board
+from django.contrib.auth.models import User
+from django.test import TestCase
 
 
 class BoardPreferencesFormTest(TestCase):
@@ -35,6 +33,9 @@ class BoardPreferencesFormTest(TestCase):
         self.assertEqual(board.preferences.enable_latex, True)
         self.assertEqual(board.preferences.moderators.count(), 1)
         self.assertEqual(board.preferences.moderators.all()[0], User.objects.get(username="test_user"))
+        form = BoardPreferencesForm(data=form_data, slug="test_board", instance=board.preferences)
+        self.assertTrue(form.is_valid())
+        form.save()
 
     def test_board_preferences_form_invalid(self):
         board = Board.objects.get(slug="test_board")

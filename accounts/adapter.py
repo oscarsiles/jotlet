@@ -1,8 +1,7 @@
-from django.conf import settings
-
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.utils import perform_login
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.conf import settings
 from django.contrib.auth.models import User
 
 

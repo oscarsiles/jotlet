@@ -1,17 +1,22 @@
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
-from django.urls import reverse
-
-from django.contrib.auth.models import Permission, User
-
+from boards.models import (
+    BACKGROUND_TYPE,
+    IMAGE_TYPE,
+    Board,
+    BoardPreferences,
+    Image,
+    Post,
+    Topic,
+)
+from boards.routing import websocket_urlpatterns
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
-
-from boards.models import Board, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
-from boards.routing import websocket_urlpatterns
+from django.contrib.auth.models import Permission, User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
 
 
 class IndexViewTest(TestCase):
@@ -46,20 +51,32 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
 
-    def test_board_non_staff_all_boards(self):
+    def test_user_boards(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         response = self.client.get(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertIsNone(response.context.get("all_boards"))
+        self.assertEqual(len(response.context.get("boards")), 1)
+
+
+class IndexAllBoardsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
+        for i in range(10):
+            Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user1)
+
+    def test_board_non_staff_all_boards(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNone(response.context.get("boards"))
 
     def test_board_staff_all_boards(self):
-        test_user2 = User.objects.create_user(username="testuser2", password="1X<ISRUkw+tuK", is_staff=True)
-        for i in range(10):
-            Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user2)
         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index"))
+        response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context.get("all_boards")), 11)
+        self.assertEqual(len(response.context.get("boards")), 10)
 
 
 class BoardViewTest(TestCase):
@@ -102,6 +119,16 @@ class BoardPreferencesViewTest(TestCase):
         board = Board.objects.get(id=1)
         response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
+
+    def test_board_preferences_nonexistent_preferences(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        board = Board.objects.get(id=1)
+        board.preferences.delete()
+        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, board=board)
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        self.assertEqual(response.status_code, 200)
+        preferences = BoardPreferences.objects.get(board=board)
+        self.assertEqual(preferences.board, board)
 
     async def test_preferences_changed_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)

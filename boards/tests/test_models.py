@@ -1,12 +1,12 @@
 import os
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse
-from django.test import TestCase
-
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
 
-from boards.models import Board, BoardPreferences, Image, Topic, Post, BACKGROUND_TYPE, IMAGE_TYPE
+from boards.models import (BACKGROUND_TYPE, IMAGE_TYPE, Board,
+                           BoardPreferences, Image, Post, Topic)
 
 
 class BoardModelTest(TestCase):

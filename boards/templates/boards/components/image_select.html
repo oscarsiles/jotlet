@@ -1,5 +1,6 @@
+{% load static %}
 {% load cache %}
-{% cache 3600 image_select type %}
+{% cache 3600 image-select type %}
 <script type="text/javascript">
   htmx.on('htmx:load', function() {
     selectedValue = $('#id_background_image').attr('value');
@@ -28,6 +29,7 @@
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select">
     {% for image in images %}
+        {% cache 3600 image-select-image image.pk %}
         <div class="col-sm">
             <div class="card">
                 <div class="card-img-top">
@@ -43,7 +45,8 @@
                 <div class="card-footer">{{ image }}</div>
             </div>
         </div>
-    {% endfor %}
+    {% endcache %}
+{% endfor %}
 </div>
 <style>
   .card-img-top {
@@ -51,7 +54,7 @@
   }
 
   .card-img-top input[type="radio"]:checked+label::before{
-    background: url(https://cdn1.iconfinder.com/data/icons/mimiGlyphs/16/check_mark.png) no-repeat center center;
+    background: url({% static 'images/check_mark.png' %}) no-repeat center center;
     width: 100%;
     height: 100%;
     position: absolute;
