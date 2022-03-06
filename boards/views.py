@@ -3,9 +3,11 @@ from random import randint
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.contrib.auth.mixins import (LoginRequiredMixin,
-                                        PermissionRequiredMixin,
-                                        UserPassesTestMixin)
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -29,11 +31,12 @@ class IndexView(FormMixin, ProcessFormView, generic.ListView):
     form_class = SearchBoardsForm
     context_object_name = "boards"
     paginate_by = 5
+    object_list = ""
 
     def get_context_data(self, **kwargs):
         queryset = kwargs.pop("object_list", None)
-        if queryset is None:
-            self.object_list = self.model.objects.filter(owner=self.request.user)
+        if queryset is None and self.request.user.is_authenticated:
+            self.object_list = self.model.objects.filter(owner=self.request.user).order_by("created_at")
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
@@ -54,7 +57,7 @@ class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         queryset = kwargs.pop("object_list", None)
         if queryset is None:
-            self.object_list = self.model.objects.all().order_by("-created_at")
+            self.object_list = self.model.objects.all().order_by("created_at")
         context = super().get_context_data(**kwargs)
         context["is_all_boards"] = True
         return context
