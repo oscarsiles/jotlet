@@ -1,3 +1,5 @@
+import os
+import uuid
 from io import BytesIO
 from pathlib import Path
 
@@ -9,13 +11,9 @@ from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from sorl.thumbnail import get_thumbnail
-
 from PIL import Image as PILImage
-
-import os, uuid
-
 from shortuuidfield import ShortUUIDField
+from sorl.thumbnail import get_thumbnail
 
 # Create your models here.
 

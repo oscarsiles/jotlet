@@ -1,6 +1,5 @@
-from django.test import TestCase
-
 from django.contrib.auth.models import User
+from django.test import TestCase
 
 from boards.forms import BoardPreferencesForm, SearchBoardsForm
 from boards.models import Board
