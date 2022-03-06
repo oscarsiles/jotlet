@@ -1,6 +1,14 @@
 import os
 
-from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, Image, Post, Topic
+from boards.models import (
+    BACKGROUND_TYPE,
+    IMAGE_TYPE,
+    Board,
+    BoardPreferences,
+    Image,
+    Post,
+    Topic,
+)
 from boards.routing import websocket_urlpatterns
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
@@ -111,6 +119,16 @@ class BoardPreferencesViewTest(TestCase):
         board = Board.objects.get(id=1)
         response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
+
+    def test_board_preferences_nonexistent_preferences(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        board = Board.objects.get(id=1)
+        board.preferences.delete()
+        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, board=board)
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        self.assertEqual(response.status_code, 200)
+        preferences = BoardPreferences.objects.get(board=board)
+        self.assertEqual(preferences.board, board)
 
     async def test_preferences_changed_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
