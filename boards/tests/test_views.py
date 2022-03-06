@@ -1,5 +1,7 @@
 import os
 
+from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, Image, Post, Topic
+from boards.routing import websocket_urlpatterns
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
@@ -7,10 +9,6 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-
-from boards.models import (BACKGROUND_TYPE, IMAGE_TYPE, Board, Image, Post,
-                           Topic)
-from boards.routing import websocket_urlpatterns
 
 
 class IndexViewTest(TestCase):
@@ -44,6 +42,12 @@ class IndexViewTest(TestCase):
         response = self.client.post(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
+
+    def test_user_boards(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context.get("boards")), 1)
 
 
 class IndexAllBoardsViewTest(TestCase):
