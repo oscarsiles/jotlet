@@ -9,6 +9,7 @@ from django.db import models
 from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from PIL import Image as PILImage
@@ -114,6 +115,7 @@ class BoardPreferences(models.Model):
             self.background_image = None
         super(BoardPreferences, self).save(*args, **kwargs)
 
+    @cached_property
     def get_inverse_opacity(self):
         return round(1.0 - self.background_opacity, 2)
 
