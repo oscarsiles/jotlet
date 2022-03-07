@@ -1,0 +1,7 @@
+[tool.black]
+line-length = 118 # override black's default line-length
+
+[tool.isort]
+# make it compatible with black
+profile = "black" 
+line_length = 118

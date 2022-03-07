@@ -2,11 +2,7 @@ import json
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from django.contrib.auth.mixins import (
-    LoginRequiredMixin,
-    PermissionRequiredMixin,
-    UserPassesTestMixin,
-)
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator

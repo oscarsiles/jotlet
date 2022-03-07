@@ -5,8 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from boards.models import (BACKGROUND_TYPE, IMAGE_TYPE, Board,
-                           BoardPreferences, Image, Post, Topic)
+from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 
 
 class BoardModelTest(TestCase):
@@ -63,6 +62,10 @@ class BoardPreferencesModelTest(TestCase):
     def test_get_absolute_url(self):
         preferences = BoardPreferences.objects.get(board=Board.objects.get(id=1))
         self.assertEqual(preferences.get_absolute_url(), f"/boards/{preferences.board.slug}/preferences/")
+
+    def test_inverse_opacity(self):
+        preferences = BoardPreferences.objects.get(board=Board.objects.get(id=1))
+        self.assertEqual(preferences.get_inverse_opacity, 1.0 - preferences.opacity)
 
     def test_preferences_deleted_after_board_delete(self):
         board = Board.objects.get(id=1)
