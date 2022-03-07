@@ -3,6 +3,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -46,14 +47,19 @@ class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
     model = Board
     template_name = "boards/index_allboards.html"
     context_object_name = "boards"
-    paginate_by = 10
+    paginate_by = 5
     permission_required = "boards.can_view_all_boards"
 
     def get_context_data(self, **kwargs):
         queryset = kwargs.pop("object_list", None)
         if queryset is None:
-            self.object_list = self.model.objects.all().order_by("created_at")
+            queryset = self.object_list = self.model.objects.all().order_by("created_at")
         context = super().get_context_data(**kwargs)
+        page = self.request.GET.get("page", 1)
+        paginator = Paginator(self.model.objects.all().order_by("created_at"), self.paginate_by)
+        page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
+
+        context["page_range"] = page_range
         context["is_all_boards"] = True
         return context
 
