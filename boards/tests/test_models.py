@@ -40,9 +40,32 @@ class BoardModelTest(TestCase):
         self.assertEqual(board_count_before, board_count_after)
         self.assertIsNone(Board.objects.get(id=1).owner)
 
+    def test_get_post_count(self):
+        board = Board.objects.get(id=1)
+        self.assertEqual(board.get_post_count, 0)
+        self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
+        topic = Topic.objects.create(board=board, subject="Test Topic")
+        post = Post.objects.create(topic=topic, content="Test Post")
+        board = Board.objects.get(id=1)
+        self.assertEqual(board.get_post_count, 1)
+        self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
+
+    def test_get_post_last_updated(self):
+        board = Board.objects.get(id=1)
+        self.assertEqual(board.get_last_post_date, board.created_at)
+        topic = Topic.objects.create(board=board, subject="Test Topic")
+        post1 = Post.objects.create(topic=topic, content="Test Post")
+        post2 = Post.objects.create(topic=topic, content="Test Post 2")
+        # make sure another board's posts are not counted
+        board2 = Board.objects.create(title="Test Board 2", description="Test Board Description")
+        topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
+        post3 = Post.objects.create(topic=topic2, content="Test Post 3")
+        board = Board.objects.get(id=1)
+        self.assertEqual(board.get_last_post_date, post2.created_at)
+
     def test_get_absolute_url(self):
         board = Board.objects.get(id=1)
-        self.assertEqual(board.get_absolute_url(), f"/boards/{board.slug}/")
+        self.assertEqual(board.get_absolute_url, f"/boards/{board.slug}/")
 
 
 class BoardPreferencesModelTest(TestCase):
@@ -61,11 +84,11 @@ class BoardPreferencesModelTest(TestCase):
 
     def test_get_absolute_url(self):
         preferences = BoardPreferences.objects.get(board=Board.objects.get(id=1))
-        self.assertEqual(preferences.get_absolute_url(), f"/boards/{preferences.board.slug}/preferences/")
+        self.assertEqual(preferences.get_absolute_url, f"/boards/{preferences.board.slug}/preferences/")
 
     def test_inverse_opacity(self):
         preferences = BoardPreferences.objects.get(board=Board.objects.get(id=1))
-        self.assertEqual(preferences.get_inverse_opacity(), 1.0 - preferences.opacity)
+        self.assertEqual(preferences.get_inverse_opacity, 1.0 - preferences.background_opacity)
 
     def test_preferences_deleted_after_board_delete(self):
         board = Board.objects.get(id=1)
@@ -100,7 +123,7 @@ class TopicModelTest(TestCase):
 
     def test_get_absolute_url(self):
         topic = Topic.objects.get(id=1)
-        self.assertEqual(topic.get_absolute_url(), f"/boards/{topic.board.slug}/")
+        self.assertEqual(topic.get_absolute_url, f"/boards/{topic.board.slug}/")
 
     def test_topic_deleted_after_board_delete(self):
         board = Board.objects.get(id=1)
@@ -131,7 +154,7 @@ class PostModelTest(TestCase):
 
     def test_get_absolute_url(self):
         post = Post.objects.get(id=1)
-        self.assertEqual(post.get_absolute_url(), f"/boards/{post.topic.board.slug}/")
+        self.assertEqual(post.get_absolute_url, f"/boards/{post.topic.board.slug}/")
 
     def test_post_deleted_after_topic_delete(self):
         topic = Topic.objects.get(id=1)
