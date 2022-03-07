@@ -86,7 +86,6 @@ class Board(models.Model):
             return self.get_posts().first().created_at
         return self.created_at
 
-    @cached_property
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
 
@@ -130,7 +129,6 @@ class BoardPreferences(models.Model):
     def get_inverse_opacity(self):
         return round(1.0 - self.background_opacity, 2)
 
-    @cached_property
     def get_absolute_url(self):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
@@ -147,7 +145,6 @@ class Topic(models.Model):
     def get_board_name(self):
         return self.board.title
 
-    @cached_property
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
@@ -163,7 +160,6 @@ class Post(models.Model):
     def __str__(self):
         return self.content
 
-    @cached_property
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
 
