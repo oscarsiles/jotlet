@@ -47,7 +47,7 @@ class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
     model = Board
     template_name = "boards/index_allboards.html"
     context_object_name = "boards"
-    paginate_by = 5
+    paginate_by = 10
     permission_required = "boards.can_view_all_boards"
 
     def get_context_data(self, **kwargs):
