@@ -6,16 +6,14 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import models
-from django.forms import UUIDField
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from PIL import Image as PILImage
 from shortuuidfield import ShortUUIDField
 from sorl.thumbnail import get_thumbnail
-
-# Create your models here.
 
 
 def slug_save(obj):
@@ -75,6 +73,19 @@ class Board(models.Model):
     def __str__(self):
         return self.title
 
+    def get_posts(self):
+        return Post.objects.filter(topic__board=self).order_by("-created_at")
+
+    @cached_property
+    def get_post_count(self):
+        return self.get_posts().count()
+
+    @cached_property
+    def get_last_post_date(self):
+        if self.get_post_count > 0:
+            return self.get_posts().first().created_at
+        return self.created_at
+
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
 
@@ -114,6 +125,7 @@ class BoardPreferences(models.Model):
             self.background_image = None
         super(BoardPreferences, self).save(*args, **kwargs)
 
+    @cached_property
     def get_inverse_opacity(self):
         return round(1.0 - self.background_opacity, 2)
 
@@ -188,7 +200,7 @@ class Image(models.Model):
         return get_thumbnail(self.image, "300x200", crop="center", quality=80)
 
     def image_tag(self):
-        return mark_safe('<img src="%s" />' % escape(self.get_thumbnail().url))
+        return mark_safe(f'<img src="{escape(self.get_thumbnail().url)}" />')
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True

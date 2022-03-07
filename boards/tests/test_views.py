@@ -1,15 +1,5 @@
 import os
 
-from boards.models import (
-    BACKGROUND_TYPE,
-    IMAGE_TYPE,
-    Board,
-    BoardPreferences,
-    Image,
-    Post,
-    Topic,
-)
-from boards.routing import websocket_urlpatterns
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
@@ -17,6 +7,9 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+
+from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
+from boards.routing import websocket_urlpatterns
 
 
 class IndexViewTest(TestCase):
