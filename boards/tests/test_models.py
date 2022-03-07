@@ -65,7 +65,7 @@ class BoardPreferencesModelTest(TestCase):
 
     def test_inverse_opacity(self):
         preferences = BoardPreferences.objects.get(board=Board.objects.get(id=1))
-        self.assertEqual(preferences.get_inverse_opacity, 1.0 - preferences.opacity)
+        self.assertEqual(preferences.get_inverse_opacity(), 1.0 - preferences.opacity)
 
     def test_preferences_deleted_after_board_delete(self):
         board = Board.objects.get(id=1)
