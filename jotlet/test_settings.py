@@ -40,9 +40,12 @@ INSTALLED_APPS = [
     "channels",
     "django_reverse_js",
     "django_htmx",
+    "django_q",
     "qr_code",
     "sorl.thumbnail",
     "tagify",
+    "cachalot",
+    "cacheops",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",
@@ -152,6 +155,17 @@ CACHES = {
     "mem-cache": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
+}
+
+Q_CLUSTER = {
+    "name": "DjangORM",
+    "testing": True,
+    "workers": 2,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
