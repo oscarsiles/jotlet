@@ -1,6 +1,6 @@
 import os
 
-from cacheops import invalidate_all, invalidate_model, invalidate_obj
+from cacheops import invalidate_obj
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -9,6 +9,7 @@ from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django_cleanup.signals import cleanup_pre_delete
+from django_q.tasks import async_task
 from sorl.thumbnail import delete
 
 from boards.apps import BoardsConfig
@@ -99,6 +100,12 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
             cache.delete(keyPost3)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
+
+
+@receiver(post_save, sender=Image)
+def create_thumbnail(sender, instance, created, **kwargs):
+    if created:
+        async_task("boards.tasks.create_thumbnail", instance)
 
 
 @receiver(post_save, sender=Image)
