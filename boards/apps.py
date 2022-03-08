@@ -7,13 +7,6 @@ class BoardsConfig(AppConfig):
 
     def ready(self):
         try:
-            from django.core import management
-
-            management.call_command("migrate")
-        except Exception as e:
-            pass
-
-        try:
             from .signals import populate_models
 
             populate_models(sender=self)
