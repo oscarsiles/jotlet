@@ -7,6 +7,13 @@ class BoardsConfig(AppConfig):
 
     def ready(self):
         try:
+            from django.core import management
+
+            management.call_command("migrate")
+        except Exception as e:
+            pass
+
+        try:
             from .signals import populate_models
 
             populate_models(sender=self)
@@ -14,7 +21,6 @@ class BoardsConfig(AppConfig):
             pass
 
         try:
-            from django.db.models import Q
             from django_q.models import Schedule
             from django_q.tasks import schedule
 
@@ -27,4 +33,4 @@ class BoardsConfig(AppConfig):
                 if not Schedule.objects.filter(func=task["name"]).exists():
                     schedule(task["name"], schedule_type=task["schedule_type"])
         except Exception as e:
-            raise Exception(f"Could not create scheduled tasks: {e}")
+            pass
