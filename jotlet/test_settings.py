@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "channels",
     "django_reverse_js",
     "django_htmx",
-    "django_q",
     "qr_code",
     "sorl.thumbnail",
     "tagify",
