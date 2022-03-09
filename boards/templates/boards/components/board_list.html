@@ -40,14 +40,14 @@
     {% endcache %}
 {% endfor %}
 </ul>
-{% cache 3600 page-range-link request.GET.q page_obj i %}
+{% cache 3600 page-range-link request.GET.q request.GET.u page_obj i %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
     hx-target="#board-list">
     {% if page_obj.has_previous %}
         <li class="page-item">
             <a class="page-link"
                href=""
-               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.previous_page_number }}&q={{ request.GET.q|urlencode }}">&laquo;</a>
+               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.previous_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&laquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
@@ -68,7 +68,7 @@
                 <li class="page-item">
                     <a class="page-link"
                        href=""
-                       hx-get="{% url 'boards:board-search' %}?page={{ i }}&q={{ request.GET.q|urlencode }}">{{ i }}</a>
+                       hx-get="{% url 'boards:board-search' %}?page={{ i }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">{{ i }}</a>
                 </li>
             {% endif %}
         {% endif %}
@@ -78,7 +78,7 @@
             <a class="page-link"
                class="page-link"
                href=""
-               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.next_page_number }}&q={{ request.GET.q|urlencode }}">&raquo;</a>
+               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.next_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&raquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
