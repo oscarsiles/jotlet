@@ -69,7 +69,7 @@ class IndexAllBoardsViewTest(TestCase):
         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context.get("boards")), 10)
+        self.assertEqual(len(response.context.get("boards")), 5)
 
 
 class BoardViewTest(TestCase):

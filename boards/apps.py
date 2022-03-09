@@ -19,7 +19,7 @@ class BoardsConfig(AppConfig):
 
             required_scheduled_tasks = [
                 {"name": "jotlet.tasks.clear_sessions_command", "schedule_type": "H"},
-                {"name": "boards.tasks.thumbnail_cleanup_command", "schedule_type": "H"},
+                {"name": "boards.tasks.thumbnail_cleanup_command", "schedule_type": "D"},
             ]
 
             for task in required_scheduled_tasks:

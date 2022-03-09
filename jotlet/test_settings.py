@@ -24,6 +24,7 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     "channels",
     "django_reverse_js",
     "django_htmx",
+    "django_q",
     "qr_code",
     "sorl.thumbnail",
     "tagify",

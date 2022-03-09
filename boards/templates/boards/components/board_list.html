@@ -1,5 +1,8 @@
+{% load cachalot cache %}
 <ul class="list-group">
     {% for board in boards %}
+        {% get_last_invalidation 'auth.User' as last_users_invalidation %}
+        {% cache 3600 board-list-item board.pk board.get_post_count request.user last_users_invalidation %}
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
             <div class="ms-2">
                 <div class="fw-bold">
@@ -15,27 +18,36 @@
                 <div class="">{{ board.description }}</div>
             </div>
             <div class="d-flex align-items-center">
-                <button class="btn btn-link btn-sm shadow-none text-black"
-                        hx-get="{% url 'boards:board-update' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </button>
-                <button class="btn btn-close btn-sm"
-                        hx-get="{% url 'boards:board-delete' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                </button>
+                {% if request.user == board.owner or perms.boards.change_board %}
+                    <button class="btn btn-link btn-sm shadow-none text-black"
+                            hx-get="{% url 'boards:board-update' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-pen"></i>
+                    </button>
+                {% endif %}
+                {% if request.user == board.owner or perms.boards.delete_board %}
+                    <button class="btn btn-close btn-sm"
+                            hx-get="{% url 'boards:board-delete' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                    </button>
+                {% endif %}
             </div>
         </li>
-    {% endfor %}
+    {% endcache %}
+{% endfor %}
 </ul>
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
+{% cache 3600 page-range-link request.GET.q request.GET.u page_obj i %}
+<ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
+    hx-target="#board-list">
     {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+            <a class="page-link"
+               href=""
+               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.previous_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&laquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
@@ -54,14 +66,19 @@
                 </li>
             {% else %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    <a class="page-link"
+                       href=""
+                       hx-get="{% url 'boards:board-search' %}?page={{ i }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">{{ i }}</a>
                 </li>
             {% endif %}
         {% endif %}
     {% endfor %}
     {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+            <a class="page-link"
+               class="page-link"
+               href=""
+               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.next_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&raquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
@@ -69,3 +86,4 @@
         </li>
     {% endif %}
 </ul>
+{% endcache %}
