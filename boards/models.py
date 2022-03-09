@@ -73,17 +73,18 @@ class Board(models.Model):
     def __str__(self):
         return self.title
 
+    @cached_property
     def get_posts(self):
         return Post.objects.filter(topic__board=self).order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
-        return self.get_posts().count()
+        return self.get_posts.count()
 
     @cached_property
     def get_last_post_date(self):
         if self.get_post_count > 0:
-            return self.get_posts().first().created_at
+            return self.get_posts.first().created_at
         return self.created_at
 
     def get_absolute_url(self):
