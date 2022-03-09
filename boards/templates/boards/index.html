@@ -1,6 +1,8 @@
 {% extends 'base_generic.html' %}
 {% load crispy_forms_tags %}
+{% load cache %}
 {% block content %}
+    {% cache 3600 request.user is_all_boards %}
     <div class="d-sm-flex flex-grow-1 px-2">
         <div class="col-md-4">
             {% if not is_all_boards %}
@@ -31,7 +33,10 @@
                            hx-target="#board-list"
                            hx-indicator=".htmx-indicator">
                 </div>
-                <div hx-get="{% url 'boards:board-search' %}" hx-trigger="load"></div>
+                <div id="board-list"
+                     hx-get="{% url 'boards:board-search' %}"
+                     hx-trigger="load"
+                     hx-swap="innerHTML"></div>
             {% endif %}
             {% if perms.boards.can_view_all_boards and not is_all_boards %}
                 <p>
@@ -40,4 +45,5 @@
             {% endif %}
         </div>
     </div>
+{% endcache %}
 {% endblock content %}
