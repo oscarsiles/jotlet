@@ -1,8 +1,10 @@
 import os
+import shutil
+import tempfile
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
@@ -171,6 +173,10 @@ class PostModelTest(TestCase):
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
 
 
+MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -189,6 +195,11 @@ class ImageModelTest(TestCase):
                     title=f"{text} - {orientation}",
                 )
                 img.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def test_image_name_is_title(self):
         for type, text in IMAGE_TYPE:
