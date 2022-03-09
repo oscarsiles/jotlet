@@ -3,7 +3,7 @@
     <ul class="list-group">
         {% for board in boards %}
             {% get_last_invalidation 'auth.User' as last_users_invalidation %}
-            {% cache 3600 board_list_item board.pk request.user last_users_invalidation %}
+            {% cache 3600 board-list-item board.pk board.get_post_count request.user last_users_invalidation %}
             <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
                 <div class="ms-2">
                     <div class="fw-bold">
@@ -41,6 +41,7 @@
         {% endcache %}
     {% endfor %}
 </ul>
+{% cache 3600 page-range-link request.GET.q page_obj i %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
     hx-target="#board-list">
     {% if page_obj.has_previous %}
@@ -86,4 +87,5 @@
         </li>
     {% endif %}
 </ul>
+{% endcache %}
 </div>
