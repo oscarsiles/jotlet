@@ -404,10 +404,16 @@ class SearchBoardView(LoginRequiredMixin, generic.ListView):
         elif view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
             queryset = Board.objects.all()
 
-        query = self.request.GET.get("q")
-        if query:
-            queryset = queryset.filter(Q(title__icontains=query) | Q(description__icontains=query))
-        return queryset
+        u = self.request.GET.get("u")
+        if u:
+            users = u.split(",")
+            queryset = queryset.filter(owner__username__in=users)
+
+        b = self.request.GET.get("b")
+        if b:
+            queryset = queryset.filter(Q(title__icontains=b) | Q(description__icontains=b))
+
+        return queryset.order_by("created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
