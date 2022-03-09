@@ -1,11 +1,13 @@
 import json
+from urllib.parse import urlparse
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
@@ -45,9 +47,9 @@ class IndexView(FormMixin, ProcessFormView, generic.ListView):
 
 class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
     model = Board
-    template_name = "boards/index_allboards.html"
+    template_name = "boards/index.html"
     context_object_name = "boards"
-    paginate_by = 10
+    paginate_by = 5
     permission_required = "boards.can_view_all_boards"
 
     def get_context_data(self, **kwargs):
@@ -387,6 +389,34 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
 
 # HTMX Stuff
+
+
+class SearchBoardView(LoginRequiredMixin, generic.ListView):
+    model = Board
+    template_name = "boards/components/board_list.html"
+    context_object_name = "boards"
+    paginate_by = 5
+
+    def get_queryset(self):
+        view = resolve(urlparse(self.request.META["HTTP_REFERER"]).path).url_name
+        if view == "index":
+            queryset = Board.objects.filter(owner=self.request.user)
+        elif view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
+            queryset = Board.objects.all()
+
+        query = self.request.GET.get("q")
+        if query:
+            queryset = queryset.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        page = self.request.GET.get("page", 1)
+        paginator = Paginator(self.object_list, self.paginate_by)
+        page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
+
+        context["page_range"] = page_range
+        return context
 
 
 class BoardFetchView(generic.TemplateView):
