@@ -1,71 +1,81 @@
-<ul class="list-group">
-    {% for board in boards %}
-        <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
-            <div class="ms-2">
-                <div class="fw-bold">
-                    <a href="{{ board.get_absolute_url }}"
-                       data-bs-toggle="tooltip"
-                       data-bs-placement="right"
-                       title="Created: {{ board.created_at|date:'d/m/Y' }}">{{ board }}</a>
-                    <span data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Last post: {{ board.get_last_post_date|date:'d/m/Y' }}">({{ board.get_post_count }})</span>
-                    {% if is_all_boards %}({{ board.owner }}){% endif %}
+<div id="board-list">
+    <ul class="list-group">
+        {% for board in boards %}
+            <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
+                <div class="ms-2">
+                    <div class="fw-bold">
+                        <a href="{{ board.get_absolute_url }}"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="Created: {{ board.created_at|date:'d/m/Y' }}">{{ board }}</a>
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Last post: {{ board.get_last_post_date|date:'d/m/Y' }}">({{ board.get_post_count }})</span>
+                        {% if is_all_boards %}({{ board.owner }}){% endif %}
+                    </div>
+                    <div class="">{{ board.description }}</div>
                 </div>
-                <div class="">{{ board.description }}</div>
-            </div>
-            <div class="d-flex align-items-center">
-                <button class="btn btn-link btn-sm shadow-none text-black"
-                        hx-get="{% url 'boards:board-update' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </button>
-                <button class="btn btn-close btn-sm"
-                        hx-get="{% url 'boards:board-delete' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                </button>
-            </div>
-        </li>
-    {% endfor %}
-</ul>
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4">
-    {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
-        </li>
-    {% else %}
-        <li class="disabled page-item">
-            <span class="page-link">&laquo;</span>
-        </li>
-    {% endif %}
-    {% for i in page_range|default_if_none:page_obj.paginator.get_elided_page_range %}
-        {% if page_obj.number == i %}
-            <li class="active page-item">
-                <span class="page-link">{{ i }}</span>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link btn-sm shadow-none text-black"
+                            hx-get="{% url 'boards:board-update' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-pen"></i>
+                    </button>
+                    <button class="btn btn-close btn-sm"
+                            hx-get="{% url 'boards:board-delete' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                    </button>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
+        hx-target="#board-list">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href=""
+                   hx-get="{% url 'boards:board-search' %}?page={{ page_obj.previous_page_number }}&q={{ request.GET.q|urlencode }}">&laquo;</a>
             </li>
         {% else %}
-            {% if i == page_obj.paginator.ELLIPSIS %}
-                <li class="page-item">
+            <li class="disabled page-item">
+                <span class="page-link">&laquo;</span>
+            </li>
+        {% endif %}
+        {% for i in page_range|default_if_none:page_obj.paginator.get_elided_page_range %}
+            {% if page_obj.number == i %}
+                <li class="active page-item">
                     <span class="page-link">{{ i }}</span>
                 </li>
             {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
+                {% if i == page_obj.paginator.ELLIPSIS %}
+                    <li class="page-item">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href=""
+                           hx-get="{% url 'boards:board-search' %}?page={{ i }}&q={{ request.GET.q|urlencode }}">{{ i }}</a>
+                    </li>
+                {% endif %}
             {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   class="page-link"
+                   href=""
+                   hx-get="{% url 'boards:board-search' %}?page={{ page_obj.next_page_number }}&q={{ request.GET.q|urlencode }}">&raquo;</a>
+            </li>
+        {% else %}
+            <li class="disabled page-item">
+                <span class="page-link">&raquo;</span>
+            </li>
         {% endif %}
-    {% endfor %}
-    {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
-        </li>
-    {% else %}
-        <li class="disabled page-item">
-            <span class="page-link">&raquo;</span>
-        </li>
-    {% endif %}
-</ul>
+    </ul>
+</div>

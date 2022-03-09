@@ -3,20 +3,41 @@
 {% block content %}
     <div class="d-sm-flex flex-grow-1 px-2">
         <div class="col-md-4">
-            <p>
-                {% crispy form %}
-            </p>
-            <p>
-                {% if user.is_authenticated %}
-                    <h4>Your boards ({{ user }}):</h4>
-                    {% include 'boards/components/board_list.html' %}
-                {% endif %}
-            </p>
-            <p>
-                {% if perms.boards.can_view_all_boards %}
+            {% if not is_all_boards %}
+                <p>
+                    {% crispy form %}
+                </p>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <div class="py-2">
+                    <div class="d-flex gap-2">
+                        <h4>
+                            {% if is_all_boards %}
+                                All boards:
+                            {% else %}
+                                Your boards ({{ user }}):
+                            {% endif %}
+                        </h4>
+                        <div class="spinner-border htmx-indicator" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <input class="form-control py-2"
+                           type="search"
+                           name="q"
+                           placeholder="Search by topic/subject..."
+                           hx-get="{% url 'boards:board-search' %}"
+                           hx-trigger="keyup changed delay:500ms, search"
+                           hx-target="#board-list"
+                           hx-indicator=".htmx-indicator">
+                </div>
+                <div hx-get="{% url 'boards:board-search' %}" hx-trigger="load"></div>
+            {% endif %}
+            {% if perms.boards.can_view_all_boards and not is_all_boards %}
+                <p>
                     <a class="btn btn-primary" href="{% url 'boards:index-all' %}">All Boards</a>
-                {% endif %}
-            </p>
+                </p>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

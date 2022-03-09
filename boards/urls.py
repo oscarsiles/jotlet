@@ -1,5 +1,4 @@
-from django.urls import include, path
-from django.views import generic
+from django.urls import path
 
 from . import views
 
@@ -8,6 +7,7 @@ urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
     path("all/", views.IndexAllBoardsView.as_view(), name="index-all"),
     path("create/", views.CreateBoardView.as_view(), name="board-create"),
+    path("search/", views.SearchBoardView.as_view(), name="board-search"),
     path("image_select/<str:type>/", views.ImageSelectView.as_view(), name="image-select"),
     path("<slug:slug>/", views.BoardView.as_view(), name="board"),
     path("<slug:slug>/update/", views.UpdateBoardView.as_view(), name="board-update"),
