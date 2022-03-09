@@ -396,6 +396,7 @@ class SearchBoardView(LoginRequiredMixin, generic.ListView):
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
     paginate_by = 5
+    is_all_boards = False
 
     def get_queryset(self):
         view = resolve(urlparse(self.request.META["HTTP_REFERER"]).path).url_name
@@ -403,6 +404,7 @@ class SearchBoardView(LoginRequiredMixin, generic.ListView):
             queryset = Board.objects.filter(owner=self.request.user)
         elif view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
             queryset = Board.objects.all()
+            self.is_all_boards = True
 
         u = self.request.GET.get("u")
         if u:
@@ -422,6 +424,7 @@ class SearchBoardView(LoginRequiredMixin, generic.ListView):
         page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
 
         context["page_range"] = page_range
+        context["is_all_boards"] = self.is_all_boards
         return context
 
 
