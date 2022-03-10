@@ -6,6 +6,7 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import models
+from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.utils.functional import cached_property
@@ -81,11 +82,13 @@ class Board(models.Model):
     def get_post_count(self):
         return self.get_posts.count()
 
+    get_post_count.short_description = "Post Count"
+
     @cached_property
     def get_last_post_date(self):
         if self.get_post_count > 0:
-            return self.get_posts.first().created_at
-        return self.created_at
+            return date(self.get_posts.first().created_at, "d/m/Y")
+        return None
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
@@ -145,6 +148,24 @@ class Topic(models.Model):
 
     def get_board_name(self):
         return self.board.title
+
+    @cached_property
+    def get_posts(self):
+        return Post.objects.filter(topic=self).order_by("-created_at")
+
+    @cached_property
+    def get_post_count(self):
+        return self.get_posts.count()
+
+    get_post_count.short_description = "Post Count"
+
+    @cached_property
+    def get_last_post_date(self):
+        if self.get_post_count > 0:
+            return date(self.get_posts.first().created_at, "d/m/Y")
+        return None
+
+    get_last_post_date.short_description = "Last Post Date"
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
