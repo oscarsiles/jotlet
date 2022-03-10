@@ -1,5 +1,6 @@
 {% extends 'base_generic.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 {% load cache %}
 {% block content %}
     {% cache 3600 request.user is_all_boards %}
@@ -44,18 +45,6 @@
                                    hx-trigger="userAdded, userChanged, userRemoved"
                                    hx-target="#board-list"
                                    hx-indicator=".htmx-indicator">
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    var input = document.querySelector('input[name=u]');
-                                    tagify = new Tagify(input, {
-                                        delimiters: " ",
-                                        originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
-                                    });
-                                    tagify.on('add', e => htmx.trigger(htmx.find("#input-user-search"), "userAdded"));
-                                    tagify.on('change', e => htmx.trigger(htmx.find("#input-user-search"), "userChanged"));
-                                    tagify.on('remove', e => htmx.trigger(htmx.find("#input-user-search"), "userRemoved"));
-                                  }, false);
-                            </script>
                         {% endif %}
                     </div>
                 </div>
@@ -73,3 +62,6 @@
     </div>
 {% endcache %}
 {% endblock content %}
+{% block scripts %}
+    <script src="{% static 'js/index.js' %}"></script>
+{% endblock scripts %}
