@@ -23,19 +23,10 @@ def channel_group_send(group_name, message):
     async_to_sync(channel_layer.group_send)(group_name, message)
 
 
-class IndexView(FormMixin, ProcessFormView, generic.ListView):
+class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
-    context_object_name = "boards"
-    paginate_by = 5
-    object_list = ""
-
-    def get_context_data(self, **kwargs):
-        queryset = kwargs.pop("object_list", None)
-        if queryset is None and self.request.user.is_authenticated:
-            self.object_list = self.model.objects.filter(owner=self.request.user).order_by("created_at")
-        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         self.form = form
@@ -45,23 +36,13 @@ class IndexView(FormMixin, ProcessFormView, generic.ListView):
         return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
 
 
-class IndexAllBoardsView(PermissionRequiredMixin, generic.ListView):
+class IndexAllBoardsView(PermissionRequiredMixin, generic.TemplateView):
     model = Board
     template_name = "boards/index.html"
-    context_object_name = "boards"
-    paginate_by = 5
     permission_required = "boards.can_view_all_boards"
 
     def get_context_data(self, **kwargs):
-        queryset = kwargs.pop("object_list", None)
-        if queryset is None:
-            queryset = self.object_list = self.model.objects.all().order_by("created_at")
         context = super().get_context_data(**kwargs)
-        page = self.request.GET.get("page", 1)
-        paginator = Paginator(self.model.objects.all().order_by("created_at"), self.paginate_by)
-        page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
-
-        context["page_range"] = page_range
         context["is_all_boards"] = True
         return context
 
