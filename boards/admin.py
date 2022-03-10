@@ -8,14 +8,22 @@ admin.site.site_title = "Jotlet Administration"
 admin.site.site_header = admin.site.site_title
 
 
-class BoardPreferencesInline(admin.TabularInline):
+class BoardPreferencesInline(admin.StackedInline):
     model = BoardPreferences
     extra = 0
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
 
 
 class TopicInline(admin.TabularInline):
     model = Topic
-    extra = 1
+    extra = 0
+    fields = ("subject", "get_post_count", "get_last_post_date")
+    readonly_fields = ("get_post_count", "get_last_post_date")
 
 
 class PostInline(admin.TabularInline):
@@ -29,9 +37,9 @@ class BoardAdmin(admin.ModelAdmin):
         "title",
         "description",
         "owner",
-        "uuid",
+        "get_post_count",
+        "get_last_post_date",
         "created_at",
-        "updated_at",
     )
     fields = (
         "title",
@@ -43,7 +51,7 @@ class BoardAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ("subject", "board", "created_at", "updated_at")
+    list_display = ("subject", "board", "get_post_count", "created_at", "updated_at")
     fields = (
         "subject",
         "board",
