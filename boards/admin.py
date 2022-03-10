@@ -4,6 +4,8 @@ from .models import Board, BoardPreferences, Image, Post, Topic
 
 # Register your models here.
 
+admin.site.site_header = "Jotlet Administration"
+
 
 class BoardPreferencesInline(admin.TabularInline):
     model = BoardPreferences
