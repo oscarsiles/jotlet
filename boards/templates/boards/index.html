@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 {% load cache %}
 {% block content %}
-    {% cache 3600 request.user is_all_boards %}
     <div class="d-sm-flex flex-grow-1 px-2">
         <div class="col-md-4">
             {% if not is_all_boards %}
@@ -11,6 +10,7 @@
                 </p>
             {% endif %}
             {% if user.is_authenticated %}
+                {% cache 3600 request.user is_all_boards %}
                 <div class="py-2">
                     <div class="d-flex gap-2">
                         <h4>
@@ -62,13 +62,13 @@
                      hx-get="{% url 'boards:board-search' %}"
                      hx-trigger="load"
                      hx-swap="innerHTML"></div>
-            {% endif %}
-            {% if perms.boards.can_view_all_boards and not is_all_boards %}
-                <p>
-                    <a class="btn btn-primary" href="{% url 'boards:index-all' %}">All Boards</a>
-                </p>
-            {% endif %}
-        </div>
+            {% endcache %}
+        {% endif %}
+        {% if perms.boards.can_view_all_boards and not is_all_boards %}
+            <p>
+                <a class="btn btn-primary" href="{% url 'boards:index-all' %}">All Boards</a>
+            </p>
+        {% endif %}
     </div>
-{% endcache %}
+</div>
 {% endblock content %}
