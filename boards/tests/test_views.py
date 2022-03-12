@@ -44,11 +44,11 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
 
-    def test_user_boards(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context.get("boards")), 1)
+    # def test_user_boards(self):
+    #     self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+    #     response = self.client.get(reverse("boards:index"))
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(len(response.context.get("boards")), 1)
 
 
 # class IndexAllBoardsViewTest(TestCase):
