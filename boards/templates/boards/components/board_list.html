@@ -1,8 +1,38 @@
 {% load cachalot cache %}
+{% load crispy_forms_tags %}
+{% crispy filter.form %}
+{% cache 3600 board-list-scripts %}
+<script>
+    var qInput = document.querySelector("input[name=q]");
+    qInput.addEventListener('keyup', e => {
+        if (event.isComposing || event.keyCode === 229) {
+            return;
+        }
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    });
+
+    
+    var ownerInput = document.querySelector("input[name=owner]");
+    tagify = new Tagify(ownerInput, {
+        delimiters: ",| ",
+        originalInputValueFormat: (valuesArr) =>
+            valuesArr.map((item) => item.value).join(","),
+    });
+    tagify.on("add", (e) =>
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    );
+    tagify.on("change", (e) =>
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    );
+    tagify.on("remove", (e) =>
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    );
+</script>
+{% endcache %}
 <ul class="list-group">
     {% for board in boards %}
         {% get_last_invalidation 'auth.User' as last_users_invalidation %}
-        {% cache 3600 board-list-item board.pk board.get_post_count is_all_boards request.user last_users_invalidation %}
+        {% cache 3600 board-list-content board.pk request.session_key request.user last_users_invalidation %}
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
             <div class="ms-2">
                 <div class="fw-bold">
@@ -40,14 +70,14 @@
     {% endcache %}
 {% endfor %}
 </ul>
-{% cache 3600 page-range-link request.GET.q request.GET.u page_obj i %}
+{% cache 3600 board-list-pagination page_obj %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
     hx-target="#board-list">
     {% if page_obj.has_previous %}
         <li class="page-item">
             <a class="page-link"
                href=""
-               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.previous_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&laquo;</a>
+               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.previous_page_number }}{% if querystring %}&amp;{{ querystring }}{% endif %}">&laquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
@@ -68,7 +98,7 @@
                 <li class="page-item">
                     <a class="page-link"
                        href=""
-                       hx-get="{% url 'boards:board-search' %}?page={{ i }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">{{ i }}</a>
+                       hx-get="{% url 'boards:board-list' %}?page={{ i }}{% if querystring %}&amp;{{ querystring }}{% endif %}">{{ i }}</a>
                 </li>
             {% endif %}
         {% endif %}
@@ -78,7 +108,7 @@
             <a class="page-link"
                class="page-link"
                href=""
-               hx-get="{% url 'boards:board-search' %}?page={{ page_obj.next_page_number }}&b={{ request.GET.q|urlencode }}&u={{ request.GET.u|urlencode }}">&raquo;</a>
+               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.next_page_number }}{% if querystring %}&amp;{{ querystring }}{% endif %}">&raquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
