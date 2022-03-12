@@ -32,7 +32,7 @@
 <ul class="list-group">
     {% for board in boards %}
         {% get_last_invalidation 'auth.User' as last_users_invalidation %}
-        {% cache 3600 board-list-content board.pk request.session_key request.user last_users_invalidation %}
+        {% cache 3600 board-list-content board.pk is_all_boards request.session_key request.user last_users_invalidation %}
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
             <div class="ms-2">
                 <div class="fw-bold">
