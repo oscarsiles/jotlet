@@ -5,15 +5,14 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
-from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
 
+from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Topic
 
@@ -52,7 +51,7 @@ class BoardView(generic.DetailView):
     template_name = "boards/board_index.html"
 
     def get_context_data(self, **kwargs):
-        context = super(BoardView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["topics"] = Topic.objects.filter(board=self.object)
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
@@ -78,12 +77,12 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
         return board.preferences
 
     def get_form_kwargs(self, **kwargs):
-        kwargs = super(BoardPreferencesView, self).get_form_kwargs(**kwargs)
+        kwargs = super().get_form_kwargs(**kwargs)
         kwargs["slug"] = self.kwargs["slug"]
         return kwargs
 
     def form_valid(self, form):
-        super(BoardPreferencesView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -105,7 +104,7 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         board = form.save(commit=False)
         board.owner = self.request.user
         board.save()
-        return super(CreateBoardView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -147,7 +146,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
     def form_valid(self, form):
         form.instance.board_id = Board.objects.get(slug=self.kwargs["slug"]).id
-        super(CreateTopicView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -180,7 +179,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
-        super(UpdateTopicView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -214,7 +213,7 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
     def form_valid(self, form):
         topic_pk = self.object.pk
         topic_subject = self.object.subject
-        super(DeleteTopicView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -301,7 +300,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         )
 
     def form_valid(self, form):
-        super(UpdatePostView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -342,7 +341,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
     def form_valid(self, form):
         post_pk = self.object.pk
-        super(DeletePostView, self).form_valid(form)
+        super().form_valid(form)
         channel_group_send(
             f"board_{self.kwargs.get('slug')}",
             {
@@ -372,31 +371,33 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 # HTMX Stuff
 
 
-class SearchBoardView(LoginRequiredMixin, generic.ListView):
+class PaginatedFilterViews(generic.View):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.GET:
+            querystring = self.request.GET.copy()
+            if self.request.GET.get("page"):
+                del querystring["page"]
+            context["querystring"] = querystring.urlencode()
+        return context
+
+
+class SearchBoardView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
     model = Board
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
     paginate_by = 5
     is_all_boards = False
+    filterset = None
 
     def get_queryset(self):
         view = resolve(urlparse(self.request.META["HTTP_REFERER"]).path).url_name
-        if view == "index":
-            queryset = Board.objects.filter(owner=self.request.user)
-        elif view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
-            queryset = Board.objects.all()
+        if view == "index-all":
             self.is_all_boards = True
 
-        u = self.request.GET.get("u")
-        if u:
-            users = u.split(",")
-            queryset = queryset.filter(owner__username__in=users)
+        self.filterset = BoardFilter(self.request.GET, request=self.request, is_all_boards=self.is_all_boards)
 
-        b = self.request.GET.get("b")
-        if b:
-            queryset = queryset.filter(Q(title__icontains=b) | Q(description__icontains=b))
-
-        return queryset.order_by("created_at")
+        return self.filterset.qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -404,6 +405,7 @@ class SearchBoardView(LoginRequiredMixin, generic.ListView):
         paginator = Paginator(self.object_list, self.paginate_by)
         page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
 
+        context["filter"] = self.filterset
         context["page_range"] = page_range
         context["is_all_boards"] = self.is_all_boards
         return context
