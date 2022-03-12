@@ -4,8 +4,8 @@ import tempfile
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
-from django.urls import reverse
 
 from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 
@@ -63,7 +63,7 @@ class BoardModelTest(TestCase):
         topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
         post3 = Post.objects.create(topic=topic2, content="Test Post 3")
         board = Board.objects.get(id=1)
-        self.assertEqual(board.get_last_post_date, post2.created_at)
+        self.assertEqual(board.get_last_post_date, date(post2.created_at, "d/m/Y"))
 
     def test_get_absolute_url(self):
         board = Board.objects.get(id=1)
