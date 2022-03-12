@@ -1,5 +1,6 @@
 {% extends 'base_generic.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 {% load cache %}
 {% block content %}
     <div class="d-sm-flex flex-grow-1 px-2">
@@ -24,42 +25,9 @@
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <div class="d-grid gap-2">
-                        <input class="form-control py-2"
-                               id="input-topic-search"
-                               type="search"
-                               name="b"
-                               placeholder="Search by topic/subject..."
-                               hx-get="{% url 'boards:board-search' %}"
-                               hx-trigger="keyup changed delay:500ms, search"
-                               hx-target="#board-list"
-                               hx-indicator=".htmx-indicator">
-                        {% if is_all_boards %}
-                            <input class="form-control"
-                                   id="input-user-search"
-                                   type="search"
-                                   name="u"
-                                   placeholder="Search by user..."
-                                   hx-get="{% url 'boards:board-search' %}"
-                                   hx-trigger="userAdded, userChanged, userRemoved"
-                                   hx-target="#board-list"
-                                   hx-indicator=".htmx-indicator">
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    var input = document.querySelector('input[name=u]');
-                                    tagify = new Tagify(input, {
-                                        originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
-                                    });
-                                    tagify.on('add', e => htmx.trigger(htmx.find("#input-user-search"), "userAdded"));
-                                    tagify.on('change', e => htmx.trigger(htmx.find("#input-user-search"), "userChanged"));
-                                    tagify.on('remove', e => htmx.trigger(htmx.find("#input-user-search"), "userRemoved"));
-                                  }, false);
-                            </script>
-                        {% endif %}
-                    </div>
                 </div>
                 <div id="board-list"
-                     hx-get="{% url 'boards:board-search' %}"
+                     hx-get="{% url 'boards:board-list' %}"
                      hx-trigger="load"
                      hx-swap="innerHTML"></div>
             {% endcache %}
@@ -72,3 +40,6 @@
     </div>
 </div>
 {% endblock content %}
+{% block script %}
+    <script src="{% static 'js/index.js' %}"></script>
+{% endblock script %}
