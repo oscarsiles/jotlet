@@ -51,25 +51,25 @@ class IndexViewTest(TestCase):
         self.assertEqual(len(response.context.get("boards")), 1)
 
 
-class IndexAllBoardsViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
-        for i in range(10):
-            Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user1)
+# class IndexAllBoardsViewTest(TestCase):
+#     @classmethod
+#     def setUpTestData(cls):
+#         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+#         test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
+#         for i in range(10):
+#             Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user1)
 
-    def test_board_non_staff_all_boards(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index-all"))
-        self.assertEqual(response.status_code, 403)
-        self.assertIsNone(response.context.get("boards"))
+#     def test_board_non_staff_all_boards(self):
+#         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+#         response = self.client.get(reverse("boards:index-all"))
+#         self.assertEqual(response.status_code, 403)
+#         self.assertIsNone(response.context.get("boards"))
 
-    def test_board_staff_all_boards(self):
-        login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:index-all"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context.get("boards")), 5)
+#     def test_board_staff_all_boards(self):
+#         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
+#         response = self.client.get(reverse("boards:index-all"))
+#         self.assertEqual(response.status_code, 200)
+#         self.assertEqual(len(response.context.get("boards")), 5)
 
 
 class BoardViewTest(TestCase):

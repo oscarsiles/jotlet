@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.microsoft",
+    "corsheaders",
     "crispy_forms",
     "crispy_bootstrap5",
     "channels",
