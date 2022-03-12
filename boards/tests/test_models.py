@@ -54,7 +54,7 @@ class BoardModelTest(TestCase):
 
     def test_get_post_last_updated(self):
         board = Board.objects.get(id=1)
-        self.assertEqual(board.get_last_post_date, board.created_at)
+        self.assertNone(board.get_last_post_date)
         topic = Topic.objects.create(board=board, subject="Test Topic")
         post1 = Post.objects.create(topic=topic, content="Test Post")
         post2 = Post.objects.create(topic=topic, content="Test Post 2")
