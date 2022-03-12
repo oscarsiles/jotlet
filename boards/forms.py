@@ -1,3 +1,5 @@
+from ast import Raise
+
 from django import forms
 from django.core.validators import RegexValidator
 from django.urls import reverse
@@ -23,6 +25,50 @@ def validate_board_exists(board_slug):
 def validate_percentage(percentage):
     if percentage < 0.0 or percentage > 1.0:
         raise forms.ValidationError("Value needs to be between 0.0 and 1.0.")
+
+
+class BoardFilterForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(BoardFilterForm, self).__init__(*args, **kwargs)
+        reverse_url = reverse("boards:board-list")
+
+        owner_list = []
+        try:
+            list = self.data["owner"].split(",")
+            for user in list:
+                owner_list.append(user)
+            self.data["owner"] = owner_list
+        except Exception as e:
+            Raise(e)
+
+        if self.changed_data:
+            self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})
+
+        self.helper = FormHelper()
+        self.helper.disable_csrf = True
+        self.helper.form_show_labels = False
+        self.helper.form_id = "board-filter-form"
+        self.helper.attrs = {
+            "hx-get": reverse_url,
+            "hx-trigger": "filterChanged delay:500ms",
+            "hx-target": "#board-list",
+            "hx-swap": "innerHTML",
+            "hx-indicator": ".htmx-indicator",
+        }
+        self.helper.layout = Layout(
+            Field(
+                "q",
+                placeholder="Search by topic/subject...",
+            ),
+        )
+
+        if "owner" in self.fields:
+            self.helper.layout.append(
+                Field(
+                    "owner",
+                    placeholder="Search by username...",
+                ),
+            )
 
 
 class BoardPreferencesForm(forms.ModelForm):
