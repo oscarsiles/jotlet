@@ -44,6 +44,9 @@ class BoardFilterForm(forms.Form):
         if self.changed_data:
             self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})
 
+        self.fields["after"].widget = forms.DateInput(attrs={"type": "date"})
+        self.fields["before"].widget = forms.DateInput(attrs={"type": "date"})
+
         self.helper = FormHelper()
         self.helper.disable_csrf = True
         self.helper.form_show_labels = False
@@ -61,18 +64,12 @@ class BoardFilterForm(forms.Form):
                 "q",
                 placeholder="Search by topic/subject...",
             ),
+            Div(
+                PrependedText("after", "After", wrapper_class="col-sm", onkeydown="return false"),
+                PrependedText("before", "Before", wrapper_class="col-sm", onkeydown="return false"),
+                css_class="row",
+            ),
         )
-
-        if "created_at" in self.fields:
-            self.fields["created_at__lt"].widget = forms.DateInput(attrs={"type": "date"})
-            self.fields["created_at__gt"].widget = forms.DateInput(attrs={"type": "date"})
-            self.helper.layout.append(
-                Div(
-                    PrependedText("created_at__gt", "After", wrapper_class="col-sm", onkeydown="return false"),
-                    PrependedText("created_at__lt", "Before", wrapper_class="col-sm", onkeydown="return false"),
-                    css_class="row",
-                ),
-            )
 
         if "owner" in self.fields:
             self.helper.layout.append(
