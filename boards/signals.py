@@ -15,6 +15,7 @@ from sorl.thumbnail import delete
 from boards.apps import BoardsConfig
 
 from .models import Board, BoardPreferences, Image, Post, Topic
+from .utils import channel_group_send
 
 
 def populate_models(sender, **kwargs):
@@ -58,6 +59,16 @@ def approve_all_posts(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=BoardPreferences)
+def board_preferences_send_message(sender, instance, created, **kwargs):
+    channel_group_send(
+        f"board_{instance.board.slug}",
+        {
+            "type": "board_preferences_changed",
+        },
+    )
+
+
+@receiver(post_save, sender=BoardPreferences)
 def invalidate_board_preferences_cache(sender, instance, created, **kwargs):
     keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.pk])
     try:
@@ -65,6 +76,33 @@ def invalidate_board_preferences_cache(sender, instance, created, **kwargs):
             cache.delete(keyBoardPreferences1)
     except:
         raise Exception(f"Could not delete cache: board-{instance.pk}")
+
+
+@receiver(post_save, sender=Topic)
+def topic_send_message(sender, instance, created, **kwargs):
+    if created:
+        message_type = "topic_created"
+    else:
+        message_type = "topic_updated"
+
+    channel_group_send(
+        f"board_{instance.board.slug}",
+        {
+            "type": message_type,
+            "topic_pk": instance.pk,
+        },
+    )
+
+
+@receiver(post_delete, sender=Topic)
+def topic_delete_send_message(sender, instance, **kwargs):
+    channel_group_send(
+        f"board_{instance.board.slug}",
+        {
+            "type": "topic_deleted",
+            "topic_pk": instance.pk,
+        },
+    )
 
 
 @receiver(post_save, sender=Topic)
@@ -84,6 +122,34 @@ def invalidate_topic_template_cache(sender, instance, created, **kwargs):
             cache.delete(keyTopic4)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
+
+
+@receiver(post_save, sender=Post)
+def post_send_message(sender, instance, created, **kwargs):
+    if created:
+        message_type = "post_created"
+    else:
+        message_type = "post_updated"
+
+    channel_group_send(
+        f"board_{instance.topic.board.slug}",
+        {
+            "type": message_type,
+            "topic_pk": instance.topic.pk,
+            "post_pk": instance.pk,
+        },
+    )
+
+
+@receiver(post_delete, sender=Post)
+def post_delete_send_message(sender, instance, **kwargs):
+    channel_group_send(
+        f"board_{instance.topic.board.slug}",
+        {
+            "type": "post_deleted",
+            "post_pk": instance.pk,
+        },
+    )
 
 
 @receiver(post_save, sender=Post)
