@@ -8,10 +8,11 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
+from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
 
 from .filters import BoardFilter
-from .forms import BoardPreferencesForm, SearchBoardsForm
+from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Topic
 
 
