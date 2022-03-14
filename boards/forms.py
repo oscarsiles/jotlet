@@ -55,12 +55,24 @@ class BoardFilterForm(forms.Form):
             "hx-swap": "innerHTML",
             "hx-indicator": ".htmx-indicator",
         }
+
         self.helper.layout = Layout(
             Field(
                 "q",
                 placeholder="Search by topic/subject...",
             ),
         )
+
+        if "created_at" in self.fields:
+            self.fields["created_at__lt"].widget = forms.DateInput(attrs={"type": "date"})
+            self.fields["created_at__gt"].widget = forms.DateInput(attrs={"type": "date"})
+            self.helper.layout.append(
+                Div(
+                    PrependedText("created_at__gt", "After", wrapper_class="col-sm", onkeydown="return false"),
+                    PrependedText("created_at__lt", "Before", wrapper_class="col-sm", onkeydown="return false"),
+                    css_class="row",
+                ),
+            )
 
         if "owner" in self.fields:
             self.helper.layout.append(

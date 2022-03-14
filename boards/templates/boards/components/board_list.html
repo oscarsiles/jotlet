@@ -3,11 +3,24 @@
 {% crispy filter.form %}
 {% cache 3600 board-list-scripts %}
 <script>
+    document.getElementById("board-filter-form").removeAttribute("method");
+
     var qInput = document.querySelector("input[name=q]");
     qInput.addEventListener('keyup', e => {
         if (event.isComposing || event.keyCode === 229) {
             return;
         }
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    });
+
+    var date1Input = document.querySelector("input[name=created_at__gt]");
+    var date2Input = document.querySelector("input[name=created_at__lt]");
+
+    date1Input.addEventListener('change', e => {
+        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+    });
+    
+    date2Input.addEventListener('change', e => {
         htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
     });
 
