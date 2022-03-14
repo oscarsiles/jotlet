@@ -65,9 +65,9 @@ class BoardFilterForm(forms.Form):
                 placeholder="Search by topic/subject...",
             ),
             Div(
-                PrependedText("after", "After", wrapper_class="col-sm", onkeydown="return false"),
-                PrependedText("before", "Before", wrapper_class="col-sm", onkeydown="return false"),
-                css_class="row",
+                PrependedText("after", "After", wrapper_class="col-sm pe-sm-0", onkeydown="return false"),
+                PrependedText("before", "Before", wrapper_class="col-sm ps-sm-0", onkeydown="return false"),
+                css_class="row gap-sm-3",
             ),
         )
 
