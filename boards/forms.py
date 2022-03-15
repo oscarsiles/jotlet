@@ -62,7 +62,7 @@ class BoardFilterForm(forms.Form):
         self.helper.layout = Layout(
             Field(
                 "q",
-                placeholder="Search by topic/subject...",
+                placeholder="Search by title/description...",
             ),
             Div(
                 PrependedText("after", "After", wrapper_class="col-sm pe-sm-0", onkeydown="return false"),
