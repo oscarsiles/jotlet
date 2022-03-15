@@ -1,8 +1,6 @@
 import json
 from urllib.parse import urlparse
 
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -10,16 +8,12 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
+from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
 
 from .filters import BoardFilter
-from .forms import BoardPreferencesForm, SearchBoardsForm
+from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Topic
-
-
-def channel_group_send(group_name, message):
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(group_name, message)
 
 
 class IndexView(generic.FormView):
@@ -83,12 +77,6 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def form_valid(self, form):
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "board_preferences_changed",
-            },
-        )
         return HttpResponseClientRefresh()
 
 
@@ -147,13 +135,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     def form_valid(self, form):
         form.instance.board_id = Board.objects.get(slug=self.kwargs["slug"]).id
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "topic_created",
-                "topic_pk": self.object.pk,
-            },
-        )
+
         return HttpResponse(
             status=204,
             headers={
@@ -180,13 +162,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
     def form_valid(self, form):
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "topic_updated",
-                "topic_pk": self.object.pk,
-            },
-        )
+
         return HttpResponse(
             status=204,
             headers={
@@ -214,13 +190,7 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         topic_pk = self.object.pk
         topic_subject = self.object.subject
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "topic_deleted",
-                "topic_pk": topic_pk,
-            },
-        )
+
         return HttpResponse(
             status=204,
             headers={
@@ -258,15 +228,8 @@ class CreatePostView(generic.CreateView):
                 or self.request.user.is_staff
             )
 
-        super(CreatePostView, self).form_valid(form)
+        super().form_valid(form)
 
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "post_created",
-                "topic_pk": self.kwargs.get("topic_pk"),
-            },
-        )
         return HttpResponse(
             status=204,
             headers={
@@ -301,13 +264,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
     def form_valid(self, form):
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "post_updated",
-                "post_pk": self.object.pk,
-            },
-        )
+
         return HttpResponse(
             status=204,
             headers={
@@ -342,13 +299,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     def form_valid(self, form):
         post_pk = self.object.pk
         super().form_valid(form)
-        channel_group_send(
-            f"board_{self.kwargs.get('slug')}",
-            {
-                "type": "post_deleted",
-                "post_pk": post_pk,
-            },
-        )
+
         return HttpResponse(
             status=204,
             headers={
@@ -452,14 +403,6 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post = Post.objects.get(pk=self.kwargs["pk"])
         post.approved = not post.approved
         post.save()
-
-        channel_group_send(
-            f"board_{post.topic.board.slug}",
-            {
-                "type": "post_updated",
-                "post_pk": post.pk,
-            },
-        )
 
         return HttpResponse(status=204)
 

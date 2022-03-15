@@ -47,8 +47,6 @@ INSTALLED_APPS = [
     "qr_code",
     "sorl.thumbnail",
     "tagify",
-    "cachalot",
-    "cacheops",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",

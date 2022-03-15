@@ -11,6 +11,9 @@ from .models import Board
 class BoardFilter(django_filters.FilterSet):
     q = django_filters.CharFilter(method="filter_title_description", label="Title/Description")
     owner = django_filters.CharFilter(method="filter_username", label="User")
+    before = django_filters.DateFilter(field_name="created_at", lookup_expr="lt")
+    after = django_filters.DateFilter(field_name="created_at", lookup_expr="gt")
+
     is_all_boards = False
 
     class Meta:
@@ -18,6 +21,7 @@ class BoardFilter(django_filters.FilterSet):
         form = BoardFilterForm
         fields = [
             "q",
+            "created_at",
             "owner",
         ]
 

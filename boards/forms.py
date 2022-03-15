@@ -44,6 +44,9 @@ class BoardFilterForm(forms.Form):
         if self.changed_data:
             self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})
 
+        self.fields["after"].widget = forms.DateInput(attrs={"type": "date"})
+        self.fields["before"].widget = forms.DateInput(attrs={"type": "date"})
+
         self.helper = FormHelper()
         self.helper.disable_csrf = True
         self.helper.form_show_labels = False
@@ -55,10 +58,16 @@ class BoardFilterForm(forms.Form):
             "hx-swap": "innerHTML",
             "hx-indicator": ".htmx-indicator",
         }
+
         self.helper.layout = Layout(
             Field(
                 "q",
                 placeholder="Search by topic/subject...",
+            ),
+            Div(
+                PrependedText("after", "After", wrapper_class="col-sm pe-sm-0", onkeydown="return false"),
+                PrependedText("before", "Before", wrapper_class="col-sm ps-sm-0", onkeydown="return false"),
+                css_class="row gap-sm-3",
             ),
         )
 
