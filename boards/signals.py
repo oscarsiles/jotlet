@@ -96,13 +96,17 @@ def topic_send_message(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Topic)
 def topic_delete_send_message(sender, instance, **kwargs):
-    channel_group_send(
-        f"board_{instance.board.slug}",
-        {
-            "type": "topic_deleted",
-            "topic_pk": instance.pk,
-        },
-    )
+    try:
+        if Board.objects.filter(id=instance.board_id).exists():
+            channel_group_send(
+                f"board_{instance.board.slug}",
+                {
+                    "type": "topic_deleted",
+                    "topic_pk": instance.pk,
+                },
+            )
+    except:
+        raise Exception(f"Could not send message: topic_deleted for topic {instance.pk}")
 
 
 @receiver(post_save, sender=Topic)
@@ -143,13 +147,17 @@ def post_send_message(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Post)
 def post_delete_send_message(sender, instance, **kwargs):
-    channel_group_send(
-        f"board_{instance.topic.board.slug}",
-        {
-            "type": "post_deleted",
-            "post_pk": instance.pk,
-        },
-    )
+    try:
+        if Topic.objects.filter(id=instance.topic_id).exists():
+            channel_group_send(
+                f"board_{instance.topic.board.slug}",
+                {
+                    "type": "post_deleted",
+                    "post_pk": instance.pk,
+                },
+            )
+    except:
+        raise Exception(f"Could not send message: post_deleted for post-{instance.pk}")
 
 
 @receiver(post_save, sender=Post)
