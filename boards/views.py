@@ -21,6 +21,13 @@ class IndexView(generic.FormView):
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+        return context
+
     def form_valid(self, form):
         self.form = form
         return HttpResponseRedirect(self.get_success_url())
@@ -333,7 +340,7 @@ class PaginatedFilterViews(generic.View):
         return context
 
 
-class SearchBoardView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
+class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
     model = Board
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
@@ -343,7 +350,7 @@ class SearchBoardView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView
 
     def get_queryset(self):
         view = resolve(urlparse(self.request.META["HTTP_REFERER"]).path).url_name
-        if view == "index-all":
+        if view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
             self.is_all_boards = True
 
         self.filterset = BoardFilter(self.request.GET, request=self.request, is_all_boards=self.is_all_boards)
