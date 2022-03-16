@@ -44,32 +44,26 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", "board_slug", "This field is required.")
 
-    # def test_user_boards(self):
-    #     self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-    #     response = self.client.get(reverse("boards:index"))
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(len(response.context.get("boards")), 1)
 
+class IndexAllBoardsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
 
-# class IndexAllBoardsViewTest(TestCase):
-#     @classmethod
-#     def setUpTestData(cls):
-#         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-#         test_user2 = User.objects.create_superuser(username="testuser2", password="1X<ISRUkw+tuK")
-#         for i in range(10):
-#             Board.objects.create(title=f"Test Board {i}", description=f"Test Board Description {i}", owner=test_user1)
+    def test_anonymous_all_boards(self):
+        response = self.client.get(reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 302)
 
-#     def test_board_non_staff_all_boards(self):
-#         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-#         response = self.client.get(reverse("boards:index-all"))
-#         self.assertEqual(response.status_code, 403)
-#         self.assertIsNone(response.context.get("boards"))
+    def test_board_non_staff_all_boards(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 403)
 
-#     def test_board_staff_all_boards(self):
-#         login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
-#         response = self.client.get(reverse("boards:index-all"))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(len(response.context.get("boards")), 5)
+    def test_board_staff_all_boards(self):
+        login = self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 200)
 
 
 class BoardViewTest(TestCase):
@@ -754,6 +748,49 @@ class PostDeleteViewTest(TestCase):
         message = await communicator.receive_from()
         self.assertIn("post_deleted", message)
         self.assertIn(f'"post_pk": {post.id}', message)
+
+
+class BoardListViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        test_user2 = User.objects.create_superuser(username="testuser2", password="2HJ1vRV0Z&3iD")
+        for i in range(3):
+            Board.objects.create(
+                title=f"Test Board {i} - {test_user1.username}", description="Test Description", owner=test_user1
+            )
+            Board.objects.create(
+                title=f"Test Board {i} - {test_user2.username}", description="Test Description", owner=test_user2
+            )
+
+    def test_anonymous_permissions(self):
+        response = self.client.get(reverse("boards:board-list"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_user_index(self):
+        login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "boards/components/board_list.html")
+        self.assertEqual(len(response.context["boards"]), 3)
+
+    def test_user_no_perm_all_boards(self):
+        login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "boards/components/board_list.html")
+        self.assertEqual(len(response.context["boards"]), 3)
+
+    def test_user_perm_all_boards(self):
+        test_user1 = User.objects.get(username="testuser1")
+        test_user1.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
+        test_user1.save()
+        login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index-all"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "boards/components/board_list.html")
+        self.assertEqual(len(response.context["boards"]), 5)
+        self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
 
 
 class BoardFetchViewTest(TestCase):
