@@ -48,16 +48,14 @@
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
             <div class="ms-2">
                 <div class="fw-bold">
-                    <a href="{{ board.get_absolute_url }}"
-                       data-bs-toggle="tooltip"
-                       data-bs-placement="right"
-                       title="Created: {{ board.created_at|date:'d/m/Y' }}">{{ board }}</a>
+                    <a href="{{ board.get_absolute_url }}">{{ board }}</a>
                     <span data-bs-toggle="tooltip"
                           data-bs-placement="right"
-                          title="Last post: {{ board.get_last_post_date|date:'d/m/Y' }}">({{ board.get_post_count }})</span>
+                          title="Last post: {{ board.get_last_post_date }}">({{ board.get_post_count }})</span>
                     {% if is_all_boards %}- ({{ board.owner }}){% endif %}
                 </div>
                 <div class="">{{ board.description }}</div>
+                <small class="text-muted">{{ board.created_at|date:'d/m/Y' }}</small>
             </div>
             <div class="d-flex align-items-center">
                 {% if request.user == board.owner or perms.boards.change_board %}
