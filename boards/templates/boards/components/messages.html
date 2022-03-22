@@ -10,7 +10,7 @@
             {{ message }}
         </div>
         {% if forloop.last %}
-            <script>
+            <script nonce="{{ CSP_NONCE }}">
             setTimeout(function () {
                 $("div[id=alert]").slideUp();
               }, 5000);
