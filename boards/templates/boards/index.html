@@ -10,15 +10,15 @@
                     {% crispy form %}
                 </p>
             {% endif %}
-            {% if user.is_authenticated %}
-                {% cache 3600 request.user is_all_boards %}
+            {% if request.user.is_authenticated %}
+                {% cache 3600 index-list-title request.user is_all_boards %}
                 <div class="py-2">
                     <div class="d-flex gap-2">
                         <h4>
                             {% if is_all_boards %}
                                 All boards:
                             {% else %}
-                                Your boards ({{ user }}):
+                                Your boards ({{ request.user }}):
                             {% endif %}
                         </h4>
                         <div class="spinner-border htmx-indicator" role="status">
