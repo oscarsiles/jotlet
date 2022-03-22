@@ -1,7 +1,7 @@
 document.getElementById("board-filter-form").removeAttribute("method");
 
 var qInput = document.querySelector("input[name=q]");
-qInput.addEventListener("keyup", (e) => {
+qInput.addEventListener("keyup", (event) => {
   if (event.isComposing || event.keyCode === 229) {
     return;
   }
