@@ -61,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
 
@@ -81,6 +82,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
+                "csp.context_processors.nonce",
             ],
         },
     },
@@ -173,3 +175,28 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "testing@test.com"
 
 PROMETHEUS_ENABLED = False
+
+CSP_DEFAULT_SRC = ["'none'"]
+CSP_SCRIPT_SRC = [
+    "'self'",
+    "cdn.jsdelivr.net",
+    "polyfill.io",
+    "unpkg.com",
+    "'strict-dynamic'",
+    "'unsafe-inline'",
+    "https:",
+]
+CSP_STYLE_SRC = [
+    "'self'",
+    "cdn.jsdelivr.net",
+    "'unsafe-inline'",
+    "https:",
+]
+CSP_FONT_SRC = CSP_STYLE_SRC
+CSP_IMG_SRC = [
+    "'self'",
+    "data:",
+]
+CSP_BASE_URI = ["'none'"]
+CSP_CONNECT_SRC = ["'self'"]
+CSP_INCLUDE_NONCE_IN = ["script-src"]

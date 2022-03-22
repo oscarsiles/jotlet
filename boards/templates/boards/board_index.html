@@ -43,5 +43,5 @@
     {% include 'boards/components/board.html' %}
 {% endblock content %}
 {% block script %}
-    <script src="{% static 'js/board.js' %}"></script>
+    <script src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock script %}

@@ -1,47 +1,8 @@
 {% load cache %}
 {% load crispy_forms_tags %}
+{% load static %}
 {% crispy filter.form %}
-{% cache 3600 board-list-scripts %}
-<script>
-    document.getElementById("board-filter-form").removeAttribute("method");
-
-    var qInput = document.querySelector("input[name=q]");
-    qInput.addEventListener('keyup', e => {
-        if (event.isComposing || event.keyCode === 229) {
-            return;
-        }
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    });
-
-    var beforeInput = document.querySelector("input[name=before]");
-    var afterInput = document.querySelector("input[name=after]");
-
-    beforeInput.addEventListener('change', e => {
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    });
-
-    afterInput.addEventListener('change', e => {
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    });
-
-    
-    var ownerInput = document.querySelector("input[name=owner]");
-    tagify = new Tagify(ownerInput, {
-        delimiters: ",| ",
-        originalInputValueFormat: (valuesArr) =>
-            valuesArr.map((item) => item.value).join(","),
-    });
-    tagify.on("add", (e) =>
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    );
-    tagify.on("change", (e) =>
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    );
-    tagify.on("remove", (e) =>
-        htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-    );
-</script>
-{% endcache %}
+<script src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
 <ul class="list-group">
     {% for board in boards %}
         {% cache 3600 board-list-content board.pk request.session_key request.user perms.boards.change_board is_all_boards %}
