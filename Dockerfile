@@ -5,7 +5,7 @@ ENV REDIS_HOST "redis"
 RUN mkdir /app
 WORKDIR /app
 RUN apt-get update \
-    && apt-get -y install libpq-dev gcc
+    && apt-get -y install libpq-dev gcc libwebp-dev
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 ADD . /app/

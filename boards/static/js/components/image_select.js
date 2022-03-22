@@ -1,12 +1,14 @@
-htmx.on("htmx:load", function () {
-  selectedValue = $("#id_background_image").attr("value");
+selectedValue = $("#id_background_image").attr("value");
+if (selectedValue != "") {
   $("#" + selectedValue).prop("checked", true);
-});
+}
 
 $("#image-select .form-check-input").click(function () {
+  var label = $("label[for='" + $(this).attr("id") + "']");
   $("#button-id_background_image").hide();
   $("#id_background_image").attr("value", $(this).attr("id"));
-  $("#img-id_background_image").attr("src", $(this).attr("url"));
+  $("#src-webp").attr("srcset", label.find("source").first().attr("srcset"));
+  $("#src-jpeg").attr("srcset", label.find("source").last().attr("srcset"));
   $("#img-id_background_image").show();
 });
 
