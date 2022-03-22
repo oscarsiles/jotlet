@@ -1,31 +1,7 @@
 {% load static %}
 {% load cache %}
+<script src="{% static 'js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% cache 3600 image-select type %}
-<script type="text/javascript">
-  htmx.on('htmx:load', function() {
-    selectedValue = $('#id_background_image').attr('value');
-    $('#' + selectedValue).prop("checked",true);
-  });
-
-  $("#image-select .form-check-input").click(function(){
-    $('#button-id_background_image').hide();
-    $("#id_background_image").attr('value', $(this).attr('id'));
-    $("#img-id_background_image").attr('src', $(this).attr('url'));
-    $('#img-id_background_image').show();
-  });
-
-  var modal1 = bootstrap.Modal.getInstance(document.getElementById('modal-1-div'));
-  var modal2 = bootstrap.Modal.getInstance(document.getElementById('modal-2-div'));
-
-  function escape_pressed(event){
-    if(event.key === "Escape"){
-      modal2.hide();
-      modal1.show();
-      document.removeEventListener('keydown', escape_pressed);
-    };
-  };
-  document.addEventListener('keydown', escape_pressed);
-</script>
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select">
     {% for image in images %}
@@ -48,7 +24,7 @@
     {% endcache %}
 {% endfor %}
 </div>
-<style>
+<style nonce="{{ CSP_NONCE }}">
   .card-img-top {
     position: inherit;
   }
