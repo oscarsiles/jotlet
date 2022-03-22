@@ -25,6 +25,7 @@ tagify = new Tagify(ownerInput, {
   originalInputValueFormat: (valuesArr) =>
     valuesArr.map((item) => item.value).join(","),
 });
+
 tagify.on("add", (e) =>
   htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
 );

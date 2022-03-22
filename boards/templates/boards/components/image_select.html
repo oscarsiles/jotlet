@@ -1,5 +1,6 @@
 {% load static %}
 {% load cache %}
+{% load thumbnail %}
 <script src="{% static 'js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% cache 3600 image-select type %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
@@ -12,16 +13,23 @@
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
-                           url="{{ image.get_thumbnail.url }}"
                            id="{{ image.uuid }}">
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
-                        <img class="w-100" src="{{ image.get_thumbnail.url }}" alt="{{ image }}">
-                    </label>
-                </div>
-                <div class="card-footer">{{ image }}</div>
-            </div>
+                        <picture>
+                            {% thumbnail image.image "300x200" crop="center" format="WEBP" as im %}
+                            <source srcset="{{ im.url }}" type="image/webp">
+                        {% endthumbnail %}
+                        {% thumbnail image.image "300x200" crop="center" format="JPEG" as im %}
+                        <source srcset="{{ im.url }}" type="image/jpeg">
+                        <img class="w-100" src="{{ im.url }}" alt="{{ image }}">
+                    {% endthumbnail %}
+                </picture>
+            </label>
         </div>
-    {% endcache %}
+        <div class="card-footer">{{ image }}</div>
+    </div>
+</div>
+{% endcache %}
 {% endfor %}
 </div>
 <style nonce="{{ CSP_NONCE }}">
@@ -36,7 +44,7 @@
     position: absolute;
     content: '';
     }
-  .card-img-top input[type="radio"]:checked+label > img {
+  .card-img-top input[type="radio"]:checked+label > picture > img {
       opacity: 0.5;
     }
 </style>

@@ -4,7 +4,8 @@ from .models import Image
 
 
 def create_thumbnail(img):
-    return img.get_thumbnail()
+    img.get_thumbnail()
+    img.get_thumbnail_webp()
 
 
 def thumbnail_cleanup_command():
