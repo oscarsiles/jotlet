@@ -129,15 +129,16 @@
     </div>
     {% include 'boards/components/modal.html' with num=1 %}
     {% include 'boards/components/modal.html' with num=2 %}
-    {% cache 3600 board-scripts %}
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'js/htmx-1.7.0.min.js' %}"></script>
-    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static 'js/robust-websocket.js' %}"></script>
-    <script src="{% static 'js/tagify.min.js' %}"></script>
-    <script src="{% static 'js/tagify.polyfills.min.js' %}"></script>
-    <script src="{% static 'js/base.js' %}"></script>
-    <script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/htmx-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/tagify.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/tagify.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script nonce="{{ CSP_NONCE }}">
+        htmx.config.inlineScriptNonce = '{{ CSP_NONCE }}';
+        {% cache 3600 base-board-script %}
         htmx.on("hidden.bs.modal", function (e) {
             var modal2 = bootstrap.Modal.getInstance(
               document.getElementById("modal-2-div")
@@ -159,9 +160,9 @@
               ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
             }
           });
+          {% endcache %}
     </script>
-{% endcache %}
-{% block script %}
-{% endblock script %}
+    {% block script %}
+    {% endblock script %}
 </body>
 </html>
