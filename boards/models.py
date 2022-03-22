@@ -219,7 +219,10 @@ class Image(models.Model):
     get_board_usage_count.short_description = "Board Usage Count"
 
     def get_thumbnail(self):
-        return get_thumbnail(self.image, "300x200", crop="center", quality=80)
+        return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="JPEG")
+
+    def get_thumbnail_webp(self):
+        return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="WEBP")
 
     def image_tag(self):
         return mark_safe(f'<img src="{escape(self.get_thumbnail().url)}" />')

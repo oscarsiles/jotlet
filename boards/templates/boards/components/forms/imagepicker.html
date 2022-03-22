@@ -1,4 +1,5 @@
 {% load crispy_forms_field %}
+{% load thumbnail %}
 {% if tag %}
     <{{ tag }}
 {% else %}
@@ -27,30 +28,39 @@
                         Select image...
                     </button>
                 {% endif %}
+                <picture id="img-picture-tag"
+                         class="form-control p-0"
+                         {% if object.background_image == None %}style="display: none;"{% endif %}>
+                    {% thumbnail object.background_image.image "300x200" crop="center" format="WEBP" as im %}
+                    <source id="src-webp" srcset="{{ im.url }}" type="image/webp">
+                {% endthumbnail %}
+                {% thumbnail object.background_image.image "300x200" crop="center" format="JPEG" as im %}
+                <source id="src-jpeg" srcset="{{ im.url }}" type="image/jpeg">
                 <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
-                     src="{{ object.background_image.get_thumbnail.url }}"
+                     src="{{ im.url }}"
                      alt="{{ object.background_image }}"
                      hx-get="{% url 'boards:image-select' 'b' %}"
                      hx-target="#modal-2-body-div"
                      data-bs-toggle="modal"
                      data-bs-target="#modal-2-div"
-                     id="img-{{ field.auto_id }}"
-                     {% if object.background_image == None %}style="display: none;"{% endif %}>
-                <input type="text"
-                       name="{{ field.name }}"
-                       value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}"
-                       id="{{ field.auto_id }}"
-                       hidden="true">
-                {% if field.errors  %}
-                    <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
-                          class="invalid-feedback">
-                        <strong>{{ field.errors.0 }}</strong>
-                    </span>
-                {% endif %}
-            </div>
-        </div>
-        {% if tag %}
-            </{{ tag }}>
-        {% else %}
-        </div>
-    {% endif %}
+                     id="img-{{ field.auto_id }}">
+            {% endthumbnail %}
+        </picture>
+        <input type="text"
+               name="{{ field.name }}"
+               value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}"
+               id="{{ field.auto_id }}"
+               hidden="true">
+        {% if field.errors  %}
+            <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
+                  class="invalid-feedback">
+                <strong>{{ field.errors.0 }}</strong>
+            </span>
+        {% endif %}
+    </div>
+</div>
+{% if tag %}
+    </{{ tag }}>
+{% else %}
+</div>
+{% endif %}
