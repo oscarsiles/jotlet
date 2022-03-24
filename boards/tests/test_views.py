@@ -1,11 +1,13 @@
 import os
+import shutil
+import tempfile
 
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
@@ -975,6 +977,10 @@ class PostToggleApprovalViewTest(TestCase):
         self.assertIn(f'"post_pk": {post.id}', message)
 
 
+MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class ImageSelectViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -993,6 +999,11 @@ class ImageSelectViewTest(TestCase):
                     title=f"{text} {i}",
                 )
                 image.save()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def test_image_select_anonymous(self):
         for type, text in IMAGE_TYPE:
