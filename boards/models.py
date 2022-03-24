@@ -213,10 +213,18 @@ class Image(models.Model):
             resize_image(self.image)
         return super(Image, self).save(*args, **kwargs)
 
+    @cached_property
     def get_board_usage_count(self):
         return BoardPreferences.objects.filter(background_type="i").filter(background_image=self).count()
 
     get_board_usage_count.short_description = "Board Usage Count"
+
+    @cached_property
+    def get_image_dimensions(self):
+        return f"{self.image.width}x{self.image.height}"
+
+    def get_webp(self):
+        return get_thumbnail(self.image, self.get_image_dimensions, quality=70, format="WEBP")
 
     def get_thumbnail(self):
         return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="JPEG")

@@ -229,12 +229,11 @@ class ImageModelTest(TestCase):
                 board.preferences.background_type = "i"
                 board.preferences.save()
                 if type == "b":
-                    self.assertEqual(img.get_board_usage_count(), 1)
+                    self.assertEqual(img.get_board_usage_count, 1)
                 else:
-                    self.assertEqual(img.get_board_usage_count(), 0)
+                    self.assertEqual(img.get_board_usage_count, 0)
 
     def test_thumbnail_url_and_dimensions(self):
-        from sorl.thumbnail import get_thumbnail
 
         for type, text in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
