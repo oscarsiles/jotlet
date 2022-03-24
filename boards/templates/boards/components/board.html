@@ -6,10 +6,20 @@
      hx-trigger="topicCreated"
      hx-swap="outerHTML">
     <style nonce="{{ CSP_NONCE }}">
-      {% cache 3600 board-preferences-style board.preferences.pk %}
+      {% cache 1 board-preferences-style board.preferences.pk %}
         #main-content-div{
         {% if board.preferences.background_type == 'i' %}
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
+        background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+        -webkit-image-set(
+            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
+            url("{{ board.preferences.background_image.image.url }}") 1x
+        );
+        background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+        image-set(
+            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
+            url("{{ board.preferences.background_image.image.url }}") 1x
+        );
         background-size: cover;
         {% else %}
         background-color: {{ board.preferences.background_color }};

@@ -3,7 +3,8 @@ from django.core import management
 from .models import Image
 
 
-def create_thumbnail(img):
+def create_thumbnails(img):
+    img.get_webp()
     img.get_thumbnail()
     img.get_thumbnail_webp()
 

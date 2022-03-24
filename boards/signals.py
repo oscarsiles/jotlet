@@ -179,7 +179,7 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Image)
 def create_thumbnail(sender, instance, created, **kwargs):
     if created:
-        async_task("boards.tasks.create_thumbnail", instance)
+        async_task("boards.tasks.create_thumbnails", instance)
 
 
 @receiver(post_save, sender=Image)
