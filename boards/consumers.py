@@ -1,13 +1,7 @@
 import json
-import logging
 
-from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.core.cache import caches
-
-cache = caches["mem-cache"]
-
-from .models import Board, Post, Topic
+from django.core.cache import cache
 
 
 class BoardConsumer(AsyncWebsocketConsumer):
@@ -15,10 +9,9 @@ class BoardConsumer(AsyncWebsocketConsumer):
         self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
         self.board_group_name = f"board_{self.board_slug}"
 
-        try:
-            cache.incr(self.board_group_name)
-        except:
-            cache.add(self.board_group_name, 1, 86400)
+        await cache.aget_or_set(self.board_group_name, 0)
+        await cache.aincr(self.board_group_name)
+        await cache.atouch(self.board_group_name, 86400)
 
         await self.channel_layer.group_add(
             self.board_group_name,
@@ -29,7 +22,7 @@ class BoardConsumer(AsyncWebsocketConsumer):
             self.board_group_name,
             {
                 "type": "session_connected",
-                "sessions": cache.get(self.board_group_name),
+                "sessions": await cache.aget(self.board_group_name),
             },
         )
 
@@ -37,9 +30,10 @@ class BoardConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         try:
-            cache.decr(self.board_group_name)
-            if cache.get(self.board_group_name) == 0:
-                cache.delete(self.board_group_name)
+            await cache.adecr(self.board_group_name)
+            await cache.atouch(self.board_group_name, 86400)
+            if await cache.aget(self.board_group_name) == 0:
+                await cache.adelete(self.board_group_name)
         except:
             pass
 
@@ -47,7 +41,7 @@ class BoardConsumer(AsyncWebsocketConsumer):
             self.board_group_name,
             {
                 "type": "session_disconnected",
-                "sessions": cache.get(self.board_group_name),
+                "sessions": await cache.aget(self.board_group_name),
             },
         )
 
