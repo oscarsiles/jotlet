@@ -154,10 +154,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "KEY_PREFIX": "jotlet",
-    },
-    "mem-cache": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    },
+    }
 }
 
 Q_CLUSTER = {
