@@ -157,6 +157,8 @@ CACHES = {
     }
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 Q_CLUSTER = {
     "name": "DjangORM",
     "testing": True,

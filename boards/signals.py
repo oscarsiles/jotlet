@@ -115,6 +115,7 @@ def invalidate_topic_template_cache(sender, instance, created, **kwargs):
     keyTopic2 = make_template_fragment_key("topic-buttons", [instance.pk])
     keyTopic3 = make_template_fragment_key("topic-create-post", [instance.pk])
     keyTopic4 = make_template_fragment_key("topic-newCard", [instance.pk])
+
     try:
         if cache.get(keyTopic1) is not None:
             cache.delete(keyTopic1)
@@ -165,6 +166,8 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
     keyPost1 = make_template_fragment_key("post-content", [instance.pk])
     keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
     keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
+    keyPost4 = make_template_fragment_key("board-list-post-count", [instance.topic.board.pk])
+
     try:
         if cache.get(keyPost1) is not None:
             cache.delete(keyPost1)
@@ -172,6 +175,8 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
             cache.delete(keyPost2)
         if cache.get(keyPost3) is not None:
             cache.delete(keyPost3)
+        if cache.get(keyPost4) is not None:
+            cache.delete(keyPost4)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 
