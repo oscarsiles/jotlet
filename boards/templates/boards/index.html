@@ -41,5 +41,5 @@
 </div>
 {% endblock content %}
 {% block script %}
-    <script src="{% static 'js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock script %}

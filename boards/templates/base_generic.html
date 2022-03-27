@@ -8,21 +8,31 @@
                 Jotlet
             {% endblock title %}
         </title>
-        {% cache 3600 board-header %}
+        {% cache 86400 board-header-styles %}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/3rdparty/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/3rdparty/tagify.css' %}" rel="stylesheet">
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
               rel="stylesheet"
               integrity="sha384-He3RckdFB2wffiHOcESa3sf4Ida+ni/fw9SSzAcfY2EPnU1zkK/sLUzw2C5Tyuhj"
               crossorigin="anonymous">
-        <link href="{% static 'css/tagify.css' %}" rel="stylesheet">
-        <link href="{% static 'css/styles.css' %}" rel="stylesheet">
         <link href="{% static 'images/favicon.svg' %}"
               rel="icon"
               sizes="any"
               type="image/svg+xml">
     {% endcache %}
+    <meta name="htmx-config" content='{"inlineScriptNonce":"{{ CSP_NONCE }}"}'>
+    <script defer src="{% static 'js/3rdparty/bootstrap.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/htmx-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/jquery-3.6.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/tagify.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/tagify.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    {% block script %}
+    {% endblock script %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="container-fluid vh-100 d-flex flex-column p-0">
@@ -54,6 +64,7 @@
                             {% block navbar-items %}
                             {% endblock navbar-items %}
                             {% if perms.boards.add_board %}
+                                {% cache 86400 navbar-button-addBoard perms.boards.add_board %}
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        role="button"
@@ -64,105 +75,100 @@
                                         Create board
                                     </a>
                                 </li>
-                            {% endif %}
-                            {% if request.user.is_authenticated %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle"
-                                       href="#"
-                                       id="navbarDropdownMenuLink"
-                                       role="button"
-                                       data-bs-toggle="dropdown"
-                                       aria-expanded="false">
-                                        {{ user }}
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-lg-end"
-                                        aria-labelledby="navbarDropdownMenuLink">
-                                        {% if user.is_staff %}
-                                            <li>
-                                                <a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a>
-                                            </li>
-                                        {% endif %}
+                            {% endcache %}
+                        {% endif %}
+                        {% if request.user.is_authenticated %}
+                            {% cache 86400 navbar-user-menu request.path request.user.username %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   id="navbarDropdownMenuLink"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    {{ user }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-lg-end"
+                                    aria-labelledby="navbarDropdownMenuLink">
+                                    {% if user.is_staff %}
                                         <li>
-                                            <a class="dropdown-item"
-                                               role="button"
-                                               hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
-                                               hx-target="#modal-1-body-div"
-                                               data-bs-toggle="modal"
-                                               data-bs-target="#modal-1-div">
-                                                Change Password
-                                            </a>
+                                            <a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                               role="button"
-                                               hx-post="{% url 'account_logout' %}?next={{ request.path }}"
-                                               hx-target="body">
-                                                Logout
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            {% else %}
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       role="button"
-                                       hx-get="{% url 'account_login' %}?next={{ request.path }}"
-                                       hx-target="#modal-1-body-div"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal-1-div">
-                                        Login
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </span>
-                </div>
-            </div>
-        </nav>
-        <div class="flex-column justify-content-center overflow-auto flex-grow-1 p-2"
-             id="main-content-div">
-            {% include 'boards/components/messages.html' %}
-            {% block content %}
-            {% endblock content %}
-            {% include 'boards/components/toast.html' %}
-        </div>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item"
+                                           role="button"
+                                           hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
+                                           hx-target="#modal-1-body-div"
+                                           data-bs-toggle="modal"
+                                           data-bs-target="#modal-1-div">
+                                            Change Password
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           role="button"
+                                           hx-post="{% url 'account_logout' %}?next={{ request.path }}"
+                                           hx-target="body">
+                                            Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endcache %}
+                    {% else %}
+                        {% cache 86400 navbar-login-menu request.path %}
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               role="button"
+                               hx-get="{% url 'account_login' %}?next={{ request.path }}"
+                               hx-target="#modal-1-body-div"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal-1-div">
+                                Login
+                            </a>
+                        </li>
+                    {% endcache %}
+                {% endif %}
+            </ul>
+        </span>
     </div>
-    {% include 'boards/components/modal.html' with num=1 %}
-    {% include 'boards/components/modal.html' with num=2 %}
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/htmx-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/jquery-3.6.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/tagify.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/tagify.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script nonce="{{ CSP_NONCE }}">
-        htmx.config.inlineScriptNonce = '{{ CSP_NONCE }}';
-        {% cache 3600 base-board-script %}
+</div>
+</nav>
+<div class="flex-column justify-content-center overflow-auto flex-grow-1 p-2"
+     id="main-content-div">
+    {% include 'boards/components/messages.html' %}
+    {% block content %}
+    {% endblock content %}
+    {% include 'boards/components/toast.html' %}
+</div>
+</div>
+{% include 'boards/components/modal.html' with num=1 %}
+{% include 'boards/components/modal.html' with num=2 %}
+<script type="module" nonce="{{ CSP_NONCE }}">
+        {% cache 86400 base-script-modals %}
         htmx.on("hidden.bs.modal", function (e) {
             var modal2 = bootstrap.Modal.getInstance(
-              document.getElementById("modal-2-div")
+            document.getElementById("modal-2-div")
             );
             var modal2_isShown = false;
             try {
-              modal2_isShown = modal2._isShown;
+            modal2_isShown = modal2._isShown;
             } catch (err) {}
-          
+        
             if (!modal2_isShown && e.target.id == "modal-1-div") {
-              htmx.find(
+            htmx.find(
                 "#modal-1-div"
-              ).outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
+            ).outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
             }
-          
+        
             if (e.target.id == "modal-2-div") {
-              htmx.find(
+            htmx.find(
                 "#modal-2-div"
-              ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
+            ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
             }
-          });
-          {% endcache %}
-    </script>
-    {% block script %}
-    {% endblock script %}
+        });
+        {% endcache %}
+</script>
 </body>
 </html>

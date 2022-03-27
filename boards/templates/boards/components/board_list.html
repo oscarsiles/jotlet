@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% crispy filter.form %}
-<script src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
+<script defer src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
 <ul class="list-group">
     {% for board in boards %}
         {% cache 3600 board-list-content board.pk request.session_key request.user perms.boards.change_board is_all_boards %}
