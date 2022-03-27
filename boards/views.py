@@ -21,13 +21,6 @@ class IndexView(generic.FormView):
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
-            self.request.session.create()
-        return context
-
     def form_valid(self, form):
         self.form = form
         return HttpResponseRedirect(self.get_success_url())
@@ -55,8 +48,6 @@ class BoardView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["topics"] = Topic.objects.filter(board=self.object)
 
-        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
-            self.request.session.create()
         return context
 
 
