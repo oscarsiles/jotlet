@@ -69,6 +69,7 @@ def board_preferences_send_message(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=BoardPreferences)
+@receiver(post_delete, sender=BoardPreferences)
 def invalidate_board_preferences_cache(sender, instance, created, **kwargs):
     keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.pk])
     try:
@@ -110,6 +111,7 @@ def topic_delete_send_message(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Topic)
+@receiver(post_delete, sender=Topic)
 def invalidate_topic_template_cache(sender, instance, created, **kwargs):
     keyTopic1 = make_template_fragment_key("topic", [instance.pk])
     keyTopic2 = make_template_fragment_key("topic-buttons", [instance.pk])
@@ -162,6 +164,7 @@ def post_delete_send_message(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Post)
+@receiver(post_delete, sender=Post)
 def invalidate_post_template_cache(sender, instance, created, **kwargs):
     keyPost1 = make_template_fragment_key("post-content", [instance.pk])
     keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
