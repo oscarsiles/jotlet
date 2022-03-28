@@ -31,6 +31,9 @@ urlpatterns = [
 if settings.PROMETHEUS_ENABLED:
     urlpatterns += (path(settings.PROMETHEUS_PATH, include("django_prometheus.urls")),)
 
+if settings.DEBUG_TOOLBAR_ENABLED:
+    urlpatterns += (path("__debug__/", include("debug_toolbar.urls")),)
+
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django_filters",
     "qr_code",
     "sorl.thumbnail",
+    "cacheops",
     "tagify",
     "accounts",
     "boards",
@@ -157,6 +158,10 @@ CACHES = {
     }
 }
 
+CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
+CACHEOPS = {"*.*": {"ops": ()}}
+CACHEOPS_ENABLED = False
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 Q_CLUSTER = {
@@ -199,3 +204,5 @@ CSP_IMG_SRC = [
 CSP_BASE_URI = ["'none'"]
 CSP_CONNECT_SRC = ["'self'"]
 CSP_INCLUDE_NONCE_IN = ["script-src"]
+
+DEBUG_TOOLBAR_ENABLED = False
