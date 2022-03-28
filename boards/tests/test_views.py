@@ -141,8 +141,7 @@ class BoardPreferencesViewTest(TestCase):
         )
         message = await communicator.receive_from()
         self.assertIn("board_preferences_changed", message)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.headers["HX-Refresh"])
+        self.assertEqual(response.status_code, 204)
 
 
 class CreateBoardViewTest(TestCase):
@@ -848,7 +847,10 @@ class PostFetchViewTest(TestCase):
         self.assertContains(response, "Test Post", html=True)
 
     def test_post_fetch_content_anonymous_not_approved(self):
-        self.client.get(reverse("boards:board", kwargs={"slug": Board.objects.get(id=1).slug}))
+        board = Board.objects.get(id=1)
+        board.preferences.require_approval = True
+        board.preferences.save()
+        self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
             reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
@@ -857,7 +859,10 @@ class PostFetchViewTest(TestCase):
 
     def test_post_fetch_content_other_user_not_approved(self):
         login = self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        self.client.get(reverse("boards:board", kwargs={"slug": Board.objects.get(id=1).slug}))
+        board = Board.objects.get(id=1)
+        board.preferences.require_approval = True
+        board.preferences.save()
+        self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
             reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})

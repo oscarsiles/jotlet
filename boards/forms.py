@@ -1,18 +1,20 @@
 from ast import Raise
 
-from django import forms
-from django.core.validators import RegexValidator
-from django.urls import reverse
-
-slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
-
+from cachalot.api import invalidate
+from cacheops import invalidate_obj
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
+from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+from django.urls import reverse
 from tagify.fields import TagField
 
-from .models import BACKGROUND_TYPE, Board, BoardPreferences
+from .models import BACKGROUND_TYPE, Board, BoardPreferences, Post, Topic
+
+slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
 
 def validate_board_exists(board_slug):
@@ -81,6 +83,9 @@ class BoardFilterForm(forms.Form):
 
 
 class BoardPreferencesForm(forms.ModelForm):
+    initial_moderators = []
+    initial_require_approval = False
+    initial_board = None
     moderators = TagField(
         label="Moderators",
         required=False,
@@ -98,12 +103,14 @@ class BoardPreferencesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.slug = kwargs.pop("slug")
+        self.initial_board = Board.objects.get(slug=self.slug)
         super().__init__(*args, **kwargs)
 
         moderator_list = []
         for user in self.instance.moderators.all():
             moderator_list.append(user.username)
-        self.initial["moderators"] = moderator_list
+        self.initial["moderators"] = self.initial_moderators = moderator_list
+        self.initial_require_approval = self.initial["require_approval"]
 
         self.fields["background_type"] = forms.ChoiceField(
             choices=BACKGROUND_TYPE,
@@ -196,6 +203,25 @@ class BoardPreferencesForm(forms.ModelForm):
                 value.append(user)
             except User.DoesNotExist:
                 pass
+
+        if value != self.initial_moderators:
+            try:
+                invalidate(settings.AUTH_USER_MODEL)
+            except:
+                pass
+
+        return value
+
+    def clean_require_approval(self):
+        value = self.cleaned_data["require_approval"]
+        if "require_approval" in self.changed_data:
+            posts = Post.objects.filter(topic__board=self.initial_board)
+            for post in posts:
+                invalidate_obj(post)
+                if not value and not post.approved:  # approval turned off - approve all posts
+                    post.approved = True
+                    post.save()
+
         return value
 
 
