@@ -49,16 +49,6 @@ def create_board_preferences(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=BoardPreferences)
-def approve_all_posts(sender, instance, created, **kwargs):
-    posts = Post.objects.filter(topic__board=instance.board)
-    for post in posts:
-        invalidate_obj(post)
-        if not instance.require_approval:  # approval turned off - approve all posts
-            post.approved = True
-            post.save()
-
-
-@receiver(post_save, sender=BoardPreferences)
 def board_preferences_send_message(sender, instance, created, **kwargs):
     channel_group_send(
         f"board_{instance.board.slug}",
@@ -70,13 +60,17 @@ def board_preferences_send_message(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=BoardPreferences)
 @receiver(post_delete, sender=BoardPreferences)
-def invalidate_board_preferences_cache(sender, instance, created, **kwargs):
-    keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.pk])
+def invalidate_board_preferences_cache(sender, instance, **kwargs):
+    keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.id])
     try:
         if cache.get(keyBoardPreferences1):
             cache.delete(keyBoardPreferences1)
+
+        invalidate_obj(instance.board)
+        for topic in instance.board.topics.all():
+            invalidate_obj(topic)
     except:
-        raise Exception(f"Could not delete cache: board-{instance.pk}")
+        raise Exception(f"Could not delete cache: board-{instance.id}")
 
 
 @receiver(post_save, sender=Topic)
@@ -112,7 +106,7 @@ def topic_delete_send_message(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Topic)
 @receiver(post_delete, sender=Topic)
-def invalidate_topic_template_cache(sender, instance, created, **kwargs):
+def invalidate_topic_template_cache(sender, instance, **kwargs):
     keyTopic1 = make_template_fragment_key("topic", [instance.pk])
     keyTopic2 = make_template_fragment_key("topic-buttons", [instance.pk])
     keyTopic3 = make_template_fragment_key("topic-create-post", [instance.pk])
@@ -165,11 +159,12 @@ def post_delete_send_message(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Post)
 @receiver(post_delete, sender=Post)
-def invalidate_post_template_cache(sender, instance, created, **kwargs):
+def invalidate_post_template_cache(sender, instance, **kwargs):
     keyPost1 = make_template_fragment_key("post-content", [instance.pk])
     keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
     keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
     keyPost4 = make_template_fragment_key("board-list-post-count", [instance.topic.board.pk])
+    keyPost5 = make_template_fragment_key("topic-posts-cache", [instance.topic.pk])
 
     try:
         if cache.get(keyPost1) is not None:
@@ -180,6 +175,11 @@ def invalidate_post_template_cache(sender, instance, created, **kwargs):
             cache.delete(keyPost3)
         if cache.get(keyPost4) is not None:
             cache.delete(keyPost4)
+        if cache.get(keyPost5) is not None:
+            cache.delete(keyPost5)
+
+        invalidate_obj(instance.topic)
+        invalidate_obj(instance.topic.board)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 

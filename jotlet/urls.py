@@ -31,7 +31,7 @@ urlpatterns = [
 if settings.PROMETHEUS_ENABLED:
     urlpatterns += (path(settings.PROMETHEUS_PATH, include("django_prometheus.urls")),)
 
-if settings.DEBUG:
+if settings.DEBUG_TOOLBAR_ENABLED:
     urlpatterns += (path("__debug__/", include("debug_toolbar.urls")),)
 
 if settings.DEBUG:
