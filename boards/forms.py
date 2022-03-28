@@ -205,7 +205,10 @@ class BoardPreferencesForm(forms.ModelForm):
                 pass
 
         if value != self.initial_moderators:
-            invalidate(settings.AUTH_USER_MODEL)
+            try:
+                invalidate(settings.AUTH_USER_MODEL)
+            except:
+                pass
 
         return value
 
