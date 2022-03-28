@@ -157,33 +157,6 @@ def post_delete_send_message(sender, instance, **kwargs):
         raise Exception(f"Could not send message: post_deleted for post-{instance.pk}")
 
 
-@receiver(post_save, sender=Post)
-@receiver(post_delete, sender=Post)
-def invalidate_post_template_cache(sender, instance, **kwargs):
-    keyPost1 = make_template_fragment_key("post-content", [instance.pk])
-    keyPost2 = make_template_fragment_key("post-buttons", [instance.pk])
-    keyPost3 = make_template_fragment_key("post-approve-button", [instance.pk, instance.approved])
-    keyPost4 = make_template_fragment_key("board-list-post-count", [instance.topic.board.pk])
-    keyPost5 = make_template_fragment_key("topic-posts-cache", [instance.topic.pk])
-
-    try:
-        if cache.get(keyPost1) is not None:
-            cache.delete(keyPost1)
-        if cache.get(keyPost2) is not None:
-            cache.delete(keyPost2)
-        if cache.get(keyPost3) is not None:
-            cache.delete(keyPost3)
-        if cache.get(keyPost4) is not None:
-            cache.delete(keyPost4)
-        if cache.get(keyPost5) is not None:
-            cache.delete(keyPost5)
-
-        invalidate_obj(instance.topic)
-        invalidate_obj(instance.topic.board)
-    except:
-        raise Exception(f"Could not delete cache: post-{instance.pk}")
-
-
 @receiver(post_save, sender=Image)
 def create_thumbnail(sender, instance, created, **kwargs):
     if created:

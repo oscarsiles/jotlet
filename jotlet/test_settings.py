@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "qr_code",
     "sorl.thumbnail",
     "cacheops",
-    "cachalot",
     "tagify",
     "accounts",
     "boards",
@@ -161,6 +160,7 @@ CACHES = {
 
 CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
 CACHEOPS = {"*.*": {"ops": ()}}
+CACHEOPS_ENABLED = False
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
