@@ -16,6 +16,15 @@ from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Topic
 
 
+def get_is_moderator(user, board):
+    return (
+        user.has_perm("boards.can_approve_posts")
+        or user in board.preferences.moderators.all()
+        or user == board.owner
+        or user.is_staff
+    )
+
+
 class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
@@ -46,8 +55,9 @@ class BoardView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["topics"] = Topic.objects.filter(board=self.object)
 
+        context["topics"] = Topic.objects.filter(board=self.object)
+        context["is_moderator"] = get_is_moderator(self.request.user, self.object)
         return context
 
 
@@ -75,7 +85,21 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def form_valid(self, form):
         super().form_valid(form)
-        return HttpResponseClientRefresh()
+
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "preferencesChanged": None,
+                        "showMessage": {
+                            "message": "Preferences Saved",
+                            "color": "warning",
+                        },
+                    }
+                )
+            },
+        )
 
 
 class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
@@ -365,7 +389,9 @@ class BoardFetchView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["board"] = Board.objects.get(slug=self.kwargs["slug"])
+
+        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
+        context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
 
@@ -374,7 +400,9 @@ class TopicFetchView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["topic"] = Topic.objects.get(pk=self.kwargs["pk"])
+
+        context["topic"] = topic = Topic.objects.get(pk=self.kwargs["pk"])
+        context["is_moderator"] = get_is_moderator(self.request.user, topic.board)
         return context
 
 
@@ -383,7 +411,9 @@ class PostFetchView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["post"] = Post.objects.get(pk=self.kwargs["pk"])
+
+        context["post"] = post = Post.objects.get(pk=self.kwargs["pk"])
+        context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
 
@@ -391,10 +421,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
     def test_func(self):
         post = Post.objects.get(pk=self.kwargs["pk"])
         return (
-            self.request.user.has_perm("boards.can_approve_posts")
-            or self.request.user in post.topic.board.preferences.moderators.all()
-            or self.request.user == post.topic.board.owner
-            or self.request.user.is_staff
+            get_is_moderator(self.request.user, post.topic.board)
         ) and post.topic.board.preferences.require_approval
 
     def post(self, request, *args, **kwargs):
