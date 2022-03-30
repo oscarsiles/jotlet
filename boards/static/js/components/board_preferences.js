@@ -35,3 +35,10 @@ var el = document.getElementById("id_background_type");
 el.addEventListener("change", function (evt) {
   toggleBackgroundOptions(evt.target.value);
 });
+
+var moderatorsInput = document.querySelector("input[name=moderators]");
+tagify = new Tagify(moderatorsInput, {
+  delimiters: ",| ",
+  originalInputValueFormat: (valuesArr) =>
+    valuesArr.map((item) => item.value).join(","),
+});
