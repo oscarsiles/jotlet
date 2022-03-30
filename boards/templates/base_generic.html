@@ -23,7 +23,7 @@
               sizes="any"
               type="image/svg+xml">
     {% endcache %}
-    <meta name="htmx-config" content='{"inlineScriptNonce":"{{ CSP_NONCE }}"}'>
+    <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
     <script defer src="{% static 'js/3rdparty/bootstrap.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/3rdparty/htmx-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/3rdparty/jquery-3.6.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
