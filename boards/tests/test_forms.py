@@ -20,7 +20,7 @@ class BoardPreferencesFormTest(TestCase):
             "background_opacity": "0.5",
             "require_approval": True,
             "enable_latex": True,
-            "moderators": "test_user non_existent_user",
+            "moderators": "test_user,non_existent_user",
         }
         form = BoardPreferencesForm(data=form_data, slug="test_board", instance=board.preferences)
         self.assertTrue(form.is_valid())

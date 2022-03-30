@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "qr_code",
     "sorl.thumbnail",
     "cacheops",
-    "tagify",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",
@@ -186,15 +185,14 @@ CSP_SCRIPT_SRC = [
     "cdn.jsdelivr.net",
     "polyfill.io",
     "unpkg.com",
-    "'strict-dynamic'",
     "'unsafe-inline'",
-    "https:",
 ]
 CSP_STYLE_SRC = [
     "'self'",
     "cdn.jsdelivr.net",
+    "fonts.googleapis.com",
+    "fonts.gstatic.com",
     "'unsafe-inline'",
-    "https:",
 ]
 CSP_FONT_SRC = CSP_STYLE_SRC
 CSP_IMG_SRC = [
@@ -203,6 +201,6 @@ CSP_IMG_SRC = [
 ]
 CSP_BASE_URI = ["'none'"]
 CSP_CONNECT_SRC = ["'self'"]
-CSP_INCLUDE_NONCE_IN = ["script-src"]
+CSP_INCLUDE_NONCE_IN = ["script-src", "style-src"]
 
 DEBUG_TOOLBAR_ENABLED = False

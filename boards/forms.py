@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
-from tagify.fields import TagField
 
 from .models import BACKGROUND_TYPE, Board, BoardPreferences, Post, Topic
 
@@ -31,17 +30,11 @@ def validate_percentage(percentage):
 
 class BoardFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(BoardFilterForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         reverse_url = reverse("boards:board-list")
 
-        owner_list = []
-        try:
-            list = self.data["owner"].split(",")
-            for user in list:
-                owner_list.append(user)
-            self.data["owner"] = owner_list
-        except Exception as e:
-            Raise(e)
+        if "owner" in self.data and self.data._mutable:
+            self.data["owner"] = self.data["owner"].split(",")
 
         if self.changed_data:
             self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})
@@ -86,11 +79,9 @@ class BoardPreferencesForm(forms.ModelForm):
     initial_moderators = []
     initial_require_approval = False
     initial_board = None
-    moderators = TagField(
+    moderators = forms.CharField(
         label="Moderators",
         required=False,
-        place_holder="Add Moderators By Username",
-        delimiters=" ",
     )
 
     class Meta:
@@ -106,10 +97,8 @@ class BoardPreferencesForm(forms.ModelForm):
         self.initial_board = Board.objects.get(slug=self.slug)
         super().__init__(*args, **kwargs)
 
-        moderator_list = []
-        for user in self.instance.moderators.all():
-            moderator_list.append(user.username)
-        self.initial["moderators"] = self.initial_moderators = moderator_list
+        self.initial_moderators = list(self.initial_board.preferences.moderators.all())
+        self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
         self.initial_require_approval = self.initial["require_approval"]
 
         self.fields["background_type"] = forms.ChoiceField(
@@ -177,6 +166,7 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "moderators",
                 "Moderators",
+                placeholder="Add Moderators By Username",
             ),
             ButtonHolder(
                 Submit("submit", "Save", hidden="true")
@@ -195,7 +185,7 @@ class BoardPreferencesForm(forms.ModelForm):
         return value
 
     def clean_moderators(self):
-        moderators = self.cleaned_data["moderators"]
+        moderators = self.cleaned_data["moderators"].split(",")
         value = []
         for moderator in moderators:
             try:
