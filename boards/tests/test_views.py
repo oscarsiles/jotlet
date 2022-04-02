@@ -223,7 +223,7 @@ class UpdateBoardViewTest(TestCase):
             reverse("boards:board-update", kwargs={"slug": board.slug}),
             {"title": "Test Board NEW", "description": "Test Board Description NEW"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         board = Board.objects.get(id=1)
         self.assertEqual(board.title, "Test Board NEW")
         self.assertEqual(board.description, "Test Board Description NEW")

@@ -130,6 +130,11 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
             or self.request.user.is_staff
         )
 
+    def form_valid(self, form):
+        super().form_valid(form)
+
+        return HttpResponseClientRefresh()
+
 
 class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Board
