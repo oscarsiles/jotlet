@@ -1,7 +1,5 @@
 {% load crispy_forms_tags %}
-<form action="{{ request.build_absolute_uri }}"
-      method="post"
-      id="board-form">
+<form hx-post="{{ request.build_absolute_uri }}" id="board-form">
     {% csrf_token %}
     <table>
         {{ form|crispy }}
@@ -10,7 +8,10 @@
 </form>
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-success" form="board-form">
+    <button type="submit"
+            class="btn btn-success"
+            form="board-form"
+            data-bs-dismiss="modal">
         {% if form.instance.pk != None %}
             Save changes
         {% else %}

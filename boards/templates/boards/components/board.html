@@ -11,13 +11,14 @@
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
         -webkit-image-set(
-            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
-            url("{{ board.preferences.background_image.image.url }}") 1x
+            url("{{ board.preferences.background_image.image.url }}") 1x,
+            url("{{ board.preferences.background_image.get_webp.url }}") 1x
+            
         );
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
         image-set(
-            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
-            url("{{ board.preferences.background_image.image.url }}") 1x
+            url("{{ board.preferences.background_image.image.url }}") 1x,
+            url("{{ board.preferences.background_image.get_webp.url }}") 1x
         );
         background-size: cover;
         {% else %}
@@ -26,7 +27,7 @@
         }
         {% endcache %}
     </style>
-    {% cached_as board.topics.all 3600 board.pk board_topics_list request.session.session_key request.user.username is_moderator %}
+    {% cached_as board.topics.all 3600 board_topics_list board.pk request.session.session_key request.user.username is_moderator %}
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
     {% endfor %}
