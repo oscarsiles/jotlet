@@ -6,6 +6,7 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import models
+from django.db.models import Sum
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -102,6 +103,13 @@ BACKGROUND_TYPE = (
     ("i", "Image"),
 )
 
+REACTION_TYPE = (
+    ("n", "None"),
+    ("l", "Like"),  # 1 = like
+    ("v", "Vote"),  # 1 = like, -1 = dislike
+    ("s", "Star"),  # 1-5 = stars
+)
+
 
 class BoardPreferences(models.Model):
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
@@ -118,6 +126,7 @@ class BoardPreferences(models.Model):
     enable_latex = models.BooleanField(default=False)
     require_approval = models.BooleanField(default=False)
     moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
+    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
 
     def __str__(self):
         return self.board.title + " preferences"
@@ -182,6 +191,23 @@ class Post(models.Model):
     def __str__(self):
         return self.content
 
+    @cached_property
+    def get_reaction_score(self):
+        reaction_type = self.topic.board.preferences.reaction_type
+        # cannot use match/switch before python 3.10
+        if reaction_type == "n":
+            return 0
+        elif reaction_type == "l":
+            return Reaction.objects.filter(post=self, type="l").count()
+        elif reaction_type == "v":
+            return (
+                Reaction.objects.filter(post=self, type="v").count()
+                - Reaction.objects.filter(post=self, type="-v").count()
+            )
+        elif reaction_type == "s":
+            reactions = Reaction.objects.filter(post=self, type="s")
+            return reactions.aggregate(Sum("reaction_score")) / reactions.count()
+
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
 
@@ -237,3 +263,15 @@ class Image(models.Model):
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
+
+
+class Reaction(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
+    session_key = models.CharField(max_length=40, null=False, blank=False)
+    type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
+    reaction_score = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("post", "session_key", "type")

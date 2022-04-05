@@ -1,5 +1,6 @@
 import json
 from urllib.parse import urlparse
+from urllib.request import Request
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
@@ -10,10 +11,11 @@ from django.views import generic
 from django.views.decorators.cache import cache_control
 from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
+from flask import session
 
 from .filters import BoardFilter
 from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
-from .models import Board, BoardPreferences, Image, Post, Topic
+from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 
 
 def get_is_moderator(user, board):
@@ -435,6 +437,42 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post.save()
 
         return HttpResponse(status=204)
+
+
+class PostReactionView(generic.View):
+    def post(self, request, *args, **kwargs):
+        post = Post.objects.get(pk=self.kwargs["pk"])
+
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+
+        if Reaction.objects.filter(
+            post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
+        ).exists():
+            Reaction.objects.filter(
+                post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
+            ).delete()
+        else:
+            reaction = Reaction.objects.create(
+                session_key=self.request.session.session_key,
+                post=post,
+                type=self.kwargs["type"],
+                reaction_score=self.kwargs["score"],
+            )
+
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "postUpdated": None,
+                        "showMessage": {
+                            "message": "Reaction Saved",
+                        },
+                    }
+                )
+            },
+        )
 
 
 @method_decorator(cache_control(public=True), name="dispatch")
