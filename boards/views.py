@@ -246,9 +246,14 @@ class CreatePostView(generic.CreateView):
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get("topic_pk")
+
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
         form.instance.session_key = self.request.session.session_key
+
+        if self.request.user.is_authenticated:
+            form.instance.user = self.request.user
+
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = (
                 self.request.user.has_perm("boards.can_approve_posts")
