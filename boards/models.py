@@ -17,8 +17,6 @@ from PIL import Image as PILImage
 from shortuuidfield import ShortUUIDField
 from sorl.thumbnail import get_thumbnail
 
-from jotlet import settings
-
 
 def slug_save(obj):
     """A function to generate a 6 character numeric slug and see if it has been used."""
