@@ -1,19 +1,11 @@
-from cacheops import cached_as
 from django import template
 
-from boards.models import Reaction
+from boards.utils import get_has_reacted as get_has_reacted_util
 
 register = template.Library()
 
 
 @register.simple_tag
 def get_has_reacted(post, request, type):
-    post_reactions = Reaction.objects.filter(post=post, type=type)
-    has_reacted = False
-
-    if request.user.is_authenticated:
-        has_reacted = post_reactions.filter(user=request.user).nocache().exists()
-    if request.session.session_key:
-        has_reacted = post_reactions.filter(session_key=request.session.session_key).nocache().exists()
-
+    has_reacted, reaction_id = get_has_reacted_util(post, request, type)
     return has_reacted
