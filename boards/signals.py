@@ -33,7 +33,7 @@ def populate_models(sender, **kwargs):
         moderators.permissions.add(perm)
 
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+@receiver(post_save, sender=User)
 def add_default_user_permissions(sender, instance, created, **kwargs):
     if created:
         perm_list = ["add_board"]

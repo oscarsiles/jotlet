@@ -1,0 +1,17 @@
+{% if post.topic.board.preferences.reaction_type != 'n' %}
+    <div class="card-footer text-muted">
+        <form hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk post.topic.board.preferences.reaction_type 1 %}"
+              hx-swap="none">
+            {% csrf_token %}
+            <button class="btn btn-link text-muted shadow-none p-1" type="submit">
+                {% get_sessionkey_reacted post request.session.session_key post.topic.board.preferences.reaction_type as has_reacted %}
+                {% if has_reacted %}
+                    <i class="bi bi-heart-fill"></i>
+                {% else %}
+                    <i class="bi bi-heart"></i>
+                {% endif %}
+            </button>
+            {{ post.get_reaction_score }}
+        </form>
+    </div>
+{% endif %}
