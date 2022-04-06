@@ -469,9 +469,11 @@ class PostReactionView(generic.View):
                 post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
             ).delete()
         else:
+            reaction_user = self.request.user if self.request.user.is_authenticated else None
+
             reaction = Reaction.objects.create(
                 session_key=self.request.session.session_key,
-                user=self.request.user,
+                user=reaction_user,
                 post=post,
                 type=self.kwargs["type"],
                 reaction_score=self.kwargs["score"],
