@@ -462,12 +462,14 @@ class PostReactionView(generic.View):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
-        if Reaction.objects.filter(
-            post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
-        ).exists():
+        if (
+            Reaction.objects.filter(post=post, session_key=self.request.session.session_key, type=self.kwargs["type"])
+            .nocache()
+            .exists()
+        ):
             Reaction.objects.filter(
                 post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
-            ).delete()
+            ).nocache().delete()
         else:
             reaction_user = self.request.user if self.request.user.is_authenticated else None
 
