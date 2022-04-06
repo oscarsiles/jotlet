@@ -217,7 +217,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
         if value != self.initial_moderators:
             try:
-                invalidate(settings.AUTH_USER_MODEL)
+                invalidate(User)
             except:
                 pass
 
