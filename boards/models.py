@@ -183,7 +183,7 @@ class Topic(models.Model):
 class Post(models.Model):
     content = models.TextField(max_length=400)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
-    user = models.ForeignKey(User, on_delete=models.RESTRICT, null=True, related_name="posts")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -214,6 +214,19 @@ class Post(models.Model):
 
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
+
+
+class Reaction(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions")
+    session_key = models.CharField(max_length=40, null=False, blank=False)
+    type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
+    reaction_score = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (("post", "session_key", "type"), ("post", "user", "type"))
 
 
 IMAGE_TYPE = (("b", "Background"), ("p", "Post"))
@@ -264,16 +277,3 @@ class Image(models.Model):
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
-
-
-class Reaction(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions")
-    session_key = models.CharField(max_length=40, null=False, blank=False)
-    type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
-    reaction_score = models.IntegerField(default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = (("post", "session_key", "type"), ("post", "user", "type"))
