@@ -16,6 +16,7 @@ from flask import session
 from .filters import BoardFilter
 from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .utils import get_has_reacted
 
 
 def get_is_moderator(user, board):
@@ -462,14 +463,10 @@ class PostReactionView(generic.View):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
-        if (
-            Reaction.objects.filter(post=post, session_key=self.request.session.session_key, type=self.kwargs["type"])
-            .nocache()
-            .exists()
-        ):
-            Reaction.objects.filter(
-                post=post, session_key=self.request.session.session_key, type=self.kwargs["type"]
-            ).nocache().delete()
+        has_reacted, reaction_id = get_has_reacted(post, self.request, self.kwargs["type"])
+
+        if has_reacted:
+            Reaction.objects.get(id=reaction_id).delete()
         else:
             reaction_user = self.request.user if self.request.user.is_authenticated else None
 
