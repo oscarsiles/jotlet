@@ -49,5 +49,6 @@
     {% include 'boards/components/board.html' %}
 {% endblock content %}
 {% block script %}
+    <script defer src="{% static 'js/3rdparty/jquery.raty.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock script %}

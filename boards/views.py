@@ -469,13 +469,14 @@ class PostReactionView(generic.View):
             Reaction.objects.get(id=reaction_id).delete()
         else:
             reaction_user = self.request.user if self.request.user.is_authenticated else None
+            reaction_score = 1 if self.kwargs["type"] == "l" else 1
 
             reaction = Reaction.objects.create(
                 session_key=self.request.session.session_key,
                 user=reaction_user,
                 post=post,
                 type=self.kwargs["type"],
-                reaction_score=self.kwargs["score"],
+                reaction_score=reaction_score,
             )
 
         return HttpResponse(

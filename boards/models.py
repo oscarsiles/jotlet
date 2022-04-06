@@ -206,8 +206,13 @@ class Post(models.Model):
                 - Reaction.objects.filter(post=self, type="-v").count()
             )
         elif reaction_type == "s":
-            reactions = Reaction.objects.filter(post=self, type="s")
-            return reactions.aggregate(Sum("reaction_score")) / reactions.count()
+            score = ""
+            try:
+                reactions = Reaction.objects.filter(post=self, type="s")
+                score = reactions.aggregate(Sum("reaction_score")) / reactions.count()
+            except:
+                pass
+            return score
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
