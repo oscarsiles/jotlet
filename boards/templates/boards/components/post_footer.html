@@ -1,4 +1,4 @@
-{% load post_extras %}
+{% load static post_extras %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     <div class="card-footer text-muted"
          id="post-{{ post.pk }}-footer"
@@ -6,18 +6,49 @@
          hx-trigger="reactionUpdated"
          hx-target="this"
          hx-swap="outerHTML">
-        <form hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk post.topic.board.preferences.reaction_type 1 %}"
-              hx-swap="none">
+        <form hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk post.topic.board.preferences.reaction_type %}"
+              hx-trigger="reactionFormSubmit"
+              hx-swap="none"
+              id="post-{{ post.pk }}-reaction-form">
             {% csrf_token %}
-            <button class="btn btn-link text-muted shadow-none p-1" type="submit">
-                {% get_has_reacted post request post.topic.board.preferences.reaction_type as has_reacted %}
-                {% if has_reacted %}
-                    <i class="bi bi-heart-fill"></i>
-                {% else %}
-                    <i class="bi bi-heart"></i>
-                {% endif %}
-            </button>
+            {% if post.topic.board.preferences.reaction_type == 'l' %}
+                <button class="btn btn-link text-muted shadow-none p-1" type="submit">
+                    {% get_has_reacted post request post.topic.board.preferences.reaction_type as has_reacted %}
+                    {% if has_reacted %}
+                        <i class="bi bi-heart-fill"></i>
+                    {% else %}
+                        <i class="bi bi-heart"></i>
+                    {% endif %}
+                </button>
+            {% elif post.topic.board.preferences.reaction_type == 'v' %}
+            {% elif post.topic.board.preferences.reaction_type == 's' %}
+                STARS
+                <div id="stars-{{ post.pk }}-div"></div>
+            {% endif %}
             {{ post.get_reaction_score }}
         </form>
     </div>
+    {% if not request.htmx %}
+        <script type="module" nonce="{{ CSP_NONCE }}">
+            var starsDiv = "#stars-{{ post.pk }}-div";
+            var footerDiv = "post-{{ post.pk }}-footer";
+
+            function setup_raty(div) {
+                $('#stars-{{ post.pk }}-div').raty({
+                    starOn: "{% static 'images/star-on.svg' %}",
+                    starOff: "{% static 'images/star-off.svg' %}",
+                    click: function(score, evt) {
+                        htmx.trigger('#post-{{ post.pk }}-reaction-form', 'reactionFormSubmit');
+                    },
+                });
+            }
+            setup_raty(starsDiv);
+
+            htmx.onLoad(function(elt){ 
+                if (elt.id == footerDiv) {     
+                    setup_raty(starsDiv);
+                }
+            });
+        </script>
+    {% endif %}
 {% endif %}
