@@ -424,6 +424,17 @@ class PostFetchView(generic.TemplateView):
         return context
 
 
+class PostFooterFetchView(generic.TemplateView):
+    template_name = "boards/components/post_footer.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["post"] = post = Post.objects.get(pk=self.kwargs["pk"])
+        context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
+        return context
+
+
 class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     def test_func(self):
         post = Post.objects.get(pk=self.kwargs["pk"])
@@ -455,6 +466,7 @@ class PostReactionView(generic.View):
         else:
             reaction = Reaction.objects.create(
                 session_key=self.request.session.session_key,
+                user=self.request.user,
                 post=post,
                 type=self.kwargs["type"],
                 reaction_score=self.kwargs["score"],
@@ -465,7 +477,7 @@ class PostReactionView(generic.View):
             headers={
                 "HX-Trigger": json.dumps(
                     {
-                        "postUpdated": None,
+                        "reactionUpdated": None,
                         "showMessage": {
                             "message": "Reaction Saved",
                         },

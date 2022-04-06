@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django_cleanup.signals import cleanup_pre_delete
 from django_q.tasks import async_task
@@ -163,18 +163,28 @@ def post_delete_send_message(sender, instance, **kwargs):
 @receiver(post_delete, sender=Reaction)
 def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
     try:
+        invalidate_obj(instance)
         invalidate_obj(instance.post)
+        invalidate_obj(instance.post.topic)
+        invalidate_obj(instance.post.topic.board)
+    except:
+        raise Exception(f"Could not invalidate cache: post-{instance.post.pk}-footer")
 
+
+@receiver(post_save, sender=Reaction)
+@receiver(post_delete, sender=Reaction)
+def post_reaction_send_update_message(sender, instance, **kwargs):
+    try:
         channel_group_send(
             f"board_{instance.post.topic.board.slug}",
             {
-                "type": "post_updated",
+                "type": "reaction_updated",
                 "topic_pk": instance.post.topic.pk,
                 "post_pk": instance.post.pk,
             },
         )
     except:
-        raise Exception(f"Could not invalidate cache: post-{instance.post.pk}")
+        raise Exception(f"Could not send message: reaction_updated for reaction-{instance.pk}")
 
 
 @receiver(post_save, sender=Image)
