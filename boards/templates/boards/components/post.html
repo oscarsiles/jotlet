@@ -7,7 +7,7 @@
      hx-swap="outerHTML"
      {% if not post.approved and not post.session_key == request.session.session_key and not is_moderator %}hidden="true"{% endif %}>
     {% if post.approved or post.session_key == request.session.session_key or is_moderator %}
-        {% cache 1 post-cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
+        {% cache 3600 post-cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
