@@ -11,7 +11,6 @@ from django.views import generic
 from django.views.decorators.cache import cache_control
 from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
-from flask import session
 
 from .filters import BoardFilter
 from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
