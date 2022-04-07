@@ -137,6 +137,7 @@ class BoardPreferencesViewTest(TestCase):
                 "background_opacity": "0.5",
                 "require_approval": True,
                 "enable_latex": True,
+                "reaction_type": "v",
             },
         )
         message = await communicator.receive_from()

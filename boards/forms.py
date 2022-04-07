@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import BACKGROUND_TYPE, Board, BoardPreferences, Post, Topic
+from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post, Topic
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
@@ -106,6 +106,12 @@ class BoardPreferencesForm(forms.ModelForm):
             widget=forms.RadioSelect,
             label=False,
         )
+        self.fields["reaction_type"] = forms.ChoiceField(
+            choices=REACTION_TYPE,
+            widget=forms.RadioSelect,
+            label=False,
+        )
+
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_id = "board-preferences-form"
@@ -163,6 +169,21 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class="form-check-input my-0",
                 style="height: auto;",
             ),
+            Div(  # Div for reaction type (blame Bootstrap + crispy forms)
+                Div(
+                    Div(
+                        HTML('<span class="input-group-text">Reaction Type</span>'),
+                        InlineRadios(
+                            "reaction_type",
+                            wrapper_class="form-control",
+                            id="id_reaction_type",
+                            css_class="",
+                        ),
+                        css_class="input-group",
+                    ),
+                ),
+                css_class="mb-3",
+            ),
             PrependedText(
                 "moderators",
                 "Moderators",
@@ -196,7 +217,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
         if value != self.initial_moderators:
             try:
-                invalidate(settings.AUTH_USER_MODEL)
+                invalidate(User)
             except:
                 pass
 

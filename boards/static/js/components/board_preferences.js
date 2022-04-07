@@ -17,6 +17,7 @@ var toggleBackgroundOptions = function (bg_type) {
 
 modal._config.backdrop = "static";
 $("#div_id_background_type").removeClass("mb-3");
+$("#div_id_reaction_type").removeClass("mb-3");
 
 var background_type = $(
   '#id_background_type input[type="radio"]:checked'

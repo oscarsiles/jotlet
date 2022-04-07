@@ -1,5 +1,7 @@
 import json
+from ast import Raise
 from urllib.parse import urlparse
+from urllib.request import Request
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
@@ -13,7 +15,8 @@ from django_htmx.http import HttpResponseClientRefresh
 
 from .filters import BoardFilter
 from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
-from .models import Board, BoardPreferences, Image, Post, Topic
+from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .utils import get_has_reacted
 
 
 def get_is_moderator(user, board):
@@ -244,9 +247,14 @@ class CreatePostView(generic.CreateView):
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get("topic_pk")
+
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
         form.instance.session_key = self.request.session.session_key
+
+        if self.request.user.is_authenticated:
+            form.instance.user = self.request.user
+
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = (
                 self.request.user.has_perm("boards.can_approve_posts")
@@ -422,6 +430,17 @@ class PostFetchView(generic.TemplateView):
         return context
 
 
+class PostFooterFetchView(generic.TemplateView):
+    template_name = "boards/components/post_footer.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["post"] = post = Post.objects.get(pk=self.kwargs["pk"])
+        context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
+        return context
+
+
 class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     def test_func(self):
         post = Post.objects.get(pk=self.kwargs["pk"])
@@ -435,6 +454,56 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         post.save()
 
         return HttpResponse(status=204)
+
+
+class PostReactionView(generic.View):
+    def post(self, request, *args, **kwargs):
+        post = Post.objects.get(pk=self.kwargs["pk"])
+        type = post.topic.board.preferences.reaction_type
+
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+
+        if type == "l":
+            reaction_score = 1
+        elif type == "n":
+            pass
+        else:
+            reaction_score = int(self.request.POST.get("score", ""))
+
+        has_reacted, reaction_id, reacted_score = get_has_reacted(post, self.request)
+
+        if has_reacted:
+            reaction = Reaction.objects.get(id=reaction_id)
+            if reaction_score == reacted_score:
+                reaction.delete()
+            else:
+                reaction.reaction_score = reaction_score
+                reaction.save()
+        else:
+            reaction_user = self.request.user if self.request.user.is_authenticated else None
+
+            reaction = Reaction.objects.create(
+                session_key=self.request.session.session_key,
+                user=reaction_user,
+                post=post,
+                type=type,
+                reaction_score=reaction_score,
+            )
+
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "reactionUpdated": None,
+                        "showMessage": {
+                            "message": "Reaction Saved",
+                        },
+                    }
+                )
+            },
+        )
 
 
 @method_decorator(cache_control(public=True), name="dispatch")

@@ -8,46 +8,51 @@
     <small>
         <span class="badge bg-secondary mx-2 align-middle"
               id="board-online-sessions">0</span></small>
-{% endblock navbar_title %}
-{% block navbar_subtitle %}
-    {{ board.description }}
-{% endblock navbar_subtitle %}
-{% block navbar-items %}
-    {% if request.user in board.preferences.moderators.all or request.user == board.owner or user.is_staff %}
-        <li class="nav-item">
-            <a class="nav-link"
-               role="button"
-               hx-get="{% url 'boards:board-qr' board.slug %}"
-               hx-target="#modal-1-body-div"
-               data-bs-toggle="modal"
-               data-bs-target="#modal-1-div">
-                <i class="bi bi-qr-code"></i>
-            </a>
-        </li>
-        {% if request.user == board.owner or user.is_staff %}
+    {% endblock navbar_title %}
+    {% block navbar_subtitle %}
+        {{ board.description }}
+    {% endblock navbar_subtitle %}
+    {% block navbar-items %}
+        {% if request.user in board.preferences.moderators.all or request.user == board.owner or user.is_staff %}
             <li class="nav-item">
                 <a class="nav-link"
                    role="button"
-                   hx-get="{% url 'boards:board-preferences' board.slug %}"
+                   hx-get="{% url 'boards:board-qr' board.slug %}"
                    hx-target="#modal-1-body-div"
                    data-bs-toggle="modal"
                    data-bs-target="#modal-1-div">
-                    <i class="bi bi-gear"></i>
+                    <i class="bi bi-qr-code"></i>
                 </a>
             </li>
-            <button class="btn btn-link btn-sm shadow-none nav-link"
-                    hx-get="{% url 'boards:board-update' board.slug %}"
-                    hx-target="#modal-1-body-div"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div">
-                <i class="bi bi-pen"></i>
-            </button>
+            {% if request.user == board.owner or user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       role="button"
+                       hx-get="{% url 'boards:board-preferences' board.slug %}"
+                       hx-target="#modal-1-body-div"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal-1-div">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                </li>
+                <button class="btn btn-link btn-sm shadow-none nav-link"
+                        hx-get="{% url 'boards:board-update' board.slug %}"
+                        hx-target="#modal-1-body-div"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-1-div">
+                    <i class="bi bi-pen"></i>
+                </button>
+            {% endif %}
         {% endif %}
-    {% endif %}
-{% endblock navbar-items %}
-{% block content %}
-    {% include 'boards/components/board.html' %}
-{% endblock content %}
-{% block script %}
-    <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
-{% endblock script %}
+    {% endblock navbar-items %}
+    {% block content %}
+        {% include 'boards/components/board.html' %}
+    {% endblock content %}
+    {% block script %}
+        {% if board.preferences.reaction_type == 's' %}
+            <script defer
+                    src="{% static 'js/3rdparty/jquery.raty.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+        {% endif %}
+        <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    {% endblock script %}

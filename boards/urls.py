@@ -22,6 +22,8 @@ urlpatterns = [
     path("<slug:slug>/topics/<int:topic_pk>/posts/create/", views.CreatePostView.as_view(), name="post-create"),
     path("<slug:slug>/posts/<int:pk>/update/", views.UpdatePostView.as_view(), name="post-update"),
     path("<slug:slug>/posts/<int:pk>/delete/", views.DeletePostView.as_view(), name="post-delete"),
-    path("<slug:slug>/posts/<int:pk>/fetch/", views.PostFetchView.as_view(), name="post-fetch"),
+    path("<slug:slug>/posts/<int:pk>/fetch/post/", views.PostFetchView.as_view(), name="post-fetch"),
+    path("<slug:slug>/posts/<int:pk>/fetch/footer/", views.PostFooterFetchView.as_view(), name="post-footer-fetch"),
     path("<slug:slug>/posts/<int:pk>/approval/", views.PostToggleApprovalView.as_view(), name="post-toggle-approval"),
+    path("<slug:slug>/posts/<int:pk>/reaction/", views.PostReactionView.as_view(), name="post-reaction"),
 ]
