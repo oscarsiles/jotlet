@@ -209,7 +209,9 @@ class Post(models.Model):
             score = ""
             try:
                 reactions = Reaction.objects.filter(post=self, type="s")
-                score = reactions.aggregate(Sum("reaction_score")) / reactions.count()
+                sum = reactions.aggregate(Sum("reaction_score"))["reaction_score__sum"]
+                count = reactions.count()
+                score = f"{(sum / count):.2g}"
             except:
                 pass
             return score

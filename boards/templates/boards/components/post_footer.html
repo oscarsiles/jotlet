@@ -1,5 +1,6 @@
 {% load static post_extras %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
+    {% get_has_reacted post request as has_reacted %}
     <div class="card-footer text-muted"
          id="post-{{ post.pk }}-footer"
          hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
@@ -7,40 +8,56 @@
          hx-target="this"
          hx-swap="outerHTML">
         <form hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk post.topic.board.preferences.reaction_type %}"
-              hx-trigger="reactionFormSubmit"
               hx-swap="none"
               id="post-{{ post.pk }}-reaction-form">
             {% csrf_token %}
-            {% if post.topic.board.preferences.reaction_type == 'l' %}
-                <button class="btn btn-link text-muted shadow-none p-1" type="submit">
-                    {% get_has_reacted post request post.topic.board.preferences.reaction_type as has_reacted %}
-                    {% if has_reacted %}
-                        <i class="bi bi-heart-fill"></i>
-                    {% else %}
-                        <i class="bi bi-heart"></i>
-                    {% endif %}
-                </button>
-            {% elif post.topic.board.preferences.reaction_type == 'v' %}
-            {% elif post.topic.board.preferences.reaction_type == 's' %}
-                STARS
-                <div id="stars-{{ post.pk }}-div"></div>
-            {% endif %}
-            {{ post.get_reaction_score }}
+            <div class="d-flex align-items-center gap-2">
+                {% if post.topic.board.preferences.reaction_type == 'l' %}
+                    <button class="btn btn-link text-muted shadow-none p-1" type="submit">
+                        {% if has_reacted.0 %}
+                            <i class="bi bi-heart-fill"></i>
+                        {% else %}
+                            <i class="bi bi-heart"></i>
+                        {% endif %}
+                    </button>
+                {% elif post.topic.board.preferences.reaction_type == 'v' %}
+                {% elif post.topic.board.preferences.reaction_type == 's' %}
+                    <div id="stars-{{ post.pk }}-div" class="d-flex align-items-center"></div>
+                    <button type="submit" name="stars" id="stars-{{ post.pk }}-submit" hidden></button>
+                {% endif %}
+                {% if post.get_reaction_score %}({{ post.get_reaction_score }}){% endif %}
+            </div>
         </form>
-    </div>
-    {% if not request.htmx %}
-        <script type="module" nonce="{{ CSP_NONCE }}">
+        {{ has_reacted.0|json_script:"has_reacted" }}
+        {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
+    {% endif %}
+</div>
+{% if not request.htmx and post.topic.board.preferences.reaction_type == 's' %}
+    <script type="module" nonce="{{ CSP_NONCE }}">
             var starsDiv = "#stars-{{ post.pk }}-div";
+            var starsSubmitDiv = "#stars-{{ post.pk }}-submit";
             var footerDiv = "post-{{ post.pk }}-footer";
 
             function setup_raty(div) {
-                $('#stars-{{ post.pk }}-div').raty({
+                var has_reacted = JSON.parse(document.getElementById(footerDiv).querySelector("#has_reacted").textContent);
+                if (has_reacted) {
+                    var reacted_score = JSON.parse(document.getElementById(footerDiv).querySelector("#reacted_score").textContent);
+                } 
+
+                $(div).raty({
                     starOn: "{% static 'images/star-on.svg' %}",
                     starOff: "{% static 'images/star-off.svg' %}",
+                    hints: [1, 2, 3, 4, 5],
                     click: function(score, evt) {
-                        htmx.trigger('#post-{{ post.pk }}-reaction-form', 'reactionFormSubmit');
+                        setTimeout(function() {
+                            $(starsSubmitDiv).click();
+                        }, 0);
                     },
                 });
+
+                if (has_reacted) {
+                    $(div).data('raty').score(reacted_score);
+                }
             }
             setup_raty(starsDiv);
 
@@ -49,6 +66,5 @@
                     setup_raty(starsDiv);
                 }
             });
-        </script>
-    {% endif %}
+    </script>
 {% endif %}
