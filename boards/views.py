@@ -462,13 +462,18 @@ class PostReactionView(generic.View):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
-        has_reacted, reaction_id = get_has_reacted(post, self.request, self.kwargs["type"])
+        reaction_score = 1 if self.kwargs["type"] == "l" else int(self.request.POST.get("score", ""))
+        has_reacted, reaction_id, reacted_score = get_has_reacted(post, self.request)
 
         if has_reacted:
-            Reaction.objects.get(id=reaction_id).delete()
+            reaction = Reaction.objects.get(id=reaction_id)
+            if reaction_score == reacted_score:
+                reaction.delete()
+            else:
+                reaction.reaction_score = reaction_score
+                reaction.save()
         else:
             reaction_user = self.request.user if self.request.user.is_authenticated else None
-            reaction_score = 1 if self.kwargs["type"] == "l" else 1
 
             reaction = Reaction.objects.create(
                 session_key=self.request.session.session_key,
