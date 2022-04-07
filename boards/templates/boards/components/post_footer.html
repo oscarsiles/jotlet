@@ -55,8 +55,8 @@
         </form>
         {{ has_reacted.0|json_script:"has_reacted" }}
         {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
-    {% endif %}
-</div>
+    </div>
+{% endif %}
 {% endcached_as %}
 {% if not request.htmx and post.topic.board.preferences.reaction_type == 's' %}
     <script type="module" nonce="{{ CSP_NONCE }}">
