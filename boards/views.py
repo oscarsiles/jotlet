@@ -1,4 +1,5 @@
 import json
+from ast import Raise
 from urllib.parse import urlparse
 from urllib.request import Request
 
@@ -458,11 +459,18 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
 class PostReactionView(generic.View):
     def post(self, request, *args, **kwargs):
         post = Post.objects.get(pk=self.kwargs["pk"])
+        type = post.topic.board.preferences.reaction_type
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
-        reaction_score = 1 if self.kwargs["type"] == "l" else int(self.request.POST.get("score", ""))
+        if type == "l":
+            reaction_score = 1
+        elif type == "n":
+            pass
+        else:
+            reaction_score = int(self.request.POST.get("score", ""))
+
         has_reacted, reaction_id, reacted_score = get_has_reacted(post, self.request)
 
         if has_reacted:
@@ -479,7 +487,7 @@ class PostReactionView(generic.View):
                 session_key=self.request.session.session_key,
                 user=reaction_user,
                 post=post,
-                type=self.kwargs["type"],
+                type=type,
                 reaction_score=reaction_score,
             )
 

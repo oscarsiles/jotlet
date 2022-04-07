@@ -25,5 +25,5 @@ urlpatterns = [
     path("<slug:slug>/posts/<int:pk>/fetch/post/", views.PostFetchView.as_view(), name="post-fetch"),
     path("<slug:slug>/posts/<int:pk>/fetch/footer/", views.PostFooterFetchView.as_view(), name="post-footer-fetch"),
     path("<slug:slug>/posts/<int:pk>/approval/", views.PostToggleApprovalView.as_view(), name="post-toggle-approval"),
-    path("<slug:slug>/posts/<int:pk>/reaction/<str:type>/", views.PostReactionView.as_view(), name="post-reaction"),
+    path("<slug:slug>/posts/<int:pk>/reaction/", views.PostReactionView.as_view(), name="post-reaction"),
 ]
