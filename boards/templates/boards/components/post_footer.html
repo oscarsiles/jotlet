@@ -1,4 +1,5 @@
-{% load static post_extras %}
+{% load cacheops static post_extras %}
+{% cached_as post.reactions.all 3600 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     {% get_has_reacted post request as has_reacted %}
     <div class="card-footer text-muted"
@@ -56,6 +57,7 @@
         {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
     {% endif %}
 </div>
+{% endcached_as %}
 {% if not request.htmx and post.topic.board.preferences.reaction_type == 's' %}
     <script type="module" nonce="{{ CSP_NONCE }}">
             var starsDiv = "#stars-{{ post.pk }}-div";
