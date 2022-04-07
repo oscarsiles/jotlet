@@ -65,6 +65,10 @@ function connect() {
       case "post_deleted":
         htmx.find("#post-" + data.post_pk).remove();
         break;
+      case "reaction_updated":
+        var postFooterDiv = "#post-" + data.post_pk + "-footer";
+        htmx.trigger(htmx.find(postFooterDiv), "reactionUpdated");
+        break;
       default:
         console.error("Unknown message type: " + data);
         break;

@@ -1,4 +1,4 @@
-{% load cache cacheops static %}
+{% load cache static %}
 <div class="d-sm-flex flex-grow-1 justify-content-between gap-3 px-2"
      id="board-{{ board.slug }}"
      hx-get="{% url 'boards:board-fetch' board.slug %}"
@@ -27,28 +27,26 @@
         }
         {% endcache %}
     </style>
-    {% cached_as board.topics.all 3600 board_topics_list board.pk request.session.session_key request.user.username is_moderator %}
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
     {% endfor %}
-{% endcached_as %}
-<div class="col-sm" id="newTopic-div">
-    {% if request.user == board.owner or user.is_staff %}
-        {% cache 3600 board-newTopic board.pk %}
-        <div class="card my-2" id="newTopic-card-div">
-            <div class="card-body">
-                <button class="btn btn-outline-primary my-2"
-                        hx-get="{% url 'boards:topic-create' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    Create topic
-                </button>
+    <div class="col-sm" id="newTopic-div">
+        {% if request.user == board.owner or user.is_staff %}
+            {% cache 3600 board-newTopic board.pk %}
+            <div class="card my-2" id="newTopic-card-div">
+                <div class="card-body">
+                    <button class="btn btn-outline-primary my-2"
+                            hx-get="{% url 'boards:topic-create' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        Create topic
+                    </button>
+                </div>
             </div>
-        </div>
-    {% endcache %}
-{% endif %}
+        {% endcache %}
+    {% endif %}
 </div>
 </div>
 <div id="board-scripts" hx-swap-oob="outerHTML">

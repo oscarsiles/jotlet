@@ -53,10 +53,16 @@ class UrlsTest(TestCase):
         self.assertEqual(url, "/boards/slug/posts/1/delete/")
 
         url = reverse("boards:post-fetch", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/fetch/")
+        self.assertEqual(url, "/boards/slug/posts/1/fetch/post/")
+
+        url = reverse("boards:post-footer-fetch", kwargs={"slug": "slug", "pk": 1})
+        self.assertEqual(url, "/boards/slug/posts/1/fetch/footer/")
 
         url = reverse("boards:post-toggle-approval", kwargs={"slug": "slug", "pk": 1})
         self.assertEqual(url, "/boards/slug/posts/1/approval/")
+
+        url = reverse("boards:post-reaction", kwargs={"slug": "slug", "pk": 1})
+        self.assertEqual(url, "/boards/slug/posts/1/reaction/")
 
     def test_resolve_url(self):
         resolver = resolve("/boards/")
@@ -107,8 +113,14 @@ class UrlsTest(TestCase):
         resolver = resolve("/boards/slug/posts/1/delete/")
         self.assertEqual(resolver.view_name, "boards:post-delete")
 
-        resolver = resolve("/boards/slug/posts/1/fetch/")
+        resolver = resolve("/boards/slug/posts/1/fetch/post/")
         self.assertEqual(resolver.view_name, "boards:post-fetch")
+
+        resolver = resolve("/boards/slug/posts/1/fetch/footer/")
+        self.assertEqual(resolver.view_name, "boards:post-footer-fetch")
 
         resolver = resolve("/boards/slug/posts/1/approval/")
         self.assertEqual(resolver.view_name, "boards:post-toggle-approval")
+
+        resolver = resolve("/boards/slug/posts/1/reaction/")
+        self.assertEqual(resolver.view_name, "boards:post-reaction")

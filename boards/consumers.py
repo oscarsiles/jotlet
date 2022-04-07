@@ -74,5 +74,8 @@ class BoardConsumer(AsyncWebsocketConsumer):
     async def post_deleted(self, event):
         await self.send(text_data=json.dumps(event))
 
+    async def reaction_updated(self, event):
+        await self.send(text_data=json.dumps(event))
+
     async def board_preferences_changed(self, event):
         await self.send(text_data=json.dumps(event))

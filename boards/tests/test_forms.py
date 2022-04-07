@@ -21,6 +21,7 @@ class BoardPreferencesFormTest(TestCase):
             "require_approval": True,
             "enable_latex": True,
             "moderators": "test_user,non_existent_user",
+            "reaction_type": "v",
         }
         form = BoardPreferencesForm(data=form_data, slug="test_board", instance=board.preferences)
         self.assertTrue(form.is_valid())
@@ -34,6 +35,7 @@ class BoardPreferencesFormTest(TestCase):
         self.assertEqual(board.preferences.enable_latex, True)
         self.assertEqual(board.preferences.moderators.count(), 1)
         self.assertEqual(board.preferences.moderators.all()[0], User.objects.get(username="test_user"))
+        self.assertEqual(board.preferences.reaction_type, "v")
         form = BoardPreferencesForm(data=form_data, slug="test_board", instance=board.preferences)
         self.assertTrue(form.is_valid())
         form.save()
