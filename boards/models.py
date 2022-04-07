@@ -201,10 +201,8 @@ class Post(models.Model):
         elif reaction_type == "l":
             return Reaction.objects.filter(post=self, type="l").count()
         elif reaction_type == "v":
-            return (
-                Reaction.objects.filter(post=self, type="v").count()
-                - Reaction.objects.filter(post=self, type="-v").count()
-            )
+            all_reactions = Reaction.objects.filter(post=self, type="v")
+            return all_reactions.filter(reaction_score=1).count(), all_reactions.filter(reaction_score=-1).count()
         elif reaction_type == "s":
             score = ""
             try:
