@@ -138,6 +138,7 @@ USE_TZ = True
 STATIC_ROOT = "static/"
 STATIC_URL = "static/"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+WHITENOISE_AUTOREFRESH = True
 
 MEDIA_ROOT = "media/"
 MEDIA_URL = "media/"
