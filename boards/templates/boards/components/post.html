@@ -1,4 +1,4 @@
-{% load cache post_extras %}
+{% load cacheops post_extras %}
 <div class="card my-2"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
@@ -7,7 +7,7 @@
      hx-swap="outerHTML"
      {% if not post.approved and not post.session_key == request.session.session_key and not is_moderator %}hidden="true"{% endif %}>
     {% if post.approved or post.session_key == request.session.session_key or is_moderator %}
-        {% cache 3600 post-cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
+        {% cached_as post 3600 post_cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
@@ -22,9 +22,9 @@
                                         hx-swap="none"
                                         class="btn btn-link text-black shadow-none p-1">
                                     {% if not post.approved %}
-                                        <i class="bi bi-hand-thumbs-up"></i>
+                                        <i class="bi bi-check-circle-fill" title="Approve"></i>
                                     {% else %}
-                                        <i class="bi bi-hand-thumbs-down"></i>
+                                        <i class="bi bi-x-circle" title="Unapprove"></i>
                                     {% endif %}
                                 </button>
                             {% endif %}
@@ -51,7 +51,7 @@
                 {{ post.content }}
             </p>
         </div>
-    {% endcache %}
+    {% endcached_as %}
     {% include 'boards/components/post_footer.html' %}
 {% endif %}
 </div>
