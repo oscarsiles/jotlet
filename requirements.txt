@@ -25,3 +25,4 @@ django-cors-headers==3.11.0
 django-filter==21.1
 django-csp==3.7
 hypercorn==0.13.2
+whitenoise[brotli]==6.0.0
