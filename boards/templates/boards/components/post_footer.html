@@ -1,5 +1,5 @@
 {% load cacheops static post_extras %}
-{% cached_as post.reactions.all 1 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key %}
+{% cached_as post.reactions.all 3600 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     {% get_has_reacted post request as has_reacted %}
     <div class="card-footer post-card-footer text-muted"
