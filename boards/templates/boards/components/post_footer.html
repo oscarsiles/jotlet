@@ -1,8 +1,8 @@
 {% load cacheops static post_extras %}
-{% cached_as post.reactions.all 3600 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key %}
+{% cached_as post.reactions.all 1 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     {% get_has_reacted post request as has_reacted %}
-    <div class="card-footer text-muted"
+    <div class="card-footer post-card-footer text-muted"
          id="post-{{ post.pk }}-footer"
          hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
          hx-trigger="reactionUpdated"
@@ -45,7 +45,8 @@
                     </button>
                     {{ post.get_reaction_score.1 }}
                 {% elif post.topic.board.preferences.reaction_type == 's' %}
-                    <div id="stars-{{ post.pk }}-div" class="d-flex align-items-center"></div>
+                    <div id="stars-{{ post.pk }}-div"
+                         class="d-flex align-items-center raty-div">{{ post.pk|json_script:"post_pk" }}</div>
                     <button type="submit" name="stars" id="stars-{{ post.pk }}-submit" hidden></button>
                 {% endif %}
                 {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
@@ -58,39 +59,3 @@
     </div>
 {% endif %}
 {% endcached_as %}
-{% if not request.htmx and post.topic.board.preferences.reaction_type == 's' %}
-    <script type="module" nonce="{{ CSP_NONCE }}">
-            var starsDiv = "#stars-{{ post.pk }}-div";
-            var starsSubmitDiv = "#stars-{{ post.pk }}-submit";
-            var footerDiv = "post-{{ post.pk }}-footer";
-
-            function setup_raty(div) {
-                var has_reacted = JSON.parse(document.getElementById(footerDiv).querySelector("#has_reacted").textContent);
-                if (has_reacted) {
-                    var reacted_score = JSON.parse(document.getElementById(footerDiv).querySelector("#reacted_score").textContent);
-                } 
-
-                $(div).raty({
-                    starOn: "{% static 'images/star-on.svg' %}",
-                    starOff: "{% static 'images/star-off.svg' %}",
-                    hints: [1, 2, 3, 4, 5],
-                    click: function(score, evt) {
-                        setTimeout(function() {
-                            $(starsSubmitDiv).click();
-                        }, 0);
-                    },
-                });
-
-                if (has_reacted) {
-                    $(div).data('raty').score(reacted_score);
-                }
-            }
-            setup_raty(starsDiv);
-
-            htmx.onLoad(function(elt){ 
-                if (elt.id == footerDiv) {     
-                    setup_raty(starsDiv);
-                }
-            });
-    </script>
-{% endif %}
