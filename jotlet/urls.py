@@ -18,14 +18,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
-from django_reverse_js import views as views_djrjs
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("boards/", include("boards.urls")),
     path("accounts/", include("accounts.urls")),
     path("", RedirectView.as_view(url="boards/")),
-    path("reverse.js", views_djrjs.urls_js, name="reverse_js"),
 ]
 
 if settings.PROMETHEUS_ENABLED:
