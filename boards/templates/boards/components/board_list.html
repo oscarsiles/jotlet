@@ -17,29 +17,30 @@
                     <span data-bs-toggle="tooltip"
                           data-bs-placement="right"
                           title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>
-            {% endcache %}
-        </div>
-        <div class="d-flex align-items-center">
-            {% if request.user == board.owner or perms.boards.change_board %}
-                <button class="btn btn-link btn-sm shadow-none text-black"
-                        hx-get="{% url 'boards:board-update' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </button>
-            {% endif %}
-            {% if request.user == board.owner or perms.boards.delete_board %}
-                <button class="btn btn-close btn-sm"
-                        hx-get="{% url 'boards:board-delete' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                </button>
-            {% endif %}
-        </div>
-    </li>
-{% endfor %}
+                {% endcache %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if request.user == board.owner or perms.boards.change_board %}
+                    <button class="btn btn-link shadow-none text-black p-1"
+                            hx-get="{% url 'boards:board-update' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-pen"></i>
+                    </button>
+                {% endif %}
+                {% if request.user == board.owner or perms.boards.delete_board %}
+                    <button class="btn btn-link shadow-none text-black p-1"
+                            hx-get="{% url 'boards:board-delete' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
 </ul>
 {% cache 3600 board-list-pagination page_obj request.user.username querystring %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
