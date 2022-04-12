@@ -38,7 +38,10 @@ for (var i = 0; i < els.length; i++) {
 }
 
 htmx.onLoad(function (elt) {
-  if (elt.classList.contains("post-card-footer")) {
+  if (
+    elt.classList.contains("post-card-footer") ||
+    elt.classList.contains("post-card")
+  ) {
     setup_raty(elt.querySelector("." + ratyClass));
   }
 });
