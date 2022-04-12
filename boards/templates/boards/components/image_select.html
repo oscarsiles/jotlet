@@ -13,15 +13,15 @@
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
-                           id="{{ image.uuid }}">
+                           id="{{ image.uuid }}"/>
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
                         <picture>
                             {% thumbnail image.image "300x200" crop="center" format="WEBP" as im %}
-                            <source srcset="{{ im.url }}" type="image/webp">
+                            <source srcset="{{ im.url }}" type="image/webp"/>
                         {% endthumbnail %}
                         {% thumbnail image.image "300x200" crop="center" format="JPEG" as im %}
-                        <source srcset="{{ im.url }}" type="image/jpeg">
-                        <img class="w-100" src="{{ im.url }}" alt="{{ image }}">
+                        <source srcset="{{ im.url }}" type="image/jpeg"/>
+                        <img class="w-100" src="{{ im.url }}" alt="{{ image }}"/>
                     {% endthumbnail %}
                 </picture>
             </label>

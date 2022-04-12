@@ -4,7 +4,7 @@
     {{ board.description }}
 </p>
 <form action="{% url 'boards:board-delete' board.slug %}"
-      method="POST"
+      method="post"
       id="board-delete-form">
     {% csrf_token %}
 </form>
