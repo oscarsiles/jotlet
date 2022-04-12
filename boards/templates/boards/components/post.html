@@ -1,5 +1,5 @@
 {% load cacheops post_extras %}
-<div class="card my-2"
+<div class="card post-card my-2"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
      hx-trigger="postUpdated"
