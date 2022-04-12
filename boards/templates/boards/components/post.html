@@ -34,7 +34,7 @@
                                 hx-swap="innerHTML"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modal-1-div"
-                                class="btn btn-link btn-sm text-black shadow-none p-1">
+                                class="btn btn-link text-black shadow-none p-1">
                             <i class="bi bi-pen"></i>
                         </button>
                         <button hx-get="{% url 'boards:post-delete' post.topic.board.slug post.pk %}"
@@ -42,7 +42,8 @@
                                 hx-swap="innerHTML"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modal-1-div"
-                                class="btn btn-close btn-sm shadow-none p-1">
+                                class="btn btn-link text-black shadow-none p-1">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 {% endif %}
