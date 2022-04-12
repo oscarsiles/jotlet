@@ -33,9 +33,6 @@ class BoardFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         reverse_url = reverse("boards:board-list")
 
-        if "owner" in self.data and self.data._mutable:
-            self.data["owner"] = self.data["owner"].split(",")
-
         if self.changed_data:
             self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})
 
