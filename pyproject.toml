@@ -1,6 +1,10 @@
 [tool.black]
 line-length = 118 # override black's default line-length
 
+[tool.djlint]
+profile="django"
+ignore="H006,H023"
+
 [tool.isort]
 # make it compatible with black
 profile = "black" 

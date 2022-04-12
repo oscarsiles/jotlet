@@ -15,7 +15,7 @@
                 </div>
                 {% if request.session.session_key == post.session_key or is_moderator %}
                     <div class="ms-auto">
-                        {% if post.topic.board.preferences.require_approval  %}
+                        {% if post.topic.board.preferences.require_approval %}
                             {% if perms.boards.can_approve_posts or is_moderator %}
                                 <button hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
                                         hx-trigger="click"
