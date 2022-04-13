@@ -40,8 +40,12 @@ for (var i = 0; i < els.length; i++) {
 htmx.onLoad(function (elt) {
   if (
     elt.classList.contains("post-card-footer") ||
-    elt.classList.contains("post-card")
+    elt.classList.contains("post-card") ||
+    elt.classList.contains("topic-list")
   ) {
-    setup_raty(elt.querySelector("." + ratyClass));
+    var divs = elt.querySelectorAll("." + ratyClass);
+    for (i = 0; i < divs.length; ++i) {
+      setup_raty(divs[i]);
+    }
   }
 });
