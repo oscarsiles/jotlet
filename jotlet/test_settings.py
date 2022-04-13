@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django_filters",
     "qr_code",
     "sorl.thumbnail",
+    "simple_history",
     "cacheops",
     "accounts",
     "boards",
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'simple_history.middleware.HistoryRequestMiddleware',
     "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]

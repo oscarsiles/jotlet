@@ -1,4 +1,5 @@
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import Board, BoardPreferences, Image, Post, Topic
 
@@ -32,7 +33,7 @@ class PostInline(admin.TabularInline):
 
 
 @admin.register(Board)
-class BoardAdmin(admin.ModelAdmin):
+class BoardAdmin(SimpleHistoryAdmin):
     list_display = (
         "title",
         "description",
@@ -50,7 +51,7 @@ class BoardAdmin(admin.ModelAdmin):
 
 
 @admin.register(Topic)
-class TopicAdmin(admin.ModelAdmin):
+class TopicAdmin(SimpleHistoryAdmin):
     list_display = ("subject", "board", "get_post_count", "created_at", "updated_at")
     fields = (
         "subject",
@@ -60,7 +61,7 @@ class TopicAdmin(admin.ModelAdmin):
 
 
 @admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(SimpleHistoryAdmin):
     list_display = ("content", "topic", "created_at", "updated_at")
     fields = (
         "content",
@@ -69,7 +70,7 @@ class PostAdmin(admin.ModelAdmin):
 
 
 @admin.register(Image)
-class ImageAdmin(admin.ModelAdmin):
+class ImageAdmin(SimpleHistoryAdmin):
     list_display = ("title", "get_board_usage_count", "created_at", "updated_at")
     fields = ("image_tag", "title", "attribution", "image", "type")
 
