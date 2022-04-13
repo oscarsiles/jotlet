@@ -1,5 +1,5 @@
 {% load cacheops %}
-<div class="col-sm"
+<div class="col-sm topic-list"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
      hx-trigger="topicUpdated, postCreated"
