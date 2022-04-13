@@ -15,6 +15,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from PIL import Image as PILImage
 from shortuuidfield import ShortUUIDField
+from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
 
 
@@ -67,6 +68,7 @@ class Board(models.Model):
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     def save(self, *args, **kwargs):
         slug_save(self)
@@ -151,6 +153,7 @@ class Topic(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.subject
@@ -188,6 +191,7 @@ class Post(models.Model):
     approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.content
@@ -243,6 +247,7 @@ class Image(models.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
     image = models.ImageField(upload_to=get_image_upload_path)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")

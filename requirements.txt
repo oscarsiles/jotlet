@@ -24,3 +24,4 @@ django-filter==21.1
 django-csp==3.7
 hypercorn==0.13.2
 whitenoise[brotli]==6.0.0
+django-simple-history==3.0.0
