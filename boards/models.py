@@ -68,7 +68,7 @@ class Board(models.Model):
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def save(self, *args, **kwargs):
         slug_save(self)
@@ -115,6 +115,7 @@ REACTION_TYPE = (
 
 class BoardPreferences(models.Model):
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
+    history = HistoricalRecords(cascade_delete_history=True)
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = models.ForeignKey(
         "Image",
@@ -153,7 +154,7 @@ class Topic(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
         return self.subject
@@ -191,7 +192,7 @@ class Post(models.Model):
     approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
         return self.content
@@ -247,7 +248,7 @@ class Image(models.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(cascade_delete_history=True)
     image = models.ImageField(upload_to=get_image_upload_path)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
