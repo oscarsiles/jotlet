@@ -5,7 +5,7 @@
      hx-trigger="topicUpdated, postCreated"
      hx-target="this"
      hx-swap="outerHTML">
-    {% cached_as topic.posts.all 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
+    {% cached_as topic 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>

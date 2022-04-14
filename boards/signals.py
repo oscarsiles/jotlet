@@ -109,20 +109,8 @@ def topic_delete_send_message(sender, instance, **kwargs):
 @receiver(post_save, sender=Topic)
 @receiver(post_delete, sender=Topic)
 def invalidate_topic_template_cache(sender, instance, **kwargs):
-    keyTopic1 = make_template_fragment_key("topic", [instance.pk])
-    keyTopic2 = make_template_fragment_key("topic-buttons", [instance.pk])
-    keyTopic3 = make_template_fragment_key("topic-create-post", [instance.pk])
-    keyTopic4 = make_template_fragment_key("topic-newCard", [instance.pk])
-
     try:
-        if cache.get(keyTopic1) is not None:
-            cache.delete(keyTopic1)
-        if cache.get(keyTopic2) is not None:
-            cache.delete(keyTopic2)
-        if cache.get(keyTopic3) is not None:
-            cache.delete(keyTopic3)
-        if cache.get(keyTopic4) is not None:
-            cache.delete(keyTopic4)
+        invalidate_obj(instance)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
 
@@ -164,9 +152,7 @@ def post_delete_send_message(sender, instance, **kwargs):
 def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
     try:
         invalidate_obj(instance)
-        invalidate_obj(instance.post)
-        invalidate_obj(instance.post.topic)
-        invalidate_obj(instance.post.topic.board)
+
     except:
         raise Exception(f"Could not invalidate cache: post-{instance.post.pk}-footer")
 
@@ -175,14 +161,15 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
 @receiver(post_delete, sender=Reaction)
 def post_reaction_send_update_message(sender, instance, **kwargs):
     try:
-        channel_group_send(
-            f"board_{instance.post.topic.board.slug}",
-            {
-                "type": "reaction_updated",
-                "topic_pk": instance.post.topic.pk,
-                "post_pk": instance.post.pk,
-            },
-        )
+        if Topic.objects.filter(pk=instance.post.topic_id).exists():
+            channel_group_send(
+                f"board_{instance.post.topic.board.slug}",
+                {
+                    "type": "reaction_updated",
+                    "topic_pk": instance.post.topic.pk,
+                    "post_pk": instance.post.pk,
+                },
+            )
     except:
         raise Exception(f"Could not send message: reaction_updated for reaction-{instance.pk}")
 
