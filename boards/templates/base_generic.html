@@ -32,8 +32,6 @@
         <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        {% block script %}
-        {% endblock script %}
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         <div class="container-fluid vh-100 d-flex flex-column p-0">
@@ -146,7 +144,8 @@
 </div>
 {% include 'boards/components/modal.html' with num=1 %}
 {% include 'boards/components/modal.html' with num=2 %}
-<script type="module" nonce="{{ CSP_NONCE }}">
+{% if not request.htmx %}
+    <script type="module" nonce="{{ CSP_NONCE }}">
         {% cache 86400 base-script-modals %}
         htmx.on("hidden.bs.modal", function (e) {
             var modal2 = bootstrap.Modal.getInstance(
@@ -170,6 +169,9 @@
             }
         });
         {% endcache %}
-</script>
+    </script>
+{% endif %}
+{% block script %}
+{% endblock script %}
 </body>
 </html>

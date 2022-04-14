@@ -5,15 +5,15 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl);
 });
 
-var toastElement = document.getElementById("toast");
-var toastBody = document.getElementById("toast-body");
-var toastClose = document.getElementById("toast-close");
-
-var toast = bootstrap.Toast.getOrCreateInstance(toastElement, {
-  delay: 3000,
-});
-
 htmx.on("showMessage", (e) => {
+  var toastElement = document.getElementById("toast");
+  var toastBody = document.getElementById("toast-body");
+  var toastClose = document.getElementById("toast-close");
+
+  var toast = bootstrap.Toast.getOrCreateInstance(toastElement, {
+    delay: 3000,
+  });
+
   toastBody.innerText = e.detail.message;
   var baseToastClass = "toast align-items-center border-0 ";
   var baseToastCloseClass = "me-2 m-auto btn-close ";
