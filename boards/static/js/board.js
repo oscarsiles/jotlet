@@ -66,7 +66,7 @@ function connect() {
         htmx.find("#post-" + data.post_pk).remove();
         break;
       case "reaction_updated":
-        var postFooterDiv = "#post-" + data.post_pk + "-footer";
+        var postFooterDiv = "#post-" + data.post_pk + "-footer-htmx-div";
         htmx.trigger(htmx.find(postFooterDiv), "reactionUpdated");
         break;
       default:
