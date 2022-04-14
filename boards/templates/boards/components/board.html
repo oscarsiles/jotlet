@@ -48,8 +48,7 @@
         {% endcache %}
     {% endif %}
 </div>
-</div>
-<div id="board-scripts" hx-swap-oob="outerHTML">
+<div id="board-scripts">
     {{ board.slug|json_script:"board_slug" }}
     {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
     {% if board.preferences.enable_latex %}
@@ -61,4 +60,5 @@
         <script defer src="{% static 'js/3rdparty/jquery.raty-3.1.1.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/components/board_raty.js' %}" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
+</div>
 </div>
