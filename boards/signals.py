@@ -118,8 +118,9 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
 @receiver(post_save, sender=Post)
 @receiver(post_delete, sender=Post)
 def invalidate_board_post_count(sender, instance, **kwargs):
-    key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
     try:
+        key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
+
         if cache.get(key) is not None:
             cache.delete(key)
     except:
