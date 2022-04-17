@@ -17,8 +17,10 @@ function setup_raty(div) {
   }
 
   $(div).raty({
-    starOn: "/static/images/star-on.svg",
-    starOff: "/static/images/star-off.svg",
+    starType: "i",
+    starOn: "bi bi-star-fill",
+    starOff: "bi bi-star",
+    starHalf: "bi bi-star-half",
     hints: [1, 2, 3, 4, 5],
     click: function (score, evt) {
       setTimeout(function () {
