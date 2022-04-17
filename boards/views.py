@@ -2,7 +2,9 @@ import json
 from urllib.parse import urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db.models import Prefetch
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -13,7 +15,6 @@ from django_htmx.http import HttpResponseClientRefresh
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
-from .utils import get_has_reacted
 
 
 def get_is_moderator(user, board):
@@ -22,6 +23,46 @@ def get_is_moderator(user, board):
         or user in board.preferences.moderators.all()
         or user == board.owner
         or user.is_staff
+    )
+
+
+def get_board_with_prefetches(slug):
+    board = Board.objects.select_related("preferences").get(slug=slug)
+    return (
+        Board.objects.select_related("owner", "preferences")
+        .prefetch_related(
+            Prefetch(
+                "topics",
+                queryset=Topic.objects.prefetch_related(
+                    Prefetch(
+                        "posts",
+                        queryset=Post.objects.prefetch_related(get_reactions_prefetch(board.preferences)),
+                    )
+                ),
+            )
+        )
+        .get(slug=slug)
+    )
+
+
+def get_post_with_prefetches(slug, post_pk):
+    board = Board.objects.select_related("preferences").get(slug=slug)
+    post = Post.objects.prefetch_related("topic__board__preferences", get_reactions_prefetch(board.preferences)).get(
+        pk=post_pk
+    )
+    return post
+
+
+def get_reactions_prefetch(preferences):
+    return (
+        Prefetch(
+            "reactions",
+            queryset=Reaction.objects.filter(type=preferences.reaction_type).prefetch_related(
+                Prefetch("user", queryset=User.objects.all())
+            ),
+        )
+        if preferences.reaction_type != "n"
+        else None
     )
 
 
@@ -53,10 +94,12 @@ class BoardView(generic.DetailView):
     model = Board
     template_name = "boards/board_index.html"
 
+    def get_object(self):
+        return get_board_with_prefetches(self.kwargs["slug"])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["topics"] = Topic.objects.filter(board=self.object)
         context["is_moderator"] = get_is_moderator(self.request.user, self.object)
         return context
 
@@ -360,7 +403,9 @@ class DeleteReactionsView(UserPassesTestMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["post"] = Post.objects.get(pk=self.kwargs["pk"])
+
+        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["post"] = post
 
         return context
 
@@ -432,7 +477,7 @@ class BoardFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
+        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
@@ -465,7 +510,7 @@ class PostFooterFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["post"] = post = Post.objects.get(pk=self.kwargs["pk"])
+        context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
@@ -487,7 +532,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
 
 class PostReactionView(generic.View):
     def post(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         type = post.topic.board.preferences.reaction_type
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
@@ -500,7 +545,7 @@ class PostReactionView(generic.View):
         else:
             reaction_score = int(self.request.POST.get("score", ""))
 
-        has_reacted, reaction_id, reacted_score = get_has_reacted(post, self.request)
+        has_reacted, reaction_id, reacted_score = post.get_has_reacted(self.request)
 
         if has_reacted:
             reaction = Reaction.objects.get(id=reaction_id)

@@ -66,7 +66,7 @@
             {{ has_reacted.0|json_script:"has_reacted" }}
             {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
         </div>
-        {% if is_moderator and post.get_reaction_score %}
+        {% if is_moderator and post.get_reaction_count > 0 %}
             <div class="d-flex align-items-center">
                 <button hx-get="{% url 'boards:post-reactions-delete' post.topic.board.slug post.pk %}"
                         hx-target="#modal-1-body-div"
