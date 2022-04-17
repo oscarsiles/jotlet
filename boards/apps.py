@@ -19,7 +19,9 @@ class BoardsConfig(AppConfig):
 
             required_scheduled_tasks = [
                 {"name": "jotlet.tasks.clear_sessions_command", "schedule_type": "H"},
-                {"name": "boards.tasks.thumbnail_cleanup_command", "schedule_type": "D"},
+                {"name": "boards.tasks.thumbnail_cleanup_command", "schedule_type": "W"},
+                {"name": "boards.tasks.history_clean_duplicates_past_hour_command", "schedule_type": "H"},
+                {"name": "boards.tasks.history_clean_old_command", "schedule_type": "D"},
             ]
 
             for task in required_scheduled_tasks:

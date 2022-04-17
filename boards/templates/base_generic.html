@@ -15,12 +15,10 @@
         <meta name="htmx-config" content='{"includeIndicatorStyles": false}'/>
         <link href="{% static 'css/3rdparty/bootstrap-5.1.3.min.css' %}"
               rel="stylesheet"/>
+        <link href="{% static 'css/3rdparty/bootstrap-icons-1.8.1.min.css' %}"
+              rel="stylesheet"/>
         <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
         <link href="{% static 'css/styles.css' %}" rel="stylesheet"/>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css"
-              rel="stylesheet"
-              integrity="sha384-He3RckdFB2wffiHOcESa3sf4Ida+ni/fw9SSzAcfY2EPnU1zkK/sLUzw2C5Tyuhj"
-              crossorigin="anonymous"/>
         <link href="{% static 'images/favicon.svg' %}"
               rel="icon"
               sizes="any"
@@ -32,8 +30,6 @@
         <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        {% block script %}
-        {% endblock script %}
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         <div class="container-fluid vh-100 d-flex flex-column p-0">
@@ -146,7 +142,8 @@
 </div>
 {% include 'boards/components/modal.html' with num=1 %}
 {% include 'boards/components/modal.html' with num=2 %}
-<script type="module" nonce="{{ CSP_NONCE }}">
+{% if not request.htmx %}
+    <script type="module" nonce="{{ CSP_NONCE }}">
         {% cache 86400 base-script-modals %}
         htmx.on("hidden.bs.modal", function (e) {
             var modal2 = bootstrap.Modal.getInstance(
@@ -170,6 +167,9 @@
             }
         });
         {% endcache %}
-</script>
+    </script>
+{% endif %}
+{% block script %}
+{% endblock script %}
 </body>
 </html>

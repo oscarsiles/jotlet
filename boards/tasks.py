@@ -1,7 +1,5 @@
 from django.core import management
 
-from .models import Image
-
 
 def create_thumbnails(img):
     img.get_webp()
@@ -11,3 +9,11 @@ def create_thumbnails(img):
 
 def thumbnail_cleanup_command():
     return management.call_command("thumbnail", "cleanup")
+
+
+def history_clean_duplicates_past_hour_command():
+    return management.call_command("clean_duplicate_history", "-m", "60", "--auto")
+
+
+def history_clean_old_command():
+    return management.call_command("clean_old_history", "--auto")

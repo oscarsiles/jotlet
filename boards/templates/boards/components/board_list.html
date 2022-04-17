@@ -1,6 +1,4 @@
-{% load cache %}
-{% load crispy_forms_tags %}
-{% load static %}
+{% load cache crispy_forms_tags  static %}
 {% crispy filter.form %}
 <script defer src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
 <ul class="list-group">
@@ -8,7 +6,12 @@
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
             <div class="ms-2">
                 <div class="fw-bold">
-                    <a href="{{ board.get_absolute_url }}">{{ board }}</a>
+                    <button class="btn btn-link p-0 "
+                            hx-get="{{ board.get_absolute_url }}"
+                            hx-target="body"
+                            hx-push-url="true">
+                        <strong>{{ board }}</strong>
+                    </button>
                     {% if is_all_boards %}- ({{ board.owner }}){% endif %}
                 </div>
                 <div>{{ board.description }}</div>

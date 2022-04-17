@@ -48,8 +48,7 @@
         {% endcache %}
     {% endif %}
 </div>
-</div>
-<div id="board-scripts" hx-swap-oob="outerHTML">
+<div id="board-scripts">
     {{ board.slug|json_script:"board_slug" }}
     {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
     {% if board.preferences.enable_latex %}
@@ -58,7 +57,8 @@
         <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js" integrity="sha384-+BSz3oj3ILMYvOBr16U9i0H4RZRmGyQQ+1q9eqr8T3skmAFrJk8GmgwgqlCZdNSo" crossorigin="anonymous" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
     {% if board.preferences.reaction_type == 's' %}
-        <script defer src="{% static 'js/3rdparty/jquery.raty.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/jquery.raty-3.1.1.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/components/board_raty.js' %}" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
+</div>
 </div>
