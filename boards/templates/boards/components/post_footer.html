@@ -48,8 +48,10 @@
                         {{ post.get_reaction_score.1 }}
                     {% elif post.topic.board.preferences.reaction_type == 's' %}
                         <div id="stars-{{ post.pk }}-div"
-                             class="d-flex align-items-center raty-div">{{ post.pk|json_script:"post_pk" }}</div>
-                        <img src="{% static 'images/star-on.svg' %}" hidden/>
+                             class="d-flex align-items-center raty-div"
+                             style="height: 24px;">
+                            {{ post.pk|json_script:"post_pk" }}
+                        </div>
                         <button type="submit" name="stars" id="stars-{{ post.pk }}-submit" hidden></button>
                     {% endif %}
                     {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
