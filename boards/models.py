@@ -198,6 +198,10 @@ class Post(models.Model):
         return self.content
 
     @cached_property
+    def get_reaction_count(self):
+        return self.reactions.filter(type=self.topic.board.preferences.reaction_type).count()
+
+    @cached_property
     def get_reaction_score(self):
         reaction_type = self.topic.board.preferences.reaction_type
         # cannot use match/switch before python 3.10
@@ -218,6 +222,9 @@ class Post(models.Model):
             except:
                 pass
             return score
+
+    def delete_reactions(self):
+        self.reactions.filter(post=self, type=self.topic.board.preferences.reaction_type).delete()
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})

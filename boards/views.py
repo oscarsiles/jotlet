@@ -1,7 +1,5 @@
 import json
-from ast import Raise
 from urllib.parse import urlparse
-from urllib.request import Request
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
@@ -10,11 +8,10 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
-from django.views.generic.edit import FormMixin, ProcessFormView
 from django_htmx.http import HttpResponseClientRefresh
 
 from .filters import BoardFilter
-from .forms import BoardFilterForm, BoardPreferencesForm, SearchBoardsForm
+from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import get_has_reacted
 
@@ -352,6 +349,38 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
+
+
+class DeleteReactionsView(UserPassesTestMixin, generic.TemplateView):
+    template_name = "boards/post_reactions_confirm_delete.html"
+
+    def test_func(self):
+        post = Post.objects.get(pk=self.kwargs["pk"])
+        return get_is_moderator(self.request.user, post.topic.board)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["post"] = Post.objects.get(pk=self.kwargs["pk"])
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        post = Post.objects.get(pk=self.kwargs["pk"])
+        post.delete_reactions()
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "reactionUpdated": None,
+                        "showMessage": {
+                            "message": "Reactions Deleted",
+                            "color": "danger",
+                        },
+                    }
+                )
+            },
+        )
 
 
 # HTMX Stuff

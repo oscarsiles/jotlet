@@ -1,0 +1,17 @@
+<p>
+Are you sure you want to delete <strong>{{ post.get_reaction_count }}</strong> reaction{{ post.get_reaction_count|pluralize }} from the following post?
+<h5>{{ post }}</h5>
+</p>
+<form hx-post="{{ request.build_absolute_uri }}"
+      hx-swap="none"
+      id="post-reaction-delete-form">
+    {% csrf_token %}
+</form>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+    <button type="submit"
+            class="btn btn-danger"
+            form="post-reaction-delete-form"
+            data-bs-dismiss="modal">Delete</button>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">Delete Post Reactions</h5>
