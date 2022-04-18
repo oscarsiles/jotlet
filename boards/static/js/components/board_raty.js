@@ -6,6 +6,10 @@ function setup_raty(div) {
   var starsSubmitDiv = `#stars-${post_pk}-submit`;
   var footerDiv = `post-${post_pk}-footer`;
 
+  var is_post_owner = JSON.parse(
+    document.getElementById(footerDiv).querySelector("#is_post_owner")
+      .textContent
+  );
   var has_reacted = JSON.parse(
     document.getElementById(footerDiv).querySelector("#has_reacted").textContent
   );
@@ -22,6 +26,8 @@ function setup_raty(div) {
     starOff: "bi bi-star",
     starHalf: "bi bi-star-half",
     hints: [1, 2, 3, 4, 5],
+    readOnly: is_post_owner,
+    noRatedMsg: "You cannot react to your own post",
     click: function (score, evt) {
       setTimeout(function () {
         $(starsSubmitDiv).click();

@@ -63,8 +63,13 @@
                     {% endif %}
                 </div>
             </form>
-            {{ has_reacted.0|json_script:"has_reacted" }}
-            {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
+            {% if post.user == request.user or post.session_key == request.session.session_key %}
+                {{ True|json_script:"is_post_owner" }}
+            {% else %}
+                {{ False|json_script:"is_post_owner" }}
+                {{ has_reacted.0|json_script:"has_reacted" }}
+                {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
+            {% endif %}
         </div>
         {% if is_moderator and post.get_reaction_count > 0 %}
             <div class="d-flex align-items-center">
