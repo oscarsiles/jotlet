@@ -1,7 +1,7 @@
 {% load cache static %}
 <div class="d-sm-flex flex-grow-1 justify-content-between gap-3 px-2"
      id="board-{{ board.slug }}"
-     hx-get="{% url 'boards:board-fetch' board.slug %}"
+     hx-get="{% url 'boards:board' board.slug %}"
      hx-trigger="topicCreated"
      hx-swap="outerHTML">
     <style nonce="{{ CSP_NONCE }}">

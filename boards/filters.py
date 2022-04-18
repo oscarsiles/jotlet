@@ -33,11 +33,11 @@ class BoardFilter(django_filters.FilterSet):
 
     @property
     def qs(self):
-        qs = super().qs
+        qs = super().qs.select_related("owner").distinct()
         if self.is_all_boards:
-            queryset = qs.order_by("-created_at")
+            queryset = qs.order_by("-created_at", "id")
         else:
-            queryset = qs.filter(owner=self.request.user).order_by("-created_at")
+            queryset = qs.filter(owner=self.request.user).order_by("-created_at", "id")
 
         return queryset
 
