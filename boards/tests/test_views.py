@@ -7,11 +7,19 @@ from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.test.client import RequestFactory
 from django.urls import reverse
+from django_htmx.middleware import HtmxMiddleware
 
 from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 from boards.routing import websocket_urlpatterns
+from boards.views import BoardView
+
+
+def dummy_htmx_view(request):
+    return HttpResponse("Hello!")
 
 
 class IndexViewTest(TestCase):
@@ -73,12 +81,82 @@ class BoardViewTest(TestCase):
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1, slug="test-board")
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.middleware = HtmxMiddleware(dummy_htmx_view)
 
     def test_anonymous_permissions(self):
         board = Board.objects.get(id=1)
         response = self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
+
+    def test_htmx_requests(self):
+        board = Board.objects.get(id=1)
+        user = User.objects.get(id=1)
+        kwargs = {"slug": board.slug}
+
+        # request with no current_url
+        request = self.factory.get(reverse("boards:board", kwargs=kwargs), HTTP_HX_REQUEST="true")
+        request.user = user
+        self.middleware(request)
+
+        response = BoardView.as_view()(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], "boards/board_index.html")
+
+        # request from index
+        request = self.factory.get(
+            reverse("boards:board", kwargs=kwargs),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_CURRENT_URL=reverse("boards:index"),
+        )
+        request.user = user
+        self.middleware(request)
+
+        response = BoardView.as_view()(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], "boards/board_index.html")
+
+        # request from index-all
+        request = self.factory.get(
+            reverse("boards:board", kwargs=kwargs),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_CURRENT_URL=reverse("boards:index-all"),
+        )
+        request.user = user
+        self.middleware(request)
+
+        response = BoardView.as_view()(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], "boards/board_index.html")
+
+        # request from board URL
+        request = self.factory.get(
+            reverse("boards:board", kwargs=kwargs),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs=kwargs),
+        )
+        request.user = user
+        self.middleware(request)
+
+        response = BoardView.as_view()(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], "boards/components/board.html")
+
+        # request from another board URL
+        request = self.factory.get(
+            reverse("boards:board", kwargs=kwargs),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs={"slug": "000000"}),
+        )
+        request.user = user
+        self.middleware(request)
+
+        response = BoardView.as_view()(request, **kwargs)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], "boards/board_index.html")
 
 
 class BoardPreferencesViewTest(TestCase):
@@ -793,20 +871,6 @@ class BoardListViewTest(TestCase):
         self.assertTemplateUsed(response, "boards/components/board_list.html")
         self.assertEqual(len(response.context["boards"]), 5)
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
-
-
-class BoardFetchViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-
-    def test_board_fetch(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-fetch", kwargs={"slug": board.slug}))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["board"], board)
 
 
 class TopicFetchViewTest(TestCase):
