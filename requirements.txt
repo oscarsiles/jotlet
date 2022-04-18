@@ -1,5 +1,5 @@
 
-boto3==1.21.38
+boto3==1.21.42
 channels-redis==3.4.0
 channels==3.0.4
 crispy-bootstrap5==0.6
