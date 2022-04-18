@@ -4,11 +4,6 @@
      hx-get="{% url 'boards:board' board.slug %}"
      hx-trigger="topicCreated"
      hx-swap="outerHTML">
-    {% if board.preferences.background_type == 'i' %}
-        <link rel="preload"
-              href="{% if support_webp %}{{ board.preferences.background_image.get_webp.url }}{% else %}{{ board.preferences.background_image.image.url }}{% endif %}"
-              as="image">
-    {% endif %}
     <style nonce="{{ CSP_NONCE }}">
       {% cache 1 board-preferences-style board.preferences.pk %}
         #main-content-div{

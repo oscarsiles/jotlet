@@ -1,5 +1,12 @@
 {% extends "base_generic.html" %}
 {% load static %}
+{% block head %}
+    {% if board.preferences.background_type == 'i' %}
+        <link rel="preload"
+              href="{% if support_webp %}{{ board.preferences.background_image.get_webp.url }}{% else %}{{ board.preferences.background_image.image.url }}{% endif %}"
+              as="image">
+    {% endif %}
+{% endblock head %}
 {% block title %}
     Board: {{ board }}
 {% endblock title %}
