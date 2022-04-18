@@ -22,9 +22,6 @@ class UrlsTest(TestCase):
         url = reverse("boards:board-delete", kwargs={"slug": "slug"})
         self.assertEqual(url, "/boards/slug/delete/")
 
-        url = reverse("boards:board-fetch", kwargs={"slug": "slug"})
-        self.assertEqual(url, "/boards/slug/fetch/")
-
         url = reverse("boards:board-qr", kwargs={"slug": "slug"})
         self.assertEqual(url, "/boards/slug/qr/")
 
@@ -82,9 +79,6 @@ class UrlsTest(TestCase):
 
         resolver = resolve("/boards/slug/delete/")
         self.assertEqual(resolver.view_name, "boards:board-delete")
-
-        resolver = resolve("/boards/slug/fetch/")
-        self.assertEqual(resolver.view_name, "boards:board-fetch")
 
         resolver = resolve("/boards/slug/qr/")
         self.assertEqual(resolver.view_name, "boards:board-qr")

@@ -30,19 +30,18 @@ def get_board_with_prefetches(slug):
     board = Board.objects.select_related("preferences").get(slug=slug)
     return (
         Board.objects.select_related("owner", "preferences")
-        .prefetch_related(
-            Prefetch(
-                "topics",
-                queryset=Topic.objects.prefetch_related(
-                    Prefetch(
-                        "posts",
-                        queryset=Post.objects.prefetch_related(get_reactions_prefetch(board.preferences)),
-                    )
-                ),
-            )
-        )
+        .prefetch_related(get_topics_prefetch(board.preferences))
         .get(slug=slug)
     )
+
+
+def get_topic_with_prefetches(slug, topic_pk):
+    board = Board.objects.select_related("preferences").get(slug=slug)
+    topic = Topic.objects.prefetch_related(
+        "board__preferences",
+        get_posts_prefetch(board.preferences),
+    ).get(pk=topic_pk)
+    return topic
 
 
 def get_post_with_prefetches(slug, post_pk):
@@ -53,16 +52,30 @@ def get_post_with_prefetches(slug, post_pk):
     return post
 
 
-def get_reactions_prefetch(preferences):
-    return (
-        Prefetch(
-            "reactions",
-            queryset=Reaction.objects.filter(type=preferences.reaction_type).prefetch_related(
-                Prefetch("user", queryset=User.objects.all())
-            ),
-        )
+def get_topics_prefetch(preferences):
+    return Prefetch(
+        "topics",
+        queryset=Topic.objects.prefetch_related(
+            get_posts_prefetch(preferences),
+        ),
+    )
+
+
+def get_posts_prefetch(preferences):
+    qs = (
+        Post.objects.prefetch_related(get_reactions_prefetch(preferences))
         if preferences.reaction_type != "n"
-        else None
+        else Post.objects.all()
+    )
+    return Prefetch("posts", queryset=qs)
+
+
+def get_reactions_prefetch(preferences):
+    return Prefetch(
+        "reactions",
+        queryset=Reaction.objects.filter(type=preferences.reaction_type).prefetch_related(
+            Prefetch("user", queryset=User.objects.all())
+        ),
     )
 
 
@@ -98,15 +111,13 @@ class BoardView(generic.DetailView):
         return get_board_with_prefetches(self.kwargs["slug"])
 
     def get_template_names(self):
-        template_name = super().get_template_names()
-        test = self.request.build_absolute_uri(reverse("boards:index"))
-        if self.request.htmx:
-            if self.request.htmx.current_url != self.request.build_absolute_uri(
-                reverse("boards:index")
-            ) and self.request.htmx.current_url != self.request.build_absolute_uri(reverse("boards:index-all")):
-                template_name = "boards/components/board.html"
+        template_names = super().get_template_names()
+        if self.request.htmx.current_url:
+            url = urlparse(self.request.htmx.current_url).path
+            if url == reverse("boards:board", kwargs={"slug": self.kwargs["slug"]}):
+                template_names[0] = "boards/components/board.html"
 
-        return template_name
+        return template_names
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -126,7 +137,7 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_object(self):  # needed to prevent 'slug' FieldError
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        board = Board.objects.select_related("preferences").get(slug=self.kwargs["slug"])
         if not BoardPreferences.objects.filter(board=board).exists():
             board.preferences = BoardPreferences.objects.create(board=board)
             board.preferences.save()
@@ -307,12 +318,7 @@ class CreatePostView(generic.CreateView):
             form.instance.user = self.request.user
 
         if form.instance.topic.board.preferences.require_approval:
-            form.instance.approved = (
-                self.request.user.has_perm("boards.can_approve_posts")
-                or self.request.user in form.instance.topic.board.preferences.moderators.all()
-                or self.request.user == form.instance.topic.board.owner
-                or self.request.user.is_staff
-            )
+            form.instance.approved = get_is_moderator(self.request.user, form.instance.topic.board)
 
         super().form_valid(form)
 
@@ -339,13 +345,11 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     def test_func(self):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(pk=self.kwargs["pk"])
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.change_post")
-            or self.request.user in post.topic.board.preferences.moderators.all()
-            or self.request.user == post.topic.board.owner
-            or self.request.user.is_staff
+            or get_is_moderator(self.request.user, post.topic.board)
         )
 
     def form_valid(self, form):
@@ -373,13 +377,11 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     def test_func(self):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(pk=self.kwargs["pk"])
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.delete_post")
-            or self.request.user in post.topic.board.preferences.moderators.all()
-            or self.request.user == post.topic.board.owner
-            or self.request.user.is_staff
+            or get_is_moderator(self.request.user, post.topic.board)
         )
 
     def form_valid(self, form):
@@ -488,7 +490,7 @@ class TopicFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["topic"] = topic = Topic.objects.get(pk=self.kwargs["pk"])
+        context["topic"] = topic = get_topic_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, topic.board)
         return context
 
@@ -499,7 +501,7 @@ class PostFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["post"] = post = Post.objects.get(pk=self.kwargs["pk"])
+        context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
@@ -594,12 +596,8 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/components/qr.html"
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
-        return (
-            self.request.user == board.owner
-            or self.request.user in board.preferences.moderators.all()
-            or self.request.user.is_staff
-        )
+        board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
+        return get_is_moderator(self.request.user, board)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
