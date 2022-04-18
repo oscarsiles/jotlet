@@ -519,7 +519,7 @@ class PostFooterFetchView(generic.TemplateView):
 
 class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     def test_func(self):
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = Post.objects.prefetch_related("topic__board__preferences").get(pk=self.kwargs["pk"])
         return (
             get_is_moderator(self.request.user, post.topic.board)
         ) and post.topic.board.preferences.require_approval
@@ -536,49 +536,58 @@ class PostReactionView(generic.View):
     def post(self, request, *args, **kwargs):
         post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         type = post.topic.board.preferences.reaction_type
+        message_text = "Reaction Saved"
+        message_color = "success"
+        is_updated = True
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
-        if type == "l":
-            reaction_score = 1
-        elif type == "n":
-            pass
+        # check if user is creator of post, and if so, don't allow them to react
+        if post.user == self.request.user or post.session_key == self.request.session.session_key:
+            message_text = "You cannot react to your own post"
+            message_color = "danger"
+            is_updated = False
         else:
-            reaction_score = int(self.request.POST.get("score", ""))
-
-        has_reacted, reaction_id, reacted_score = post.get_has_reacted(self.request)
-
-        if has_reacted:
-            reaction = Reaction.objects.get(id=reaction_id)
-            if reaction_score == reacted_score:
-                reaction.delete()
+            if type == "l":
+                reaction_score = 1
+            elif type == "n":
+                pass
             else:
-                reaction.reaction_score = reaction_score
-                reaction.save()
-        else:
-            reaction_user = self.request.user if self.request.user.is_authenticated else None
+                reaction_score = int(self.request.POST.get("score", ""))
 
-            reaction = Reaction.objects.create(
-                session_key=self.request.session.session_key,
-                user=reaction_user,
-                post=post,
-                type=type,
-                reaction_score=reaction_score,
-            )
+            has_reacted, reaction_id, reacted_score = post.get_has_reacted(self.request)
+
+            if has_reacted:
+                reaction = Reaction.objects.get(id=reaction_id)
+                if reaction_score == reacted_score:
+                    reaction.delete()
+                else:
+                    reaction.reaction_score = reaction_score
+                    reaction.save()
+            else:
+                reaction_user = self.request.user if self.request.user.is_authenticated else None
+
+                reaction = Reaction.objects.create(
+                    session_key=self.request.session.session_key,
+                    user=reaction_user,
+                    post=post,
+                    type=type,
+                    reaction_score=reaction_score,
+                )
+
+        to_json = {
+            "showMessage": {
+                "message": message_text,
+                "color": message_color,
+            },
+        }
+        if is_updated:
+            to_json["reactionUpdated"] = None
 
         return HttpResponse(
             status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "reactionUpdated": None,
-                        "showMessage": {
-                            "message": "Reaction Saved",
-                        },
-                    }
-                )
-            },
+            headers={"HX-Trigger": json.dumps(to_json)},
         )
 
 
