@@ -97,6 +97,17 @@ class BoardView(generic.DetailView):
     def get_object(self):
         return get_board_with_prefetches(self.kwargs["slug"])
 
+    def get_template_names(self):
+        template_name = super().get_template_names()
+        test = self.request.build_absolute_uri(reverse("boards:index"))
+        if self.request.htmx:
+            if self.request.htmx.current_url != self.request.build_absolute_uri(
+                reverse("boards:index")
+            ) and self.request.htmx.current_url != self.request.build_absolute_uri(reverse("boards:index-all")):
+                template_name = "boards/components/board.html"
+
+        return template_name
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -451,7 +462,7 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
     filterset = None
 
     def get_queryset(self):
-        view = resolve(urlparse(self.request.META["HTTP_REFERER"]).path).url_name
+        view = resolve(urlparse(self.request.META.get("HTTP_REFERER", "")).path).url_name
         if view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
             self.is_all_boards = True
 
@@ -468,17 +479,6 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
         context["filter"] = self.filterset
         context["page_range"] = page_range
         context["is_all_boards"] = self.is_all_boards
-        return context
-
-
-class BoardFetchView(generic.TemplateView):
-    template_name = "boards/components/board.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
-        context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
 

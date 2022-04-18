@@ -1,49 +1,50 @@
 {% load cache crispy_forms_tags  static %}
-{% crispy filter.form %}
-<script defer src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
-<ul class="list-group">
-    {% for board in boards %}
-        <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
-            <div class="ms-2">
-                <div class="fw-bold">
-                    <button class="btn btn-link p-0 "
-                            hx-get="{{ board.get_absolute_url }}"
-                            hx-target="body"
-                            hx-push-url="true">
-                        <strong>{{ board }}</strong>
+<body>
+    {% crispy filter.form %}
+    <script defer src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <ul class="list-group">
+        {% for board in boards %}
+            <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
+                <div class="ms-2">
+                    <div class="fw-bold">
+                        <button class="btn btn-link p-0 "
+                                hx-get="{{ board.get_absolute_url }}"
+                                hx-target="body"
+                                hx-push-url="true">
+                            <strong>{{ board }}</strong>
+                        </button>
+                        {% if is_all_boards %}- ({{ board.owner }}){% endif %}
+                    </div>
+                    <div>{{ board.description }}</div>
+                    {% cache 86400 board-list-post-count board.pk %}
+                    <small class="text-muted">{{ board.created_at|date:'d/m/Y' }} -
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>
+                {% endcache %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if request.user == board.owner or perms.boards.change_board %}
+                    <button class="btn btn-link shadow-none text-black p-1"
+                            hx-get="{% url 'boards:board-update' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-pen"></i>
                     </button>
-                    {% if is_all_boards %}- ({{ board.owner }}){% endif %}
-                </div>
-                <div>{{ board.description }}</div>
-                {% cache 86400 board-list-post-count board.pk %}
-                <small class="text-muted">{{ board.created_at|date:'d/m/Y' }} -
-                    <span data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>
-            {% endcache %}
-        </div>
-        <div class="d-flex align-items-center">
-            {% if request.user == board.owner or perms.boards.change_board %}
-                <button class="btn btn-link shadow-none text-black p-1"
-                        hx-get="{% url 'boards:board-update' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </button>
-            {% endif %}
-            {% if request.user == board.owner or perms.boards.delete_board %}
-                <button class="btn btn-link shadow-none text-black p-1"
-                        hx-get="{% url 'boards:board-delete' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-trash"></i>
-                </button>
-            {% endif %}
-        </div>
-    </li>
-{% endfor %}
+                {% endif %}
+                {% if request.user == board.owner or perms.boards.delete_board %}
+                    <button class="btn btn-link shadow-none text-black p-1"
+                            hx-get="{% url 'boards:board-delete' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
 </ul>
 {% cache 3600 board-list-pagination page_obj request.user.username querystring %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
@@ -92,3 +93,4 @@
     {% endif %}
 </ul>
 {% endcache %}
+</body>
