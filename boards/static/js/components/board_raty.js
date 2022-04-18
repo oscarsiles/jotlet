@@ -10,14 +10,17 @@ function setup_raty(div) {
     document.getElementById(footerDiv).querySelector("#is_post_owner")
       .textContent
   );
-  var has_reacted = JSON.parse(
-    document.getElementById(footerDiv).querySelector("#has_reacted").textContent
-  );
-  if (has_reacted) {
-    var reacted_score = JSON.parse(
-      document.getElementById(footerDiv).querySelector("#reacted_score")
+  if (!is_post_owner) {
+    var has_reacted = JSON.parse(
+      document.getElementById(footerDiv).querySelector("#has_reacted")
         .textContent
     );
+    if (has_reacted) {
+      var reacted_score = JSON.parse(
+        document.getElementById(footerDiv).querySelector("#reacted_score")
+          .textContent
+      );
+    }
   }
 
   $(div).raty({
@@ -35,8 +38,10 @@ function setup_raty(div) {
     },
   });
 
-  if (has_reacted) {
-    $(div).data("raty").score(reacted_score);
+  if (!is_post_owner) {
+    if (has_reacted) {
+      $(div).data("raty").score(reacted_score);
+    }
   }
 }
 
