@@ -3,6 +3,7 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 
+from cacheops import cached_as
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import models
@@ -79,7 +80,11 @@ class Board(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic__board=self).order_by("-created_at")
+        return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
+
+    @cached_property
+    def get_topics_with_posts_and_reactions(self):
+        return self.topics.filter(board=self).prefetch_related("posts__reactions").order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
@@ -92,6 +97,10 @@ class Board(models.Model):
         if self.get_post_count > 0:
             return date(self.get_posts.first().created_at, "d/m/Y")
         return None
+
+    def delete_reactions(self):
+        for post in self.get_posts:
+            post.delete_reactions()
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
@@ -164,7 +173,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self).order_by("-created_at")
+        return Post.objects.filter(topic=self).select_related("reactions").order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
@@ -198,26 +207,69 @@ class Post(models.Model):
         return self.content
 
     @cached_property
+    def get_reactions(self):
+        return self.reactions.all()
+
+    @cached_property
+    def get_reaction_type(self):
+        return self.topic.board.preferences.reaction_type
+
+    @cached_property
+    def get_reaction_count(self):
+        return len(self.get_reactions)
+
+    @cached_property
     def get_reaction_score(self):
-        reaction_type = self.topic.board.preferences.reaction_type
-        # cannot use match/switch before python 3.10
+        reaction_type = self.get_reaction_type
         if reaction_type == "n":
             return 0
-        elif reaction_type == "l":
-            return Reaction.objects.filter(post=self, type="l").count()
+
+        reactions = self.get_reactions
+
+        # cannot use match/switch before python 3.10
+        if reaction_type == "l":
+            return self.get_reaction_count
         elif reaction_type == "v":
-            all_reactions = Reaction.objects.filter(post=self, type="v")
-            return all_reactions.filter(reaction_score=1).count(), all_reactions.filter(reaction_score=-1).count()
+            return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
+                1 for reaction in reactions if reaction.reaction_score == -1
+            )
         elif reaction_type == "s":
             score = ""
             try:
-                reactions = Reaction.objects.filter(post=self, type="s")
-                sum = reactions.aggregate(Sum("reaction_score"))["reaction_score__sum"]
-                count = reactions.count()
-                score = f"{(sum / count):.2g}"
+                sumvar = sum(reaction.reaction_score for reaction in reactions)
+                count = self.get_reaction_count
+                score = f"{(sumvar / count):.2g}"
             except:
                 pass
             return score
+
+    def get_has_reacted(self, request):
+        post_reactions = self.get_reactions
+        has_reacted = False
+        reaction_id = None
+        reacted_score = 1  # default score
+
+        if post_reactions.count() > 0:
+            if request.session.session_key:
+                for reaction in post_reactions:
+                    if reaction.session_key == request.session.session_key:
+                        has_reacted = True
+                        reaction_id = reaction.id
+                        reacted_score = reaction.reaction_score
+                        break
+
+            if request.user.is_authenticated and not has_reacted:
+                for reaction in post_reactions:
+                    if reaction.user == request.user:
+                        has_reacted = True
+                        reaction_id = reaction.id
+                        reacted_score = reaction.reaction_score
+                        break
+
+        return has_reacted, reaction_id, reacted_score
+
+    def delete_reactions(self):
+        self.get_reactions.delete()
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
