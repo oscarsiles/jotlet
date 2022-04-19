@@ -101,8 +101,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test.db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "jotlet",
+        "USER": os.environ.get("DB_USER", "vscode"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "notsecure"),
+        "HOST": os.environ.get("DB_HOST", "postgres"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
 
