@@ -627,8 +627,10 @@ class PostCreateViewTest(TestCase):
         board = Board.objects.get(title="Test Board")
         board.preferences.require_approval = True
         board.preferences.save()
+        topic = Topic.objects.get(subject="Test Topic")
         response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": 1}), data={"content": "Test Post"}
+            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
+            data={"content": "Test Post"},
         )
         post = Post.objects.get(content="Test Post")
         self.assertEqual(post.approved, False)
@@ -666,7 +668,7 @@ class PostCreateViewTest(TestCase):
         response = await sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
         post = await sync_to_async(Post.objects.get)(content="Test Post")
         self.assertIsNotNone(post)
-        topic = await sync_to_async(Topic.objects.get)(id=1)
+        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         message = await communicator.receive_from()
         self.assertIn("post_created", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
