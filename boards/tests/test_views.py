@@ -243,7 +243,7 @@ class CreateBoardViewTest(TestCase):
         response = self.client.post(
             reverse("boards:board-create"), {"title": "Test Board", "description": "Test Board Description"}
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         board = Board.objects.get(title="Test Board")
         self.assertEqual(board.description, "Test Board Description")
 
