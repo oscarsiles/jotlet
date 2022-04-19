@@ -33,6 +33,7 @@ services:
     volumes:
       - ..:/workspace
       - ../static/:/workspace/static/
+      - ../media/:/workspace/media/
       - ../.dockervolumes/vscode/extensions:/home/vscode/.vscode-server/extensions
     user: vscode
     ports:
