@@ -3,11 +3,11 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 
-from cacheops import cached_as
 from django.contrib.auth.models import User
+from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.core.files import File
 from django.db import models
-from django.db.models import Sum
+from django.db.models.functions import Upper
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -107,6 +107,17 @@ class Board(models.Model):
 
     class Meta:
         permissions = (("can_view_all_boards", "Can view all boards"),)
+        indexes = [
+            GinIndex(
+                OpClass(Upper("title"), name="gin_trgm_ops"),
+                name="upper_title_idx",
+            ),
+            GinIndex(
+                OpClass(Upper("description"), name="gin_trgm_ops"),
+                name="upper_description_idx",
+            ),
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
 
 BACKGROUND_TYPE = (
