@@ -636,21 +636,21 @@ class PostCreateViewTest(TestCase):
         self.assertEqual(post.approved, False)
         login = self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": 1}),
+            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
             data={"content": "Test Post user1"},
         )
         post = Post.objects.get(content="Test Post user1")
         self.assertEqual(post.approved, True)  # Board owner can post without approval
         login = self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
         response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": 1}),
+            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
             data={"content": "Test Post user2"},
         )
         post = Post.objects.get(content="Test Post user2")
         self.assertEqual(post.approved, False)  # Normal user needs approval
         login = self.client.login(username="testuser3", password="3y6d0A8sB?5")
         response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": 1}),
+            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
             data={"content": "Test Post user3"},
         )
         post = Post.objects.get(content="Test Post user3")

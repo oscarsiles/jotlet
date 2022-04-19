@@ -160,7 +160,7 @@ class PostModelTest(TestCase):
 
     def test_post_deleted_after_topic_delete(self):
         topic = Topic.objects.get(subject="Test Topic")
-        post = post = Post.objects.get(content="Test Post")
+        post = Post.objects.get(content="Test Post")
         topic.delete()
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post.id)
 
