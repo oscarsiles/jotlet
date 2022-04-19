@@ -10,7 +10,7 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
-from django_htmx.http import HttpResponseClientRefresh
+from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
@@ -180,7 +180,8 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         board = form.save(commit=False)
         board.owner = self.request.user
         board.save()
-        return super().form_valid(form)
+
+        return HttpResponseClientRedirect(reverse_lazy("boards:board", kwargs={"slug": board.slug}))
 
 
 class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
