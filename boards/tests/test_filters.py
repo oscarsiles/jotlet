@@ -16,11 +16,11 @@ class BoardFilterTest(TestCase):
         user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         yesterday = timezone.now() - timedelta(days=1)
-        board1 = Board.objects.create(title="Test Board 1", slug="test_board1", owner=user1)
+        board1 = Board.objects.create(title="Test Board 1", slug="000001", owner=user1)
         board1.created_at = yesterday
         board1.save()
-        Board.objects.create(title="Test Board 2", slug="test_board2", owner=user1)
-        Board.objects.create(title="Test Board 3", slug="test_board3", owner=user2)
+        Board.objects.create(title="Test Board 2", slug="000002", owner=user1)
+        Board.objects.create(title="Test Board 3", slug="000003", owner=user2)
 
     def setUp(self):
         self.factory = RequestFactory()

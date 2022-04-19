@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 
-from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth.models import Permission, User
@@ -81,7 +81,7 @@ class BoardViewTest(TestCase):
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1, slug="test-board")
+        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1, slug="000001")
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -199,14 +199,14 @@ class BoardPreferencesViewTest(TestCase):
 
     async def test_preferences_changed_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        response = await database_sync_to_async(self.client.post)(
+        response = await sync_to_async(self.client.post)(
             self.board_preferences_changed_url,
             data={
                 "background_type": "c",
@@ -436,17 +436,15 @@ class TopicCreateViewTest(TestCase):
 
     async def test_topic_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        response = await database_sync_to_async(self.client.post)(
-            self.topic_created_url, data={"subject": "Test Topic"}
-        )
-        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
+        response = await sync_to_async(self.client.post)(self.topic_created_url, data={"subject": "Test Topic"})
+        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         message = await communicator.receive_from()
         self.assertIn("topic_created", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
@@ -519,17 +517,15 @@ class TopicUpdateViewTest(TestCase):
 
     async def test_topic_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
-        response = await database_sync_to_async(self.client.post)(
-            self.topic_updated_url, data={"subject": "Test Topic NEW"}
-        )
+        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
+        response = await sync_to_async(self.client.post)(self.topic_updated_url, data={"subject": "Test Topic NEW"})
         message = await communicator.receive_from()
         self.assertIn("topic_updated", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
@@ -576,15 +572,15 @@ class TopicDeleteViewTest(TestCase):
 
     async def test_topic_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        topic = await database_sync_to_async(Topic.objects.get)(subject="Test Topic")
-        response = await database_sync_to_async(self.client.post)(self.topic_deleted_url)
+        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
+        response = await sync_to_async(self.client.post)(self.topic_deleted_url)
         message = await communicator.receive_from()
         self.assertIn("topic_deleted", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
@@ -659,17 +655,17 @@ class PostCreateViewTest(TestCase):
 
     async def test_post_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        response = await database_sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
-        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
+        response = await sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
+        post = await sync_to_async(Post.objects.get)(content="Test Post")
         self.assertIsNotNone(post)
-        topic = await database_sync_to_async(Topic.objects.get)(id=1)
+        topic = await sync_to_async(Topic.objects.get)(id=1)
         message = await communicator.receive_from()
         self.assertIn("post_created", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
@@ -745,17 +741,15 @@ class PostUpdateViewTest(TestCase):
 
     async def test_post_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
-        response = await database_sync_to_async(self.client.post)(
-            self.post_updated_url, data={"content": "Test Post NEW"}
-        )
+        post = await sync_to_async(Post.objects.get)(content="Test Post")
+        response = await sync_to_async(self.client.post)(self.post_updated_url, data={"content": "Test Post NEW"})
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
         self.assertIn(f'"post_pk": {post.id}', message)
@@ -816,15 +810,15 @@ class PostDeleteViewTest(TestCase):
 
     async def test_post_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
-        response = await database_sync_to_async(self.client.post)(self.post_deleted_url)
+        post = await sync_to_async(Post.objects.get)(content="Test Post")
+        response = await sync_to_async(self.client.post)(self.post_deleted_url)
         message = await communicator.receive_from()
         self.assertIn("post_deleted", message)
         self.assertIn(f'"post_pk": {post.id}', message)
@@ -1029,19 +1023,19 @@ class PostToggleApprovalViewTest(TestCase):
 
     async def test_post_toggle_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await database_sync_to_async(Board.objects.get)(title="Test Board")
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, subprotocol = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await database_sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await database_sync_to_async(Post.objects.get)(content="Test Post")
-        response = await database_sync_to_async(self.client.post)(self.post_approval_url)
+        post = await sync_to_async(Post.objects.get)(content="Test Post")
+        response = await sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
         self.assertIn(f'"post_pk": {post.id}', message)
-        response = await database_sync_to_async(self.client.post)(self.post_approval_url)
+        response = await sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
         self.assertIn(f'"post_pk": {post.id}', message)
