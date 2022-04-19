@@ -122,6 +122,7 @@ class BoardView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, self.object)
         return context
 

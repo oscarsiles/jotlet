@@ -1,0 +1,8 @@
+{
+    "name": "Jotlet",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "jotlet",
+    "workspaceFolder": "/workspace",
+    "settings": {},
+    "extensions": []
+}
