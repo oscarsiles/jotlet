@@ -1,0 +1,42 @@
+version: "3.7"
+
+x-environment: &default-environment
+  POSTGRES_USER: vscode
+  POSTGRES_PASSWORD: notsecure
+  POSTGRES_DB: jotlet
+
+services:
+  redis:
+    image: redis:6-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    volumes:
+      - ../.dockervolumes/postgres:/var/lib/postgresql/data
+    environment:
+      <<: *default-environment
+    ports:
+      - "5432:5432"
+
+  jotlet:
+    container_name: jotlet
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    image: oscarsiles/jotlet-dev
+    command: sleep infinity
+    restart: unless-stopped
+    volumes:
+      - ..:/workspace
+      - ../static/:/workspace/static/
+      - ../.dockervolumes/vscode/extensions:/home/vscode/.vscode-server/extensions
+    user: vscode
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+      - redis
