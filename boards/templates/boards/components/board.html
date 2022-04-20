@@ -11,9 +11,8 @@
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
         -webkit-image-set(
-            url("{{ board.preferences.background_image.image.url }}") 1x,
-            url("{{ board.preferences.background_image.get_webp.url }}") 1x
-            
+            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
+            url("{{ board.preferences.background_image.image.url }}") 1x           
         );
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
         image-set(
