@@ -193,7 +193,7 @@ CSP_SCRIPT_SRC = [
     "cdn.jsdelivr.net",
     "polyfill.io",
     "unpkg.com",
-    "'unsafe-inline'",
+    "'unsafe-eval'",
 ]
 CSP_STYLE_SRC = [
     "'self'",
