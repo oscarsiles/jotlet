@@ -1,47 +1,28 @@
-var tooltipTriggerList = [].slice.call(
-  document.querySelectorAll('[data-bs-toggle="tooltip"]')
-);
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl);
-});
-
-htmx.on("showMessage", (e) => {
-  var toastElement = document.getElementById("toast");
-  var toastBody = document.getElementById("toast-body");
-  var toastClose = document.getElementById("toast-close");
-
-  var toast = bootstrap.Toast.getOrCreateInstance(toastElement, {
-    delay: 3000,
-  });
-
-  toastBody.innerText = e.detail.message;
-  var baseToastClass = "toast align-items-center border-0 ";
-  var baseToastCloseClass = "me-2 m-auto btn-close ";
-
-  if (e.detail.color == null) {
-    toastElement.className = baseToastClass + "text-white bg-success";
-    toastClose.className = baseToastCloseClass + "btn-close-white";
-  } else if (e.detail.color == "warning") {
-    toastElement.className = baseToastClass + "text-black bg-warning";
-  } else if (e.detail.color == "info") {
-    toastElement.className = baseToastClass + "text-black bg-info";
-  } else if (e.detail.color == "light") {
-    toastElement.className = baseToastClass + "text-black bg-light";
-  } else {
-    toastElement.className = baseToastClass + "text-white bg-" + e.detail.color;
-    toastClose.className = baseToastCloseClass + "btn-close-white";
-  }
-  toast.show();
-});
-
-function delay(callback, ms) {
-  var timer = 0;
-  return function () {
-    var context = this,
-      args = arguments;
-    clearTimeout(timer);
-    timer = setTimeout(function () {
-      callback.apply(context, args);
-    }, ms || 0);
+// Toast Notification
+function toastNotification() {
+  return {
+    open: false,
+    message: "",
+    bg_color: "text-white bg-success",
+    btn_color: "btn-close-white",
+    openToast(event) {
+      this.open = true;
+      this.message = event.detail.message;
+      if (event.detail.color == "warning") {
+        this.bg_color = "text-black bg-warning";
+        this.btn_color = "btn-close-black";
+      } else if (event.detail.color == "info") {
+        this.bg_color = "text-black bg-info";
+        this.btn_color = "btn-close-black";
+      } else if (event.detail.color == "light") {
+        this.bg_color = "text-black bg-light";
+        this.btn_color = "btn-close-black";
+      } else {
+        this.bg_color = "text-white bg-" + event.detail.color;
+      }
+      setTimeout(() => {
+        this.open = false;
+      }, 3000);
+    },
   };
 }
