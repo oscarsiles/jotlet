@@ -5,7 +5,9 @@
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
-     {% if not post.approved and not post.session_key == request.session.session_key and not is_moderator %}hidden="true"{% endif %}>
+     {% if not post.approved and not post.session_key == request.session.session_key and not is_moderator %}
+         hidden="true"
+     {% endif %}>
     {% if post.approved or post.session_key == request.session.session_key or is_moderator %}
         {% cached_as post 3600 post_cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
         <div class="card-body">
@@ -48,7 +50,7 @@
                     </div>
                 {% endif %}
             </div>
-            <p class="card-text text-break" id="post-{{ post.pk }}-text">
+            <p class="card-text text-break" id="post-{{ post.pk }}-text" hx-disable>
                 {{ post.content }}
             </p>
         </div>
