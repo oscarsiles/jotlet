@@ -49,16 +49,34 @@ class BoardFilterForm(forms.Form):
             "hx-target": "#board-list",
             "hx-swap": "innerHTML",
             "hx-indicator": ".htmx-indicator",
+            "x-data": """{ filterChanged() { $dispatch('filterChanged') },
+                            keyup: { '@keyup'() { this.filterChanged() }, }, 
+                            change: { '@change'() { this.filterChanged() }, }, 
+                            tagify: { '@add'() { this.filterChanged() }, '@change'() { this.filterChanged() }, '@remove'() { this.filterChanged() }, }, 
+                            }""",
         }
 
         self.helper.layout = Layout(
             Field(
                 "q",
                 placeholder="Search by title/description...",
+                x_bind="keyup",
             ),
             Div(
-                PrependedText("after", "After", wrapper_class="col-sm pe-sm-0", onkeydown="return false"),
-                PrependedText("before", "Before", wrapper_class="col-sm ps-sm-0", onkeydown="return false"),
+                PrependedText(
+                    "after",
+                    "After",
+                    wrapper_class="col-sm pe-sm-0",
+                    onkeydown="return false",
+                    x_bind="change",
+                ),
+                PrependedText(
+                    "before",
+                    "Before",
+                    wrapper_class="col-sm ps-sm-0",
+                    onkeydown="return false",
+                    x_bind="change",
+                ),
                 css_class="row gap-sm-3",
             ),
         )
@@ -68,6 +86,7 @@ class BoardFilterForm(forms.Form):
                 Field(
                     "owner",
                     placeholder="Search by username...",
+                    x_bind="tagify",
                 ),
             )
 
