@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 {% load static cache %}
 {% block head %}
+    <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
     {% if board.preferences.background_type == 'i' %}
         <link rel="preload"
               href="{% if support_webp %}{{ board.preferences.background_image.get_webp.url }}{% else %}{{ board.preferences.background_image.image.url }}{% endif %}"

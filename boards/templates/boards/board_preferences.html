@@ -1,6 +1,5 @@
 {% load static %}
 {% load crispy_forms_tags %}
-<script defer src="{% static 'js/components/board_preferences.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% crispy form %}
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
@@ -12,3 +11,9 @@
     </button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
+<div id="modal-1-scripts" hidden="true" hx-swap-oob="true">
+    <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
+    <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/components/board_preferences.js' %}" nonce="{{ CSP_NONCE }}"></script>
+</div>
