@@ -49,11 +49,7 @@ class BoardFilterForm(forms.Form):
             "hx-target": "#board-list",
             "hx-swap": "innerHTML",
             "hx-indicator": ".htmx-indicator",
-            "x-data": """{ filterChanged() { $dispatch('filterChanged') },
-                            keyup: { '@keyup'() { this.filterChanged() }, }, 
-                            change: { '@change'() { this.filterChanged() }, }, 
-                            tagify: { '@add'() { this.filterChanged() }, '@change'() { this.filterChanged() }, '@remove'() { this.filterChanged() }, }, 
-                            }""",
+            "x-data": "boardFilter()",
         }
 
         self.helper.layout = Layout(
