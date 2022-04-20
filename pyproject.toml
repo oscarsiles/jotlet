@@ -2,10 +2,12 @@
 line-length = 118 # override black's default line-length
 
 [tool.djlint]
-profile="django"
-ignore="H006,H023"
+ignore = "H006,H023"
+format_attribute_template_tags = true
+max_line_length = 118
+profile = "django"
 
 [tool.isort]
 # make it compatible with black
-profile = "black" 
+profile = "black"
 line_length = 118
