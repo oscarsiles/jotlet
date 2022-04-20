@@ -19,19 +19,25 @@ afterInput.addEventListener("change", (e) => {
   htmx.trigger(htmx.find("#board-filter-form"), "filterChanged");
 });
 
-var ownerInput = document.querySelector("input[name=owner]");
-tagify = new Tagify(ownerInput, {
-  delimiters: ",| ",
-  originalInputValueFormat: (valuesArr) =>
-    valuesArr.map((item) => item.value).join(","),
-});
+var is_all_boards = JSON.parse(
+  document.getElementById("is_all_boards").textContent
+);
 
-tagify.on("add", (e) =>
-  htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-);
-tagify.on("change", (e) =>
-  htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-);
-tagify.on("remove", (e) =>
-  htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
-);
+if (is_all_boards) {
+  var ownerInput = document.querySelector("input[name=owner]");
+  tagify = new Tagify(ownerInput, {
+    delimiters: ",| ",
+    originalInputValueFormat: (valuesArr) =>
+      valuesArr.map((item) => item.value).join(","),
+  });
+
+  tagify.on("add", (e) =>
+    htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+  );
+  tagify.on("change", (e) =>
+    htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+  );
+  tagify.on("remove", (e) =>
+    htmx.trigger(htmx.find("#board-filter-form"), "filterChanged")
+  );
+}
