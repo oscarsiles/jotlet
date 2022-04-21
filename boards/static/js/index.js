@@ -1,3 +1,7 @@
+var is_all_boards = JSON.parse(
+  document.getElementById("is_all_boards").textContent
+);
+
 // Board Filter
 function boardFilter() {
   return {
@@ -28,4 +32,20 @@ function boardFilter() {
       },
     },
   };
+}
+
+// Tagify init
+if (is_all_boards) {
+  var tagify = null;
+  htmx.on("#board-list", "htmx:load", function (evt) {
+    if (tagify == null && evt.detail.elt.id == "board-filter-form") {
+      var ownerInput = document.querySelector("input[name=owner]");
+      tagify = new Tagify(ownerInput, {
+        delimiters: ",| ",
+        originalInputValueFormat: (valuesArr) =>
+          valuesArr.map((item) => item.value).join(","),
+      });
+      tagify = null;
+    }
+  });
 }

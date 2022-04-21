@@ -1,11 +1,4 @@
 {% load cache crispy_forms_tags static %}
-{{ is_all_boards|json_script:"is_all_boards" }}
-{% if is_all_boards %}
-    <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
-    <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-{% endif %}
-<script src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% crispy filter.form %}
 <ul class="list-group">
     {% for board in boards %}
