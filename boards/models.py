@@ -184,7 +184,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self).select_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic=self).prefetch_related("reactions").order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
