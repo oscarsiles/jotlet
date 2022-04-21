@@ -131,6 +131,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
+            "x-data": "boardPreferences()",
+            "x-init": f"""bg_type = '{self.initial["background_type"]}'; img_url = '{self.initial["background_image"]}';""",
         }
 
         self.helper.layout = Layout(
@@ -143,29 +145,37 @@ class BoardPreferencesForm(forms.ModelForm):
                             wrapper_class="form-control",
                             id="id_background_type",
                             css_class="",
+                            x_model="bg_type",
+                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
                     ),
                 ),
                 css_class="mb-3",
             ),
-            PrependedText(
-                "background_color",
-                "Background Color",
-                template="boards/components/forms/colorpicker.html",
+            Div(
+                PrependedText(
+                    "background_color",
+                    "Background Color",
+                    template="boards/components/forms/colorpicker.html",
+                ),
+                x_show="colorVisible",
             ),
-            PrependedText(
-                "background_image",
-                "Background Image",
-                template="boards/components/forms/imagepicker.html",
-            ),
-            PrependedText(
-                "background_opacity",
-                "Background Opacity",
-                placeholder="Background Image Opacity",
-                min=0.0,
-                max=1.0,
-                step=0.1,
+            Div(
+                PrependedText(
+                    "background_image",
+                    "Background Image",
+                    template="boards/components/forms/imagepicker.html",
+                ),
+                PrependedText(
+                    "background_opacity",
+                    "Background Opacity",
+                    placeholder="Background Image Opacity",
+                    min=0.0,
+                    max=1.0,
+                    step=0.1,
+                ),
+                x_show="imageVisible",
             ),
             PrependedText(
                 "enable_latex",
@@ -190,6 +200,7 @@ class BoardPreferencesForm(forms.ModelForm):
                             wrapper_class="form-control",
                             id="id_reaction_type",
                             css_class="",
+                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
                     ),
