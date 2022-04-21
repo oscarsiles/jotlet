@@ -1,5 +1,4 @@
-{% load crispy_forms_field %}
-{% load thumbnail %}
+{% load crispy_forms_field thumbnail %}
 {% if tag %}
     <{{ tag }}
 {% else %}
@@ -16,6 +15,8 @@
         <div>
             <div class="input-group">
                 <span class="input-group-text">{{ crispy_prepended_text }}</span>
+                {% thumbnail object.background_image.image "300x200" crop="center" format="WEBP" as im_webp %}
+                {% thumbnail object.background_image.image "300x200" crop="center" format="JPEG" as im_jpeg %}
                 {% if object.background_image == None %}
                     <button class="btn btn-outline-primary rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
                             type="button"
@@ -31,24 +32,23 @@
                 <picture id="img-picture-tag"
                          class="form-control p-0"
                          {% if object.background_image == None %}style="display: none;"{% endif %}>
-                    {% thumbnail object.background_image.image "300x200" crop="center" format="WEBP" as im %}
-                    <source id="src-webp" srcset="{{ im.url }}" type="image/webp"/>
-                {% endthumbnail %}
-                {% thumbnail object.background_image.image "300x200" crop="center" format="JPEG" as im %}
-                <source id="src-jpeg" srcset="{{ im.url }}" type="image/jpeg"/>
-                <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
-                     src="{{ im.url }}"
-                     alt="{{ object.background_image }}"
-                     hx-get="{% url 'boards:image-select' 'b' %}"
-                     hx-target="#modal-2-body-div"
-                     data-bs-toggle="modal"
-                     data-bs-target="#modal-2-div"
-                     id="img-{{ field.auto_id }}"/>
+                    <source id="src-webp" x-bind:srcset="$store.boardPreferences.img_srcset_webp" type="image/webp"/>
+                    <source id="src-jpeg" x-bind:srcset="$store.boardPreferences.img_srcset_jpeg" type="image/jpeg"/>
+                    <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
+                        x-bind:src="$store.boardPreferences.img_srcset_jpeg"
+                        alt="{{ object.background_image }}"
+                        hx-get="{% url 'boards:image-select' 'b' %}"
+                        hx-target="#modal-2-body-div"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-2-div"
+                        id="img-{{ field.auto_id }}"/>
+                </picture>
             {% endthumbnail %}
-        </picture>
+            {% endthumbnail %}
         <input type="text"
                name="{{ field.name }}"
-               value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}"
+               x-bind:value="$store.boardPreferences.img_uuid"
+               {% comment %} value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}" {% endcomment %}
                id="{{ field.auto_id }}"
                hidden="true"/>
         {% if field.errors %}

@@ -131,8 +131,11 @@ class BoardPreferencesForm(forms.ModelForm):
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
-            "x-data": "boardPreferences()",
-            "x-init": f"""bg_type = '{self.initial["background_type"]}'; img_url = '{self.initial["background_image"]}';""",
+            "x-data": "",
+            "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
+            $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
+            $store.boardPreferences.img_srcset_webp = '{self.instance.background_image.get_thumbnail_webp().url}';
+            $store.boardPreferences.img_srcset_jpeg = '{self.instance.background_image.get_thumbnail().url}';""",
         }
 
         self.helper.layout = Layout(
@@ -145,7 +148,7 @@ class BoardPreferencesForm(forms.ModelForm):
                             wrapper_class="form-control",
                             id="id_background_type",
                             css_class="",
-                            x_model="bg_type",
+                            x_model="$store.boardPreferences.bg_type",
                             x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
@@ -159,7 +162,7 @@ class BoardPreferencesForm(forms.ModelForm):
                     "Background Color",
                     template="boards/components/forms/colorpicker.html",
                 ),
-                x_show="colorVisible",
+                x_show="$store.boardPreferences.colorVisible",
             ),
             Div(
                 PrependedText(
@@ -175,7 +178,7 @@ class BoardPreferencesForm(forms.ModelForm):
                     max=1.0,
                     step=0.1,
                 ),
-                x_show="imageVisible",
+                x_show="$store.boardPreferences.imageVisible",
             ),
             PrependedText(
                 "enable_latex",

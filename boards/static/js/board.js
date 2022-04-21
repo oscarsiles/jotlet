@@ -81,15 +81,15 @@ if (typeof boardSocket === "undefined") {
   connect();
 }
 
-// Board Preferences Alpine Data
-function boardPreferences() {
-  return {
-    bg_type: "",
-    get colorVisible() {
-      return this.bg_type == "c" ? true : false;
-    },
-    get imageVisible() {
-      return this.bg_type == "i" ? true : false;
-    },
-  };
-}
+Alpine.store("boardPreferences", {
+  bg_type: "",
+  img_uuid: "",
+  img_srcset_webp: "",
+  img_srcset_jpeg: "",
+  get colorVisible() {
+    return this.bg_type == "c" ? true : false;
+  },
+  get imageVisible() {
+    return this.bg_type == "i" ? true : false;
+  },
+});

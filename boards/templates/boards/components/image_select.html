@@ -1,26 +1,30 @@
 {% load static %}
 {% load cache %}
 {% load thumbnail %}
-{% cache 3600 image-select type %}
+{% cache 1 image-select type %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
-     id="image-select">
+     id="image-select"
+     x-data>
     {% for image in images %}
-        {% cache 3600 image-select-image image.pk %}
+        {% cache 1 image-select-image image.pk %}
         <div class="col-sm">
             <div class="card">
                 <div class="card-img-top">
+                    {% thumbnail image.image "300x200" crop="center" format="WEBP" as im_webp %}
+                    {% thumbnail image.image "300x200" crop="center" format="WEBP" as im_jpeg %}
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
+                           x-model="$store.boardPreferences.img_uuid"
+                           @click="$store.boardPreferences.img_srcset_webp = '{{ im_webp.url }}'; $store.boardPreferences.img_srcset_jpeg = '{{ im_jpeg.url }}'"
+                           value="{{ image.uuid }}"
                            id="{{ image.uuid }}"/>
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
                         <picture>
-                            {% thumbnail image.image "300x200" crop="center" format="WEBP" as im %}
-                            <source srcset="{{ im.url }}" type="image/webp"/>
+                            <source srcset="{{ im_webp.url }}" type="image/webp"/>
+                            <source srcset="{{ im_jpeg.url }}" type="image/jpeg"/>
+                            <img class="w-100" src="{{ im_jpeg.url }}" alt="{{ image }}"/>
                         {% endthumbnail %}
-                        {% thumbnail image.image "300x200" crop="center" format="JPEG" as im %}
-                        <source srcset="{{ im.url }}" type="image/jpeg"/>
-                        <img class="w-100" src="{{ im.url }}" alt="{{ image }}"/>
                     {% endthumbnail %}
                 </picture>
             </label>
