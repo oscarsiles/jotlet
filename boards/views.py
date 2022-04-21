@@ -130,7 +130,7 @@ class BoardView(generic.DetailView):
 @method_decorator(cache_control(public=True), name="dispatch")
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
-    template_name = "boards/board_preferences.html"
+    template_name = "boards/components/board_preferences.html"
     form_class = BoardPreferencesForm
 
     def test_func(self):
