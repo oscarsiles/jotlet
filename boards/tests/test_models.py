@@ -238,7 +238,7 @@ class ImageModelTest(TestCase):
         for type, text in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                thumbnail = img.get_thumbnail()
+                thumbnail = img.get_thumbnail
                 self.assertIsNotNone(thumbnail)
                 self.assertEqual(thumbnail.width, 300)
                 self.assertEqual(thumbnail.height, 200)
@@ -248,4 +248,4 @@ class ImageModelTest(TestCase):
         for type, text in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertEqual(f'<img src="{img.get_thumbnail().url}" />', img.image_tag())
+                self.assertEqual(f'<img src="{img.get_thumbnail.url}" />', img.image_tag())

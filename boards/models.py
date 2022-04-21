@@ -325,7 +325,7 @@ class Image(models.Model):
     def save(self, *args, **kwargs):
         if not self.created_at:
             resize_image(self.image)
-        return super(Image, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     @cached_property
     def get_board_usage_count(self):
@@ -337,17 +337,21 @@ class Image(models.Model):
     def get_image_dimensions(self):
         return f"{self.image.width}x{self.image.height}"
 
+    @cached_property
     def get_webp(self):
         return get_thumbnail(self.image, self.get_image_dimensions, quality=70, format="WEBP")
 
+    @cached_property
     def get_thumbnail(self):
         return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="JPEG")
 
+    @cached_property
     def get_thumbnail_webp(self):
         return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="WEBP")
 
+    @cached_property
     def image_tag(self):
-        return mark_safe(f'<img src="{escape(self.get_thumbnail().url)}" />')
+        return mark_safe(f'<img src="{escape(self.get_thumbnail.url)}" />')
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True

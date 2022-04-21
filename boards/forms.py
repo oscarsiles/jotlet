@@ -134,8 +134,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "x-data": "",
             "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
-            $store.boardPreferences.img_srcset_webp = '{self.instance.background_image.get_thumbnail_webp().url}';
-            $store.boardPreferences.img_srcset_jpeg = '{self.instance.background_image.get_thumbnail().url}';""",
+            $store.boardPreferences.img_srcset_webp = '{self.instance.background_image.get_thumbnail_webp.url}';
+            $store.boardPreferences.img_srcset_jpeg = '{self.instance.background_image.get_thumbnail.url}';""",
         }
 
         self.helper.layout = Layout(

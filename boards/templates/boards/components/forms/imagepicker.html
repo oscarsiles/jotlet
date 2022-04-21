@@ -15,8 +15,6 @@
         <div>
             <div class="input-group">
                 <span class="input-group-text">{{ crispy_prepended_text }}</span>
-                {% thumbnail object.background_image.image "300x200" crop="center" format="WEBP" as im_webp %}
-                {% thumbnail object.background_image.image "300x200" crop="center" format="JPEG" as im_jpeg %}
                 {% if object.background_image == None %}
                     <button class="btn btn-outline-primary rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
                             type="button"
@@ -43,8 +41,6 @@
                         data-bs-target="#modal-2-div"
                         id="img-{{ field.auto_id }}"/>
                 </picture>
-            {% endthumbnail %}
-            {% endthumbnail %}
         <input type="text"
                name="{{ field.name }}"
                x-bind:value="$store.boardPreferences.img_uuid"
