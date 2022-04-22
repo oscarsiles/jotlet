@@ -1,7 +1,7 @@
 {% load cacheops static post_extras %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     {% get_has_reacted post request as has_reacted %}
-    {% cached_as post.reactions.all 1 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key has_reacted %}
+    {% cached_as post.reactions.all 3600 post_footer_cache post.pk post.topic.board.preferences.reaction_type request.session.session_key has_reacted %}
     <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
          id="post-{{ post.pk }}-footer">
         <div class="post-card-footer-htmx-div"
@@ -9,8 +9,7 @@
              hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
              hx-trigger="reactionUpdated"
              hx-target="closest .card-footer"
-             hx-ext="alpine-morph"
-             hx-swap="morph">
+             hx-swap="outerHTML">
             <form id="post-{{ post.pk }}-reaction-form"
                   hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
                   hx-swap="none">

@@ -17,8 +17,6 @@
     {% endif %}
     <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/3rdparty/htmx.alpinemorph-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/3rdparty/alpinejs.morph-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}
     Board: {{ board }}
