@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title hx-disable>
+        <title hx-disable x-ignore>
             {% block title %}
                 Jotlet
             {% endblock title %}
@@ -38,7 +38,7 @@
             <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
                 <div class="container-fluid">
                     <a class="navbar-brand mb-0 h1" href="{% url 'boards:index' %}">
-                        <div class="d-flex flex-column text-break" hx-disable>
+                        <div class="d-flex flex-column text-break" hx-disable x-ignore>
                             <div class="d-flex align-items-center">
                                 {% block navbar_title %}
                                     Jotlet

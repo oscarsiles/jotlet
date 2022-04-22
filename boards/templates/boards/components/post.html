@@ -50,7 +50,7 @@
                     </div>
                 {% endif %}
             </div>
-            <p class="card-text text-break" id="post-{{ post.pk }}-text" hx-disable>
+            <p class="card-text text-break" id="post-{{ post.pk }}-text" hx-disable x-ignore>
                 {{ post.content }}
             </p>
         </div>

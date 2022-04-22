@@ -10,7 +10,8 @@
         <div class="card-body">
             <h5 class="card-title text-break"
                 id="topic-{{ topic.pk }}-subject"
-                hx-disable>{{ topic }}</h5>
+                hx-disable
+                x-ignore>{{ topic }}</h5>
             {% if request.user == board.owner or request.user.is_staff %}
                 <button id="topic-{{ topic.pk }}-update-url"
                         hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
