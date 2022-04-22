@@ -49,16 +49,30 @@ class BoardFilterForm(forms.Form):
             "hx-target": "#board-list",
             "hx-swap": "innerHTML",
             "hx-indicator": ".htmx-indicator",
+            "x-data": "boardFilter()",
         }
 
         self.helper.layout = Layout(
             Field(
                 "q",
                 placeholder="Search by title/description...",
+                x_bind="keyup",
             ),
             Div(
-                PrependedText("after", "After", wrapper_class="col-sm pe-sm-0", onkeydown="return false"),
-                PrependedText("before", "Before", wrapper_class="col-sm ps-sm-0", onkeydown="return false"),
+                PrependedText(
+                    "after",
+                    "After",
+                    wrapper_class="col-sm pe-sm-0",
+                    onkeydown="return false",
+                    x_bind="change",
+                ),
+                PrependedText(
+                    "before",
+                    "Before",
+                    wrapper_class="col-sm ps-sm-0",
+                    onkeydown="return false",
+                    x_bind="change",
+                ),
                 css_class="row gap-sm-3",
             ),
         )
@@ -68,6 +82,7 @@ class BoardFilterForm(forms.Form):
                 Field(
                     "owner",
                     placeholder="Search by username...",
+                    x_bind="tagify",
                 ),
             )
 
@@ -112,10 +127,17 @@ class BoardPreferencesForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_id = "board-preferences-form"
+        webp_url = self.instance.background_image.get_thumbnail_webp.url if self.instance.background_image else ""
+        jpeg_url = self.instance.background_image.get_thumbnail.url if self.instance.background_image else ""
         self.helper.attrs = {
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
+            "x-data": "",
+            "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
+            $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
+            $store.boardPreferences.img_srcset_webp = '{webp_url}';
+            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';""",
         }
 
         self.helper.layout = Layout(
@@ -128,29 +150,37 @@ class BoardPreferencesForm(forms.ModelForm):
                             wrapper_class="form-control",
                             id="id_background_type",
                             css_class="",
+                            x_model="$store.boardPreferences.bg_type",
+                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
                     ),
                 ),
                 css_class="mb-3",
             ),
-            PrependedText(
-                "background_color",
-                "Background Color",
-                template="boards/components/forms/colorpicker.html",
+            Div(
+                PrependedText(
+                    "background_color",
+                    "Background Color",
+                    template="boards/components/forms/colorpicker.html",
+                ),
+                x_show="$store.boardPreferences.colorVisible",
             ),
-            PrependedText(
-                "background_image",
-                "Background Image",
-                template="boards/components/forms/imagepicker.html",
-            ),
-            PrependedText(
-                "background_opacity",
-                "Background Opacity",
-                placeholder="Background Image Opacity",
-                min=0.0,
-                max=1.0,
-                step=0.1,
+            Div(
+                PrependedText(
+                    "background_image",
+                    "Background Image",
+                    template="boards/components/forms/imagepicker.html",
+                ),
+                PrependedText(
+                    "background_opacity",
+                    "Background Opacity",
+                    placeholder="Background Image Opacity",
+                    min=0.0,
+                    max=1.0,
+                    step=0.1,
+                ),
+                x_show="$store.boardPreferences.imageVisible",
             ),
             PrependedText(
                 "enable_latex",
@@ -175,6 +205,7 @@ class BoardPreferencesForm(forms.ModelForm):
                             wrapper_class="form-control",
                             id="id_reaction_type",
                             css_class="",
+                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
                     ),

@@ -164,6 +164,7 @@ def post_delete_send_message(sender, instance, **kwargs):
 def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
     try:
         invalidate_obj(instance)
+        invalidate_obj(instance.post)
 
     except:
         raise Exception(f"Could not invalidate cache: post-{instance.post.pk}-footer")

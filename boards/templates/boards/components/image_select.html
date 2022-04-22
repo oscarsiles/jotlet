@@ -1,10 +1,8 @@
-{% load static %}
-{% load cache %}
-{% load thumbnail %}
-<script defer src="{% static 'js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
+{% load cache static %}
 {% cache 3600 image-select type %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
-     id="image-select">
+     id="image-select"
+     x-data>
     {% for image in images %}
         {% cache 3600 image-select-image image.pk %}
         <div class="col-sm">
@@ -13,23 +11,22 @@
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
+                           x-model="$store.boardPreferences.img_uuid"
+                           @click="$store.boardPreferences.img_srcset_webp = '{{ image.get_thumbnail_webp.url }}'; $store.boardPreferences.img_srcset_jpeg = '{{ image.get_thumbnail.url }}'"
+                           value="{{ image.uuid }}"
                            id="{{ image.uuid }}"/>
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
                         <picture>
-                            {% thumbnail image.image "300x200" crop="center" format="WEBP" as im %}
-                            <source srcset="{{ im.url }}" type="image/webp"/>
-                        {% endthumbnail %}
-                        {% thumbnail image.image "300x200" crop="center" format="JPEG" as im %}
-                        <source srcset="{{ im.url }}" type="image/jpeg"/>
-                        <img class="w-100" src="{{ im.url }}" alt="{{ image }}"/>
-                    {% endthumbnail %}
-                </picture>
-            </label>
+                            <source srcset="{{ image.get_thumbnail_webp.url }}" type="image/webp"/>
+                            <source srcset="{{ image.get_thumbnail.url }}" type="image/jpeg"/>
+                            <img class="w-100" src="{{ image.get_thumbnail.url }}" alt="{{ image }}"/>
+                        </picture>
+                    </label>
+                </div>
+                <div class="card-footer">{{ image }}</div>
+            </div>
         </div>
-        <div class="card-footer">{{ image }}</div>
-    </div>
-</div>
-{% endcache %}
+    {% endcache %}
 {% endfor %}
 </div>
 <style nonce="{{ CSP_NONCE }}">
@@ -62,3 +59,6 @@
     Select
 </h5>
 {% endcache %}
+<div id="modal-2-scripts" hidden="true" hx-swap-oob="true">
+    <script defer src="{% static 'js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
+</div>

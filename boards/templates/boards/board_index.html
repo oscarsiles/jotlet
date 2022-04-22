@@ -1,11 +1,7 @@
 {% extends "base_generic.html" %}
-{% load static %}
+{% load static cache %}
 {% block head %}
-    {% if board.preferences.background_type == 'i' %}
-        <link rel="preload"
-              href="{% if support_webp %}{{ board.preferences.background_image.get_webp.url }}{% else %}{{ board.preferences.background_image.image.url }}{% endif %}"
-              as="image">
-    {% endif %}
+    <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}
     Board: {{ board }}
@@ -21,53 +17,60 @@
 {% endblock navbar_subtitle %}
 {% block navbar-items %}
     {% if is_moderator %}
+        {% cache 86400 navbar-board-index board.pk request.user.username %}
         <li class="nav-item">
-            <a class="nav-link"
-               role="button"
-               hx-get="{% url 'boards:board-qr' board.slug %}"
-               hx-target="#modal-1-body-div"
-               data-bs-toggle="modal"
-               data-bs-target="#modal-1-div">
-                <i class="bi bi-qr-code"></i>
-            </a>
+            <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                <a class="nav-link"
+                   role="button"
+                   hx-get="{% url 'boards:board-qr' board.slug %}"
+                   hx-target="#modal-1-body-div"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal-1-div">
+                    <i class="bi bi-qr-code"></i>
+                </a>
+            </span>
         </li>
         {% if request.user == board.owner or user.is_staff %}
             <li class="nav-item">
-                <a class="nav-link"
-                   role="button"
-                   hx-get="{% url 'boards:board-preferences' board.slug %}"
-                   hx-target="#modal-1-body-div"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal-1-div">
-                    <i class="bi bi-gear"></i>
-                </a>
+                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                    <a class="nav-link"
+                       role="button"
+                       hx-get="{% url 'boards:board-preferences' board.slug %}"
+                       hx-target="#modal-1-body-div"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal-1-div">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                </span>
             </li>
             <li class="nav-item">
-                <a class="nav-link"
-                   role="button"
-                   hx-get="{% url 'boards:board-update' board.slug %}"
-                   hx-target="#modal-1-body-div"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </a>
+                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                    <a class="nav-link"
+                       role="button"
+                       hx-get="{% url 'boards:board-update' board.slug %}"
+                       hx-target="#modal-1-body-div"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal-1-div">
+                        <i class="bi bi-pen"></i>
+                    </a>
+                </span>
             </li>
             <li class="nav-item">
-                <a class="nav-link"
-                   role="button"
-                   hx-get="{% url 'boards:board-delete' board.slug %}"
-                   hx-target="#modal-1-body-div"
-                   data-bs-toggle="modal"
-                   data-bs-target="#modal-1-div">
-                    <i class="bi bi-trash"></i>
-                </a>
+                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                    <a class="nav-link"
+                       role="button"
+                       hx-get="{% url 'boards:board-delete' board.slug %}"
+                       hx-target="#modal-1-body-div"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal-1-div">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </span>
             </li>
         {% endif %}
-    {% endif %}
+    {% endcache %}
+{% endif %}
 {% endblock navbar-items %}
 {% block content %}
     {% include 'boards/components/board.html' %}
 {% endblock content %}
-{% block script %}
-    <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
-{% endblock script %}

@@ -1,17 +1,23 @@
 {% load cache %}
 {% cache 86400 toast %}
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
+<div class="position-fixed bottom-0 end-0 p-3"
+     x-data="toastNotification()">
     <div id="toast"
-         class="toast align-items-center border-0 text-white bg-primary"
+         class="align-items-center rounded border-0"
+         x-show="open"
+         x-bind:class="bg_color"
+         x-transition
+         @show-message.camel.window="openToast($event)"
          role="alert"
          aria-live="assertive"
          aria-atomic="true">
         <div class="d-flex">
-            <div id="toast-body" class="toast-body"></div>
+            <div id="toast-body" class="toast-body" x-text="message"></div>
             <button id="toast-close"
                     type="button"
-                    class="me-2 m-auto btn-close btn-close-white"
-                    data-bs-dismiss="toast"
+                    class="btn-close shadow-none me-2 m-auto"
+                    @click="open = false"
+                    x-bind:class="btn_color"
                     aria-label="Close">
             </button>
         </div>

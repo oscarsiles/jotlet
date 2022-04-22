@@ -1,7 +1,13 @@
 {% extends "base_generic.html" %}
-{% load crispy_forms_tags %}
-{% load static %}
-{% load cache %}
+{% load crispy_forms_tags static cache %}
+{% block head %}
+    {% if is_all_boards %}
+        <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
+        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    {% endif %}
+    <script defer src="{% static 'js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
+{% endblock head %}
 {% block content %}
     <div class="d-sm-flex flex-grow-1 px-2">
         <div class="col-md-4">
@@ -26,6 +32,7 @@
                         </div>
                     </div>
                 </div>
+                {{ is_all_boards|json_script:"is_all_boards" }}
                 <div id="board-list"
                      hx-get="{% url 'boards:board-list' %}"
                      hx-trigger="load"
@@ -40,6 +47,3 @@
     </div>
 </div>
 {% endblock content %}
-{% block script %}
-    <script defer src="{% static 'js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
-{% endblock script %}

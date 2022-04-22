@@ -1,19 +1,18 @@
-{% load static %}
 <div class="d-grid gap-2">
     {% for message in messages %}
         <div id="alert"
              class="alert {{ message.tags }} alert-dismissible my-0"
-             role="alert">
+             role="alert"
+             x-data="{ show: true }"
+             x-show="show"
+             x-init="setTimeout(() => show = false, 5000)"
+             x-transition>
+            {# revisit if changing to tailwind css #}
             <button type="button"
                     class="btn-close"
                     data-bs-dismiss="alert"
                     aria-label="Close"></button>
             {{ message }}
         </div>
-        {% if forloop.last %}
-            <script defer
-                    src="{% static 'js/components/messages.js' %}"
-                    nonce="{{ CSP_NONCE }}"></script>
-        {% endif %}
     {% endfor %}
 </div>

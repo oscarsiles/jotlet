@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>
+        <title hx-disable x-ignore>
             {% block title %}
                 Jotlet
             {% endblock title %}
@@ -16,12 +16,11 @@
         <link rel="preload"
               href="{% static 'css/3rdparty/fonts/bootstrap-icons.woff2' %}?524846017b983fc8ded9325d94ed40f3"
               as="font"
-              crossorigin="anonymous">
+              crossorigin="anonymous"/>
         <link href="{% static 'css/3rdparty/bootstrap-5.1.3.min.css' %}"
               rel="stylesheet"/>
         <link href="{% static 'css/3rdparty/bootstrap-icons-1.8.1.min.css' %}"
               rel="stylesheet"/>
-        <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
         <link href="{% static 'css/styles.css' %}" rel="stylesheet"/>
         <link href="{% static 'images/favicon.svg' %}"
               rel="icon"
@@ -29,20 +28,17 @@
               type="image/svg+xml"/>
         <script defer src="{% static 'js/3rdparty/bootstrap-5.1.3.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/htmx-1.7.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/jquery-3.6.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
+        <script defer src="{% static 'js/3rdparty/alpinejs-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         <div class="container-fluid vh-100 d-flex flex-column p-0">
             <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
                 <div class="container-fluid">
                     <a class="navbar-brand mb-0 h1" href="{% url 'boards:index' %}">
-                        <div class="d-flex flex-column text-break">
+                        <div class="d-flex flex-column text-break" hx-disable x-data x-ignore>
                             <div class="d-flex align-items-center">
                                 {% block navbar_title %}
                                     Jotlet
@@ -69,14 +65,16 @@
                                 {% if perms.boards.add_board %}
                                     {% cache 86400 navbar-button-addBoard perms.boards.add_board %}
                                     <li class="nav-item">
-                                        <a class="nav-link"
-                                           role="button"
-                                           hx-get="{% url 'boards:board-create' %}"
-                                           hx-target="#modal-1-body-div"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#modal-1-div">
-                                            Create board
-                                        </a>
+                                        <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                                            <a class="nav-link"
+                                               role="button"
+                                               hx-get="{% url 'boards:board-create' %}"
+                                               hx-target="#modal-1-body-div"
+                                               data-bs-toggle="modal"
+                                               data-bs-target="#modal-1-div">
+                                                Create board
+                                            </a>
+                                        </span>
                                     </li>
                                 {% endcache %}
                             {% endif %}
@@ -99,14 +97,16 @@
                                             </li>
                                         {% endif %}
                                         <li>
-                                            <a class="dropdown-item"
-                                               role="button"
-                                               hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
-                                               hx-target="#modal-1-body-div"
-                                               data-bs-toggle="modal"
-                                               data-bs-target="#modal-1-div">
-                                                Change Password
-                                            </a>
+                                            <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                                                <a class="dropdown-item"
+                                                   role="button"
+                                                   hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
+                                                   hx-target="#modal-1-body-div"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#modal-1-div">
+                                                    Change Password
+                                                </a>
+                                            </span>
                                         </li>
                                         <li>
                                             <a class="dropdown-item"
@@ -122,14 +122,16 @@
                         {% else %}
                             {% cache 86400 navbar-login-menu request.path %}
                             <li class="nav-item">
-                                <a class="nav-link"
-                                   role="button"
-                                   hx-get="{% url 'account_login' %}?next={{ request.path }}"
-                                   hx-target="#modal-1-body-div"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#modal-1-div">
-                                    Login
-                                </a>
+                                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                                    <a class="nav-link"
+                                       role="button"
+                                       hx-get="{% url 'account_login' %}?next={{ request.path }}"
+                                       hx-target="#modal-1-body-div"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal-1-div">
+                                        Login
+                                    </a>
+                                </span>
                             </li>
                         {% endcache %}
                     {% endif %}

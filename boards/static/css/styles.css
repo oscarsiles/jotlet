@@ -9,6 +9,20 @@
   opacity: 1;
 }
 
+.post-card-footer button {
+  height: 24px;
+  pointer-events: auto !important;
+}
+
 .tagify__input {
   min-width: 250px !important;
+}
+
+@media (min-width: 768px) {
+  .navbar-collapse.collapsing {
+    -moz-transition: none;
+    -webkit-transition: none;
+    overflow: visible;
+    transition: none;
+  }
 }

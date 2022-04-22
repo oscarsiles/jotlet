@@ -1,6 +1,5 @@
-{% load cache crispy_forms_tags  static %}
+{% load cache crispy_forms_tags static %}
 {% crispy filter.form %}
-<script defer src="{% static 'js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
 <ul class="list-group">
     {% for board in boards %}
         <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
@@ -47,7 +46,10 @@
         <li class="page-item">
             <a class="page-link"
                href=""
-               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.previous_page_number }}{% if querystring %}&amp;{{ querystring }}{% endif %}">&laquo;</a>
+               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.previous_page_number }}
+               {% if querystring %}
+                   &amp;{{ querystring }}
+               {% endif %}">&laquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">
@@ -68,7 +70,10 @@
                 <li class="page-item">
                     <a class="page-link"
                        href=""
-                       hx-get="{% url 'boards:board-list' %}?page={{ i }}{% if querystring %}&amp;{{ querystring }}{% endif %}">{{ i }}</a>
+                       hx-get="{% url 'boards:board-list' %}?page={{ i }}
+                       {% if querystring %}
+                           &amp;{{ querystring }}
+                       {% endif %}">{{ i }}</a>
                 </li>
             {% endif %}
         {% endif %}
@@ -78,7 +83,10 @@
             <a class="page-link"
                class="page-link"
                href=""
-               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.next_page_number }}{% if querystring %}&amp;{{ querystring }}{% endif %}">&raquo;</a>
+               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.next_page_number }}
+               {% if querystring %}
+                   &amp;{{ querystring }}
+               {% endif %}">&raquo;</a>
         </li>
     {% else %}
         <li class="disabled page-item">

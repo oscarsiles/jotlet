@@ -8,7 +8,11 @@
     {% cached_as topic 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
-            <h5 class="card-title text-break" id="topic-{{ topic.pk }}-subject">{{ topic }}</h5>
+            <h5 class="card-title text-break"
+                id="topic-{{ topic.pk }}-subject"
+                hx-disable
+                x-data
+                x-ignore>{{ topic }}</h5>
             {% if request.user == board.owner or request.user.is_staff %}
                 <button id="topic-{{ topic.pk }}-update-url"
                         hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
@@ -53,5 +57,6 @@
      hx-target="this"
      hx-swap="beforebegin"
      hidden
-     true></div>
+     true>
+</div>
 </div>
