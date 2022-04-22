@@ -98,16 +98,15 @@ document.addEventListener("alpine:init", () => {
 
 function starRating() {
   return {
-    isOwner: false,
     rating: 0,
     hoverRating: 0,
     isHover: false,
     ratings: [1, 2, 3, 4, 5],
     rate(score) {
-      if (!this.isOwner) {
-        if (this.rating == score) {
-          this.rating = 0;
-        } else this.rating = score;
+      if (this.rating == score) {
+        this.rating = 0;
+      } else {
+        this.rating = score;
       }
     },
     starClass(score) {
