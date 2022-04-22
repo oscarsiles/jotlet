@@ -10,15 +10,13 @@
              hx-trigger="reactionUpdated"
              hx-target="closest .card-footer"
              hx-swap="outerHTML">
-            <form hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
-                  hx-swap="none"
-                  id="post-{{ post.pk }}-reaction-form">
+            <form id="post-{{ post.pk }}-reaction-form"
+                  hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
+                  hx-swap="none">
                 {% csrf_token %}
                 <div class="d-flex align-items-center gap-2">
                     {% if post.topic.board.preferences.reaction_type == 'l' %}
-                        <button class="btn btn-link text-muted shadow-none p-0"
-                                type="submit"
-                                style="height: 24px;">
+                        <button class="btn btn-link text-muted shadow-none p-0" type="submit">
                             {% if has_reacted.0 %}
                                 <i class="bi bi-heart-fill"></i>
                             {% else %}
@@ -29,8 +27,7 @@
                         <button class="btn btn-link text-muted shadow-none p-0"
                                 type="submit"
                                 name="score"
-                                value="1"
-                                style="height: 24px;">
+                                value="1">
                             {% if has_reacted.0 and has_reacted.2 == 1 %}
                                 <i class="bi bi-hand-thumbs-up-fill"></i>
                             {% else %}
@@ -41,8 +38,7 @@
                         <button class="btn btn-link text-muted shadow-none p-0"
                                 type="submit"
                                 name="score"
-                                value="-1"
-                                style="height: 24px;">
+                                value="-1">
                             {% if has_reacted.0 and has_reacted.2 == -1 %}
                                 <i class="bi bi-hand-thumbs-down-fill"></i>
                             {% else %}
@@ -51,25 +47,42 @@
                         </button>
                         {{ post.get_reaction_score.1 }}
                     {% elif post.topic.board.preferences.reaction_type == 's' %}
-                        <div id="stars-{{ post.pk }}-div"
-                             class="d-flex align-items-center raty-div"
-                             style="height: 24px;">
-                            {{ post.pk|json_script:"post_pk" }}
+                        <div class="d-flex align-items-center stars-div"
+                             id="stars-{{ post.pk }}-div"
+                             x-data="starRating()"
+                             x-init="isOwner = $el.parentElement.querySelector('#is_post_owner').textContent == 'true'; rating = $el.parentElement.querySelector('#reacted_score').textContent">
+                            <template x-for="star in ratings">
+                                <button class="btn btn-link shadow-none p-0"
+                                        type="submit"
+                                        name="score"
+                                        :class="isHover ? 'text-black' : 'text-black-50'"
+                                        :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
+                                        :value="star"
+                                        :disabled="isOwner"
+                                        @click="rate(star)"
+                                        @mouseover="hoverRating = star; isHover = true;"
+                                        @mouseleave="hoverRating = 0; isHover = false;">
+                                    <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
+                                </button>
+                            </template>
                         </div>
-                        <button type="submit" name="stars" id="stars-{{ post.pk }}-submit" hidden></button>
                     {% endif %}
                     {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
                         {{ post.get_reaction_score }}
                     {% endif %}
+                    {% if post.user == request.user or post.session_key == request.session.session_key %}
+                        {{ True|json_script:"is_post_owner" }}
+                    {% else %}
+                        {{ False|json_script:"is_post_owner" }}
+                    {% endif %}
+                    {{ has_reacted.0|json_script:"has_reacted" }}
+                    {% if has_reacted.0 %}
+                        {{ has_reacted.2|json_script:"reacted_score" }}
+                    {% else %}
+                        {{ 0|json_script:"reacted_score" }}
+                    {% endif %}
                 </div>
             </form>
-            {% if post.user == request.user or post.session_key == request.session.session_key %}
-                {{ True|json_script:"is_post_owner" }}
-            {% else %}
-                {{ False|json_script:"is_post_owner" }}
-                {{ has_reacted.0|json_script:"has_reacted" }}
-                {% if has_reacted.0 %}{{ has_reacted.2|json_script:"reacted_score" }}{% endif %}
-            {% endif %}
         </div>
         {% if is_moderator and post.get_reaction_count > 0 %}
             <div class="d-flex align-items-center">
@@ -78,8 +91,7 @@
                         hx-swap="innerHTML"
                         data-bs-toggle="modal"
                         data-bs-target="#modal-1-div"
-                        class="btn btn-link text-black shadow-none p-0"
-                        style="height: 24px;">
+                        class="btn btn-link text-black shadow-none p-0">
                     <i class="bi bi-x-square" title="Delete post reactions"></i>
                 </button>
             </div>
