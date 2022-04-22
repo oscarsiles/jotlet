@@ -52,7 +52,7 @@
                              x-data="starRating()"
                              x-init="isOwner = $el.parentElement.querySelector('#is_post_owner').textContent == 'true'; rating = $el.parentElement.querySelector('#reacted_score').textContent">
                             <template x-for="star in ratings">
-                                <button class="btn btn-link shadow-none p-0"
+                                <button class="d-flex align-items-center btn btn-link shadow-none p-0"
                                         type="submit"
                                         name="score"
                                         :class="isHover ? 'text-black' : 'text-black-50'"
@@ -65,11 +65,14 @@
                                     <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
                                 </button>
                             </template>
+                            <i class="bi bi-star-fill" hidden></i>
                         </div>
                     {% endif %}
-                    {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
-                        {{ post.get_reaction_score }}
-                    {% endif %}
+                    <div>
+                        {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
+                            {{ post.get_reaction_score }}
+                        {% endif %}
+                    </div>
                     {% if post.user == request.user or post.session_key == request.session.session_key %}
                         {{ True|json_script:"is_post_owner" }}
                     {% else %}
