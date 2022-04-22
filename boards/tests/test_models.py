@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
+from django.utils.html import escape
 
 from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 
@@ -248,4 +249,4 @@ class ImageModelTest(TestCase):
         for type, text in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertEqual(f'<img src="{img.get_thumbnail.url}" />', img.image_tag())
+                self.assertEqual(f'<img src="{escape(img.get_thumbnail.url)}" />', img.image_tag)
