@@ -1,7 +1,22 @@
 {% extends "base_generic.html" %}
 {% load static cache %}
 {% block head %}
+    {% if board.preferences.enable_latex %}
+        <link rel="preload"
+              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff"
+              as="font"
+              crossorigin="anonymous"/>
+        <link rel="preload"
+              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff"
+              as="font"
+              crossorigin="anonymous"/>
+        <link rel="preload"
+              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff"
+              as="font"
+              crossorigin="anonymous"/>
+    {% endif %}
     <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}
     Board: {{ board }}

@@ -51,28 +51,9 @@
     {{ board.slug|json_script:"board_slug" }}
     {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
     {% if board.preferences.enable_latex %}
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff"
-              as="font"
-              integrity="sha384-o1selG1mtGbrFYmRwR7ixEo/2Jalq/jeTjvkmLFhELagOoEBP89cnfl/e8WDzn+o"
-              crossorigin="anonymous"/>
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff"
-              as="font"
-              integrity="sha384-p3AOOFqjfipWVUZxGZ3OsK9ftW9XWNRY7LtgfnXg5MsMvWE1j8E5KD5Vcef7rMTs"
-              crossorigin="anonymous"/>
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff"
-              as="font"
-              integrity="sha384-vd/tFmOLPFI/PejEUimgXyFL50k/NYkNL/ReA4THPRFfD5jCxQvEnn3coQhiYn6o"
-              crossorigin="anonymous"/>
         <script defer src="{% static 'js/components/board_mathjax.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6" nonce="{{ CSP_NONCE }}"></script>
         <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js" integrity="sha384-+BSz3oj3ILMYvOBr16U9i0H4RZRmGyQQ+1q9eqr8T3skmAFrJk8GmgwgqlCZdNSo" crossorigin="anonymous" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
-    {% if board.preferences.reaction_type == 's' %}
-        <script src="{% static 'js/components/board_starrating.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    {% endif %}
-    <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 </div>
 </div>

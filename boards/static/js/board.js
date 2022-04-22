@@ -81,15 +81,43 @@ if (typeof boardSocket === "undefined") {
   connect();
 }
 
-Alpine.store("boardPreferences", {
-  bg_type: "",
-  img_uuid: "",
-  img_srcset_webp: "",
-  img_srcset_jpeg: "",
-  get colorVisible() {
-    return this.bg_type == "c" ? true : false;
-  },
-  get imageVisible() {
-    return this.bg_type == "i" ? true : false;
-  },
+document.addEventListener("alpine:init", () => {
+  Alpine.store("boardPreferences", {
+    bg_type: "",
+    img_uuid: "",
+    img_srcset_webp: "",
+    img_srcset_jpeg: "",
+    get colorVisible() {
+      return this.bg_type == "c" ? true : false;
+    },
+    get imageVisible() {
+      return this.bg_type == "i" ? true : false;
+    },
+  });
 });
+
+function starRating() {
+  return {
+    isOwner: false,
+    rating: 0,
+    hoverRating: 0,
+    isHover: false,
+    ratings: [1, 2, 3, 4, 5],
+    rate(score) {
+      if (!this.isOwner) {
+        if (this.rating == score) {
+          this.rating = 0;
+        } else this.rating = score;
+      }
+    },
+    starClass(score) {
+      if (this.hoverRating >= score && this.hoverRating != 0) {
+        return "bi-star-fill";
+      } else if (this.rating >= score && this.hoverRating == 0) {
+        return "bi-star-fill";
+      } else {
+        return "bi-star";
+      }
+    },
+  };
+}
