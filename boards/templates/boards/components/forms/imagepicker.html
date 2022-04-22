@@ -23,13 +23,14 @@
                             hx-target="#modal-2-body-div"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-2-div"
+                            x-show="$store.boardPreferences.img_uuid == 'None'"
                             id="button-{{ field.auto_id }}">
                         Select image...
                     </button>
                 {% endif %}
                 <picture id="img-picture-tag"
                          class="form-control p-0"
-                         {% if object.background_image == None %}style="display: none;"{% endif %}>
+                         x-show="$store.boardPreferences.img_uuid != 'None'">
                     <source id="src-webp" x-bind:srcset="$store.boardPreferences.img_srcset_webp" type="image/webp"/>
                     <source id="src-jpeg" x-bind:srcset="$store.boardPreferences.img_srcset_jpeg" type="image/jpeg"/>
                     <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"

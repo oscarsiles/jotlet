@@ -127,6 +127,8 @@ class BoardPreferencesForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_id = "board-preferences-form"
+        webp_url = self.instance.background_image.get_thumbnail_webp.url if self.instance.background_image else ""
+        jpeg_url = self.instance.background_image.get_thumbnail.url if self.instance.background_image else ""
         self.helper.attrs = {
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
             "hx-target": "#modal-1-body-div",
@@ -134,8 +136,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "x-data": "",
             "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
-            $store.boardPreferences.img_srcset_webp = '{self.instance.background_image.get_thumbnail_webp.url}';
-            $store.boardPreferences.img_srcset_jpeg = '{self.instance.background_image.get_thumbnail.url}';""",
+            $store.boardPreferences.img_srcset_webp = '{webp_url}';
+            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';""",
         }
 
         self.helper.layout = Layout(
