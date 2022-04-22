@@ -50,9 +50,11 @@
                     </div>
                 {% endif %}
             </div>
-            <p class="card-text text-break" id="post-{{ post.pk }}-text" hx-disable x-ignore>
-                {{ post.content }}
-            </p>
+            <div hx-disable x-data x-ignore>
+                <p class="card-text text-break" id="post-{{ post.pk }}-text">
+                    {{ post.content }}
+                </p>
+            </div>
         </div>
     {% endcached_as %}
     {% include 'boards/components/post_footer.html' %}
