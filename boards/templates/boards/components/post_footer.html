@@ -1,6 +1,8 @@
 {% load cacheops static post_extras %}
-{% get_has_reacted post request as has_reacted %}
-{% if not is_owner %}
+{% if has_reacted == '' %}
+    {% get_has_reacted post request as has_reacted %}
+{% endif %}
+{% if is_owner == '' %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
 {% cached_as post 3600 post_footer_cache post.pk post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
