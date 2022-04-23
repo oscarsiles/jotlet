@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth.models import Permission, User
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
@@ -18,7 +19,7 @@ from boards.routing import websocket_urlpatterns
 from boards.views import BoardView
 
 
-def dummy_htmx_view(request):
+def dummy_request(request):
     return HttpResponse("Hello!")
 
 
@@ -85,7 +86,7 @@ class BoardViewTest(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.middleware = HtmxMiddleware(dummy_htmx_view)
+        self.htmx_middleware = HtmxMiddleware(dummy_request)
 
     def test_anonymous_permissions(self):
         board = Board.objects.get(title="Test Board")
@@ -99,8 +100,11 @@ class BoardViewTest(TestCase):
 
         # request with no current_url
         request = self.factory.get(reverse("boards:board", kwargs=kwargs), HTTP_HX_REQUEST="true")
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
         request.user = user
-        self.middleware(request)
+        self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -112,8 +116,11 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:index"),
         )
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
         request.user = user
-        self.middleware(request)
+        self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -125,8 +132,11 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:index-all"),
         )
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
         request.user = user
-        self.middleware(request)
+        self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -138,8 +148,11 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs=kwargs),
         )
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
         request.user = user
-        self.middleware(request)
+        self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -151,8 +164,11 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs={"slug": "000000"}),
         )
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
         request.user = user
-        self.middleware(request)
+        self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
