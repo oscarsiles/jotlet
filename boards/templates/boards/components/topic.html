@@ -1,11 +1,11 @@
 {% load cacheops %}
+{% cached_as topic 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
 <div class="col-sm topic-list"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
      hx-trigger="topicUpdated, postCreated"
      hx-target="this"
      hx-swap="outerHTML">
-    {% cached_as topic 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break"
@@ -48,15 +48,15 @@
             </button>
         </div>
     </div>
+    {% for post in topic.posts.all|dictsort:"pk" %}
+        {% include 'boards/components/post.html' %}
+    {% endfor %}
+    <div id="newCard-{{ topic.pk }}-div"
+         hx-trigger="postCreated"
+         hx-target="this"
+         hx-swap="beforebegin"
+         hidden
+         true>
+    </div>
+</div>
 {% endcached_as %}
-{% for post in topic.posts.all|dictsort:"pk" %}
-    {% include 'boards/components/post.html' %}
-{% endfor %}
-<div id="newCard-{{ topic.pk }}-div"
-     hx-trigger="postCreated"
-     hx-target="this"
-     hx-swap="beforebegin"
-     hidden
-     true>
-</div>
-</div>

@@ -1,21 +1,26 @@
 {% load cacheops post_extras %}
+{% get_has_reacted post request as has_reacted %}
+{% if not is_owner %}
+    {% get_is_owner post request as is_owner %}
+{% endif %}
+{% cached_as post 3600 post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
 <div class="card post-card my-2"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
-     {% if not post.approved and not post.session_key == request.session.session_key and not is_moderator %}
+     {% if not post.approved and not is_owner and not is_moderator %}
          hidden="true"
      {% endif %}>
-    {% if post.approved or post.session_key == request.session.session_key or is_moderator %}
-        {% cached_as post 3600 post_cache post.pk is_moderator post.updated_at post.topic.board.preferences %}
+    {% if post.approved or is_owner or is_moderator %}
+    {% cached_as post 3600 post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
                     <h5 class="card-title"></h5>
                 </div>
-                {% if request.session.session_key == post.session_key or is_moderator %}
+                {% if is_owner or is_moderator %}
                     <div class="ms-auto">
                         {% if post.topic.board.preferences.require_approval %}
                             {% if perms.boards.can_approve_posts or is_moderator %}
@@ -57,6 +62,7 @@
             </div>
         </div>
     {% endcached_as %}
-    {% include 'boards/components/post_footer.html' %}
-{% endif %}
+        {% include 'boards/components/post_footer.html' %}
+    {% endif %}
 </div>
+{% endcached_as %}

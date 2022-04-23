@@ -122,6 +122,9 @@ class BoardView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
+
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, self.object)
         return context
@@ -409,7 +412,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
-class DeleteReactionsView(UserPassesTestMixin, generic.TemplateView):
+class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/post_reactions_confirm_delete.html"
 
     def test_func(self):
@@ -504,6 +507,7 @@ class PostFetchView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
@@ -515,6 +519,7 @@ class PostFooterFetchView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
