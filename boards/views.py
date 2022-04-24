@@ -27,7 +27,7 @@ def get_is_moderator(user, board):
 
 
 def get_board_with_prefetches(slug):
-    board = Board.objects.select_related("preferences").get(slug=slug)
+    board = Board.objects.select_related("preferences__background_image").get(slug=slug)
     return (
         Board.objects.select_related("owner", "preferences")
         .prefetch_related(get_topics_prefetch(board.preferences))
