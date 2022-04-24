@@ -15,6 +15,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .utils import channel_group_send
 
 
 def get_is_moderator(user, board):
@@ -77,6 +78,20 @@ def get_reactions_prefetch(preferences):
             Prefetch("user", queryset=User.objects.all())
         ),
     )
+
+
+def post_reaction_send_update_message(post):
+    try:
+        channel_group_send(
+            f"board_{post.topic.board.slug}",
+            {
+                "type": "reaction_updated",
+                "topic_pk": post.topic.pk,
+                "post_pk": post.pk,
+            },
+        )
+    except:
+        raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 
 class IndexView(generic.FormView):
@@ -424,12 +439,12 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
 
         post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         context["post"] = post
-
         return context
 
     def post(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=self.kwargs["pk"])
-        post.delete_reactions()
+        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        post.reactions.all().delete()
+        post_reaction_send_update_message(post)
         return HttpResponse(
             status=204,
             headers={
@@ -590,6 +605,7 @@ class PostReactionView(generic.View):
             },
         }
         if is_updated:
+            post_reaction_send_update_message(post)
             to_json["reactionUpdated"] = None
 
         return HttpResponse(
