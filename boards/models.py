@@ -229,6 +229,9 @@ class Post(models.Model):
     def get_reaction_count(self):
         return len(self.get_reactions)
 
+    def get_is_owner(self, request):
+        return self.user == request.user or self.session_key == request.session.session_key
+
     @cached_property
     def get_reaction_score(self):
         reaction_type = self.get_reaction_type

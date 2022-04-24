@@ -15,6 +15,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .utils import channel_group_send
 
 
 def get_is_moderator(user, board):
@@ -27,7 +28,7 @@ def get_is_moderator(user, board):
 
 
 def get_board_with_prefetches(slug):
-    board = Board.objects.select_related("preferences").get(slug=slug)
+    board = Board.objects.select_related("preferences__background_image").get(slug=slug)
     return (
         Board.objects.select_related("owner", "preferences")
         .prefetch_related(get_topics_prefetch(board.preferences))
@@ -79,6 +80,20 @@ def get_reactions_prefetch(preferences):
     )
 
 
+def post_reaction_send_update_message(post):
+    try:
+        channel_group_send(
+            f"board_{post.topic.board.slug}",
+            {
+                "type": "reaction_updated",
+                "topic_pk": post.topic.pk,
+                "post_pk": post.pk,
+            },
+        )
+    except:
+        raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
+
+
 class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
@@ -121,6 +136,9 @@ class BoardView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            self.request.session.create()
 
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, self.object)
@@ -409,7 +427,7 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
-class DeleteReactionsView(UserPassesTestMixin, generic.TemplateView):
+class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/post_reactions_confirm_delete.html"
 
     def test_func(self):
@@ -421,12 +439,12 @@ class DeleteReactionsView(UserPassesTestMixin, generic.TemplateView):
 
         post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         context["post"] = post
-
         return context
 
     def post(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=self.kwargs["pk"])
-        post.delete_reactions()
+        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        post.reactions.all().delete()
+        post_reaction_send_update_message(post)
         return HttpResponse(
             status=204,
             headers={
@@ -504,6 +522,7 @@ class PostFetchView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
@@ -515,6 +534,7 @@ class PostFooterFetchView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
 
@@ -585,6 +605,7 @@ class PostReactionView(generic.View):
             },
         }
         if is_updated:
+            post_reaction_send_update_message(post)
             to_json["reactionUpdated"] = None
 
         return HttpResponse(

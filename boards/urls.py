@@ -27,7 +27,7 @@ urlpatterns = [
     path("<slug:slug>/posts/<int:pk>/reaction/", views.PostReactionView.as_view(), name="post-reaction"),
     path(
         "<slug:slug>/posts/<int:pk>/reactions/delete/",
-        views.DeleteReactionsView.as_view(),
+        views.ReactionsDeleteView.as_view(),
         name="post-reactions-delete",
     ),
 ]
