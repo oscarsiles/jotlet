@@ -322,6 +322,38 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
+class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
+    template_name = "boards/topic_posts_confirm_delete.html"
+
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs["slug"])
+        return self.request.user == board.owner or self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["topic"] = get_topic_with_prefetches(self.kwargs["slug"], self.kwargs["topic_pk"])
+        return context
+
+    def post(self, request, *args, **kwargs):
+        topic = Topic.objects.prefetch_related("posts__reactions").get(pk=self.kwargs["topic_pk"])
+        topic.posts.all().delete()
+
+        return HttpResponse(
+            status=204,
+            headers={
+                "HX-Trigger": json.dumps(
+                    {
+                        "topicUpdated": None,
+                        "showMessage": {
+                            "message": f"Topic Posts Deleted",
+                            "color": "danger",
+                        },
+                    }
+                )
+            },
+        )
+
+
 class CreatePostView(generic.CreateView):
     model = Post
     fields = ["content"]

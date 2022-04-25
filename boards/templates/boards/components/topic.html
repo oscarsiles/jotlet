@@ -14,24 +14,43 @@
                 x-data
                 x-ignore>{{ topic }}</h5>
             {% if request.user == board.owner or request.user.is_staff %}
-                <button id="topic-{{ topic.pk }}-update-url"
-                        hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div"
-                        class="btn btn-link shadow-none text-muted ps-0">
-                    Edit
-                </button>
-                <button id="topic-{{ topic.pk }}-delete-url"
-                        hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div"
-                        class="btn btn-link shadow-none text-danger px-0">
-                    Delete
-                </button>
+                <div class="d-flex justify-content-start gap-3">
+                    <button class="btn btn-link shadow-none text-muted p-0"
+                            id="topic-{{ topic.pk }}-update-url"
+                            hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        Edit
+                    </button>
+                    <button class="btn btn-link shadow-none text-danger p-0"
+                            id="topic-{{ topic.pk }}-delete-url"
+                            hx-get="{% url 'boards:topic-posts-delete' topic.board.slug topic.pk %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            x-data="{ isDisabled:
+                            {% if topic.get_post_count == 0 %}
+                                true
+                            {% else %}
+                                false
+                            {% endif %}
+                            }"
+                            :disabled="isDisabled"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        Delete Posts
+                    </button>
+                    <button class="btn btn-link shadow-none text-danger p-0"
+                            id="topic-{{ topic.pk }}-delete-url"
+                            hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        Delete Topic
+                    </button>
+                </div>
             {% endif %}
         </div>
     </div>

@@ -1,0 +1,17 @@
+<p>
+Are you sure you want to delete <strong>{{ topic.get_post_count }}</strong> post{{ topic.get_post_count|pluralize }} from the following topic?
+<h5>{{ topic }}</h5>
+</p>
+<form hx-post="{{ request.build_absolute_uri }}"
+      hx-swap="none"
+      id="topic-posts-delete-form">
+    {% csrf_token %}
+</form>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+    <button type="submit"
+            class="btn btn-danger"
+            form="topic-posts-delete-form"
+            data-bs-dismiss="modal">Delete All</button>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">Delete Topic Posts</h5>
