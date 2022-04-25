@@ -372,7 +372,7 @@ CSP_FONT_SRC = CSP_STYLE_SRC
 CSP_IMG_SRC = [
     "'self'",
     "data:",
-]
+] + env.list("CSP_IMG_SRC", default=[])
 CSP_BASE_URI = ["'none'"]
 CSP_CONNECT_SRC = ["'self'"]
 CSP_INCLUDE_NONCE_IN = ["script-src"]
