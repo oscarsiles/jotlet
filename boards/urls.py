@@ -18,6 +18,11 @@ urlpatterns = [
     path("<slug:slug>/topics/<int:pk>/update/", views.UpdateTopicView.as_view(), name="topic-update"),
     path("<slug:slug>/topics/<int:pk>/delete/", views.DeleteTopicView.as_view(), name="topic-delete"),
     path("<slug:slug>/topics/<int:pk>/fetch/", views.TopicFetchView.as_view(), name="topic-fetch"),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/delete/",
+        views.DeleteTopicPostsView.as_view(),
+        name="topic-posts-delete",
+    ),
     path("<slug:slug>/topics/<int:topic_pk>/posts/create/", views.CreatePostView.as_view(), name="post-create"),
     path("<slug:slug>/posts/<int:pk>/update/", views.UpdatePostView.as_view(), name="post-update"),
     path("<slug:slug>/posts/<int:pk>/delete/", views.DeletePostView.as_view(), name="post-delete"),

@@ -163,6 +163,5 @@ cython_debug/
 
 .vscode/
 /static/
-jotlet/settings.py
 test.db.sqlite3
 .dockervolumes/
