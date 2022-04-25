@@ -5,7 +5,7 @@
 {% if is_owner != 'true' or is_owner != 'false' %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
-{% cached_as post 3600 post_footer_cache post.pk post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
+{% cached_as post 3600 post_footer_cache post.pk post.approved post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
          id="post-{{ post.pk }}-footer">
@@ -15,8 +15,7 @@
              hx-trigger="reactionUpdated"
              hx-target="closest .card-footer"
              hx-swap="outerHTML"
-             x-data="{ isDisabled: false, isOwner: false, }"
-             x-init="isOwner = $el.querySelector('#is_post_owner').textContent == 'true';"
+             x-data="{ isDisabled: {{ post.approved|yesno:'false,true' }}, isOwner: {{ is_owner|lower }}, }"
              @submit="isDisabled = true">
             <form id="post-{{ post.pk }}-reaction-form"
                   hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
