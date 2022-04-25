@@ -49,7 +49,9 @@ if (typeof boardSocket === "undefined") {
           htmx.trigger(htmx.find(topicDiv), "topicUpdated");
           break;
         case "topic_deleted":
+          var boardDiv = "#board-" + board_slug;
           htmx.find("#topic-" + data.topic_pk).remove();
+          htmx.trigger(htmx.find(boardDiv), "topicDeleted");
           break;
         case "post_created":
           var topicDiv = "#topic-" + data.topic_pk;

@@ -79,12 +79,16 @@ class Board(models.Model):
         return self.title
 
     @cached_property
-    def get_posts(self):
-        return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
+    def get_topic_count(self):
+        return self.topics.count()
 
     @cached_property
     def get_topics_with_posts_and_reactions(self):
         return self.topics.filter(board=self).prefetch_related("posts__reactions").order_by("-created_at")
+
+    @cached_property
+    def get_posts(self):
+        return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
