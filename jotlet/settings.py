@@ -36,6 +36,7 @@ DEBUG = env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 SESSION_COOKIE_SECURE = not DEBUG
@@ -62,6 +63,7 @@ INSTALLED_APPS += [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.postgres",
+    "corsheaders",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -85,6 +87,7 @@ INSTALLED_APPS += [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
