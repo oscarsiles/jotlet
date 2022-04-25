@@ -47,10 +47,13 @@ if USE_X_FORWARDED_HOST:
 
 SITE_ID = 1
 
+INSTALLED_APPS = []
+if DEBUG:
+    INSTALLED_APPS += ["whitenoise.runserver_nostatic"]
+
 # Application definition
-INSTALLED_APPS = [
+INSTALLED_APPS += [
     "jazzmin",
-    "whitenoise.runserver_nostatic",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -239,19 +242,7 @@ CACHES = {
     }
 }
 
-CACHEOPS_REDIS = {
-    **(
-        {
-            "host": REDIS_HOST,
-            "port": REDIS_PORT,
-        }
-        if not REDIS_UNIX_SOCKET
-        else {
-            "unix_socket_path": REDIS_URL,
-        }
-    ),
-    "db": 1,
-}
+CACHEOPS_REDIS = REDIS_URL + "?db=1"
 
 CHANNEL_LAYERS = {
     "default": {
