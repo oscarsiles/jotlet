@@ -1,6 +1,8 @@
 {% load cacheops post_extras %}
-{% get_has_reacted post request as has_reacted %}
-{% if not request.htmx %}
+{% if has_reacted.0 != 'true' or has_reacted.0 != 'false' %}
+    {% get_has_reacted post request as has_reacted %}
+{% endif %}
+{% if is_owner != 'true' or is_owner != 'false' %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
 {% cached_as post 3600 post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
