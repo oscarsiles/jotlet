@@ -230,11 +230,11 @@ if not REDIS_UNIX_SOCKET:
 
 CACHES = {
     "default": {
-        "BACKEND": env("REDIS_BACKEND", default="django.core.cache.backends.redis.RedisCache"),
+        "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
         "LOCATION": REDIS_URL,
         "KEY_PREFIX": "jotlet",
         "OPTIONS": {
-            "PARSER_CLASS": "redis.connection.HiredisParser",
+            "parser_class": "redis.connection.HiredisParser",
         },
     }
 }
