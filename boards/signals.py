@@ -11,7 +11,7 @@ from sorl.thumbnail import delete
 
 from boards.apps import BoardsConfig
 
-from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .models import Board, BoardPreferences, Image, Post, Reaction, Topic, UserProfile
 from .utils import channel_group_send
 
 
@@ -203,3 +203,9 @@ def update_image_select(sender, instance, **kwargs):
 @receiver(cleanup_pre_delete)
 def sorl_delete(**kwargs):
     delete(kwargs["file"])
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
