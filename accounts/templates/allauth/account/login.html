@@ -3,7 +3,7 @@
     {% load account socialaccount %}
     {% get_providers as socialaccount_providers %}
     {% if not show_modal %}
-        <div class="d-flex justify-content-center">
+        <div class="d-flex flex-fill justify-content-center">
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
                  style="width: 400px;">
             {% endif %}
@@ -34,7 +34,7 @@
                                 hx-target="#modal-1-body-div"
                                 hx-swap="innerHTML"
                                 {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
-                            Sign Up
+                            Register
                         </button>
                         <input type="hidden"
                                name="{{ redirect_field_name }}"

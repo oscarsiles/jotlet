@@ -132,7 +132,7 @@
                                        hx-target="#modal-1-body-div"
                                        data-bs-toggle="modal"
                                        data-bs-target="#modal-1-div">
-                                        Login
+                                        Login/Register
                                     </a>
                                 </span>
                             </li>
@@ -148,12 +148,12 @@
     {% include 'boards/components/messages.html' %}
     {% block content %}
     {% endblock content %}
-    <div class="container-fluid d-flex justify-content-start">
-        <div class="d-flex px-2">
-            <a href="https://github.com/oscarsiles/jotlet">Jotlet</a> © Oscar Siles Brügge. <a href="{% url 'privacy-policy' %}">Privacy policy</a> and <a href="{% url 'terms-of-use' %}">terms of use</a>.
+    <div class="container-fluid d-flex flex-shrink-1 justify-content-start px-0 bg-light bg-opacity-10">
+        <div class="d-flex px-3 py-1">
+            <span class="text-secondary"><small><a class="text-reset" href="https://github.com/oscarsiles/jotlet">Jotlet</a> © Oscar Siles Brügge. <a class="text-reset" href="{% url 'privacy-policy' %}">Privacy policy</a> and <a class="text-reset" href="{% url 'terms-of-use' %}">terms of use</a>.</small></span>
+        </div>
     </div>
-</div>
-{% include 'boards/components/toast.html' %}
+    {% include 'boards/components/toast.html' %}
 </div>
 </div>
 {% include 'boards/components/modal.html' with num=1 %}
