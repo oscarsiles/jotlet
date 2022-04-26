@@ -3,6 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
+from .forms import CustomSignupForm
+
 
 class JotletLoginView(LoginView):
     show_modal = False
@@ -27,6 +29,7 @@ class JotletLogoutView(LogoutView):
 
 class JotletSignupView(SignupView):
     show_modal = False
+    form_class = CustomSignupForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

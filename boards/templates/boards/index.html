@@ -9,8 +9,8 @@
     <script defer src="{% static 'js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block content %}
-    <div class="d-sm-flex flex-grow-1 px-2">
-        <div class="col-md-4">
+    <div class="d-md-flex flex-grow-1 px-3">
+        <div class="col-md">
             {% if not is_all_boards %}
                 <p>
                     {% crispy form %}
@@ -45,5 +45,6 @@
             </p>
         {% endif %}
     </div>
+    <div class="col-md" x-show="!smallWindow"></div>
 </div>
 {% endblock content %}

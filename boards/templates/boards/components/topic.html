@@ -1,6 +1,6 @@
 {% load cacheops %}
 {% cached_as topic 3600 topic_posts_list request.session.session_key request.user.username is_moderator %}
-<div class="col-md topic-list"
+<div class="col-md topic-list px-2"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
      hx-trigger="topicUpdated, postCreated"

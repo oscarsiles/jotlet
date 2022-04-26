@@ -9,12 +9,13 @@
             {% endif %}
             <form id="signup-form"
                   class="pb-2"
-                  {% if show_modal %} hx-post="{% url 'account_signup' %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} method="post" {% endif %}>
+                  hx-post="{% url 'account_signup' %}"
+                  {% if show_modal %} hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
                 {% csrf_token %}
-                {{ form|crispy }}
+                {% crispy form %}
                 <div class="d-flex-column">
                     <div class="d-flex justify-content-center">
-                        <button class="btn btn-success flex-fill" type="submit">Submit</button>
+                        <button class="btn btn-success flex-fill" form="signup-form" type="submit">Submit</button>
                     </div>
                 </div>
             </form>
