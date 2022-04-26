@@ -118,6 +118,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "DIRS": [
             os.path.join(BASE_DIR / "templates"),
+            os.path.join(BASE_DIR / "jotlet" / "templates"),
             os.path.join(BASE_DIR / "accounts" / "templates" / "allauth"),
         ],
         "OPTIONS": {
