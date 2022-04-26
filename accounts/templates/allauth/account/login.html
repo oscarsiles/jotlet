@@ -3,13 +3,14 @@
     {% load account socialaccount %}
     {% get_providers as socialaccount_providers %}
     {% if not show_modal %}
-        <div class="d-flex justify-content-center">
+        <div class="d-flex flex-fill justify-content-center">
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
                  style="width: 400px;">
             {% endif %}
             <form id="login-form"
-                  class=""
-                  {% if show_modal %} hx-post="{% url 'account_login' %}" hx-target="#modal-1-body-div" hx-swap="innerHTML" {% else %} method="post" {% endif %}>
+                  class="pb-2"
+                  hx-post="{% url 'account_login' %}"
+                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
                 {% csrf_token %}
                 {% load crispy_forms_tags %}
                 {{ form|crispy }}
@@ -33,22 +34,22 @@
                                 hx-target="#modal-1-body-div"
                                 hx-swap="innerHTML"
                                 {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
-                            Sign Up
+                            Register
                         </button>
                         <input type="hidden"
                                name="{{ redirect_field_name }}"
-                               value="{{ redirect_field_value }}"/>
+                               {% if redirect_field_value %} value="{{ redirect_field_value }}" {% else %} value="/" {% endif %}/>
                     </div>
                 </div>
             </form>
             {% if socialaccount_providers %}
                 <div class="row">
                     <div class="col">
-                        <hr>
+                        <hr />
                     </div>
                     <div class="col-auto my-auto text-secondary">OR</div>
                     <div class="col">
-                        <hr>
+                        <hr />
                     </div>
                 </div>
                 {% include "socialaccount/snippets/provider_list.html" with process="login" %}

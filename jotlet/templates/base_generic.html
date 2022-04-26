@@ -33,7 +33,10 @@
         {% endblock head %}
         <script defer src="{% static 'js/3rdparty/alpinejs-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
-    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+          x-data="{ smallWindow: false }"
+          x-init="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;"
+          @resize.window="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;">
         <div class="container-fluid vh-100 d-flex flex-column p-0">
             <nav class="navbar navbar-expand-lg navbar-light bg-light py-0">
                 <div class="container-fluid">
@@ -129,7 +132,7 @@
                                        hx-target="#modal-1-body-div"
                                        data-bs-toggle="modal"
                                        data-bs-target="#modal-1-div">
-                                        Login
+                                        Login/Register
                                     </a>
                                 </span>
                             </li>
@@ -140,11 +143,16 @@
         </div>
     </div>
 </nav>
-<div class="flex-column justify-content-center overflow-auto flex-grow-1 p-2"
+<div class="d-flex flex-column overflow-auto flex-grow-1"
      id="main-content-div">
     {% include 'boards/components/messages.html' %}
     {% block content %}
     {% endblock content %}
+    <div class="container-fluid d-flex flex-shrink-1 justify-content-start px-0 bg-light bg-opacity-10">
+        <div class="d-flex px-3 py-1">
+            <span class="text-secondary"><small><a class="text-reset" href="https://github.com/oscarsiles/jotlet">Jotlet</a> © 2022 Oscar Siles Brügge. <a class="text-reset" href="{% url 'privacy-policy' %}">Privacy policy</a> and <a class="text-reset" href="{% url 'terms-of-use' %}">terms of use</a>.</small></span>
+        </div>
+    </div>
     {% include 'boards/components/toast.html' %}
 </div>
 </div>

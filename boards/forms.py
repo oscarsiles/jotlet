@@ -1,12 +1,9 @@
-from ast import Raise
-
 from cachalot.api import invalidate
 from cacheops import invalidate_obj
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
 from django import forms
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
@@ -40,7 +37,6 @@ class BoardFilterForm(forms.Form):
         self.fields["before"].widget = forms.DateInput(attrs={"type": "date"})
 
         self.helper = FormHelper()
-        self.helper.disable_csrf = True
         self.helper.form_show_labels = False
         self.helper.form_id = "board-filter-form"
         self.helper.attrs = {

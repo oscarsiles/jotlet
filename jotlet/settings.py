@@ -28,7 +28,7 @@ mimetypes.add_type("text/javascript", ".js", True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"), default="unsafe-secret-key")
 
 SECRET_KEY = env("SECRET_KEY")
 
@@ -118,6 +118,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "DIRS": [
             os.path.join(BASE_DIR / "templates"),
+            os.path.join(BASE_DIR / "jotlet" / "templates"),
             os.path.join(BASE_DIR / "accounts" / "templates" / "allauth"),
         ],
         "OPTIONS": {
