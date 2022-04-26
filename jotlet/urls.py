@@ -19,10 +19,14 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
+from . import views
+
 urlpatterns = [
+    path("accounts/", include("accounts.urls")),
     path("admin/", admin.site.urls),
     path("boards/", include("boards.urls")),
-    path("accounts/", include("accounts.urls")),
+    path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy-policy"),
+    path("terms/", views.TermsOfUseView.as_view(), name="terms-of-use"),
     path("", RedirectView.as_view(url="boards/")),
 ]
 
