@@ -1,23 +1,15 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
+from jotlet.admin import DisableDeleteInlineFormSet
+
 from .models import Board, BoardPreferences, Image, Post, Topic
-
-# Register your models here.
-
-admin.site.site_title = "Jotlet Administration"
-admin.site.site_header = admin.site.site_title
 
 
 class BoardPreferencesInline(admin.StackedInline):
     model = BoardPreferences
+    formset = DisableDeleteInlineFormSet
     extra = 0
-
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if "delete_selected" in actions:
-            del actions["delete_selected"]
-        return actions
 
 
 class TopicInline(admin.TabularInline):

@@ -1,9 +1,10 @@
 from allauth.account.views import LoginView, LogoutView, PasswordChangeView, PasswordSetView, SignupView
+from allauth.socialaccount.views import SignupView as SocialSignupView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
-from .forms import CustomSignupForm
+from .forms import CustomSignupForm, CustomSocialSignupForm
 
 
 class JotletLoginView(LoginView):
@@ -30,6 +31,7 @@ class JotletLogoutView(LogoutView):
 class JotletSignupView(SignupView):
     show_modal = False
     form_class = CustomSignupForm
+    success_url = reverse_lazy("account_login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -40,7 +42,11 @@ class JotletSignupView(SignupView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        return HttpResponseClientRedirect(response.get("Location"))
+        return HttpResponseClientRedirect(response.get("Location", "/"))
+
+
+class JotletSocialSignupView(SocialSignupView):
+    form_class = CustomSocialSignupForm
 
 
 class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):

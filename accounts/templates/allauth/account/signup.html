@@ -10,7 +10,6 @@
             <form id="signup-form"
                   hx-post="{% url 'account_signup' %}"
                   {% if show_modal %} hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
-                {% csrf_token %}
                 {% crispy form %}
                 <p class="text-center px-3">
                     By creating an account, you agree to our <a class="text-nowrap" href="{% url 'terms-of-use' %}" target="_blank">Terms of Use</a> and <a class="text-nowrap" href="{% url 'privacy-policy' %}" target="_blank">Privacy Policy</a>
