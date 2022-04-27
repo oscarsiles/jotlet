@@ -72,8 +72,9 @@ class Board(models.Model):
     history = HistoricalRecords(cascade_delete_history=True)
 
     def save(self, *args, **kwargs):
-        slug_save(self)
-        super(Board, self).save(*args, **kwargs)
+        if self._state.adding:
+            slug_save(self)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

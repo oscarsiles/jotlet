@@ -198,9 +198,10 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     model = Board
     fields = ["title", "description"]
     template_name = "boards/board_form.html"
+    permission_required = "boards.add_board"
 
     def test_func(self):
-        return self.request.user.has_perm("boards.add_board") or self.request.user.is_staff
+        return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff
 
     def form_valid(self, form):
         board = form.save(commit=False)
