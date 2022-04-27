@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
+from jotlet import settings
+
 from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
@@ -108,9 +110,6 @@ class BoardPreferencesForm(forms.ModelForm):
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
         self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
         self.initial_require_approval = self.initial["require_approval"]
-        self.initial["background_image"] = (
-            "" if self.initial["background_image"] is None else self.initial["background_image"]
-        )
 
         self.fields["background_type"] = forms.ChoiceField(
             choices=BACKGROUND_TYPE,
@@ -223,6 +222,9 @@ class BoardPreferencesForm(forms.ModelForm):
             ),  # Hidden submit button, use modal one to trigger form submit
         )
 
+    def clean_background_image(self):
+        return self.cleaned_data["background_image"]
+
     def clean_background_opacity(self):
         value = self.cleaned_data["background_opacity"]
         validate_percentage(value)
@@ -240,8 +242,9 @@ class BoardPreferencesForm(forms.ModelForm):
 
         if value != self.initial_moderators:
             try:
-                invalidate(User)
-            except User.DoesNotExist:
+                if settings.CACHALOT_ENABLED:
+                    invalidate(User)
+            except User.DoesNotExist:  # TypeError is for unit tests
                 pass
 
         return value

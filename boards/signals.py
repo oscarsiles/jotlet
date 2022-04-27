@@ -11,6 +11,26 @@ from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import channel_group_send
 
 
+def invalidate_board_cache(board):
+    invalidate_obj(board)
+    key = make_template_fragment_key("board-list-post-count", [board.pk])
+
+    if cache.get(key) is not None:
+        cache.delete(key)
+
+
+def invalidate_topic_cache(topic):
+    invalidate_obj(topic)
+    if Board.objects.filter(id=topic.board_id).exists():
+        invalidate_board_cache(topic.board)
+
+
+def invalidate_post_cache(post):
+    invalidate_obj(post)
+    if Topic.objects.filter(id=post.topic_id).exists():
+        invalidate_topic_cache(post.topic)
+
+
 @receiver(post_save, sender=Board)
 def create_board_preferences(sender, instance, created, **kwargs):
     if created:
@@ -79,19 +99,9 @@ def topic_delete_send_message(sender, instance, **kwargs):
 @receiver(post_delete, sender=Topic)
 def invalidate_topic_template_cache(sender, instance, **kwargs):
     try:
-        invalidate_obj(instance)
-        invalidate_obj(instance.board)
+        invalidate_topic_cache(instance)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
-
-
-def invalidate_post_cache(post):
-    try:
-        invalidate_obj(post)
-        invalidate_obj(post.topic)
-        invalidate_obj(post.topic.board)
-    except:
-        raise Exception(f"Could not delete cache: post-{post.pk}")
 
 
 @receiver(post_save, sender=Post)
@@ -99,10 +109,11 @@ def invalidate_post_cache(post):
 def invalidate_board_post_count(sender, instance, **kwargs):
     try:
         invalidate_post_cache(instance)
-        key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
+        if Topic.objects.filter(id=instance.topic_id).exists():
+            key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
 
-        if cache.get(key) is not None:
-            cache.delete(key)
+            if cache.get(key) is not None:
+                cache.delete(key)
     except:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 

@@ -86,7 +86,8 @@ class BoardViewTest(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.htmx_middleware = HtmxMiddleware(dummy_request)
+        self.htmx_middleware = HtmxMiddleware(dummy_request())
+        super().setUp()
 
     def test_anonymous_permissions(self):
         board = Board.objects.get(title="Test Board")

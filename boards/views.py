@@ -106,10 +106,7 @@ class IndexView(generic.FormView):
         return context
 
     def form_valid(self, form):
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_success_url(self):
-        return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
+        return HttpResponseRedirect(reverse("boards:board", kwargs={"slug": form.cleaned_data["board_slug"]}))
 
 
 class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
