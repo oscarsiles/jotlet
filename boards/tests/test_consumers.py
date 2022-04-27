@@ -1,5 +1,4 @@
 from asgiref.sync import sync_to_async
-from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.core.cache import cache
@@ -21,7 +20,7 @@ class BoardConsumerTest(TestCase):
         self.assertEqual(await cache.aget(board_group_name), None)
 
         communicator1 = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
-        connected, subprotocol = await communicator1.connect()
+        connected, _ = await communicator1.connect()
         self.assertTrue(connected, "Could not connect")
         await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator1.receive_from()
@@ -30,7 +29,7 @@ class BoardConsumerTest(TestCase):
         self.assertEqual(await cache.aget(board_group_name), 1)
 
         communicator2 = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
-        connected, subprotocol = await communicator2.connect()
+        connected, _ = await communicator2.connect()
         message = await communicator1.receive_from()
         self.assertIn("session_connected", message)
         self.assertIn('"sessions": 2', message)

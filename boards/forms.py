@@ -4,11 +4,12 @@ from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
 from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post, Topic
+from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
@@ -133,7 +134,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
-            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';""",
+            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';
+            $store.boardPreferences.bg_opacity = '{self.initial["background_opacity"]}';""",
         }
 
         self.helper.layout = Layout(
@@ -145,7 +147,7 @@ class BoardPreferencesForm(forms.ModelForm):
                             "background_type",
                             wrapper_class="form-control",
                             id="id_background_type",
-                            css_class="",
+                            css_class="d-flex justify-content-around",
                             x_model="$store.boardPreferences.bg_type",
                             x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
@@ -171,10 +173,7 @@ class BoardPreferencesForm(forms.ModelForm):
                 PrependedText(
                     "background_opacity",
                     "Background Opacity",
-                    placeholder="Background Image Opacity",
-                    min=0.0,
-                    max=1.0,
-                    step=0.1,
+                    template="boards/components/forms/opacitypicker.html",
                 ),
                 x_show="$store.boardPreferences.imageVisible",
             ),
@@ -200,7 +199,7 @@ class BoardPreferencesForm(forms.ModelForm):
                             "reaction_type",
                             wrapper_class="form-control",
                             id="id_reaction_type",
-                            css_class="",
+                            css_class="d-flex justify-content-around",
                             x_init="() => { $el.parentElement.classList.remove('mb-3') }",
                         ),
                         css_class="input-group",
@@ -218,15 +217,12 @@ class BoardPreferencesForm(forms.ModelForm):
             ),  # Hidden submit button, use modal one to trigger form submit
         )
 
+    def clean_background_image(self):
+        return self.cleaned_data["background_image"]
+
     def clean_background_opacity(self):
         value = self.cleaned_data["background_opacity"]
         validate_percentage(value)
-        return value
-
-    def clean_background_image(self):
-        value = self.cleaned_data["background_image"]
-        if value == None:
-            value == ""
         return value
 
     def clean_moderators(self):
@@ -241,8 +237,9 @@ class BoardPreferencesForm(forms.ModelForm):
 
         if value != self.initial_moderators:
             try:
-                invalidate(User)
-            except:
+                if settings.CACHALOT_ENABLED:
+                    invalidate(User)
+            except User.DoesNotExist:  # TypeError is for unit tests
                 pass
 
         return value

@@ -81,7 +81,6 @@
     {% if page_obj.has_next %}
         <li class="page-item">
             <a class="page-link"
-               class="page-link"
                href=""
                hx-get="{% url 'boards:board-list' %}?page={{ page_obj.next_page_number }}
                {% if querystring %}

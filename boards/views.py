@@ -106,17 +106,16 @@ class IndexView(generic.FormView):
         return context
 
     def form_valid(self, form):
-        self.form = form
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_success_url(self):
-        return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
+        return HttpResponseRedirect(reverse("boards:board", kwargs={"slug": form.cleaned_data["board_slug"]}))
 
 
-class IndexAllBoardsView(PermissionRequiredMixin, generic.TemplateView):
+class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
     model = Board
     template_name = "boards/index.html"
     permission_required = "boards.can_view_all_boards"
+
+    def test_func(self):
+        return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -196,9 +195,10 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
     model = Board
     fields = ["title", "description"]
     template_name = "boards/board_form.html"
+    permission_required = "boards.add_board"
 
     def test_func(self):
-        return self.request.user.has_perm("boards.add_board") or self.request.user.is_staff
+        return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff
 
     def form_valid(self, form):
         board = form.save(commit=False)
@@ -305,7 +305,6 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
-        topic_pk = self.object.pk
         topic_subject = self.object.subject
         super().form_valid(form)
 
@@ -443,7 +442,6 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         )
 
     def form_valid(self, form):
-        post_pk = self.object.pk
         super().form_valid(form)
 
         return HttpResponse(

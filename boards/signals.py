@@ -1,6 +1,4 @@
 from cacheops import invalidate_obj
-from django.contrib.auth.models import Group, Permission, User
-from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
@@ -9,34 +7,28 @@ from django_cleanup.signals import cleanup_pre_delete
 from django_q.tasks import async_task
 from sorl.thumbnail import delete
 
-from boards.apps import BoardsConfig
-
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import channel_group_send
 
 
-def populate_models(sender, **kwargs):
-    moderators, created = Group.objects.get_or_create(name="Moderators")
-    content_type = ContentType.objects.get(app_label=BoardsConfig.name, model="post")
+def invalidate_board_cache(board):
+    invalidate_obj(board)
+    key = make_template_fragment_key("board-list-post-count", [board.pk])
 
-    permissions = list(Permission.objects.filter(content_type=content_type))
-
-    custom_permissions = ["add_board"]
-    for custom_perm in custom_permissions:
-        custom_perm = Permission.objects.get(content_type__app_label=BoardsConfig.name, codename=custom_perm)
-        permissions.append(custom_perm)
-
-    for perm in permissions:
-        moderators.permissions.add(perm)
+    if cache.get(key) is not None:
+        cache.delete(key)
 
 
-@receiver(post_save, sender=User)
-def add_default_user_permissions(sender, instance, created, **kwargs):
-    if created:
-        perm_list = ["add_board"]
-        for perm in perm_list:
-            perm = Permission.objects.get(content_type__app_label=BoardsConfig.name, codename=perm)
-            instance.user_permissions.add(perm)
+def invalidate_topic_cache(topic):
+    invalidate_obj(topic)
+    if Board.objects.filter(id=topic.board_id).exists():
+        invalidate_board_cache(topic.board)
+
+
+def invalidate_post_cache(post):
+    invalidate_obj(post)
+    if Topic.objects.filter(id=post.topic_id).exists():
+        invalidate_topic_cache(post.topic)
 
 
 @receiver(post_save, sender=Board)
@@ -107,19 +99,9 @@ def topic_delete_send_message(sender, instance, **kwargs):
 @receiver(post_delete, sender=Topic)
 def invalidate_topic_template_cache(sender, instance, **kwargs):
     try:
-        invalidate_obj(instance)
-        invalidate_obj(instance.board)
+        invalidate_topic_cache(instance)
     except:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
-
-
-def invalidate_post_cache(post):
-    try:
-        invalidate_obj(post)
-        invalidate_obj(post.topic)
-        invalidate_obj(post.topic.board)
-    except:
-        raise Exception(f"Could not delete cache: post-{post.pk}")
 
 
 @receiver(post_save, sender=Post)
@@ -127,12 +109,13 @@ def invalidate_post_cache(post):
 def invalidate_board_post_count(sender, instance, **kwargs):
     try:
         invalidate_post_cache(instance)
-        key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
+        if Topic.objects.filter(id=instance.topic_id).exists():
+            key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
 
-        if cache.get(key) is not None:
-            cache.delete(key)
+            if cache.get(key) is not None:
+                cache.delete(key)
     except:
-        pass
+        raise Exception(f"Could not delete cache: post-{instance.pk}")
 
 
 @receiver(post_save, sender=Post)
