@@ -108,6 +108,9 @@ class BoardPreferencesForm(forms.ModelForm):
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
         self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
         self.initial_require_approval = self.initial["require_approval"]
+        self.initial["background_image"] = (
+            "" if self.initial["background_image"] is None else self.initial["background_image"]
+        )
 
         self.fields["background_type"] = forms.ChoiceField(
             choices=BACKGROUND_TYPE,
@@ -133,7 +136,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
-            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';""",
+            $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';
+            $store.boardPreferences.bg_opacity = '{self.initial["background_opacity"]}';""",
         }
 
         self.helper.layout = Layout(
@@ -172,9 +176,10 @@ class BoardPreferencesForm(forms.ModelForm):
                     "background_opacity",
                     "Background Opacity",
                     placeholder="Background Image Opacity",
-                    min=0.0,
+                    min=0.1,
                     max=1.0,
                     step=0.1,
+                    x_model="$store.boardPreferences.bg_opacity",
                 ),
                 x_show="$store.boardPreferences.imageVisible",
             ),

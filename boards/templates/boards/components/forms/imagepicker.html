@@ -15,7 +15,7 @@
         <div>
             <div class="input-group">
                 <span class="input-group-text">{{ crispy_prepended_text }}</span>
-                {% if object.background_image == None %}
+                {% if object.background_image == None or object.background_image == "" %}
                     <button class="btn btn-outline-primary rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
                             type="button"
                             value="Select image..."
@@ -23,21 +23,22 @@
                             hx-target="#modal-2-body-div"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-2-div"
-                            x-show="$store.boardPreferences.img_uuid == 'None'"
+                            x-show="$store.boardPreferences.img_uuid == 'None' || $store.boardPreferences.img_uuid == ''"
                             id="button-{{ field.auto_id }}">
                         Select image...
                     </button>
                 {% endif %}
                 <picture id="img-picture-tag"
                          class="form-control p-0"
-                         x-show="$store.boardPreferences.img_uuid != 'None'">
+                         x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
                     <source id="src-webp" x-bind:srcset="$store.boardPreferences.img_srcset_webp" type="image/webp"/>
                     <source id="src-jpeg" x-bind:srcset="$store.boardPreferences.img_srcset_jpeg" type="image/jpeg"/>
                     <img class="p-0 rounded-end form-control {% if field.errors %}is-invalid{% endif %}"
-                        x-bind:src="$store.boardPreferences.img_srcset_jpeg"
                         alt="{{ object.background_image }}"
                         hx-get="{% url 'boards:image-select' 'b' %}"
                         hx-target="#modal-2-body-div"
+                        :src="$store.boardPreferences.img_srcset_jpeg"
+                        :style="{ opacity: $store.boardPreferences.bg_opacity }"
                         data-bs-toggle="modal"
                         data-bs-target="#modal-2-div"
                         id="img-{{ field.auto_id }}"/>
@@ -45,7 +46,6 @@
         <input type="text"
                name="{{ field.name }}"
                x-bind:value="$store.boardPreferences.img_uuid"
-               {% comment %} value="{% if object.background_image == None %}{% else %}{{ field.value }}{% endif %}" {% endcomment %}
                id="{{ field.auto_id }}"
                hidden="true"/>
         {% if field.errors %}

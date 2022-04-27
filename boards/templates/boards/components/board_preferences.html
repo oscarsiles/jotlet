@@ -1,13 +1,8 @@
 {% load crispy_forms_tags static %}
 {% crispy form %}
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
-    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-    <button type="submit"
-            class="btn btn-primary"
-            form="board-preferences-form"
-            data-bs-dismiss="modal">
-        Save changes
-    </button>
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal" x-data @preferences-changed.camel.window="$el.click()">Close</button>
+    <button type="submit" class="btn btn-primary" form="board-preferences-form">Save changes</button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
 <div id="modal-1-scripts" hidden="true" hx-swap-oob="true">
