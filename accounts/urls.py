@@ -9,5 +9,6 @@ urlpatterns = [
     path("signup/", views.JotletSignupView.as_view(), name="account_signup"),
     path("password/change/", views.JotletChangePasswordView.as_view(), name="account_change_password"),
     path("password/set/", views.JotletSetPasswordView.as_view(), name="account_set_password"),
+    path("social/signup/", views.JotletSocialSignupView.as_view(), name="socialaccount_signup"),
     path("", include("allauth.urls")),
 ]
