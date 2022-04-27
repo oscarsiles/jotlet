@@ -14,7 +14,7 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 from django_htmx.middleware import HtmxMiddleware
 
-from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
+from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 from boards.routing import websocket_urlpatterns
 from boards.views import BoardView
 
@@ -1075,16 +1075,17 @@ class ImageSelectViewTest(TestCase):
         image_path = os.path.join(module_dir, "images/white_horizontal.png")
         for type, text in IMAGE_TYPE:
             for i in range(5):
-                image = Image(
-                    type=type,
-                    image=SimpleUploadedFile(
-                        name=f"{type}-{i}.png",
-                        content=open(image_path, "rb").read(),
-                        content_type="image/png",
-                    ),
-                    title=f"{text} {i}",
-                )
-                image.save()
+                with open(image_path, "rb") as image_file:
+                    image = Image(
+                        type=type,
+                        image=SimpleUploadedFile(
+                            name=f"{type}-{i}.png",
+                            content=image_file.read(),
+                            content_type="image/png",
+                        ),
+                        title=f"{text} {i}",
+                    )
+                    image.save()
 
     @classmethod
     def tearDownClass(cls):

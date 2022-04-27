@@ -8,7 +8,7 @@ from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
 from django.utils.html import escape
 
-from boards.models import BACKGROUND_TYPE, IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
+from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
 
 
 class BoardModelTest(TestCase):
@@ -186,16 +186,17 @@ class ImageModelTest(TestCase):
         for type, text in IMAGE_TYPE:
             for orientation in ["horizontal", "vertical"]:
                 image_path = os.path.join(module_dir, f"images/white_{orientation}.png")
-                img = Image(
-                    type=type,
-                    image=SimpleUploadedFile(
-                        name=f"{type}.png",
-                        content=open(image_path, "rb").read(),
-                        content_type="image/png",
-                    ),
-                    title=f"{text} - {orientation}",
-                )
-                img.save()
+                with open(image_path, "rb") as image_file:
+                    img = Image(
+                        type=type,
+                        image=SimpleUploadedFile(
+                            name=f"{type}.png",
+                            content=image_file.read(),
+                            content_type="image/png",
+                        ),
+                        title=f"{text} - {orientation}",
+                    )
+                    img.save()
 
     @classmethod
     def tearDownClass(cls):

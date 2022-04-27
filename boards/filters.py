@@ -1,8 +1,6 @@
-from urllib.parse import urlparse
 
 import django_filters
 from django.db.models import Q
-from django.urls import resolve
 
 from .forms import BoardFilterForm
 from .models import Board

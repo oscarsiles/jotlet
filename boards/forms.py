@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post, Topic
+from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
 slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
 
@@ -221,12 +221,6 @@ class BoardPreferencesForm(forms.ModelForm):
     def clean_background_opacity(self):
         value = self.cleaned_data["background_opacity"]
         validate_percentage(value)
-        return value
-
-    def clean_background_image(self):
-        value = self.cleaned_data["background_image"]
-        if value == None:
-            value == ""
         return value
 
     def clean_moderators(self):

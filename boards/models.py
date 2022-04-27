@@ -260,6 +260,8 @@ class Post(models.Model):
             except:
                 pass
             return score
+        else:
+            return 0
 
     def get_has_reacted(self, request):
         post_reactions = self.get_reactions

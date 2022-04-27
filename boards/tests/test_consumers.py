@@ -1,5 +1,4 @@
 from asgiref.sync import sync_to_async
-from channels.db import database_sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.core.cache import cache

@@ -9,21 +9,19 @@ from django_cleanup.signals import cleanup_pre_delete
 from django_q.tasks import async_task
 from sorl.thumbnail import delete
 
-from boards.apps import BoardsConfig
-
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import channel_group_send
 
 
 def populate_models(sender, **kwargs):
     moderators, created = Group.objects.get_or_create(name="Moderators")
-    content_type = ContentType.objects.get(app_label=BoardsConfig.name, model="post")
+    content_type = ContentType.objects.get(app_label="boards", model="post")
 
     permissions = list(Permission.objects.filter(content_type=content_type))
 
     custom_permissions = ["add_board"]
     for custom_perm in custom_permissions:
-        custom_perm = Permission.objects.get(content_type__app_label=BoardsConfig.name, codename=custom_perm)
+        custom_perm = Permission.objects.get(content_type__app_label="boards", codename=custom_perm)
         permissions.append(custom_perm)
 
     for perm in permissions:
@@ -35,7 +33,7 @@ def add_default_user_permissions(sender, instance, created, **kwargs):
     if created:
         perm_list = ["add_board"]
         for perm in perm_list:
-            perm = Permission.objects.get(content_type__app_label=BoardsConfig.name, codename=perm)
+            perm = Permission.objects.get(content_type__app_label="boards", codename=perm)
             instance.user_permissions.add(perm)
 
 
