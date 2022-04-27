@@ -28,9 +28,9 @@ class CustomSignupForm(SignupForm):
 
         self.helper.layout = Layout(
             Div(
-                FloatingField("first_name"),
-                FloatingField("last_name"),
-                css_class="d-sm-flex gap-3",
+                FloatingField("first_name", wrapper_class="flex-fill"),
+                FloatingField("last_name", wrapper_class="flex-fill"),
+                css_class="d-sm-flex justify-content-between gap-3",
             ),
             FloatingField("email"),
             FloatingField("username"),
