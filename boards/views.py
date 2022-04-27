@@ -112,10 +112,13 @@ class IndexView(generic.FormView):
         return reverse("boards:board", kwargs={"slug": self.form.cleaned_data["board_slug"]})
 
 
-class IndexAllBoardsView(PermissionRequiredMixin, generic.TemplateView):
+class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
     model = Board
     template_name = "boards/index.html"
     permission_required = "boards.can_view_all_boards"
+
+    def test_func(self):
+        return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
