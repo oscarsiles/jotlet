@@ -211,3 +211,5 @@ CSP_CONNECT_SRC = ["'self'"]
 CSP_INCLUDE_NONCE_IN = ["script-src", "style-src"]
 
 DEBUG_TOOLBAR_ENABLED = False
+CACHALOT_ENABLED = False
+CACHEOPS_ENABLED = False
