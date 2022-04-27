@@ -48,7 +48,7 @@ class BoardModelTest(TestCase):
         self.assertEqual(board.get_post_count, 0)
         self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
         topic = Topic.objects.create(board=board, subject="Test Topic")
-        post = Post.objects.create(topic=topic, content="Test Post")
+        Post.objects.create(topic=topic, content="Test Post")
         board = Board.objects.get(title="Test Board")
         self.assertEqual(board.get_post_count, 1)
         self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
@@ -57,12 +57,12 @@ class BoardModelTest(TestCase):
         board = Board.objects.get(title="Test Board")
         self.assertIsNone(board.get_last_post_date)
         topic = Topic.objects.create(board=board, subject="Test Topic")
-        post1 = Post.objects.create(topic=topic, content="Test Post")
+        Post.objects.create(topic=topic, content="Test Post")
         post2 = Post.objects.create(topic=topic, content="Test Post 2")
         # make sure another board's posts are not counted
         board2 = Board.objects.create(title="Test Board 2", description="Test Board Description")
         topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
-        post3 = Post.objects.create(topic=topic2, content="Test Post 3")
+        Post.objects.create(topic=topic2, content="Test Post 3")
         board = Board.objects.get(title="Test Board")
         self.assertEqual(board.get_last_post_date, date(post2.created_at, "d/m/Y"))
 
@@ -140,7 +140,7 @@ class PostModelTest(TestCase):
     def setUpTestData(cls):
         # Create two users
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
+        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         board = Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
         Post.objects.create(content="Test Post", topic=topic)
@@ -167,8 +167,8 @@ class PostModelTest(TestCase):
 
     def test_post_deleted_after_board_delete(self):
         board = Board.objects.get(title="Test Board")
-        post1 = post = Post.objects.get(content="Test Post")
-        post2 = post = Post.objects.get(content="Test Post 2")
+        post1 = Post.objects.get(content="Test Post")
+        post2 = Post.objects.get(content="Test Post 2")
         board.delete()
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post1.id)
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
@@ -204,19 +204,19 @@ class ImageModelTest(TestCase):
         super().tearDownClass()
 
     def test_image_name_is_title(self):
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 self.assertEqual(str(img), img.title)
 
     def test_image_url(self):
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 self.assertEqual(img.image.url, f"/media/images/{type}/{img.uuid}.png")
 
     def test_image_max_dimensions(self):
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 self.assertLessEqual(img.image.width, 3840)
@@ -224,7 +224,7 @@ class ImageModelTest(TestCase):
 
     def test_get_board_usage_count(self):
         board = Board.objects.create(title="Test Board", description="Test Board Description")
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 board.preferences.background_image = img
@@ -237,7 +237,7 @@ class ImageModelTest(TestCase):
 
     def test_thumbnail_url_and_dimensions(self):
 
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 thumbnail = img.get_thumbnail
@@ -247,7 +247,7 @@ class ImageModelTest(TestCase):
                 self.assertIn("/media/cache/", thumbnail.url)
 
     def test_image_tag(self):
-        for type, text in IMAGE_TYPE:
+        for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 self.assertEqual(f'<img src="{escape(img.get_thumbnail.url)}" />', img.image_tag)
