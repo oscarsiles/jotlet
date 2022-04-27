@@ -7,8 +7,12 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    optin_newsletter = models.BooleanField(default=False)
+    optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
     history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
-        return f"{self.user.username}'s Profile"
+        return f"{self.user.username}'s profile"
+
+    class Meta:
+        verbose_name = "Profile"
+        verbose_name_plural = "Profiles"
