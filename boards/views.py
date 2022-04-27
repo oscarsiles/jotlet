@@ -106,7 +106,6 @@ class IndexView(generic.FormView):
         return context
 
     def form_valid(self, form):
-        self.form = form
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
@@ -305,7 +304,6 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
-        topic_pk = self.object.pk
         topic_subject = self.object.subject
         super().form_valid(form)
 
@@ -443,7 +441,6 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         )
 
     def form_valid(self, form):
-        post_pk = self.object.pk
         super().form_valid(form)
 
         return HttpResponse(

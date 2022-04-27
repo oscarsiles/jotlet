@@ -236,7 +236,7 @@ class BoardPreferencesForm(forms.ModelForm):
         if value != self.initial_moderators:
             try:
                 invalidate(User)
-            except:
+            except User.DoesNotExist:
                 pass
 
         return value

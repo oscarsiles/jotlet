@@ -37,7 +37,7 @@ def slug_save(obj):
 
 
 def get_image_upload_path(instance, filename):
-    name, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     file_path = "images/{type}/{name}.{ext}".format(type=instance.type, name=instance.uuid, ext=ext.replace(".", ""))
     return file_path
 
@@ -238,30 +238,29 @@ class Post(models.Model):
 
     @cached_property
     def get_reaction_score(self):
-        reaction_type = self.get_reaction_type
-        if reaction_type == "n":
-            return 0
+        try:
+            reaction_type = self.get_reaction_type
+            if reaction_type == "n":
+                return 0
 
-        reactions = self.get_reactions
+            reactions = self.get_reactions
 
-        # cannot use match/switch before python 3.10
-        if reaction_type == "l":
-            return self.get_reaction_count
-        elif reaction_type == "v":
-            return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
-                1 for reaction in reactions if reaction.reaction_score == -1
-            )
-        elif reaction_type == "s":
-            score = ""
-            try:
+            if reaction_type == "l":  # cannot use match/switch before python 3.10
+                return self.get_reaction_count
+            elif reaction_type == "v":
+                return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
+                    1 for reaction in reactions if reaction.reaction_score == -1
+                )
+            elif reaction_type == "s":
+                score = ""
                 sumvar = sum(reaction.reaction_score for reaction in reactions)
                 count = self.get_reaction_count
                 score = f"{(sumvar / count):.2g}"
-            except:
-                pass
-            return score
-        else:
-            return 0
+                return score
+            else:
+                return 0
+        except:
+            raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
     def get_has_reacted(self, request):
         post_reactions = self.get_reactions

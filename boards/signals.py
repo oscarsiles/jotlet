@@ -1,6 +1,5 @@
 from cacheops import invalidate_obj
-from django.contrib.auth.models import Group, Permission, User
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
@@ -11,21 +10,6 @@ from sorl.thumbnail import delete
 
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import channel_group_send
-
-
-def populate_models(sender, **kwargs):
-    moderators, created = Group.objects.get_or_create(name="Moderators")
-    content_type = ContentType.objects.get(app_label="boards", model="post")
-
-    permissions = list(Permission.objects.filter(content_type=content_type))
-
-    custom_permissions = ["add_board"]
-    for custom_perm in custom_permissions:
-        custom_perm = Permission.objects.get(content_type__app_label="boards", codename=custom_perm)
-        permissions.append(custom_perm)
-
-    for perm in permissions:
-        moderators.permissions.add(perm)
 
 
 @receiver(post_save, sender=User)
@@ -130,7 +114,7 @@ def invalidate_board_post_count(sender, instance, **kwargs):
         if cache.get(key) is not None:
             cache.delete(key)
     except:
-        pass
+        raise Exception(f"Could not delete cache: post-{instance.pk}")
 
 
 @receiver(post_save, sender=Post)

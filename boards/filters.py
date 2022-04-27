@@ -1,4 +1,3 @@
-
 import django_filters
 from django.db.models import Q
 
@@ -33,11 +32,11 @@ class BoardFilter(django_filters.FilterSet):
     def qs(self):
         qs = super().qs.select_related("owner").distinct()
         if self.is_all_boards:
-            queryset = qs.order_by("-created_at", "id")
+            qs = qs.order_by("-created_at", "id")
         else:
-            queryset = qs.filter(owner=self.request.user).order_by("-created_at", "id")
+            qs = qs.filter(owner=self.request.user).order_by("-created_at", "id")
 
-        return queryset
+        return qs
 
     def filter_title_description(self, queryset, name, value):
         return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))

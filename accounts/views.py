@@ -18,7 +18,7 @@ class JotletLoginView(LoginView):
         return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        super().form_valid(form)
         return HttpResponseClientRedirect(self.get_success_url())
 
 
@@ -58,7 +58,7 @@ class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):
         return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        super().form_valid(form)
         return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):
@@ -78,7 +78,7 @@ class JotletSetPasswordView(PasswordSetView):
         return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        super().form_valid(form)
         return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):

@@ -54,7 +54,6 @@ class BoardFilterTest(TestCase):
 
     def test_board_filter_is_all_boards(self):
         user1 = User.objects.get(username="testuser1")
-        user2 = User.objects.get(username="testuser2")
         request = self.factory.get(reverse("boards:board-list"))
         request.user = user1
         request.GET = request.GET.copy()

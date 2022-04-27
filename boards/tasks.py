@@ -2,9 +2,9 @@ from django.core import management
 
 
 def create_thumbnails(img):
-    webp = img.get_webp
-    thumb = img.get_thumbnail
-    thumb_webp = img.get_thumbnail_webp
+    img.get_webp
+    img.get_thumbnail
+    img.get_thumbnail_webp
 
 
 def thumbnail_cleanup_command():
