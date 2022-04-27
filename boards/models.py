@@ -362,14 +362,3 @@ class Image(models.Model):
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
-
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    optin_newsletter = models.BooleanField(default=False)
-    history = HistoricalRecords(cascade_delete_history=True)
-
-    def __str__(self):
-        return f"{self.user.username}'s Profile"
