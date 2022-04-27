@@ -1,5 +1,4 @@
 from cacheops import invalidate_obj
-from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
@@ -10,15 +9,6 @@ from sorl.thumbnail import delete
 
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
 from .utils import channel_group_send
-
-
-@receiver(post_save, sender=User)
-def add_default_user_permissions(sender, instance, created, **kwargs):
-    if created:
-        perm_list = ["add_board"]
-        for perm in perm_list:
-            perm = Permission.objects.get(content_type__app_label="boards", codename=perm)
-            instance.user_permissions.add(perm)
 
 
 @receiver(post_save, sender=Board)
