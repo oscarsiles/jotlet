@@ -19,6 +19,12 @@ class Command(BaseCommand):
                 permissions.append(custom_perm)
 
             for perm in permissions:
-                moderators.permissions.add(perm)
+                if not moderators.permissions.filter(codename=perm.codename).exists():
+                    moderators.permissions.add(perm)
+                    self.stdout.write(f"Successfully added permission {perm.codename} to moderators.")
+                else:
+                    self.stdout.write(f"Permission {perm.codename} already exists for moderators.")
+
+            self.stdout.write(self.style.SUCCESS("Successfully added permissions for moderators."))
         except:
             raise CommandError("Failed to populate moderator permissions.")
