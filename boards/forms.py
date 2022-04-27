@@ -4,11 +4,10 @@ from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
 from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
-
-from jotlet import settings
 
 from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
