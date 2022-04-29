@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlparse
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Prefetch
@@ -626,7 +626,7 @@ class PostReactionView(generic.View):
             else:
                 reaction_user = self.request.user if self.request.user.is_authenticated else None
 
-                reaction = Reaction.objects.create(
+                Reaction.objects.create(
                     session_key=self.request.session.session_key,
                     user=reaction_user,
                     post=post,

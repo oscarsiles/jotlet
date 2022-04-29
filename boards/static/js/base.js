@@ -29,3 +29,7 @@ function toastNotification() {
     },
   };
 }
+
+function hcaptchaReady() {
+  hcaptcha.render("hcaptcha-div", {});
+}

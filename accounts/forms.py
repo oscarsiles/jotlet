@@ -1,9 +1,24 @@
-from allauth.account.forms import SignupForm
+from allauth.account.forms import LoginForm, SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from crispy_bootstrap5.bootstrap5 import Field, FloatingField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
 from django import forms
+
+
+class CustomLoginForm(LoginForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["login"].label = "Username or e-mail"
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+
+        self.helper.layout = Layout(
+            FloatingField("login"),
+            FloatingField("password"),
+        )
 
 
 class CustomSignupForm(SignupForm):
@@ -25,6 +40,7 @@ class CustomSignupForm(SignupForm):
         )
 
         self.helper = FormHelper(self)
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             Div(
@@ -69,6 +85,7 @@ class CustomSocialSignupForm(SocialSignupForm):
         )
 
         self.helper = FormHelper(self)
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             Div(

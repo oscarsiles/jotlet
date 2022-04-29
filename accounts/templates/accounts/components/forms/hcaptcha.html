@@ -1,0 +1,8 @@
+{% if HCAPTCHA_SITE_KEY %}
+    <script async src="https://hcaptcha.com/1/api.js?onload=hcaptchaReady&render=explicit"></script>
+    <div class="d-flex justify-content-center mb-3 h-captcha"
+         id="hcaptcha-div"
+         data-sitekey="{{ HCAPTCHA_SITE_KEY }}"
+         x-init="if (typeof hcaptcha != 'undefined') { hcaptcha.render($el.id) }">
+    </div>
+{% endif %}

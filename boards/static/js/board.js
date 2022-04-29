@@ -1,10 +1,10 @@
-board_slug = JSON.parse(document.getElementById("board_slug").textContent);
-boardSocket = null;
-baseUrl =
+var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
+var boardSocket = null;
+var baseUrl =
   window.location.pathname.split("/")[1] == "boards"
     ? window.location.host
     : window.location.host + "/" + window.location.pathname.split("/")[1];
-pathName =
+var pathName =
   window.location.pathname.split("/")[1] == "boards"
     ? ""
     : "/" + window.location.pathname.split("/")[1];

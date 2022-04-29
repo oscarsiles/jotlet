@@ -229,18 +229,12 @@ class BoardPreferencesForm(forms.ModelForm):
         moderators = self.cleaned_data["moderators"].split(",")
         value = []
         for moderator in moderators:
-            try:
+            if User.objects.filter(username=moderator).exists():
                 user = User.objects.get(username=moderator)
                 value.append(user)
-            except User.DoesNotExist:
-                pass
 
-        if value != self.initial_moderators:
-            try:
-                if settings.CACHALOT_ENABLED:
-                    invalidate(User)
-            except User.DoesNotExist:  # TypeError is for unit tests
-                pass
+        if value != self.initial_moderators and settings.CACHALOT_ENABLED:
+            invalidate(User)
 
         return value
 
