@@ -25,6 +25,7 @@ class CustomSignupForm(SignupForm):
         )
 
         self.helper = FormHelper(self)
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             Div(
@@ -69,6 +70,7 @@ class CustomSocialSignupForm(SocialSignupForm):
         )
 
         self.helper = FormHelper(self)
+        self.helper.form_tag = False
 
         self.helper.layout = Layout(
             Div(

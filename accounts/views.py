@@ -1,10 +1,12 @@
 from allauth.account.views import LoginView, LogoutView, PasswordChangeView, PasswordSetView, SignupView
 from allauth.socialaccount.views import SignupView as SocialSignupView
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
 from .forms import CustomSignupForm, CustomSocialSignupForm
+from .utils import hcaptcha_verified
 
 
 class JotletLoginView(LoginView):
@@ -41,6 +43,14 @@ class JotletSignupView(SignupView):
         return context
 
     def form_valid(self, form):
+        if not hcaptcha_verified(self.request):
+            messages.add_message(self.request, messages.ERROR, "Captcha challenge failed. Please try again.")
+            request = self.request
+            request.method = "GET"
+            response = type(self).as_view(initial=form.cleaned_data, show_modal=self.show_modal)(request)
+
+            return response
+
         response = super().form_valid(form)
         return HttpResponseClientRedirect(response.get("Location", "/"))
 

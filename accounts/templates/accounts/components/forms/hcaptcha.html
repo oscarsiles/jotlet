@@ -1,0 +1,9 @@
+{% if HCAPTCHA_SITE_KEY %}
+    <script src="https://hcaptcha.com/1/api.js?render=explicit"></script>
+    <div class="d-flex justify-content-center h-captcha"
+         id="hcaptcha-div"
+         data-sitekey="{{ HCAPTCHA_SITE_KEY }}"
+         x-data
+         x-init="hcaptcha.render($el.id, { sitekey: '{{ HCAPTCHA_SITE_KEY }}' });">
+    </div>
+{% endif %}

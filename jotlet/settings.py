@@ -129,6 +129,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
                 "csp.context_processors.nonce",
+                "jotlet.context_processors.hcaptcha_sitekey",
             ],
         },
     },
@@ -361,6 +362,8 @@ CSP_SCRIPT_SRC = [
     "cdn.jsdelivr.net",
     "polyfill.io",
     "unpkg.com",
+    "hcaptcha.com",
+    "*.hcaptcha.com",
     "'unsafe-eval'",
 ]
 CSP_STYLE_SRC = [
@@ -368,6 +371,8 @@ CSP_STYLE_SRC = [
     "cdn.jsdelivr.net",
     "fonts.googleapis.com",
     "fonts.gstatic.com",
+    "hcaptcha.com",
+    "*.hcaptcha.com",
     "'unsafe-inline'",
 ]
 CSP_FONT_SRC = CSP_STYLE_SRC
@@ -376,5 +381,12 @@ CSP_IMG_SRC = [
     "data:",
 ] + env.list("CSP_IMG_SRC", default=[])
 CSP_BASE_URI = ["'none'"]
-CSP_CONNECT_SRC = ["'self'"]
+CSP_CONNECT_SRC = ["'self'", "hcaptcha.com", "*.hcaptcha.com"]
+CSP_FRAME_SRC = ["hcaptcha.com", "*.hcaptcha.com"]
 CSP_INCLUDE_NONCE_IN = ["script-src"]
+
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=False)
+if HCAPTCHA_ENABLED:
+    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
+    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
+    HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
