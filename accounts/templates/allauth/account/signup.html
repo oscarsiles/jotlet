@@ -6,7 +6,7 @@
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
                  style="width: 400px;">
                 <h2>Create Account</h2>
-            {% elif HCAPTCHA_SITE_KEY %}
+            {% elif HCAPTCHA_SITE_KEY and messages %}
                 <div class="pb-3">{% include 'boards/components/messages.html' %}</div>
             {% endif %}
             <form id="signup-form"
