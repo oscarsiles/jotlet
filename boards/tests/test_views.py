@@ -577,6 +577,7 @@ class TopicDeleteViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
         self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+        self.assertEqual(response.status_code, 204)
 
     def test_staff_permissions(self):
         User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
@@ -586,18 +587,19 @@ class TopicDeleteViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
         self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+        self.assertEqual(response.status_code, 204)
 
     async def test_topic_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
         board = await sync_to_async(Board.objects.get)(title="Test Board")
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
-        connected, subprotocol = await communicator.connect()
+        connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
         await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
         topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
-        response = await sync_to_async(self.client.post)(self.topic_deleted_url)
+        await sync_to_async(self.client.post)(self.topic_deleted_url)
         message = await communicator.receive_from()
         self.assertIn("topic_deleted", message)
         self.assertIn(f'"topic_pk": {topic.id}', message)
@@ -719,6 +721,7 @@ class PostUpdateViewTest(TestCase):
             data={"content": "Test Post anon"},
         )
         post = Post.objects.get(content="Test Post anon")
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(self.client.session.session_key, post.session_key)
         response = self.client.post(
             reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),

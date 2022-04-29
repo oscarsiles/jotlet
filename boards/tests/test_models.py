@@ -152,11 +152,11 @@ class PostModelTest(TestCase):
         self.assertEqual(max_length, 400)
 
     def test_object_name_is_content(self):
-        post = post = Post.objects.get(content="Test Post")
+        post = Post.objects.get(content="Test Post")
         self.assertEqual(str(post), post.content)
 
     def test_get_absolute_url(self):
-        post = post = Post.objects.get(content="Test Post")
+        post = Post.objects.get(content="Test Post")
         self.assertEqual(post.get_absolute_url(), f"/boards/{post.topic.board.slug}/")
 
     def test_post_deleted_after_topic_delete(self):
@@ -182,7 +182,6 @@ class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         module_dir = os.path.dirname(__file__)
-        image_path = os.path.join(module_dir, "images/white.jpg")
         for type, text in IMAGE_TYPE:
             for orientation in ["horizontal", "vertical"]:
                 image_path = os.path.join(module_dir, f"images/white_{orientation}.png")
