@@ -14,8 +14,7 @@
             <form id="login-form"
                   class="pb-2"
                   hx-post="{% url 'account_login' %}"
-                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}
-                >
+                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
                 {% load crispy_forms_tags %}
                 {% crispy form %}
                 {% include 'accounts/components/forms/hcaptcha.html' %}
