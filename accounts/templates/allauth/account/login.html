@@ -6,14 +6,19 @@
         <div class="d-flex flex-fill justify-content-center">
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
                  style="width: 400px;">
+            {% elif HCAPTCHA_SITE_KEY %}
+                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">
+                    {% include 'boards/components/messages.html' %}
+                </div>
             {% endif %}
             <form id="login-form"
                   class="pb-2"
                   hx-post="{% url 'account_login' %}"
-                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
-                {% csrf_token %}
+                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}
+                >
                 {% load crispy_forms_tags %}
-                {{ form|crispy }}
+                {% crispy form %}
+                {% include 'accounts/components/forms/hcaptcha.html' %}
                 <div class="d-flex-column">
                     <div class="d-flex justify-content-center">
                         <button class="btn btn-primary flex-fill" type="submit">Login</button>

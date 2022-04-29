@@ -7,7 +7,9 @@
                  style="width: 400px;">
                 <h2>Create Account</h2>
             {% elif HCAPTCHA_SITE_KEY and messages %}
-                <div class="pb-3">{% include 'boards/components/messages.html' %}</div>
+                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">
+                    {% include 'boards/components/messages.html' %}
+                </div>
             {% endif %}
             <form id="signup-form"
                   hx-post="{% url 'account_signup' %}"
