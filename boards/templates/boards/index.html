@@ -47,4 +47,5 @@
     </div>
     <div class="col-md" x-show="!smallWindow"></div>
 </div>
+{{ request.user.is_authenticated|json_script:"is_logged_in" }}
 {% endblock content %}
