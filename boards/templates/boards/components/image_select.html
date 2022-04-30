@@ -35,7 +35,7 @@
   }
 
   .card-img-top input[type="radio"]:checked+label::before{
-    background: url({% static 'images/check_mark.png' %}) no-repeat center center;
+    background: url({% static 'boards/images/check_mark.png' %}) no-repeat center center;
     width: 100%;
     height: 100%;
     position: absolute;
@@ -60,5 +60,5 @@
 </h5>
 {% endcache %}
 <div id="modal-2-scripts" hidden="true" hx-swap-oob="true">
-    <script defer src="{% static 'js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'boards/js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
 </div>

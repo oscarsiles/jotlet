@@ -43,11 +43,11 @@
                         data-bs-target="#modal-2-div"
                         id="img-{{ field.auto_id }}"/>
                 </picture>
-        <input type="text"
-               name="{{ field.name }}"
-               x-bind:value="$store.boardPreferences.img_uuid"
-               id="{{ field.auto_id }}"
-               hidden="true"/>
+                {% if field.errors %}
+                        {% crispy_field field 'class' 'form-select is-invalid' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
+                    {% else %}
+                        {% crispy_field field 'class' 'form-select' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
+                    {% endif %}
         {% if field.errors %}
             <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
                   class="invalid-feedback">

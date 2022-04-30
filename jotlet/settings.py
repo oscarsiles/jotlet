@@ -230,6 +230,7 @@ else:
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379")
 REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)

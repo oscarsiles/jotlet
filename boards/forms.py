@@ -217,9 +217,6 @@ class BoardPreferencesForm(forms.ModelForm):
             ),  # Hidden submit button, use modal one to trigger form submit
         )
 
-    def clean_background_image(self):
-        return self.cleaned_data["background_image"]
-
     def clean_background_opacity(self):
         value = self.cleaned_data["background_opacity"]
         validate_percentage(value)
