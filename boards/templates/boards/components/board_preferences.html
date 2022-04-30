@@ -1,7 +1,13 @@
 {% load crispy_forms_tags static %}
 {% crispy form %}
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
-    <button type="button" class="btn btn-default" data-bs-dismiss="modal" x-data @preferences-changed.camel.window="$el.click()">Close</button>
+    <button type="button"
+            class="btn btn-default"
+            data-bs-dismiss="modal"
+            x-data
+            @preferences-changed.camel.window="$el.click()">
+        Close
+    </button>
     <button type="submit" class="btn btn-primary" form="board-preferences-form">Save changes</button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">Board Preferences</h5>
@@ -9,5 +15,5 @@
     <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
     <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/components/board_preferences.js' %}" type="text/javascript" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'boards/js/components/board_preferences.js' %}" type="text/javascript" nonce="{{ CSP_NONCE }}"></script>
 </div>

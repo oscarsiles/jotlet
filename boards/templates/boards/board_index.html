@@ -15,8 +15,8 @@
               as="font"
               crossorigin="anonymous"/>
     {% endif %}
-    <script defer src="{% static 'js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'boards/js/3rdparty/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'boards/js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}
     Board: {{ board }}
