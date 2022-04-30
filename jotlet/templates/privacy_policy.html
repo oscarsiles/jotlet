@@ -1,7 +1,10 @@
 {% extends "base_generic.html" %}
+{% load cache %}
 {% block title %}
     Jotlet - Privacy Policy
 {% endblock title %}
 {% block content %}
+    {% cache None privacy_policy %}
     {% include "privacy_policy_content.html" %}
+{% endcache %}
 {% endblock content %}

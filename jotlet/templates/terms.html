@@ -1,7 +1,10 @@
 {% extends "base_generic.html" %}
+{% load cache %}
 {% block title %}
     Jotlet - Terms
 {% endblock title %}
 {% block content %}
+    {% cache None terms %}
     {% include "terms_content.html" %}
+{% endcache %}
 {% endblock content %}
