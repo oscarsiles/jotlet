@@ -53,8 +53,13 @@ function connectWebsocket() {
         htmx.trigger(htmx.find(boardDiv), "topicDeleted");
         break;
       case "post_created":
-        var topicDiv = "#topic-" + data.topic_pk;
-        htmx.trigger(htmx.find(topicDiv), "postCreated");
+        var newCardDiv = "#newCard-" + data.topic_pk + "-div";
+        htmx.ajax("GET", data.fetch_url, {
+          target: newCardDiv,
+          swap: "beforebegin",
+        });
+        // var topicDiv = "#topic-" + data.topic_pk;
+        // htmx.trigger(htmx.find(topicDiv), "postCreated");
         break;
       case "post_updated":
         var postDiv = "#post-" + data.post_pk;
