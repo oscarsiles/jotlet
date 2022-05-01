@@ -13,7 +13,7 @@
      hx-target="this"
      hx-swap="outerHTML"
      {% if not post.approved and not is_owner and not is_moderator %}
-         hidden="true"
+         hidden
      {% endif %}>
     {% if post.approved or is_owner or is_moderator %}
         {% cached_as post 3600 post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
