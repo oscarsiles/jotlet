@@ -58,8 +58,6 @@ function connectWebsocket() {
           target: newCardDiv,
           swap: "beforebegin",
         });
-        // var topicDiv = "#topic-" + data.topic_pk;
-        // htmx.trigger(htmx.find(topicDiv), "postCreated");
         break;
       case "post_updated":
         var postDiv = "#post-" + data.post_pk;
