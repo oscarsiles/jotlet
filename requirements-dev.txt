@@ -4,3 +4,4 @@ coverage==6.3.2
 django-debug-toolbar==3.3.0
 djlint==1.0.1
 isort==5.10.1
+locust==2.8.6

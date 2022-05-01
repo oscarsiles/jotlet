@@ -167,3 +167,4 @@ test.db.sqlite3
 .dockervolumes/
 jotlet/templates/privacy_policy_content.html
 jotlet/templates/terms_content.html
+locustfile.py
