@@ -7,9 +7,7 @@
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
                  style="width: 400px;">
             {% elif HCAPTCHA_SITE_KEY %}
-                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">
-                    {% include 'boards/components/messages.html' %}
-                </div>
+                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">{% include 'components/messages.html' %}</div>
             {% endif %}
             <form id="login-form"
                   class="pb-2"
