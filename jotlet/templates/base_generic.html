@@ -27,6 +27,7 @@
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
+        <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/alpinejs-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
