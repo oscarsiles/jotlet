@@ -3,6 +3,7 @@ from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from django_cleanup.signals import cleanup_pre_delete
 from django_q.tasks import async_task
 from sorl.thumbnail import delete
@@ -120,19 +121,26 @@ def invalidate_board_post_count(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Post)
 def post_send_message(sender, instance, created, **kwargs):
+    board_slug = instance.topic.board.slug
     if created:
-        message_type = "post_created"
+        channel_group_send(
+            f"board_{board_slug}",
+            {
+                "type": "post_created",
+                "topic_pk": instance.topic.pk,
+                "post_pk": instance.pk,
+                "fetch_url": reverse("boards:post-fetch", kwargs={"slug": board_slug, "pk": instance.pk}),
+            },
+        )
     else:
-        message_type = "post_updated"
-
-    channel_group_send(
-        f"board_{instance.topic.board.slug}",
-        {
-            "type": message_type,
-            "topic_pk": instance.topic.pk,
-            "post_pk": instance.pk,
-        },
-    )
+        channel_group_send(
+            f"board_{board_slug}",
+            {
+                "type": "post_updated",
+                "topic_pk": instance.topic.pk,
+                "post_pk": instance.pk,
+            },
+        )
 
 
 @receiver(post_delete, sender=Post)

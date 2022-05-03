@@ -155,7 +155,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 Q_CLUSTER = {
     "name": "DjangORM",
     "workers": 2,
-    "timeout": 90,
+    "timeout": 1800,
     "retry": 120,
     "catch_up": False,
     "queue_limit": 50,
