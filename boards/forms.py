@@ -257,8 +257,8 @@ class SearchBoardsForm(forms.Form):
         self.helper.form_show_labels = False
 
         self.helper.layout = Layout(
-            PrependedText("board_slug", "Board ID", '<i class="fas fa-hashtag"></i>'),
-            ButtonHolder(Submit("submit", "Submit", css_class="button white")),
+            PrependedText("board_slug", "Board ID", placeholder="### ###", x_data="", x_mask="999 999"),
+            ButtonHolder(Submit("submit", "Submit")),
         )
 
     def clean_board_slug(self):
