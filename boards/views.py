@@ -153,15 +153,16 @@ class BoardView(generic.DetailView):
 @method_decorator(cache_control(public=True), name="dispatch")
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
+    board = None
     template_name = "boards/components/board_preferences.html"
     form_class = BoardPreferencesForm
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        self.board = board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_object(self):  # needed to prevent 'slug' FieldError
-        board = Board.objects.select_related("preferences").get(slug=self.kwargs["slug"])
+        board = self.board
         if not BoardPreferences.objects.filter(board=board).exists():
             board.preferences = BoardPreferences.objects.create(board=board)
             board.preferences.save()
@@ -169,7 +170,7 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def get_form_kwargs(self, **kwargs):
         kwargs = super().get_form_kwargs(**kwargs)
-        kwargs["slug"] = self.kwargs["slug"]
+        kwargs["board"] = self.board
         return kwargs
 
     def form_valid(self, form):

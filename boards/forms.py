@@ -103,8 +103,7 @@ class BoardPreferencesForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.slug = kwargs.pop("slug")
-        self.initial_board = Board.objects.get(slug=self.slug)
+        self.initial_board = kwargs.pop("board")
         super().__init__(*args, **kwargs)
 
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
@@ -128,7 +127,7 @@ class BoardPreferencesForm(forms.ModelForm):
         webp_url = self.instance.background_image.get_thumbnail_webp.url if self.instance.background_image else ""
         jpeg_url = self.instance.background_image.get_thumbnail.url if self.instance.background_image else ""
         self.helper.attrs = {
-            "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
+            "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.initial_board.slug}),
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
             "x-data": "",
