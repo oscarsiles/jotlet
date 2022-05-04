@@ -20,6 +20,18 @@ def invalidate_board_cache(board):
         cache.delete(key)
 
 
+def invalidate_board_post_count_cache(instance):
+    try:
+        invalidate_post_cache(instance)
+        if Topic.objects.filter(id=instance.topic_id).exists():
+            key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
+
+            if cache.get(key) is not None:
+                cache.delete(key)
+    except:
+        raise Exception(f"Could not delete cache: post-{instance.pk}")
+
+
 def invalidate_topic_cache(topic):
     invalidate_obj(topic)
     if Board.objects.filter(id=topic.board_id).exists():
@@ -106,17 +118,14 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Post)
-@receiver(post_delete, sender=Post)
-def invalidate_board_post_count(sender, instance, **kwargs):
-    try:
+def post_created_invalidate_cache(sender, instance, created, **kwargs):
+    if created:
         invalidate_post_cache(instance)
-        if Topic.objects.filter(id=instance.topic_id).exists():
-            key = make_template_fragment_key("board-list-post-count", [instance.topic.board.id])
 
-            if cache.get(key) is not None:
-                cache.delete(key)
-    except:
-        raise Exception(f"Could not delete cache: post-{instance.pk}")
+
+@receiver(post_delete, sender=Post)
+def post_deleted_invalidate_cache(sender, instance, **kwargs):
+    invalidate_post_cache(instance)
 
 
 @receiver(post_save, sender=Post)
