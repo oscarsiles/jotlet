@@ -38,6 +38,7 @@ class BoardFilterForm(forms.Form):
         self.fields["before"].widget = forms.DateInput(attrs={"type": "date"})
 
         self.helper = FormHelper()
+        self.helper.disable_csrf = True
         self.helper.form_show_labels = False
         self.helper.form_id = "board-filter-form"
         self.helper.attrs = {
