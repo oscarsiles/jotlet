@@ -247,14 +247,14 @@ class Post(models.Model):
             reactions = self.get_reactions
 
             if reaction_type == "l":  # cannot use match/switch before python 3.10
-                return self.get_reaction_count
+                return reactions.count()
             elif reaction_type == "v":
                 return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
                     1 for reaction in reactions if reaction.reaction_score == -1
                 )
             elif reaction_type == "s":
                 score = ""
-                count = self.get_reaction_count
+                count = reactions.count()
                 if count != 0:
                     sumvar = sum(reaction.reaction_score for reaction in reactions)
                     score = f"{(sumvar / count):.2g}"
