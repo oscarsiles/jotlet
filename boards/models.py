@@ -254,9 +254,10 @@ class Post(models.Model):
                 )
             elif reaction_type == "s":
                 score = ""
-                sumvar = sum(reaction.reaction_score for reaction in reactions)
                 count = self.get_reaction_count
-                score = f"{(sumvar / count):.2g}"
+                if count != 0:
+                    sumvar = sum(reaction.reaction_score for reaction in reactions)
+                    score = f"{(sumvar / count):.2g}"
                 return score
             else:
                 return 0
