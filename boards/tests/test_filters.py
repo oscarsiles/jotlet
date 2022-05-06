@@ -74,6 +74,10 @@ class BoardFilterTest(TestCase):
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["before"] = ""
 
+        request.GET["owner"] = ""
+        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        self.assertEqual(filterset.qs.count(), 3)
+
         request.GET["owner"] = "testuser2"
         filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
         self.assertEqual(filterset.qs.count(), 1)
