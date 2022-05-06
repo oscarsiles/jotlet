@@ -5,13 +5,14 @@
      hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
      hx-trigger="topicUpdated"
      hx-target="this"
-     hx-swap="outerHTML">
+     hx-swap="outerHTML"
+     x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
+     x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break"
                 id="topic-{{ topic.pk }}-subject"
                 hx-disable
-                x-data
                 x-ignore>{{ topic }}</h5>
             {% if request.user == board.owner or request.user.is_staff %}
                 <div class="d-flex justify-content-start gap-3">
@@ -29,14 +30,7 @@
                             hx-get="{% url 'boards:topic-posts-delete' topic.board.slug topic.pk %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
-                            x-data="{ isDisabled:
-                            {% if topic.get_post_count == 0 %}
-                                true
-                            {% else %}
-                                false
-                            {% endif %}
-                            }"
-                            :disabled="isDisabled"
+                            :disabled="isDeletePostsDisabled"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-1-div">
                         Delete Posts
@@ -67,9 +61,11 @@
             </button>
         </div>
     </div>
-    {% for post in topic.posts.all|dictsort:"pk" %}
-        {% include 'boards/components/post.html' %}
-    {% endfor %}
-    <div id="newCard-{{ topic.pk }}-div" hidden></div>
+    <div x-ref="topicPosts_{{ topic.pk }}">
+        {% for post in topic.posts.all|dictsort:"pk" %}
+            {% include 'boards/components/post.html' %}
+        {% endfor %}
+        <div id="newCard-{{ topic.pk }}-div" hidden></div>
+    </div>
 </div>
 {% endcached_as %}

@@ -56,7 +56,7 @@
             <span class="page-link">&laquo;</span>
         </li>
     {% endif %}
-    {% for i in page_range %}
+    {% for i in page_obj.paginator.page_range %}
         {% if page_obj.number == i %}
             <li class="active page-item">
                 <span class="page-link">{{ i }}</span>
