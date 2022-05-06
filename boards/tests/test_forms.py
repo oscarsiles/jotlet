@@ -23,7 +23,7 @@ class BoardPreferencesFormTest(TestCase):
             "moderators": "test_user,non_existent_user",
             "reaction_type": "v",
         }
-        form = BoardPreferencesForm(data=form_data, slug="000001", instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.helper.attrs["hx-post"], "/boards/000001/preferences/")
         form.save()
@@ -36,7 +36,7 @@ class BoardPreferencesFormTest(TestCase):
         self.assertEqual(board.preferences.moderators.count(), 1)
         self.assertEqual(board.preferences.moderators.all()[0], User.objects.get(username="test_user"))
         self.assertEqual(board.preferences.reaction_type, "v")
-        form = BoardPreferencesForm(data=form_data, slug="000001", instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         self.assertTrue(form.is_valid())
         form.save()
 
@@ -47,7 +47,7 @@ class BoardPreferencesFormTest(TestCase):
             "background_color": "fffffffff",
             "background_opacity": "2.0",
         }
-        form = BoardPreferencesForm(data=form_data, slug="000001", instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["background_type"], ["Select a valid choice. x is not one of the available choices."]
