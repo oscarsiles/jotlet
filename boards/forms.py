@@ -240,10 +240,11 @@ class BoardPreferencesForm(forms.ModelForm):
         if "require_approval" in self.changed_data:
             posts = Post.objects.filter(topic__board=self.initial_board)
             for post in posts:
-                invalidate_obj(post)
                 if not value and not post.approved:  # approval turned off - approve all posts
                     post.approved = True
                     post.save()
+                    if settings.CACHALOT_ENABLED:
+                        invalidate_obj(post)
 
         return value
 
