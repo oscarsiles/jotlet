@@ -153,15 +153,16 @@ class BoardView(generic.DetailView):
 @method_decorator(cache_control(public=True), name="dispatch")
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
+    board = None
     template_name = "boards/components/board_preferences.html"
     form_class = BoardPreferencesForm
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        self.board = board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_object(self):  # needed to prevent 'slug' FieldError
-        board = Board.objects.select_related("preferences").get(slug=self.kwargs["slug"])
+        board = self.board
         if not BoardPreferences.objects.filter(board=board).exists():
             board.preferences = BoardPreferences.objects.create(board=board)
             board.preferences.save()
@@ -169,7 +170,7 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def get_form_kwargs(self, **kwargs):
         kwargs = super().get_form_kwargs(**kwargs)
-        kwargs["slug"] = self.kwargs["slug"]
+        kwargs["board"] = self.board
         return kwargs
 
     def form_valid(self, form):
@@ -210,16 +211,22 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
 class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Board
+    board = None
     fields = ["title", "description"]
     template_name = "boards/board_form.html"
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        board = self.get_object()
         return (
             self.request.user.has_perm("boards.change_board")
             or self.request.user == board.owner
             or self.request.user.is_staff
         )
+
+    def get_object(self):
+        if self.board is None:
+            self.board = super().get_object()
+        return self.board
 
     def form_valid(self, form):
         super().form_valid(form)
@@ -229,16 +236,22 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Board
+    board = None
     template_name = "boards/board_confirm_delete.html"
     success_url = reverse_lazy("boards:index")
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        board = self.get_object()
         return (
             self.request.user.has_perm("boards.delete_board")
             or self.request.user == board.owner
             or self.request.user.is_staff
         )
+
+    def get_object(self):
+        if self.board is None:
+            self.board = super().get_object()
+        return self.board
 
 
 class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
@@ -396,18 +409,26 @@ class CreatePostView(generic.CreateView):
 
 class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     model = Post
+    board_post = None
     fields = ["content"]
     template_name = "boards/post_form.html"
 
     def test_func(self):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
-        post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(pk=self.kwargs["pk"])
+        post = self.get_object()
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.change_post")
             or get_is_moderator(self.request.user, post.topic.board)
         )
+
+    def get_object(self):
+        if not self.board_post:
+            self.board_post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
+                pk=self.kwargs["pk"]
+            )
+        return self.board_post
 
     def form_valid(self, form):
         super().form_valid(form)
@@ -429,17 +450,25 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
     model = Post
+    board_post = None
     template_name = "boards/post_confirm_delete.html"
 
     def test_func(self):
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
-        post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(pk=self.kwargs["pk"])
+        post = self.get_object()
         return (
             self.request.session.session_key == post.session_key
             or self.request.user.has_perm("boards.delete_post")
             or get_is_moderator(self.request.user, post.topic.board)
         )
+
+    def get_object(self):
+        if not self.board_post:
+            self.board_post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
+                pk=self.kwargs["pk"]
+            )
+        return self.board_post
 
     def form_valid(self, form):
         super().form_valid(form)
@@ -465,17 +494,23 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
 class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/post_reactions_confirm_delete.html"
+    board_post = None
 
     def test_func(self):
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = self.get_object()
         return get_is_moderator(self.request.user, post.topic.board)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        post = self.get_object()
         context["post"] = post
         return context
+
+    def get_object(self):
+        if not self.board_post:
+            self.board_post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        return self.board_post
 
     def post(self, request, *args, **kwargs):
         post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
@@ -576,14 +611,16 @@ class PostFooterFetchView(generic.TemplateView):
 
 
 class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+    board_post = None
+
     def test_func(self):
-        post = Post.objects.prefetch_related("topic__board__preferences").get(pk=self.kwargs["pk"])
+        self.board_post = post = Post.objects.prefetch_related("topic__board__preferences").get(pk=self.kwargs["pk"])
         return (
             get_is_moderator(self.request.user, post.topic.board)
         ) and post.topic.board.preferences.require_approval
 
     def post(self, request, *args, **kwargs):
-        post = Post.objects.get(pk=self.kwargs["pk"])
+        post = self.board_post
         post.approved = not post.approved
         post.save()
 

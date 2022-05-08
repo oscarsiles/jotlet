@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import mimetypes
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -69,6 +70,7 @@ INSTALLED_APPS += [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.microsoft",
+    "axes",
     "crispy_forms",
     "crispy_bootstrap5",
     "channels",
@@ -99,6 +101,7 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 if DEBUG_TOOLBAR_ENABLED and DEBUG:
@@ -179,9 +182,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+AXES_USERNAME_FORM_FIELD = "login"
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_LOCKOUT_URL = "/accounts/lockout/"
+AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=1)
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",

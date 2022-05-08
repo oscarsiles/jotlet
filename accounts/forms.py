@@ -20,6 +20,12 @@ class CustomLoginForm(LoginForm):
             FloatingField("password"),
         )
 
+    def user_credentials(self):
+        credentials = super().user_credentials()
+        # Add Axes compatibility
+        credentials["login"] = credentials.get("email") or credentials.get("username")
+        return credentials
+
 
 class CustomSignupForm(SignupForm):
     def __init__(self, *args, **kwargs):

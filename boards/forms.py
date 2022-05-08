@@ -1,5 +1,4 @@
 from cachalot.api import invalidate
-from cacheops import invalidate_obj
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
@@ -38,6 +37,7 @@ class BoardFilterForm(forms.Form):
         self.fields["before"].widget = forms.DateInput(attrs={"type": "date"})
 
         self.helper = FormHelper()
+        self.helper.disable_csrf = True
         self.helper.form_show_labels = False
         self.helper.form_id = "board-filter-form"
         self.helper.attrs = {
@@ -102,8 +102,7 @@ class BoardPreferencesForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.slug = kwargs.pop("slug")
-        self.initial_board = Board.objects.get(slug=self.slug)
+        self.initial_board = kwargs.pop("board")
         super().__init__(*args, **kwargs)
 
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
@@ -127,7 +126,7 @@ class BoardPreferencesForm(forms.ModelForm):
         webp_url = self.instance.background_image.get_thumbnail_webp.url if self.instance.background_image else ""
         jpeg_url = self.instance.background_image.get_thumbnail.url if self.instance.background_image else ""
         self.helper.attrs = {
-            "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.slug}),
+            "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.initial_board.slug}),
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
             "x-data": "",
@@ -237,13 +236,9 @@ class BoardPreferencesForm(forms.ModelForm):
 
     def clean_require_approval(self):
         value = self.cleaned_data["require_approval"]
-        if "require_approval" in self.changed_data:
+        if "require_approval" in self.changed_data and not value:
             posts = Post.objects.filter(topic__board=self.initial_board)
-            for post in posts:
-                invalidate_obj(post)
-                if not value and not post.approved:  # approval turned off - approve all posts
-                    post.approved = True
-                    post.save()
+            posts.invalidated_update(approved=True)
 
         return value
 
@@ -257,8 +252,8 @@ class SearchBoardsForm(forms.Form):
         self.helper.form_show_labels = False
 
         self.helper.layout = Layout(
-            PrependedText("board_slug", "Board ID", '<i class="fas fa-hashtag"></i>'),
-            ButtonHolder(Submit("submit", "Submit", css_class="button white")),
+            PrependedText("board_slug", "Board ID", placeholder="### ###", x_data="", x_mask="999 999"),
+            ButtonHolder(Submit("submit", "Submit")),
         )
 
     def clean_board_slug(self):

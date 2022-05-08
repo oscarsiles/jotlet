@@ -28,6 +28,7 @@
         {% block head %}
         {% endblock head %}
         <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-mask-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/alpinejs-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
@@ -142,7 +143,7 @@
 </nav>
 <div class="d-flex flex-column overflow-auto flex-grow-1"
      id="main-content-div">
-    {% include 'boards/components/messages.html' %}
+    {% include 'components/messages.html' %}
     {% block content %}
     {% endblock content %}
     {% include 'components/footer.html' %}

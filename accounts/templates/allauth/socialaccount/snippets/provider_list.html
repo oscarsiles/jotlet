@@ -1,7 +1,8 @@
-{% load socialaccount %}
-{% load static %}
-{% get_providers as socialaccount_providers %}
-<div class="socialaccount_ballot ">
+{% load socialaccount static %}
+{% if socialaccount_providers == None %}
+    {% get_providers as socialaccount_providers %}
+{% endif %}
+<div class="socialaccount_ballot">
     <div class="d-flex text-secondary justify-content-center">Sign in with a third party</div>
     <div class="socialaccount_providers d-grid gap-2 my-2">
         {% for provider in socialaccount_providers %}

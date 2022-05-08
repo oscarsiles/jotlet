@@ -4,8 +4,6 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from .models import UserProfile
-
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request):
@@ -18,7 +16,8 @@ class CustomAccountAdapter(DefaultAccountAdapter):
 
     def save_user(self, request, user, form, commit=True):
         user = super().save_user(request, user, form, commit)
-        UserProfile.objects.create(user=user, optin_newsletter=form.cleaned_data["optin_newsletter"])
+        user.profile.optin_newsletter = form.cleaned_data["optin_newsletter"]
+        user.profile.save()
         return user
 
 

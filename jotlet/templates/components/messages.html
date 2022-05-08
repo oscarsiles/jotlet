@@ -1,0 +1,21 @@
+<div class="d-md-flex justify-content-between px-3 pt-2">
+    <div class="d-grid flex-fill gap-2">
+        {% for message in messages %}
+            <div x-data="{ show: true }"
+                 x-show="show"
+                 x-init="setTimeout(() => show = false, 5000)"
+                 x-collapse>
+                <div id="alert-{{ forloop.counter }}"
+                     class="alert {{ message.tags }} alert-dismissible my-0"
+                     role="alert">
+                    {# revisit if changing to tailwind css #}
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

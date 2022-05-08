@@ -1,21 +1,23 @@
 {% extends show_modal|yesno:"blank.html,base_generic.html" %}
+{% load account socialaccount crispy_forms_tags %}
 {% block content %}
-    {% load account socialaccount %}
-    {% get_providers as socialaccount_providers %}
     {% if not show_modal %}
         <div class="d-flex flex-fill justify-content-center">
-            <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
-                 style="width: 400px;">
-            {% elif HCAPTCHA_SITE_KEY %}
-                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">
-                    {% include 'boards/components/messages.html' %}
-                </div>
+            <div class="d-flex-column flex-grow-1 flex-sm-grow-0 accounts-column"
+                 id="central-login-column">
+                <h2>Login</h2>
+            {% elif HCAPTCHA_SITE_KEY and messages %}
+                <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">{% include 'components/messages.html' %}</div>
             {% endif %}
             <form id="login-form"
                   class="pb-2"
                   hx-post="{% url 'account_login' %}"
-                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
-                {% load crispy_forms_tags %}
+                  {% if show_modal %}
+                      hx-target="#modal-1-body-div"
+                  {% else %}
+                      hx-target="#central-login-column"
+                  {% endif %}
+                  hx-swap="innerHTML">
                 {% crispy form %}
                 {% include 'accounts/components/forms/hcaptcha.html' %}
                 <div class="d-flex-column">
@@ -35,9 +37,12 @@
                         <button class="btn link-secondary shadow-none"
                                 id="signup-button"
                                 hx-get="{% url 'account_signup' %}"
-                                hx-target="#modal-1-body-div"
-                                hx-swap="innerHTML"
-                                {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
+                                {% if show_modal %}
+                                    hx-target="#modal-1-body-div"
+                                {% else %}
+                                    hx-target="#central-login-column" hx-push-url="true"
+                                {% endif %}
+                                hx-swap="innerHTML">
                             Register
                         </button>
                         <input type="hidden"
@@ -46,6 +51,7 @@
                     </div>
                 </div>
             </form>
+            {% get_providers as socialaccount_providers %}
             {% if socialaccount_providers %}
                 <div class="row">
                     <div class="col">

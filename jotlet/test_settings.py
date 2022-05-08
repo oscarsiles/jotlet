@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.microsoft",
+    "axes",
     "crispy_forms",
     "crispy_bootstrap5",
     "channels",
@@ -127,11 +128,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesBackend",
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+AXES_ENABLED = False
 
 LANGUAGE_CODE = "en-us"
 
