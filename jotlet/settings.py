@@ -281,7 +281,12 @@ CHANNEL_LAYERS = {
 CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
 CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
 
-CACHALOT_UNCACHABLE_APPS = frozenset(("simple_history",))
+CACHALOT_UNCACHABLE_APPS = frozenset(
+    (
+        "axes",
+        "simple_history",
+    )
+)
 CACHALOT_UNCACHABLE_TABLES = frozenset(
     (
         "django_migrations",
