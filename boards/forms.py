@@ -1,5 +1,4 @@
 from cachalot.api import invalidate
-from cacheops import invalidate_obj
 from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
@@ -237,14 +236,9 @@ class BoardPreferencesForm(forms.ModelForm):
 
     def clean_require_approval(self):
         value = self.cleaned_data["require_approval"]
-        if "require_approval" in self.changed_data:
+        if "require_approval" in self.changed_data and not value:
             posts = Post.objects.filter(topic__board=self.initial_board)
-            for post in posts:
-                if not value and not post.approved:  # approval turned off - approve all posts
-                    post.approved = True
-                    post.save()
-                    if settings.CACHALOT_ENABLED:
-                        invalidate_obj(post)
+            posts.invalidated_update(approved=True)
 
         return value
 
