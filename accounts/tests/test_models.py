@@ -4,7 +4,7 @@ from django.test import TestCase
 
 class UserProfileTest(TestCase):
     @classmethod
-    def setUpTestData(self):
+    def setUpTestData(cls):
         user = User.objects.create_user(username="test_user", password="test_password")
         user.profile.optin_newsletter = True
         user.profile.save()
