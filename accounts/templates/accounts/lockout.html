@@ -2,11 +2,9 @@
 {% block content %}
     {% if not show_modal %}
         <div class="d-flex flex-fill justify-content-center">
-            <div class="d-flex-column flex-grow-1 flex-sm-grow-0"
-                 style="width: 400px;">
-                 <h2>Login Lockout</h2>
+            <div class="d-flex-column flex-grow-1 flex-sm-grow-0 accounts-column">
+                <h2>Login Lockout</h2>
             {% endif %}
-           
             <p>
                 You have been locked out from further login attempts for {{ cooloff_time }}.
             </p>
