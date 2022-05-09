@@ -85,10 +85,10 @@ class BoardViewTest(TestCase):
         Board.objects.create(title="Test Board", description="Test Description", owner=test_user1, slug="000001")
 
     def setUp(self):
+        super().setUp()
         self.factory = RequestFactory()
         self.htmx_middleware = HtmxMiddleware(dummy_request)
-        super().setUp()
-
+        
     def test_anonymous_permissions(self):
         board = Board.objects.get(title="Test Board")
         response = self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))

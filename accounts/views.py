@@ -18,6 +18,7 @@ from .utils import hcaptcha_verified
 class JotletLoginView(LoginView):
     show_modal = False
     form_class = CustomLoginForm
+    success_url = reverse_lazy("boards:index")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

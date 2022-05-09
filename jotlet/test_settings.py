@@ -67,6 +67,7 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "jotlet.urls"
@@ -88,6 +89,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
                 "csp.context_processors.nonce",
+                "jotlet.context_processors.hcaptcha_sitekey",
             ],
         },
     },
@@ -217,3 +219,8 @@ CSP_INCLUDE_NONCE_IN = ["script-src", "style-src"]
 DEBUG_TOOLBAR_ENABLED = False
 CACHALOT_ENABLED = False
 CACHEOPS_ENABLED = False
+
+HCAPTCHA_ENABLED = True
+HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
+HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"
+HCAPTCHA_VERIFY_URL = "https://hcaptcha.com/siteverify"
