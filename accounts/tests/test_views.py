@@ -19,10 +19,20 @@ class JotletLoginViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["HX-Redirect"], reverse(settings.LOGIN_REDIRECT_URL))
 
+    def test_hcaptcha_fail(self):
+        response = self.client.post(
+            reverse("account_login"),
+            {"login": "test_user", "password": "test_password", "h-captcha-response": "incorrect_captcha_response"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context_data["form"].errors.get("__all__")[0], "Captcha challenge failed. Please try again."
+        )
+
     def test_incorrect_login(self):
         response = self.client.post(
             reverse("account_login"),
             {"login": "incorrect_login", "password": "test_password", "h-captcha-response": HCAPTCHA_TEST_RESPONSE},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(response.context_data["form"].error_messages.get("username_password_mismatch"))
+        self.assertIsNotNone(response.context_data["form"].errors)
