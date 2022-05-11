@@ -16,16 +16,18 @@
              hx-trigger="reactionUpdated"
              hx-target="closest .card-footer"
              hx-swap="outerHTML"
-             x-data="{ isDisabled: {{ post.approved|yesno:'false,true' }}, isOwner: {{ is_owner|lower }}, }"
-             @submit="isDisabled = true">
+             x-data="{ isDisabled: {{ post.approved|yesno:'false,true' }}, isOwner: {{ is_owner|lower }}, }">
             <form id="post-{{ post.pk }}-reaction-form"
                   hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
-                  hx-swap="none">
+                  hx-trigger="postReaction"
+                  hx-swap="none"
+                  @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
                 {% csrf_token %}
                 <div class="d-flex align-items-center gap-2">
                     {% cached_as post 3600 post_footer_form_cache post.pk post.get_reaction_score post.topic.board.preferences.reaction_type has_reacted %}
                     {% if post.topic.board.preferences.reaction_type == 'l' %}
                         <button class="btn btn-link text-muted shadow-none p-0"
+                                id="post-{{ post.pk }}-reaction-form-like"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
                                 :disabled="isOwner || isDisabled"
                                 type="submit">
@@ -37,11 +39,12 @@
                         </button>
                     {% elif post.topic.board.preferences.reaction_type == 'v' %}
                         <button class="btn btn-link text-muted shadow-none p-0"
+                                id="post-{{ post.pk }}-reaction-form-thumbs-up"
                                 type="submit"
                                 name="score"
+                                value="1"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
-                                :disabled="isOwner || isDisabled"
-                                value="1">
+                                :disabled="isOwner || isDisabled">
                             {% if has_reacted.0 and has_reacted.2 == 1 %}
                                 <i class="bi bi-hand-thumbs-up-fill"></i>
                             {% else %}
@@ -50,11 +53,12 @@
                         </button>
                         <div>{{ post.get_reaction_score.0 }}</div>
                         <button class="btn btn-link text-muted shadow-none p-0"
+                                id="post-{{ post.pk }}-reaction-form-thumbs-down"
                                 type="submit"
                                 name="score"
+                                value="-1"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
-                                :disabled="isOwner || isDisabled"
-                                value="-1">
+                                :disabled="isOwner || isDisabled">
                             {% if has_reacted.0 and has_reacted.2 == -1 %}
                                 <i class="bi bi-hand-thumbs-down-fill"></i>
                             {% else %}
@@ -71,10 +75,11 @@
                                 <button class="d-flex align-items-center btn btn-link shadow-none p-0"
                                         type="submit"
                                         name="score"
+                                        :id="'post-{{ post.pk }}-star-' + star"
+                                        :value="star"
                                         :class="isHover ? 'text-black' : 'text-black-50'"
                                         :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
                                         :disabled="isOwner || isDisabled"
-                                        :value="star"
                                         @click="rate(star)"
                                         @mouseover="hoverRating = star; isHover = true;"
                                         @mouseleave="hoverRating = 0; isHover = false;">

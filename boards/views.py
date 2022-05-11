@@ -635,11 +635,11 @@ class PostReactionView(generic.View):
         message_color = "success"
         is_updated = True
 
-        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
-            self.request.session.create()
+        if not request.session.session_key:  # if session is not set yet (i.e. anonymous user)
+            request.session.create()
 
         # check if user is creator of post, and if so, don't allow them to react
-        if post.user == self.request.user or post.session_key == self.request.session.session_key:
+        if post.user == request.user or post.session_key == request.session.session_key:
             message_text = "You cannot react to your own post"
             message_color = "danger"
             is_updated = False
@@ -649,9 +649,9 @@ class PostReactionView(generic.View):
             elif type == "n":
                 pass
             else:
-                reaction_score = int(self.request.POST.get("score", ""))
+                reaction_score = int(request.POST.get("score"))
 
-            has_reacted, reaction_id, reacted_score = post.get_has_reacted(self.request)
+            has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
 
             if has_reacted:
                 reaction = Reaction.objects.get(id=reaction_id)
@@ -661,10 +661,10 @@ class PostReactionView(generic.View):
                     reaction.reaction_score = reaction_score
                     reaction.save()
             else:
-                reaction_user = self.request.user if self.request.user.is_authenticated else None
+                reaction_user = request.user if request.user.is_authenticated else None
 
                 Reaction.objects.create(
-                    session_key=self.request.session.session_key,
+                    session_key=request.session.session_key,
                     user=reaction_user,
                     post=post,
                     type=type,
