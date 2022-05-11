@@ -368,37 +368,39 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=False)
+if HCAPTCHA_ENABLED:
+    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
+    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
+    HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
+
 CSP_DEFAULT_SRC = ["'none'"]
 CSP_SCRIPT_SRC = [
     "'self'",
     "cdn.jsdelivr.net",
     "polyfill.io",
     "unpkg.com",
-    "hcaptcha.com",
-    "*.hcaptcha.com",
     "'unsafe-eval'",
-]
+] + env.list("CSP_SCRIPT_SRC", default=[])
 CSP_STYLE_SRC = [
     "'self'",
     "cdn.jsdelivr.net",
     "fonts.googleapis.com",
     "fonts.gstatic.com",
-    "hcaptcha.com",
-    "*.hcaptcha.com",
     "'unsafe-inline'",
-]
-CSP_FONT_SRC = CSP_STYLE_SRC
+] + env.list("CSP_STYLE_SRC", default=[])
+CSP_FONT_SRC = CSP_STYLE_SRC + env.list("CSP_FONT_SRC", default=[])
 CSP_IMG_SRC = [
     "'self'",
     "data:",
 ] + env.list("CSP_IMG_SRC", default=[])
-CSP_BASE_URI = ["'none'"]
-CSP_CONNECT_SRC = ["'self'", "hcaptcha.com", "*.hcaptcha.com"]
-CSP_FRAME_SRC = ["hcaptcha.com", "*.hcaptcha.com"]
-CSP_INCLUDE_NONCE_IN = ["script-src"]
+CSP_BASE_URI = ["'none'"] + env.list("CSP_BASE_URI", default=[])
+CSP_CONNECT_SRC = ["'self'"] + env.list("CSP_CONNECT_SRC", default=[])
+CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
+CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=False)
 if HCAPTCHA_ENABLED:
-    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
-    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
-    HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
+    CSP_SCRIPT_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
+    CSP_STYLE_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
+    CSP_CONNECT_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
+    CSP_FRAME_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
