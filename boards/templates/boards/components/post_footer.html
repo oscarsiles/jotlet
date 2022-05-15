@@ -28,9 +28,9 @@
                     {% if post.topic.board.preferences.reaction_type == 'l' %}
                         <button class="btn btn-link text-muted shadow-none p-0"
                                 id="post-{{ post.pk }}-reaction-form-like"
+                                type="submit"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
-                                :disabled="isOwner || isDisabled"
-                                type="submit">
+                                :disabled="isOwner || isDisabled">
                             {% if has_reacted.0 %}
                                 <i class="bi bi-heart-fill"></i>
                             {% else %}
@@ -40,11 +40,12 @@
                     {% elif post.topic.board.preferences.reaction_type == 'v' %}
                         <button class="btn btn-link text-muted shadow-none p-0"
                                 id="post-{{ post.pk }}-reaction-form-thumbs-up"
-                                type="submit"
                                 name="score"
+                                type="submit"
                                 value="1"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
-                                :disabled="isOwner || isDisabled">
+                                :disabled="isOwner || isDisabled"
+                                @click="$el.focus()">
                             {% if has_reacted.0 and has_reacted.2 == 1 %}
                                 <i class="bi bi-hand-thumbs-up-fill"></i>
                             {% else %}
@@ -54,11 +55,12 @@
                         <div>{{ post.get_reaction_score.0 }}</div>
                         <button class="btn btn-link text-muted shadow-none p-0"
                                 id="post-{{ post.pk }}-reaction-form-thumbs-down"
-                                type="submit"
                                 name="score"
+                                type="submit"
                                 value="-1"
                                 :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
-                                :disabled="isOwner || isDisabled">
+                                :disabled="isOwner || isDisabled"
+                                @click="$el.focus()">
                             {% if has_reacted.0 and has_reacted.2 == -1 %}
                                 <i class="bi bi-hand-thumbs-down-fill"></i>
                             {% else %}
@@ -73,14 +75,14 @@
                              x-init="rating = $el.parentElement.querySelector('#reacted_score').textContent">
                             <template x-for="star in ratings">
                                 <button class="d-flex align-items-center btn btn-link shadow-none p-0"
-                                        type="submit"
-                                        name="score"
                                         :id="'post-{{ post.pk }}-star-' + star"
+                                        name="score"
+                                        type="submit"
                                         :value="star"
                                         :class="isHover ? 'text-black' : 'text-black-50'"
                                         :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
                                         :disabled="isOwner || isDisabled"
-                                        @click="rate(star)"
+                                        @click="rate(star); $el.focus();"
                                         @mouseover="hoverRating = star; isHover = true;"
                                         @mouseleave="hoverRating = 0; isHover = false;">
                                     <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
