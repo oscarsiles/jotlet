@@ -189,10 +189,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AXES_USERNAME_FORM_FIELD = "login"
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
+AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
 AXES_LOCKOUT_URL = "/accounts/lockout/"
-AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=1)
+AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=0)
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -282,7 +282,12 @@ CHANNEL_LAYERS = {
 CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
 CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
 
-CACHALOT_UNCACHABLE_APPS = frozenset(("simple_history",))
+CACHALOT_UNCACHABLE_APPS = frozenset(
+    (
+        "axes",
+        "simple_history",
+    )
+)
 CACHALOT_UNCACHABLE_TABLES = frozenset(
     (
         "django_migrations",

@@ -9,7 +9,7 @@ ENV REDIS_HOST "redis"
 RUN mkdir /workspace
 WORKDIR /workspace
 RUN apt-get update \
-    && apt-get -y install git libpq-dev gcc libwebp-dev
+    && apt-get -y install git libpq-dev gcc libwebp-dev postgresql-client
 COPY ../requirements.txt /workspace/
 RUN pip install -r requirements.txt
 COPY ../requirements-dev.txt /workspace/

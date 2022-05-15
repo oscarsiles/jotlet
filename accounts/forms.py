@@ -5,6 +5,13 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
 from django import forms
 
+from accounts.utils import hcaptcha_verified
+
+
+def verify_hcaptcha(request):
+    if not hcaptcha_verified(request):
+        raise forms.ValidationError("Captcha challenge failed. Please try again.")
+
 
 class CustomLoginForm(LoginForm):
     def __init__(self, *args, **kwargs):
@@ -19,6 +26,10 @@ class CustomLoginForm(LoginForm):
             FloatingField("login"),
             FloatingField("password"),
         )
+
+    def clean(self):
+        verify_hcaptcha(self.request)
+        return super().clean()
 
     def user_credentials(self):
         credentials = super().user_credentials()
@@ -60,6 +71,10 @@ class CustomSignupForm(SignupForm):
             FloatingField("password2"),
             Field("optin_newsletter", wrapper_class="ms-2 form-check form-switch"),
         )
+
+    def clean(self):
+        verify_hcaptcha(self.request)
+        return super().clean()
 
 
 class CustomSocialSignupForm(SocialSignupForm):

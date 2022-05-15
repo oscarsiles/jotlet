@@ -23,6 +23,7 @@ class BoardFilterTest(TestCase):
         Board.objects.create(title="Test Board 3", slug="000003", owner=user2)
 
     def setUp(self):
+        super().setUp()
         self.factory = RequestFactory()
 
     def test_board_filter(self):
