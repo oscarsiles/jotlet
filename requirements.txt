@@ -1,13 +1,13 @@
-boto3==1.22.10
+boto3==1.23.1
 channels-redis[cryptography]==3.4.0
 channels==3.0.4
 crispy-bootstrap5==0.6
 django-allauth==0.50.0
-django-axes==5.32.0
+django-axes==5.33.0
 django-cachalot==2.5.1
 django-cacheops==6.0
 django-cleanup==6.0.0
-django-cors-headers==3.11.0
+django-cors-headers==3.12.0
 django-csp==3.7
 django-environ==0.8.1
 django-filter==21.1
