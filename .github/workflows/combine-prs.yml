@@ -27,4 +27,4 @@ jobs:
           go install github.com/Skarlso/dependabot-bundler@v0.0.3
       - name: Run Dependabot Bundler
         run: |
-          dependabot-bundler --token ${{ secrets.GITHUB_TOKEN }} --repo context.repo.repo --owner context.repo.owner
+          dependabot-bundler --token ${{ secrets.GITHUB_TOKEN }} --repo ${{ context.repo.repo }} --owner ${{ context.repo.owner }}
