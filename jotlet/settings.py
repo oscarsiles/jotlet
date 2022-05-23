@@ -30,9 +30,9 @@ mimetypes.add_type("text/javascript", ".js", True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"), default="unsafe-secret-key")
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 
 TESTING = True if "test" in sys.argv else False
 DEBUG = TESTING if TESTING == True else env("DEBUG", default=False)
