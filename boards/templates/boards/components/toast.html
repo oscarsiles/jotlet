@@ -3,12 +3,11 @@
 <div class="position-fixed bottom-0 end-0 p-3"
      x-data="toastNotification()">
     <div id="toast"
-         class="align-items-center rounded border-0"
-         x-show="open"
+         class="toast align-items-center border-0"
          x-bind:class="bg_color"
-         x-transition
-         @show-message.camel.window="openToast($event)"
+         @show-message.camel.window="openToast($event); new bootstrap.Toast($el).show();"
          role="alert"
+         data-bs-delay="3000"
          aria-live="assertive"
          aria-atomic="true">
         <div class="d-flex">
@@ -16,8 +15,8 @@
             <button id="toast-close"
                     type="button"
                     class="btn-close shadow-none me-2 m-auto"
-                    @click="open = false"
                     x-bind:class="btn_color"
+                    data-bs-dismiss="toast"
                     aria-label="Close">
             </button>
         </div>
