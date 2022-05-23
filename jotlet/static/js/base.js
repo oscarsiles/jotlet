@@ -3,9 +3,8 @@ function toastNotification() {
   return {
     message: "",
     bg_color: "",
-    btn_color: "btn-close-white",
+    btn_color: "",
     openToast(event) {
-      this.open = true;
       this.message = event.detail.message;
 
       this.bg_color = "text-bg-success";
