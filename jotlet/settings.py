@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import mimetypes
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -33,7 +34,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"), default="unsafe-secret-key"
 
 SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = env("DEBUG", default=False)
+TESTING = True if "test" in sys.argv else False
+DEBUG = TESTING if TESTING == True else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
@@ -141,16 +143,28 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "jotlet.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME", default="jotlet"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST", default=""),
-        "PORT": env("DB_PORT", default=""),
+if not TESTING:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_NAME", default="jotlet"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST", default=""),
+            "PORT": env("DB_PORT", default=""),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "jotlet",
+            "USER": os.environ.get("DB_USER", "vscode"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "notsecure"),
+            "HOST": os.environ.get("DB_HOST", "postgres"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
 
 CONN_MAX_AGE = env("CONN_MAX_AGE", default=60)
 
@@ -158,6 +172,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 Q_CLUSTER = {
     "name": "DjangORM",
+    "sync": TESTING,
     "workers": 2,
     "timeout": 1800,
     "retry": 1800,
@@ -188,6 +203,7 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+AXES_ENABLED = not TESTING
 AXES_USERNAME_FORM_FIELD = "login"
 AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
 AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
@@ -243,44 +259,57 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
-REDIS_URL = env("REDIS_URL", default="redis://localhost:6379")
-REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
-if not REDIS_UNIX_SOCKET:
-    REDIS_HOST = env("REDIS_HOST", default=("localhost"))
-    REDIS_PORT = env("REDIS_PORT", default=6379)
+if not TESTING:
+    REDIS_URL = env("REDIS_URL", default="redis://localhost:6379")
+    REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
+    if not REDIS_UNIX_SOCKET:
+        REDIS_HOST = env("REDIS_HOST", default=("localhost"))
+        REDIS_PORT = env("REDIS_PORT", default=6379)
 
-CACHES = {
-    "default": {
-        "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
-        "LOCATION": REDIS_URL,
-        "KEY_PREFIX": "jotlet",
-        "OPTIONS": {
-            "parser_class": "redis.connection.HiredisParser",
+    CACHES = {
+        "default": {
+            "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
+            "LOCATION": REDIS_URL,
+            "KEY_PREFIX": "jotlet",
+            "OPTIONS": {
+                "parser_class": "redis.connection.HiredisParser",
+            },
+        }
+    }
+
+    CACHEOPS_REDIS = REDIS_URL + "?db=1"
+
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [
+                    {
+                        "address": (REDIS_HOST, REDIS_PORT) if not REDIS_UNIX_SOCKET else REDIS_URL,
+                        "db": 2,
+                    }
+                ],
+                "prefix": "jotlet",
+                "capacity": 500,
+                "symmetric_encryption_keys": [SECRET_KEY],
+            },
         },
     }
-}
-
-CACHEOPS_REDIS = REDIS_URL + "?db=1"
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [
-                {
-                    "address": (REDIS_HOST, REDIS_PORT) if not REDIS_UNIX_SOCKET else REDIS_URL,
-                    "db": 2,
-                }
-            ],
-            "prefix": "jotlet",
-            "capacity": 500,
-            "symmetric_encryption_keys": [SECRET_KEY],
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
-    },
-}
+    }
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "KEY_PREFIX": "jotlet",
+        }
+    }
 
-CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
-CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
+CACHALOT_ENABLED = False if TESTING else env("CACHALOT_ENABLED", default=True)
+CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
 
 CACHALOT_UNCACHABLE_APPS = frozenset(
     (
@@ -339,7 +368,11 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_FAIL_SILENTLY = not DEBUG
 
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = (
+    "django.core.mail.backends.console.EmailBackend"
+    if TESTING
+    else env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+)
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
 
@@ -373,11 +406,15 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=False)
+HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
 if HCAPTCHA_ENABLED:
-    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
-    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
     HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
+    if not TESTING:
+        HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
+        HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
+    else:
+        HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
+        HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"
 
 CSP_DEFAULT_SRC = ["'none'"]
 CSP_SCRIPT_SRC = [
