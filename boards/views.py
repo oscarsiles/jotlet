@@ -10,7 +10,7 @@ from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
-from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
+from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh, trigger_client_event
 
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
@@ -174,21 +174,20 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
         return kwargs
 
     def form_valid(self, form):
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "preferencesChanged": None,
-                        "showMessage": {
-                            "message": "Preferences Saved",
-                            "color": "warning",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Preferences Saved",
+                    "color": "warning",
+                },
+            ),
+            "preferencesChanged",
+            None,
         )
 
 
@@ -265,20 +264,20 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
     def form_valid(self, form):
         form.instance.board_id = Board.objects.get(slug=self.kwargs["slug"]).id
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "topicCreated": None,
-                        "showMessage": {
-                            "message": f'Topic "{self.object.subject}" created',
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Topic Created",
+                    "color": "success",
+                },
+            ),
+            "topicCreated",
+            None,
         )
 
 
@@ -292,20 +291,19 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         return self.request.user == board.owner or self.request.user.is_staff
 
     def form_valid(self, form):
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "topicUpdated": None,
-                        "showMessage": {
-                            "message": f'Topic "{self.object.subject}" updated',
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": f'Topic "{self.object.subject}" updated',
+                },
+            ),
+            "topicUpdated",
+            None,
         )
 
 
@@ -319,21 +317,20 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
 
     def form_valid(self, form):
         topic_subject = self.object.subject
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "topicDeleted": None,
-                        "showMessage": {
-                            "message": f'Topic "{topic_subject}" Deleted',
-                            "color": "danger",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": f'Topic "{topic_subject}" Deleted',
+                    "color": "danger",
+                },
+            ),
+            "topicDeleted",
+            None,
         )
 
     def get_success_url(self):
@@ -355,20 +352,19 @@ class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Temp
     def post(self, request, *args, **kwargs):
         topic = Topic.objects.prefetch_related("posts__reactions").get(pk=self.kwargs["topic_pk"])
         topic.posts.all().delete()
+        response = HttpResponse(status=204)
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "topicUpdated": None,
-                        "showMessage": {
-                            "message": f"Topic Posts Deleted",
-                            "color": "danger",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Topic Posts Deleted",
+                    "color": "danger",
+                },
+            ),
+            "topicUpdated",
+            None,
         )
 
 
@@ -390,20 +386,19 @@ class CreatePostView(generic.CreateView):
         if form.instance.topic.board.preferences.require_approval:
             form.instance.approved = get_is_moderator(self.request.user, form.instance.topic.board)
 
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "postCreated": None,
-                        "showMessage": {
-                            "message": "Post Created",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Post Created",
+                },
+            ),
+            "postCreated",
+            None,
         )
 
 
@@ -431,20 +426,19 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
         return self.board_post
 
     def form_valid(self, form):
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "postUpdated": None,
-                        "showMessage": {
-                            "message": "Post Updated",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Post Updated",
+                },
+            ),
+            "postUpdated",
+            None,
         )
 
 
@@ -471,21 +465,20 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
         return self.board_post
 
     def form_valid(self, form):
-        super().form_valid(form)
+        response = super().form_valid(form)
+        response.status_code = 204
 
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "postDeleted": None,
-                        "showMessage": {
-                            "message": "Post Deleted",
-                            "color": "danger",
-                        },
-                    }
-                )
-            },
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Post Deleted",
+                    "color": "danger",
+                },
+            ),
+            "postDeleted",
+            None,
         )
 
     def get_success_url(self):
@@ -516,19 +509,20 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
         post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
         post.reactions.all().delete()
         post_reaction_send_update_message(post)
-        return HttpResponse(
-            status=204,
-            headers={
-                "HX-Trigger": json.dumps(
-                    {
-                        "reactionUpdated": None,
-                        "showMessage": {
-                            "message": "Reactions Deleted",
-                            "color": "danger",
-                        },
-                    }
-                )
-            },
+
+        response = HttpResponse(status=204)
+
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": "Reactions Deleted",
+                    "color": "danger",
+                },
+            ),
+            "reactionUpdated",
+            None,
         )
 
 
