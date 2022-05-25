@@ -907,6 +907,8 @@ class PostDeleteViewTest(TestCase):
 
 
 class ReactionsDeleteViewTest(TestCase):
+    reactions_delete_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
@@ -924,6 +926,9 @@ class ReactionsDeleteViewTest(TestCase):
             for type in REACTION_TYPE[1:]:
                 for j in range(5):
                     Reaction.objects.create(post=post, session_key=f"{i}{j}", type=type[0], reaction_score="1")
+        cls.reactions_delete_url = reverse(
+            "boards:post-reactions-delete", kwargs={"slug": board.slug, "pk": Post.objects.first().pk}
+        )
 
     def test_anonymous_permissions(self):
         post = Post.objects.get(content="Test Post 0")
@@ -946,6 +951,21 @@ class ReactionsDeleteViewTest(TestCase):
         response = self.client.post(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
+
+    async def test_post_toggle_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        post = await sync_to_async(Post.objects.first)()
+        await sync_to_async(self.client.post)(self.reactions_delete_url)
+        message = await communicator.receive_from()
+        self.assertIn("reaction_updated", message)
+        self.assertIn(f'"post_pk": {post.pk}', message)
 
 
 class BoardListViewTest(TestCase):
@@ -1259,12 +1279,15 @@ class PostToggleApprovalViewTest(TestCase):
 
 
 class PostReactionViewTest(TestCase):
+    post_reaction_url = ""
+
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
-        Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", user=test_user1)
+        post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", user=test_user1)
+        cls.post_reaction_url = reverse("boards:post-reaction", kwargs={"slug": board.slug, "pk": post.pk})
 
     def test_post_reaction_repeat_anonymous(self):
         post = Post.objects.get(content="Test Post")
@@ -1348,6 +1371,27 @@ class PostReactionViewTest(TestCase):
             )
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 0)
+
+    async def test_reaction_updated_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        post = await sync_to_async(Post.objects.get)(content="Test Post")
+        for _type in REACTION_TYPE[1:]:
+            type = _type[0]
+            preferences = await sync_to_async(BoardPreferences.objects.get)(board=board)
+            preferences.reaction_type = type
+            await sync_to_async(preferences.save)()
+            message = await communicator.receive_from()
+            self.assertIn("board_preferences_changed", message)
+            await sync_to_async(self.client.post)(self.post_reaction_url, data={"score": 1})
+            message = await communicator.receive_from()
+            self.assertIn("reaction_updated", message)
+            self.assertIn(f'"post_pk": {post.id}', message)
 
 
 MEDIA_ROOT = tempfile.mkdtemp()
