@@ -14,7 +14,7 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 from django_htmx.middleware import HtmxMiddleware
 
-from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
+from boards.models import IMAGE_TYPE, REACTION_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
 from boards.routing import websocket_urlpatterns
 from boards.views import BoardView
 
@@ -88,7 +88,7 @@ class BoardViewTest(TestCase):
         super().setUp()
         self.factory = RequestFactory()
         self.htmx_middleware = HtmxMiddleware(dummy_request)
-        
+
     def test_anonymous_permissions(self):
         board = Board.objects.get(title="Test Board")
         response = self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
@@ -605,6 +605,59 @@ class TopicDeleteViewTest(TestCase):
         self.assertIn(f'"topic_pk": {topic.id}', message)
 
 
+class DeleteTopicPostsViewTest(TestCase):
+    topic_posts_delete_url = ""
+
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
+        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        cls.topic_posts_delete_url = reverse(
+            "boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.id}
+        )
+        for i in range(10):
+            Post.objects.create(topic=topic, content=f"Test Post {i}", user=test_user1)
+
+    def test_anonymous_permissions(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        response = self.client.get(
+            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_owner_permissions(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        topic = Topic.objects.get(subject="Test Topic")
+        response = self.client.get(
+            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Post.objects.filter(topic=topic).count(), 10)
+
+        response = self.client.post(
+            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.filter(topic=topic).count(), 0)
+
+    async def test_topic_posts_deleted_websocket_message(self):
+        application = URLRouter(websocket_urlpatterns)
+        board = await sync_to_async(Board.objects.get)(title="Test Board")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected, "Could not connect")
+        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        message = await communicator.receive_from()
+        self.assertIn("session_connected", message)
+        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
+        await sync_to_async(self.client.post)(self.topic_posts_delete_url)
+        for i in range(10):
+            message = await communicator.receive_from()
+            self.assertIn("post_deleted", message)
+
+
 class PostCreateViewTest(TestCase):
     post_create_url = ""
 
@@ -853,6 +906,48 @@ class PostDeleteViewTest(TestCase):
         self.assertIn(f'"post_pk": {post.id}', message)
 
 
+class ReactionsDeleteViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
+        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
+        board = Board.objects.create(
+            title="Test Board", slug="000000", description="Test Description", owner=test_user1
+        )
+        board.preferences.moderators.add(test_user3)
+        board.preferences.reaction_type = "l"
+        board.preferences.save()
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        for i in range(5):
+            post = Post.objects.create(content=f"Test Post {i}", topic=topic)
+            for type in REACTION_TYPE[1:]:
+                for j in range(5):
+                    Reaction.objects.create(post=post, session_key=f"{i}{j}", type=type[0], reaction_score="1")
+
+    def test_anonymous_permissions(self):
+        post = Post.objects.get(content="Test Post 0")
+        reactions = post.reactions.all()
+        response = self.client.get(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+        response = self.client.post(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+    def test_moderator_permissions(self):
+        self.client.login(username="testuser3", password="3y6d0A8sB?5")
+        post = Post.objects.get(content="Test Post 0")
+        response = self.client.get(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+        response = self.client.post(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
+
+
 class BoardListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -893,6 +988,21 @@ class BoardListViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
         self.assertEqual(len(response.context["boards"]), 5)
+        self.assertEqual(response.context["page_obj"].number, 1)
+        self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
+
+    def test_user_perm_second_page(self):
+        test_user1 = User.objects.get(username="testuser1")
+        test_user1.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
+        test_user1.save()
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        response = self.client.get(
+            reverse("boards:board-list"), {"page": 2}, HTTP_REFERER=reverse("boards:index-all")
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "boards/components/board_list.html")
+        self.assertEqual(len(response.context["boards"]), 1)
+        self.assertEqual(response.context["page_obj"].number, 2)
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
 
 
@@ -984,6 +1094,87 @@ class PostFetchViewTest(TestCase):
         self.assertContains(response, "Test Post", html=True)
 
 
+class PostFooterFetchViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
+        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
+        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        board.preferences.moderators.add(test_user3)
+        board.preferences.reaction_type = "l"
+        board.preferences.save()
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
+        for type in REACTION_TYPE[1:]:
+            Reaction.objects.create(post=post, type=type[0], user=test_user1)
+
+    def test_post_footer_fetch_anonymous(self):
+        post = Post.objects.get(content="Test Post")
+        for _type in REACTION_TYPE[1:]:
+            type = _type[0]
+            if type == "l":
+                icon = "bi-heart"
+            elif type == "v":
+                icon = "bi-hand-thumbs-up"
+            elif type == "s":
+                icon = "bi-star"
+
+            post.topic.board.preferences.reaction_type = type
+            post.topic.board.preferences.save()
+            post.approved = False
+            post.save()
+
+            response = self.client.get(
+                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context["post"], post)
+            self.assertNotContains(response, icon)
+
+            post.approved = True
+            post.save()
+            response = self.client.get(
+                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context["post"], post)
+            self.assertContains(response, icon)
+
+    def test_post_footer_fetch_moderator(self):
+        self.client.login(username="testuser3", password="3y6d0A8sB?5")
+        post = Post.objects.get(content="Test Post")
+        for _type in REACTION_TYPE[1:]:
+            type = _type[0]
+            if type == "l":
+                icon = "bi-heart"
+            elif type == "v":
+                icon = "bi-hand-thumbs-up"
+            elif type == "s":
+                icon = "bi-star"
+
+            post.topic.board.preferences.reaction_type = type
+            post.topic.board.preferences.save()
+            post.approved = False
+            post.save()
+
+            response = self.client.get(
+                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context["post"], post)
+            self.assertContains(response, icon)
+
+            post.approved = True
+            post.save()
+            response = self.client.get(
+                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context["post"], post)
+            self.assertContains(response, icon)
+
+
 class PostToggleApprovalViewTest(TestCase):
     post_approval_url = ""
 
@@ -1007,9 +1198,6 @@ class PostToggleApprovalViewTest(TestCase):
             reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url, f"/accounts/login/?next=/boards/{post.topic.board.slug}/posts/{post.id}/approval/"
-        )
 
     def test_post_toggle_approval_other_user(self):
         self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
@@ -1067,7 +1255,99 @@ class PostToggleApprovalViewTest(TestCase):
         await sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
-        self.assertIn(f'"post_pk": {post.id}', message)
+        self.assertIn(f'"post_pk": {post.pk}', message)
+
+
+class PostReactionViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", user=test_user1)
+
+    def test_post_reaction_repeat_anonymous(self):
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(Reaction.objects.count(), 0)
+
+        for _type in REACTION_TYPE[1:]:
+            type = _type[0]
+            post.topic.board.preferences.reaction_type = type
+            post.topic.board.preferences.save()
+
+            response = self.client.post(
+                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                {"score": 1},
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(Reaction.objects.count(), 1)
+
+            response = self.client.post(
+                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                {"score": 1},
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(Reaction.objects.count(), 0)
+
+    def test_post_reaction_score_changed(self):
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(Reaction.objects.count(), 0)
+
+        for _type in REACTION_TYPE[2:]:  # like only has one score
+            type = _type[0]
+            post.topic.board.preferences.reaction_type = type
+            post.topic.board.preferences.save()
+            if type == "v":
+                second_score = -1
+            elif type == "s":
+                second_score = 2
+
+            response = self.client.post(
+                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                {"score": 1},
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(Reaction.objects.count(), 1)
+            self.assertEqual(Reaction.objects.first().reaction_score, 1)
+
+            response = self.client.post(
+                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                {"score": second_score},
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(Reaction.objects.count(), 1)
+            self.assertEqual(Reaction.objects.first().reaction_score, second_score)
+
+            post.reactions.all().delete()
+
+    def test_post_reaction_disabled(self):
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(Reaction.objects.count(), 0)
+
+        response = self.client.post(
+            reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+            {"score": 1},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Reaction.objects.count(), 0)
+
+    def test_post_reaction_own_post(self):
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(Reaction.objects.count(), 0)
+
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+
+        for _type in REACTION_TYPE[1:]:
+            type = _type[0]
+            post.topic.board.preferences.reaction_type = type
+            post.topic.board.preferences.save()
+
+            response = self.client.post(
+                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                {"score": 1},
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(Reaction.objects.count(), 0)
 
 
 MEDIA_ROOT = tempfile.mkdtemp()

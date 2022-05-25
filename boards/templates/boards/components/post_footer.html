@@ -8,116 +8,118 @@
 {% endif %}
 {% cached_as post 3600 post_footer_cache post.pk post.approved post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
-    <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
-         id="post-{{ post.pk }}-footer">
-        <div class="post-card-footer-htmx-div"
-             id="post-{{ post.pk }}-footer-htmx-div"
-             hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
-             hx-trigger="reactionUpdated"
-             hx-target="closest .card-footer"
-             hx-swap="outerHTML"
+    {% if post.approved or is_owner or is_moderator %}
+        <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
+             id="post-{{ post.pk }}-footer"
              x-data="{ isDisabled: {{ post.approved|yesno:'false,true' }}, isOwner: {{ is_owner|lower }}, }">
-            <form id="post-{{ post.pk }}-reaction-form"
-                  hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
-                  hx-trigger="postReaction"
-                  hx-swap="none"
-                  @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
-                {% csrf_token %}
-                <div class="d-flex align-items-center gap-2">
-                    {% cached_as post 3600 post_footer_form_cache post.pk post.get_reaction_score post.topic.board.preferences.reaction_type has_reacted %}
-                    {% if post.topic.board.preferences.reaction_type == 'l' %}
-                        <button class="btn btn-link text-muted shadow-none p-0"
-                                id="post-{{ post.pk }}-reaction-form-like"
-                                type="submit"
-                                :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
-                                :disabled="isOwner || isDisabled">
-                            {% if has_reacted.0 %}
-                                <i class="bi bi-heart-fill"></i>
-                            {% else %}
-                                <i class="bi bi-heart"></i>
-                            {% endif %}
-                        </button>
-                    {% elif post.topic.board.preferences.reaction_type == 'v' %}
-                        <button class="btn btn-link text-muted shadow-none p-0"
-                                id="post-{{ post.pk }}-reaction-form-thumbs-up"
-                                name="score"
-                                type="submit"
-                                value="1"
-                                :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
-                                :disabled="isOwner || isDisabled"
-                                @click="$el.focus()">
-                            {% if has_reacted.0 and has_reacted.2 == 1 %}
-                                <i class="bi bi-hand-thumbs-up-fill"></i>
-                            {% else %}
-                                <i class="bi bi-hand-thumbs-up"></i>
-                            {% endif %}
-                        </button>
-                        <div>{{ post.get_reaction_score.0 }}</div>
-                        <button class="btn btn-link text-muted shadow-none p-0"
-                                id="post-{{ post.pk }}-reaction-form-thumbs-down"
-                                name="score"
-                                type="submit"
-                                value="-1"
-                                :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
-                                :disabled="isOwner || isDisabled"
-                                @click="$el.focus()">
-                            {% if has_reacted.0 and has_reacted.2 == -1 %}
-                                <i class="bi bi-hand-thumbs-down-fill"></i>
-                            {% else %}
-                                <i class="bi bi-hand-thumbs-down"></i>
-                            {% endif %}
-                        </button>
-                        <div>{{ post.get_reaction_score.1 }}</div>
-                    {% elif post.topic.board.preferences.reaction_type == 's' %}
-                        <div class="d-flex align-items-center stars-div"
-                             id="stars-{{ post.pk }}-div"
-                             x-data="starRating()"
-                             x-init="rating = $el.parentElement.querySelector('#reacted_score').textContent">
-                            <template x-for="star in ratings">
-                                <button class="d-flex align-items-center btn btn-link shadow-none p-0"
-                                        :id="'post-{{ post.pk }}-star-' + star"
-                                        name="score"
-                                        type="submit"
-                                        :value="star"
-                                        :class="isHover ? 'text-black' : 'text-black-50'"
-                                        :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
-                                        :disabled="isOwner || isDisabled"
-                                        @click="rate(star); $el.focus();"
-                                        @mouseover="hoverRating = star; isHover = true;"
-                                        @mouseleave="hoverRating = 0; isHover = false;">
-                                    <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
-                                </button>
-                            </template>
-                        </div>
-                    {% endif %}
-                    <div>
-                        {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
-                            {{ post.get_reaction_score }}
+            <div class="post-card-footer-htmx-div"
+                 id="post-{{ post.pk }}-footer-htmx-div"
+                 hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
+                 hx-trigger="reactionUpdated"
+                 hx-target="closest .card-footer"
+                 hx-swap="outerHTML">
+                <form id="post-{{ post.pk }}-reaction-form"
+                      hx-post="{% url 'boards:post-reaction' post.topic.board.slug post.pk %}"
+                      hx-trigger="postReaction"
+                      hx-swap="none"
+                      @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-center gap-2">
+                        {% cached_as post 3600 post_footer_form_cache post.pk post.get_reaction_score post.topic.board.preferences.reaction_type has_reacted %}
+                        {% if post.topic.board.preferences.reaction_type == 'l' %}
+                            <button class="btn btn-link text-muted shadow-none p-0"
+                                    id="post-{{ post.pk }}-reaction-form-like"
+                                    type="submit"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
+                                    :disabled="isOwner || isDisabled">
+                                {% if has_reacted.0 %}
+                                    <i class="bi bi-heart-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-heart"></i>
+                                {% endif %}
+                            </button>
+                        {% elif post.topic.board.preferences.reaction_type == 'v' %}
+                            <button class="btn btn-link text-muted shadow-none p-0"
+                                    id="post-{{ post.pk }}-reaction-form-thumbs-up"
+                                    name="score"
+                                    type="submit"
+                                    value="1"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
+                                    :disabled="isOwner || isDisabled"
+                                    @click="$el.focus()">
+                                {% if has_reacted.0 and has_reacted.2 == 1 %}
+                                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-hand-thumbs-up"></i>
+                                {% endif %}
+                            </button>
+                            <div>{{ post.get_reaction_score.0 }}</div>
+                            <button class="btn btn-link text-muted shadow-none p-0"
+                                    id="post-{{ post.pk }}-reaction-form-thumbs-down"
+                                    name="score"
+                                    type="submit"
+                                    value="-1"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
+                                    :disabled="isOwner || isDisabled"
+                                    @click="$el.focus()">
+                                {% if has_reacted.0 and has_reacted.2 == -1 %}
+                                    <i class="bi bi-hand-thumbs-down-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-hand-thumbs-down"></i>
+                                {% endif %}
+                            </button>
+                            <div>{{ post.get_reaction_score.1 }}</div>
+                        {% elif post.topic.board.preferences.reaction_type == 's' %}
+                            <div class="d-flex align-items-center stars-div"
+                                 id="stars-{{ post.pk }}-div"
+                                 x-data="starRating()"
+                                 x-init="rating = $el.parentElement.querySelector('#reacted_score').textContent">
+                                <template x-for="star in ratings">
+                                    <button class="d-flex align-items-center btn btn-link shadow-none p-0"
+                                            :id="'post-{{ post.pk }}-star-' + star"
+                                            name="score"
+                                            type="submit"
+                                            :value="star"
+                                            :class="isHover ? 'text-black' : 'text-black-50'"
+                                            :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
+                                            :disabled="isOwner || isDisabled"
+                                            @click="rate(star); $el.focus();"
+                                            @mouseover="hoverRating = star; isHover = true;"
+                                            @mouseleave="hoverRating = 0; isHover = false;">
+                                        <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
+                                    </button>
+                                </template>
+                            </div>
                         {% endif %}
-                    </div>
-                {% endcached_as %}
-                {{ is_owner|json_script:"is_post_owner" }}
-                {{ has_reacted.0|json_script:"has_reacted" }}
-                {% if has_reacted.0 %}
-                    {{ has_reacted.2|json_script:"reacted_score" }}
-                {% else %}
-                    {{ 0|json_script:"reacted_score" }}
-                {% endif %}
-            </div>
-        </form>
-    </div>
-    {% if is_moderator and post.get_reaction_count > 0 %}
-        <div class="d-flex align-items-center">
-            <button hx-get="{% url 'boards:post-reactions-delete' post.topic.board.slug post.pk %}"
-                    hx-target="#modal-1-body-div"
-                    hx-swap="innerHTML"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div"
-                    class="btn btn-link text-black shadow-none p-0">
-                <i class="bi bi-x-square" title="Delete post reactions"></i>
-            </button>
+                        <div>
+                            {% if post.get_reaction_score and not post.topic.board.preferences.reaction_type == 'v' %}
+                                {{ post.get_reaction_score }}
+                            {% endif %}
+                        </div>
+                    {% endcached_as %}
+                    {{ is_owner|json_script:"is_post_owner" }}
+                    {{ has_reacted.0|json_script:"has_reacted" }}
+                    {% if has_reacted.0 %}
+                        {{ has_reacted.2|json_script:"reacted_score" }}
+                    {% else %}
+                        {{ 0|json_script:"reacted_score" }}
+                    {% endif %}
+                </div>
+            </form>
         </div>
-    {% endif %}
-</div>
+        {% if is_moderator and post.get_reaction_count > 0 %}
+            <div class="d-flex align-items-center">
+                <button hx-get="{% url 'boards:post-reactions-delete' post.topic.board.slug post.pk %}"
+                        hx-target="#modal-1-body-div"
+                        hx-swap="innerHTML"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-1-div"
+                        class="btn btn-link text-black shadow-none p-0">
+                    <i class="bi bi-x-square" title="Delete post reactions"></i>
+                </button>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
 {% endif %}
 {% endcached_as %}

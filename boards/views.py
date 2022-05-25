@@ -409,8 +409,6 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     template_name = "boards/post_form.html"
 
     def test_func(self):
-        if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
-            self.request.session.create()
         post = self.get_object()
         return (
             self.request.session.session_key == post.session_key
@@ -506,7 +504,7 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
         return self.board_post
 
     def post(self, request, *args, **kwargs):
-        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        post = self.get_object()
         post.reactions.all().delete()
         post_reaction_send_update_message(post)
 
@@ -633,15 +631,17 @@ class PostReactionView(generic.View):
             request.session.create()
 
         # check if user is creator of post, and if so, don't allow them to react
-        if post.user == request.user or post.session_key == request.session.session_key:
+        if type == "n":
+            message_text = "Reactions disabled"
+            message_color = "danger"
+            is_updated = False
+        elif post.user == request.user or post.session_key == request.session.session_key:
             message_text = "You cannot react to your own post"
             message_color = "danger"
             is_updated = False
         else:
             if type == "l":
                 reaction_score = 1
-            elif type == "n":
-                pass
             else:
                 reaction_score = int(request.POST.get("score"))
 
