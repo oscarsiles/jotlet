@@ -42,6 +42,4 @@ class BoardFilter(django_filters.FilterSet):
         return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
 
     def filter_username(self, queryset, name, value):
-        if value[0] != "":
-            return queryset.filter(owner__username__in=value.split(","))
-        return queryset
+        return queryset.filter(owner__username__in=value.split(","))

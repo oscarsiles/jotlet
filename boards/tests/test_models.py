@@ -1,14 +1,18 @@
 import os
 import shutil
 import tempfile
+from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
+from django.test.client import RequestFactory
+from django.urls import reverse
 from django.utils.html import escape
 
-from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Topic
+from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
 
 
 class BoardModelTest(TestCase):
@@ -53,12 +57,12 @@ class BoardModelTest(TestCase):
         self.assertEqual(board.get_post_count, 1)
         self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
 
-    def test_get_post_last_updated(self):
+    def test_get_last_post_date(self):
         board = Board.objects.get(title="Test Board")
         self.assertIsNone(board.get_last_post_date)
         topic = Topic.objects.create(board=board, subject="Test Topic")
-        Post.objects.create(topic=topic, content="Test Post")
-        post2 = Post.objects.create(topic=topic, content="Test Post 2")
+        Post.objects.create(topic=topic, content="Test Post", created_at=datetime.now() - timedelta(days=2))
+        post2 = Post.objects.create(topic=topic, content="Test Post 2", created_at=datetime.now() - timedelta(days=1))
         # make sure another board's posts are not counted
         board2 = Board.objects.create(title="Test Board 2", description="Test Board Description")
         topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
@@ -124,6 +128,14 @@ class TopicModelTest(TestCase):
         topic = Topic.objects.get(subject="Test Topic")
         self.assertEqual(topic.get_board_name(), topic.board.title)
 
+    def test_get_last_post_date(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        self.assertIsNone(topic.get_last_post_date)
+        Post.objects.create(topic=topic, content="Test Post", created_at=datetime.today() - timedelta(days=1))
+        post2 = Post.objects.create(topic=topic, content="Test Post 2")
+        topic = Topic.objects.get(subject="Test Topic")
+        self.assertEqual(topic.get_last_post_date, date(post2.created_at, "d/m/Y"))
+
     def test_get_absolute_url(self):
         topic = Topic.objects.get(subject="Test Topic")
         self.assertEqual(topic.get_absolute_url(), f"/boards/{topic.board.slug}/")
@@ -155,6 +167,82 @@ class PostModelTest(TestCase):
         post = Post.objects.get(content="Test Post")
         self.assertEqual(str(post), post.content)
 
+    def test_get_reaction_score(self):
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, 0)
+
+        # like
+        type = "l"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        Reaction.objects.create(post=post, reaction_score=1, session_key="test1")
+        Reaction.objects.create(post=post, reaction_score=1, session_key="test2")
+        post = Post.objects.get(content="Test Post")  # post has cached property
+        self.assertEqual(post.get_reaction_score, 2)
+
+        # vote
+        type = "v"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test1")
+        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test2")
+        Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test3")
+        Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test4")
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, (2, 2))
+
+        # star
+        type = "s"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test1")
+        Reaction.objects.create(post=post, reaction_score=2, type=type, session_key="test2")
+        Reaction.objects.create(post=post, reaction_score=3, type=type, session_key="test3")
+        Reaction.objects.create(post=post, reaction_score=4, type=type, session_key="test4")
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, f"{((1+2+3+4)/4):.2g}")
+
+        # none
+        type = "n"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, 0)
+
+        # unknown
+        type = "?"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, 0)
+
+    def test_get_has_reacted(self):
+        type = "l"
+        post = Post.objects.get(content="Test Post")
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        user = User.objects.get(username="testuser1")
+
+        factory = RequestFactory()
+        request = factory.post(reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}))
+        session_middleware = SessionMiddleware(request)
+        session_middleware.process_request(request)
+        request.session.save()
+        request.user = user
+
+        Reaction.objects.create(post=post, reaction_score=1, session_key=request.session.session_key, user=user)
+        has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
+        self.assertTrue(has_reacted)
+        self.assertEqual(reaction_id, Reaction.objects.get(post=post, user=user).pk)
+        self.assertEqual(reacted_score, 1)
+
+        Reaction.objects.filter(post=post, user=user).update(session_key="test")
+        post = Post.objects.get(content="Test Post")
+        has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
+        self.assertTrue(has_reacted)
+        self.assertEqual(reaction_id, Reaction.objects.get(post=post, user=user).pk)
+        self.assertEqual(reacted_score, 1)
+
     def test_get_absolute_url(self):
         post = Post.objects.get(content="Test Post")
         self.assertEqual(post.get_absolute_url(), f"/boards/{post.topic.board.slug}/")
@@ -172,6 +260,10 @@ class PostModelTest(TestCase):
         board.delete()
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post1.id)
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
+
+
+class ReactionModelTest(TestCase):
+    pass
 
 
 MEDIA_ROOT = tempfile.mkdtemp()

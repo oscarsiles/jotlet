@@ -1,31 +1,26 @@
 // Toast Notification
 function toastNotification() {
   return {
-    open: false,
     message: "",
-    bg_color: "text-white bg-success",
-    btn_color: "btn-close-white",
+    bg_color: "",
+    btn_color: "",
     openToast(event) {
-      this.open = true;
       this.message = event.detail.message;
 
-      this.bg_color = "text-white bg-success";
+      this.bg_color = "text-bg-success";
       this.btn_color = "btn-close-white";
       if (event.detail.color == "warning") {
-        this.bg_color = "text-black bg-warning";
+        this.bg_color = "text-bg-warning";
         this.btn_color = "btn-close-black";
       } else if (event.detail.color == "info") {
-        this.bg_color = "text-black bg-info";
+        this.bg_color = "text-bg-info";
         this.btn_color = "btn-close-black";
       } else if (event.detail.color == "light") {
-        this.bg_color = "text-black bg-light";
+        this.bg_color = "text-bg-light";
         this.btn_color = "btn-close-black";
       } else if (event.detail.color != null) {
-        this.bg_color = "text-white bg-" + event.detail.color;
+        this.bg_color = "text-bg-" + event.detail.color;
       }
-      setTimeout(() => {
-        this.open = false;
-      }, 3000);
     },
   };
 }
