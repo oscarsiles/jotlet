@@ -80,14 +80,6 @@ class Board(models.Model):
         return self.title
 
     @cached_property
-    def get_topic_count(self):
-        return self.topics.count()
-
-    @cached_property
-    def get_topics_with_posts_and_reactions(self):
-        return self.topics.filter(board=self).prefetch_related("posts__reactions").order_by("-created_at")
-
-    @cached_property
     def get_posts(self):
         return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
 
@@ -102,10 +94,6 @@ class Board(models.Model):
         if self.get_post_count > 0:
             return date(self.get_posts.first().created_at, "d/m/Y")
         return None
-
-    def delete_reactions(self):
-        for post in self.get_posts:
-            post.delete_reactions()
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
@@ -224,7 +212,7 @@ class Post(models.Model):
 
     @cached_property
     def get_reactions(self):
-        return self.reactions.all()
+        return self.reactions.filter(type=self.topic.board.preferences.reaction_type).all()
 
     @cached_property
     def get_reaction_type(self):
@@ -288,9 +276,6 @@ class Post(models.Model):
                         break
 
         return has_reacted, reaction_id, reacted_score
-
-    def delete_reactions(self):
-        self.get_reactions.delete()
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})

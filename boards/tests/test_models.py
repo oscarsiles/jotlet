@@ -209,6 +209,13 @@ class PostModelTest(TestCase):
         post = Post.objects.get(content="Test Post")
         self.assertEqual(post.get_reaction_score, 0)
 
+        # unknown
+        type = "?"
+        post.topic.board.preferences.reaction_type = type
+        post.topic.board.preferences.save()
+        post = Post.objects.get(content="Test Post")
+        self.assertEqual(post.get_reaction_score, 0)
+
     def test_get_has_reacted(self):
         type = "l"
         post = Post.objects.get(content="Test Post")
