@@ -3,7 +3,7 @@ channels-redis[cryptography]==3.4.0
 channels==3.0.4
 crispy-bootstrap5==0.6
 django-allauth==0.50.0
-django-axes==5.33.0
+django-axes==5.34.0
 django-cachalot==2.5.1
 django-cacheops==6.0
 django-cleanup==6.0.0
