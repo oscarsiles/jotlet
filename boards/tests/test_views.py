@@ -651,9 +651,8 @@ class DeleteTopicPostsViewTest(TestCase):
         await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         await sync_to_async(self.client.post)(self.topic_posts_delete_url)
-        for i in range(10):
+        for _ in range(10):
             message = await communicator.receive_from()
             self.assertIn("post_deleted", message)
 
@@ -932,7 +931,6 @@ class ReactionsDeleteViewTest(TestCase):
 
     def test_anonymous_permissions(self):
         post = Post.objects.get(content="Test Post 0")
-        reactions = post.reactions.all()
         response = self.client.get(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
