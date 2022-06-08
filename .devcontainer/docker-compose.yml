@@ -6,9 +6,18 @@ x-environment: &default-environment
   POSTGRES_DB: jotlet
 
 services:
-  redis:
-    image: redis:6-alpine
+  # redis:
+  #   image: redis:6-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
     restart: unless-stopped
+    command: --cache_mode=true
+    ulimits:
+      memlock: -1
     ports:
       - "6379:6379"
 
@@ -41,4 +50,4 @@ services:
       - 8089:8089
     depends_on:
       - postgres
-      - redis
+      - dragonfly
