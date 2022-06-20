@@ -386,6 +386,18 @@ class DeleteBoardViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Board.objects.all()), 0)
 
+    def test_delete_board_with_reactions(self):
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        board = Board.objects.get(title="Test Board")
+        topic = Topic.objects.create(subject="Test Topic", board=board)
+        post = Post.objects.create(content="Test Post", topic=topic)
+        Reaction.objects.create(post=post)
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(Board.objects.all()), 0)
+
 
 class TopicCreateViewTest(TestCase):
     topic_created_url = ""

@@ -44,6 +44,12 @@ def invalidate_post_cache(post):
         invalidate_topic_cache(post.topic)
 
 
+def invalidate_reaction_cache(reaction):
+    invalidate_obj(reaction)
+    if Post.objects.filter(id=reaction.post_id).exists():
+        invalidate_post_cache(reaction.post)
+
+
 @receiver(post_save, sender=Board)
 def create_board_preferences(sender, instance, created, **kwargs):
     if created:
@@ -170,14 +176,7 @@ def post_delete_send_message(sender, instance, **kwargs):
 @receiver(post_save, sender=Reaction)
 @receiver(post_delete, sender=Reaction)
 def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
-    try:
-        invalidate_obj(instance)
-        invalidate_obj(instance.post)
-        invalidate_obj(instance.post.topic)
-        invalidate_obj(instance.post.topic.board)
-
-    except:
-        raise Exception(f"Could not invalidate cache: post-{instance.post.pk}-footer")
+    invalidate_reaction_cache(instance)
 
 
 @receiver(post_save, sender=Image)
