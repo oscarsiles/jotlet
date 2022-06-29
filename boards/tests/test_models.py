@@ -118,7 +118,7 @@ class TopicModelTest(TestCase):
     def test_subject_max_length(self):
         topic = Topic.objects.get(subject="Test Topic")
         max_length = topic._meta.get_field("subject").max_length
-        self.assertEqual(max_length, 50)
+        self.assertEqual(max_length, 400)
 
     def test_object_name_is_subject(self):
         topic = Topic.objects.get(subject="Test Topic")
