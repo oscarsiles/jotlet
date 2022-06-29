@@ -1,8 +1,8 @@
 boto3==1.24.18
 channels-redis[cryptography]==3.4.0
-channels==3.0.4
+channels==3.0.5
 crispy-bootstrap5==0.6
-django-allauth==0.50.0
+django-allauth==0.51.0
 django-axes==5.35.0
 django-cachalot==2.5.1
 django-cacheops==6.1
@@ -26,5 +26,5 @@ httpx==0.23.0
 Pillow==9.1.1
 psycopg2==2.9.3
 sorl-thumbnail==12.8.0
-uvicorn[standard]==0.17.6
+uvicorn[standard]==0.18.2
 whitenoise[brotli]==6.2.0
