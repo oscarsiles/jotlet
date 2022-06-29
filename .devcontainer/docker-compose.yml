@@ -32,6 +32,7 @@ services:
     restart: unless-stopped
     volumes:
       - ..:/workspace
+      - /workspace/.dockervolumes/
       - ../static/:/workspace/static/
       - ../media/:/workspace/media/
       - ../.dockervolumes/vscode/extensions:/home/vscode/.vscode-server/extensions

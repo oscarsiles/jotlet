@@ -163,7 +163,7 @@ class BoardPreferences(models.Model):
 
 
 class Topic(models.Model):
-    subject = models.CharField(max_length=50)
+    subject = models.TextField(max_length=400)
     board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
