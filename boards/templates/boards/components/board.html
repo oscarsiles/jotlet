@@ -10,7 +10,7 @@
      @topic-created.camel="topicCount = $el.querySelectorAll('.topic-list').length;"
      @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length;">
     <style nonce="{{ CSP_NONCE }}">
-      {% cache 3600 board-preferences-style board.preferences.pk %}
+      {% cache 86400 board-preferences-style board.preferences.pk %}
         #main-content-div{
         {% if board.preferences.background_type == 'i' %}
         background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
@@ -31,7 +31,7 @@
         }
         {% endcache %}
     </style>
-    {% cached_as board 3600 board_topics_list request.session.session_key request.user.username is_moderator %}
+    {% cached_as board None board_topics_list request.session.session_key request.user.username is_moderator %}
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
     {% endfor %}

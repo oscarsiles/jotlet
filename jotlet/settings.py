@@ -329,12 +329,13 @@ CACHALOT_UNCACHABLE_TABLES = frozenset(
     )
 )
 
-CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
+CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=24 * 60 * 60)}
 CACHEOPS = {
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
     "*.*": {"ops": ()},
 }
+CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
 
 LOGGING = {
     "version": 1,

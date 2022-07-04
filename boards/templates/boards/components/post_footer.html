@@ -6,7 +6,7 @@
 {% if is_owner == None %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
-{% cached_as post 3600 post_footer_cache post.pk post.approved post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
+{% cached_as post None post_footer_cache post.pk post.approved post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator post.topic.board.preferences.reaction_type %}
 {% if post.topic.board.preferences.reaction_type != 'n' %}
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
@@ -25,7 +25,7 @@
                       @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
                     {% csrf_token %}
                     <div class="d-flex align-items-center gap-2">
-                        {% cached_as post 3600 post_footer_form_cache post.pk post.get_reaction_score post.topic.board.preferences.reaction_type has_reacted %}
+                        {% cached_as post None post_footer_form_cache post.pk post.get_reaction_score post.topic.board.preferences.reaction_type has_reacted %}
                         {% if post.topic.board.preferences.reaction_type == 'l' %}
                             <button class="btn btn-link text-muted shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-like"
