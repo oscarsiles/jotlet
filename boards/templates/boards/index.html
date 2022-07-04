@@ -12,12 +12,10 @@
     <div class="d-md-flex flex-grow-1 px-3">
         <div class="col-md">
             {% if not is_all_boards %}
-                <p>
-                    {% crispy form %}
-                </p>
+                <p>{% crispy form %}</p>
             {% endif %}
             {% if request.user.is_authenticated %}
-                {% cache 3600 index-list-title request.user is_all_boards %}
+                {% cache 86400 index-list-title request.user is_all_boards %}
                 <div class="py-2">
                     <div class="d-flex gap-2">
                         <h4>

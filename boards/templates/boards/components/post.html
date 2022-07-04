@@ -5,7 +5,7 @@
 {% if is_owner == None %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
-{% cached_as post 3600 post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
+{% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
 <div class="card post-card my-2"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
@@ -16,7 +16,7 @@
          hidden
      {% endif %}>
     {% if post.approved or is_owner or is_moderator %}
-        {% cached_as post 3600 post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
+        {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
         <div class="card-body">
             <div class="d-flex">
                 <div>
@@ -61,9 +61,7 @@
                 {% endif %}
             </div>
             <div hx-disable x-data x-ignore>
-                <p class="card-text text-break" id="post-{{ post.pk }}-text">
-                    {{ post.content }}
-                </p>
+                <p class="card-text text-break" id="post-{{ post.pk }}-text">{{ post.content }}</p>
             </div>
         </div>
     {% endcached_as %}

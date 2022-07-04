@@ -39,7 +39,7 @@
     </li>
 {% endfor %}
 </ul>
-{% cache 3600 board-list-pagination page_obj request.user.username querystring %}
+{% cache 86400 board-list-pagination page_obj request.user.username querystring %}
 <ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
     hx-target="#board-list">
     {% if page_obj.has_previous %}

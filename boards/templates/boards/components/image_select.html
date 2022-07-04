@@ -1,10 +1,10 @@
 {% load cache static %}
-{% cache 3600 image-select type %}
+{% cache 86400 image-select type %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select"
      x-data>
     {% for image in images %}
-        {% cache 3600 image-select-image image.pk %}
+        {% cache 86400 image-select-image image.pk %}
         <div class="col-sm">
             <div class="card">
                 <div class="card-img-top">
