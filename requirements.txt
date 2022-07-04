@@ -23,7 +23,7 @@ Django[argon2]==4.0.6
 gunicorn==20.1.0
 hiredis==2.0.0
 httpx==0.23.0
-Pillow==9.1.1
+Pillow==9.2.0
 psycopg2==2.9.3
 sorl-thumbnail==12.8.0
 uvicorn[standard]==0.18.2
