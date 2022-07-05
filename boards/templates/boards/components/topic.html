@@ -1,5 +1,4 @@
 {% load cacheops %}
-{% cached_as topic None topic_posts_list request.session.session_key request.user.username is_moderator %}
 <div class="col-md topic-list px-2"
      id="topic-{{ topic.pk }}"
      hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
@@ -8,6 +7,7 @@
      hx-swap="outerHTML"
      x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
      x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
+    {% cached_as topic None topic_posts_list topic request.session.session_key request.user.username is_moderator %}
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break"
@@ -61,11 +61,11 @@
             </button>
         </div>
     </div>
-    <div x-ref="topicPosts_{{ topic.pk }}">
-        {% for post in topic.posts.all|dictsort:"pk" %}
-            {% include 'boards/components/post.html' %}
-        {% endfor %}
-        <div id="newCard-{{ topic.pk }}-div" hidden></div>
-    </div>
-</div>
 {% endcached_as %}
+<div x-ref="topicPosts_{{ topic.pk }}">
+    {% for post in topic.posts.all|dictsort:"pk" %}
+        {% include 'boards/components/post.html' %}
+    {% endfor %}
+    <div id="newCard-{{ topic.pk }}-div" hidden></div>
+</div>
+</div>

@@ -31,28 +31,26 @@
         }
         {% endcache %}
     </style>
-    {% cached_as board None board_topics_list request.session.session_key request.user.username is_moderator %}
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
     {% endfor %}
-{% endcached_as %}
-{% if request.user == board.owner or user.is_staff %}
-    {% cache 86400 board-newTopic board.pk %}
-    <div class="col-md-auto px-2" id="newTopic-div">
-        <div class="card my-2" id="newTopic-card-div">
-            <div class="card-body">
-                <button class="btn btn-link shadow-none card-link my-2"
-                        hx-get="{% url 'boards:topic-create' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        hx-swap="innerHTML"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <strong>Create topic</strong>
-                </button>
+    {% if request.user == board.owner or user.is_staff %}
+        {% cache 86400 board-newTopic board.pk %}
+        <div class="col-md-auto px-2" id="newTopic-div">
+            <div class="card my-2" id="newTopic-card-div">
+                <div class="card-body">
+                    <button class="btn btn-link shadow-none card-link my-2"
+                            hx-get="{% url 'boards:topic-create' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div">
+                        <strong>Create topic</strong>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-{% endcache %}
+    {% endcache %}
 {% endif %}
 <div class="col-md" x-show="topicCount < 2 && !smallWindow"></div>
 <div id="board-scripts">
