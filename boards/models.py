@@ -152,7 +152,7 @@ class BoardPreferences(models.Model):
             self.background_image.type != "b" if self.background_image is not None else True
         ):
             self.background_image = None
-        super(BoardPreferences, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @cached_property
     def get_inverse_opacity(self):
