@@ -28,7 +28,7 @@ def invalidate_board_post_count_cache(instance):
 
             if cache.get(key) is not None:
                 cache.delete(key)
-    except:
+    except Exception:
         raise Exception(f"Could not delete cache: post-{instance.pk}")
 
 
@@ -79,7 +79,7 @@ def invalidate_board_preferences_cache(sender, instance, **kwargs):
             invalidate_obj(topic)
             for post in topic.posts.all():
                 invalidate_obj(post)
-    except:
+    except Exception:
         raise Exception(f"Could not delete cache: board-{instance.id}")
 
 
@@ -110,7 +110,7 @@ def topic_delete_send_message(sender, instance, **kwargs):
                     "topic_pk": instance.pk,
                 },
             )
-    except:
+    except Exception:
         raise Exception(f"Could not send message: topic_deleted for topic {instance.pk}")
 
 
@@ -119,7 +119,7 @@ def topic_delete_send_message(sender, instance, **kwargs):
 def invalidate_topic_template_cache(sender, instance, **kwargs):
     try:
         invalidate_topic_cache(instance)
-    except:
+    except Exception:
         raise Exception(f"Could not delete cache: topic-{instance.pk}")
 
 
@@ -169,7 +169,7 @@ def post_delete_send_message(sender, instance, **kwargs):
                     "post_pk": instance.pk,
                 },
             )
-    except:
+    except Exception:
         raise Exception(f"Could not send message: post_deleted for post-{instance.pk}")
 
 
@@ -195,7 +195,7 @@ def update_image_select(sender, instance, **kwargs):
             cache.delete(keyImageSelect1)
         if cache.get(keyImageSelect2) is not None:
             cache.delete(keyImageSelect2)
-    except:
+    except Exception:
         raise Exception(f"Could not delete cache: image-select-{instance.type}")
 
 

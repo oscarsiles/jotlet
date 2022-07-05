@@ -90,7 +90,7 @@ def post_reaction_send_update_message(post):
                 "post_pk": post.pk,
             },
         )
-    except:
+    except Exception:
         raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 

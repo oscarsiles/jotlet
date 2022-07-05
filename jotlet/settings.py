@@ -1,5 +1,5 @@
 """
-Django settings for jotlet project. 
+Django settings for jotlet project.
 Use a .env file to store configuration variables.
 
 For more information on this file, see
@@ -35,7 +35,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 
 TESTING = True if "test" in sys.argv else False
-DEBUG = TESTING if TESTING == True else env("DEBUG", default=False)
+DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])

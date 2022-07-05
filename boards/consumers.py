@@ -34,7 +34,7 @@ class BoardConsumer(AsyncWebsocketConsumer):
             await cache.atouch(self.board_group_name, 86400)
             if await cache.aget(self.board_group_name) == 0:
                 await cache.adelete(self.board_group_name)
-        except:
+        except Exception:
             raise Exception(f"Error while disconnecting socket from board-{self.board_slug}")
 
         await self.channel_layer.group_send(

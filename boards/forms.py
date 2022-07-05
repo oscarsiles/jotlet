@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
-slug_validator = RegexValidator("\d{6}$", "ID format needs to be ######.")
+slug_validator = RegexValidator(r"\d{6}$", "ID format needs to be ######.")
 
 
 def validate_board_exists(board_slug):
@@ -130,7 +130,7 @@ class BoardPreferencesForm(forms.ModelForm):
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
             "x-data": "",
-            "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}'; 
+            "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}';
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
             $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';

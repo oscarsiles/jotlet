@@ -249,7 +249,7 @@ class Post(models.Model):
                 return score
             else:
                 return 0
-        except:
+        except Exception:
             raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
     def get_has_reacted(self, request):

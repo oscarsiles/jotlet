@@ -461,7 +461,9 @@ class TopicCreateViewTest(TestCase):
             data={"subject": "x" * 401},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "subject", "Ensure this value has at most 400 characters (it has 401).")
+        self.assertFormError(
+            response, "form", "subject", "Ensure this value has at most 400 characters (it has 401)."
+        )
 
     async def test_topic_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
@@ -542,7 +544,9 @@ class TopicUpdateViewTest(TestCase):
             data={"subject": "x" * 401},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "subject", "Ensure this value has at most 400 characters (it has 401).")
+        self.assertFormError(
+            response, "form", "subject", "Ensure this value has at most 400 characters (it has 401)."
+        )
 
     async def test_topic_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
