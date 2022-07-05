@@ -6,12 +6,16 @@
     {% get_is_owner post request as is_owner %}
 {% endif %}
 {% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
-<div class="card post-card my-2"
+<div class="card post-card my-2
+            {% if not post.approved and is_moderator %}
+                opacity-75
+            {% endif %}"
      id="post-{{ post.pk }}"
      hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
      hx-trigger="postUpdated"
      hx-target="this"
      hx-swap="outerHTML"
+     x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
      {% endif %}>

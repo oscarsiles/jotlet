@@ -11,7 +11,7 @@
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
              id="post-{{ post.pk }}-footer"
-             x-data="{ isDisabled: {{ post.approved|yesno:'false,true' }}, isOwner: {{ is_owner|lower }}, }">
+             x-data="{ isDisabled: !isApproved, isOwner: {{ is_owner|lower }}, }">
             <div class="post-card-footer-htmx-div"
                  id="post-{{ post.pk }}-footer-htmx-div"
                  hx-get="{% url 'boards:post-footer-fetch' post.topic.board.slug post.pk %}"
