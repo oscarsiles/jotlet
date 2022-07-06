@@ -9,9 +9,11 @@ ENV REDIS_HOST "redis"
 RUN mkdir /workspace
 WORKDIR /workspace
 RUN apt-get update \
-    && apt-get -y install git libpq-dev gcc libwebp-dev postgresql-client
+    && apt-get -y install git libpq-dev gcc libwebp-dev postgresql-client \
+    && apt-get -y upgrade \
+    && python -m pip install --upgrade pip
 COPY ../requirements.txt /workspace/
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt && pip uninstall --yes watchfiles
 COPY ../requirements-dev.txt /workspace/
 RUN pip install -r requirements-dev.txt
 RUN groupadd --gid $USER_GID $USERNAME \

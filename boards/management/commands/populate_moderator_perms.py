@@ -26,5 +26,5 @@ class Command(BaseCommand):
                     self.stdout.write(f"Permission {perm.codename} already exists for moderators.")
 
             self.stdout.write(self.style.SUCCESS("Successfully added permissions for moderators."))
-        except:
+        except Exception:
             raise CommandError("Failed to populate moderator permissions.")

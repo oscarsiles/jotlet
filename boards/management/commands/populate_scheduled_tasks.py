@@ -23,5 +23,5 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(f"Scheduled task {task['name']} already exists.")
             self.stdout.write(self.style.SUCCESS("Successfully scheduled all required tasks."))
-        except:
+        except Exception:
             raise CommandError("Failed to populate scheduled tasks.")

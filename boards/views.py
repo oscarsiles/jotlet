@@ -90,7 +90,7 @@ def post_reaction_send_update_message(post):
                 "post_pk": post.pk,
             },
         )
-    except:
+    except Exception:
         raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 
@@ -700,6 +700,7 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["slug"] = self.kwargs["slug"]
         context["url"] = self.request.build_absolute_uri(
             reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
         )

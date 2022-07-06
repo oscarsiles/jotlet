@@ -37,7 +37,7 @@ class BoardModelTest(TestCase):
 
     def test_slug_format(self):
         slug = Board.objects.get(title="Test Board").slug
-        self.assertRegex(slug, r"^\d{6}$")
+        self.assertRegex(slug, r"^[a-z0-9]{8}$")  # make sure we are only generating the new type of slug
 
     def test_board_remain_after_user_delete(self):
         user = User.objects.get(username="testuser1")
