@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import uuid
 from io import BytesIO
 from pathlib import Path
@@ -6,34 +8,21 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.core.files import File
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models.functions import Upper
 from django.template.defaultfilters import date
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from PIL import Image as PILImage
-from shortuuidfield import ShortUUIDField
 from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
 
 
-def slug_save(obj):
-    """A function to generate a 6 character numeric slug and see if it has been used."""
-    if not obj.slug:  # if there isn't a slug
-        obj.slug = get_random_string(6, "0123456789")  # create one
-        slug_is_wrong = True
-        while slug_is_wrong:  # keep checking until we have a valid slug
-            slug_is_wrong = False
-            other_objs_with_slug = type(obj).objects.filter(slug=obj.slug)
-            if len(other_objs_with_slug) > 0:
-                # if any other objects have current slug
-                slug_is_wrong = True
-            if slug_is_wrong:
-                # create another slug and check it again
-                obj.slug = get_random_string(6)
+def get_random_string(length):
+    code = "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
+    return code
 
 
 def get_image_upload_path(instance, filename):
@@ -63,8 +52,7 @@ def resize_image(image, width=3840, height=2160):
 
 class Board(models.Model):
     title = models.CharField(max_length=50)
-    uuid = ShortUUIDField(unique=True)
-    slug = models.SlugField(max_length=6, unique=True, null=True)
+    slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,9 +60,26 @@ class Board(models.Model):
     history = HistoricalRecords(cascade_delete_history=True)
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
-            slug_save(self)
-        super().save(*args, **kwargs)
+        # from https://stackoverflow.com/questions/34935156/
+        if not self.slug:
+            max_length = Board._meta.get_field("slug").max_length
+            self.slug = get_random_string(max_length)
+            success = False
+            errors = 0
+            while not success:
+                try:
+                    super().save(*args, **kwargs)
+                except IntegrityError:
+                    errors += 1
+                    if errors > 5:
+                        # tried 5 times, no dice. raise the integrity error and handle elsewhere
+                        raise
+                    else:
+                        self.code = get_random_string(max_length)
+                else:
+                    success = True
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

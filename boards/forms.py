@@ -10,7 +10,8 @@ from django.urls import reverse
 
 from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
-slug_validator = RegexValidator(r"\d{6}$", "ID format needs to be ######.")
+# make sure to support legacy 6-digit slugs
+slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 lowercase letters and/or digits.")
 
 
 def validate_board_exists(board_slug):
@@ -244,7 +245,10 @@ class BoardPreferencesForm(forms.ModelForm):
 
 
 class SearchBoardsForm(forms.Form):
-    board_slug = forms.CharField(label="Board ID", help_text="Enter the board ID given as ######")
+    board_slug = forms.CharField(
+        label="Board ID",
+        help_text="Enter the board ID given as #### #### (lowercase letters and/or digits only)",
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -252,7 +256,7 @@ class SearchBoardsForm(forms.Form):
         self.helper.form_show_labels = False
 
         self.helper.layout = Layout(
-            PrependedText("board_slug", "Board ID", placeholder="### ###", x_data="", x_mask="999 999"),
+            PrependedText("board_slug", "Board ID", placeholder="#### ####", x_data="", x_mask="**** ****"),
             ButtonHolder(Submit("submit", "Submit")),
         )
 

@@ -41,7 +41,7 @@ class IndexViewTest(TestCase):
     def test_board_search_invalid(self):
         response = self.client.post(reverse("boards:index"), {"board_slug": "invalid"})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "board_slug", "ID format needs to be ######.")
+        self.assertFormError(response, "form", "board_slug", "ID should be 6 or 8 lowercase letters and/or digits.")
 
     def test_board_search_not_found(self):
         board = Board.objects.get(title="Test Board")

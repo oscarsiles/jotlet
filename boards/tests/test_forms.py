@@ -78,22 +78,22 @@ class BoardPreferencesFormTest(TestCase):
 class SearchBoardsFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        Board.objects.create(title="Test Board", slug="123456")
+        Board.objects.create(title="Test Board", slug="123456ab")
 
     def test_search_boards_form_valid(self):
         form_data = {
-            "board_slug": "123456",
+            "board_slug": "123456ab",
         }
         form = SearchBoardsForm(data=form_data)
         self.assertTrue(form.is_valid())
 
     def test_search_clean_board_slug(self):
         form_data = {
-            "board_slug": " 12 34-56-",
+            "board_slug": " 12 34-56-ab",
         }
         form = SearchBoardsForm(data=form_data)
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["board_slug"], "123456")
+        self.assertEqual(form.cleaned_data["board_slug"], "123456ab")
 
     def test_search_boards_form_invalid(self):
         form_data = {
@@ -101,11 +101,11 @@ class SearchBoardsFormTest(TestCase):
         }
         form = SearchBoardsForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors["board_slug"], ["ID format needs to be ######."])
+        self.assertEqual(form.errors["board_slug"], ["ID should be 6 or 8 lowercase letters and/or digits."])
 
     def test_search_boards_form_not_exist(self):
         form_data = {
-            "board_slug": "000000",
+            "board_slug": "000000ab",
         }
         form = SearchBoardsForm(data=form_data)
         self.assertFalse(form.is_valid())

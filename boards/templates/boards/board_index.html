@@ -1,5 +1,5 @@
 {% extends "base_generic.html" %}
-{% load static cache %}
+{% load static cache board_extras %}
 {% block head %}
     {% if board.preferences.enable_latex %}
         <link rel="preload"
@@ -22,10 +22,14 @@
     Board: {{ board }}
 {% endblock title %}
 {% block navbar_title %}
-    {{ board.slug }} - {{ board }}
+    {{ board }}
     <small>
-        <span class="badge bg-secondary mx-2 align-middle"
-              id="board-online-sessions">0</span></small>
+        <span class="badge bg-secondary mx-2 align-middle">
+            {% get_split_string board.slug as board_split_slug %}
+            ID: {{ board_split_slug }} -
+            <span id="board-online-sessions">0</span>
+        </span>
+    </small>
 {% endblock navbar_title %}
 {% block navbar_subtitle %}
     {{ board.description }}

@@ -700,6 +700,7 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["slug"] = self.kwargs["slug"]
         context["url"] = self.request.build_absolute_uri(
             reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
         )
