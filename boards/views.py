@@ -1,6 +1,7 @@
 import json
 from urllib.parse import urlparse
 
+from crispy_forms.helper import FormHelper
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -368,10 +369,19 @@ class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Temp
         )
 
 
+def get_post_form(form):
+    form.helper = FormHelper()
+    form.helper.form_show_labels = False
+    return form
+
+
 class CreatePostView(generic.CreateView):
     model = Post
     fields = ["content"]
     template_name = "boards/post_form.html"
+
+    def get_form(self):
+        return get_post_form(super().get_form())
 
     def form_valid(self, form):
         form.instance.topic_id = self.kwargs.get("topic_pk")
@@ -415,6 +425,9 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             or self.request.user.has_perm("boards.change_post")
             or get_is_moderator(self.request.user, post.topic.board)
         )
+
+    def get_form(self):
+        return get_post_form(super().get_form())
 
     def get_object(self):
         if not self.board_post:

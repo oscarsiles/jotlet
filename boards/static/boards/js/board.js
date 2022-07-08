@@ -125,3 +125,17 @@ function starRating() {
 }
 
 connectWebsocket();
+
+document.addEventListener("alpine:initializing", () => {
+  Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
+    let getHTML = evaluateLater();
+
+    effect(() => {
+      getHTML(() => {
+        el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
+          ALLOWED_TAGS: ["b", "i", "em", "strong", "br", "p", "code"],
+        });
+      });
+    });
+  });
+});

@@ -1,6 +1,6 @@
 <p>
     Are you sure you want to delete the following post from <strong>{{ post.topic.subject }}</strong>?
-    <h5>{{ post }}</h5>
+    <h5 class="text-break" x-markdown>{{ post }}</h5>
 </p>
 <form hx-post="{{ request.build_absolute_uri }}"
       hx-swap="none"
