@@ -2,6 +2,10 @@
   width: 400px;
 }
 
+.faded-75 {
+  background: rgba(255, 255, 255, 0.75);
+}
+
 .htmx-indicator {
   opacity: 0;
   transition: opacity 200ms ease-in;

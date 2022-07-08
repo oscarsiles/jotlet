@@ -203,7 +203,7 @@ class Topic(models.Model):
 
 
 class Post(models.Model):
-    content = models.TextField(max_length=400)
+    content = models.TextField(max_length=1000)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)

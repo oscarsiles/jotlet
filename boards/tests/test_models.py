@@ -161,7 +161,7 @@ class PostModelTest(TestCase):
     def test_content_max_length(self):
         post = Post.objects.get(content="Test Post")
         max_length = post._meta.get_field("content").max_length
-        self.assertEqual(max_length, 400)
+        self.assertEqual(max_length, 1000)
 
     def test_object_name_is_content(self):
         post = Post.objects.get(content="Test Post")
