@@ -43,11 +43,11 @@ class CustomSignupForm(SignupForm):
         super().__init__(*args, **kwargs)
 
         self.fields["first_name"] = forms.CharField(
-            max_length=30,
+            max_length=150,
             label="First name",
         )
         self.fields["last_name"] = forms.CharField(
-            max_length=30,
+            max_length=150,
             label="Last name",
         )
         self.fields["optin_newsletter"] = forms.BooleanField(
@@ -82,19 +82,19 @@ class CustomSocialSignupForm(SocialSignupForm):
         super().__init__(*args, **kwargs)
 
         self.fields["first_name"] = forms.CharField(
-            max_length=30,
+            max_length=150,
             initial=self.sociallogin.user.first_name,
             label="First name",
             disabled=True,
         )
         self.fields["last_name"] = forms.CharField(
-            max_length=30,
+            max_length=150,
             initial=self.sociallogin.user.last_name,
             label="Last name",
             disabled=True,
         )
         self.fields["email"] = forms.CharField(
-            max_length=30,
+            max_length=254,
             initial=self.initial.get("email"),
             label="E-mail",
             disabled=True,
