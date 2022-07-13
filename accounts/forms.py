@@ -15,6 +15,7 @@ def verify_hcaptcha(request):
 
 class CustomLoginForm(LoginForm):
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
 
         self.fields["login"].label = "Username or e-mail"

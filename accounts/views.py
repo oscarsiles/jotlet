@@ -25,6 +25,11 @@ class JotletLoginView(LoginView):
         context["show_modal"] = self.show_modal
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
     def form_valid(self, form):
         super().form_valid(form)
         return HttpResponseClientRedirect(self.get_success_url())
