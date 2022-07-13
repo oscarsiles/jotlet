@@ -8,11 +8,8 @@
             <p>
                 Please confirm that <a href="mailto:{{ confirmation.email_address.email }}">{{ confirmation.email_address.email }}</a> is an e-mail address for user {{ user_display }}.
             </p>
-            <form hx-post="{% url 'account_confirm_email' confirmation.key %}"
-                  hx-target="#modal-1-body-div"
-                  hx-swap="innerHTML"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modal-1-div">
+            <form action="{% url 'account_confirm_email' confirmation.key %}"
+                  method="post">
                 {% csrf_token %}
                 <button class="btn btn-primary" type="submit">Confirm</button>
             </form>

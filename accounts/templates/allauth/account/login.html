@@ -25,7 +25,7 @@
                         <button class="btn btn-primary flex-fill" type="submit">Login</button>
                     </div>
                     <div class="d-flex justify-content-center pt-2">
-                        <button class="btn link-secondary shadow-none"
+                        <button class="btn btn-link link-secondary text-decoration-none"
                                 id="password-reset-button"
                                 hx-get="{% url 'account_reset_password' %}"
                                 hx-target="#modal-1-body-div"
@@ -34,7 +34,7 @@
                             Forgot Password
                         </button>
                         <div class="col-auto my-auto text-secondary">/</div>
-                        <button class="btn link-secondary shadow-none"
+                        <button class="btn btn-link link-secondary text-decoration-none"
                                 id="signup-button"
                                 hx-get="{% url 'account_signup' %}"
                                 {% if show_modal %}
