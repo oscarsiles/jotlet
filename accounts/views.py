@@ -61,6 +61,11 @@ class JotletSignupView(SignupView):
         context["show_modal"] = self.show_modal
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
     def form_valid(self, form):
         response = super().form_valid(form)
         return HttpResponseClientRedirect(response.get("Location", "/"))
