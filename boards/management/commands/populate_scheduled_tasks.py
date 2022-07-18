@@ -10,6 +10,7 @@ class Command(BaseCommand):
         try:
             required_scheduled_tasks = [
                 {"name": "jotlet.tasks.clear_sessions_command", "schedule_type": "H"},
+                {"name": "jotlet.tasks.clear_conj_keys_command", "schedule_type": "H"},
                 {"name": "accounts.tasks.axes_reset_logs", "schedule_type": "M"},
                 {"name": "boards.tasks.thumbnail_cleanup_command", "schedule_type": "W"},
                 {"name": "boards.tasks.history_clean_duplicates_past_hour_command", "schedule_type": "H"},
