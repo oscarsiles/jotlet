@@ -313,7 +313,8 @@ else:
     }
 
 CACHALOT_ENABLED = False if TESTING else env("CACHALOT_ENABLED", default=True)
-CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
+CACHALOT_TIMEOUT = env("CACHALOT_TIMEOUT", default=31556952)
+
 
 CACHALOT_UNCACHABLE_APPS = frozenset(
     (
@@ -329,7 +330,8 @@ CACHALOT_UNCACHABLE_TABLES = frozenset(
     )
 )
 
-CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=24 * 60 * 60)}
+CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
+CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
