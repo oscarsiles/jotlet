@@ -281,7 +281,7 @@ if not TESTING:
         }
     }
 
-    CACHEOPS_REDIS = REDIS_URL + "?db=1"
+    CACHEOPS_REDIS = REDIS_URL
 
     CHANNEL_LAYERS = {
         "default": {
@@ -290,7 +290,6 @@ if not TESTING:
                 "hosts": [
                     {
                         "address": (REDIS_HOST, REDIS_PORT) if not REDIS_UNIX_SOCKET else REDIS_URL,
-                        "db": 2,
                     }
                 ],
                 "prefix": "jotlet",
@@ -314,8 +313,6 @@ else:
 
 CACHALOT_ENABLED = False if TESTING else env("CACHALOT_ENABLED", default=True)
 CACHALOT_TIMEOUT = env("CACHALOT_TIMEOUT", default=31556952)
-
-
 CACHALOT_UNCACHABLE_APPS = frozenset(
     (
         "axes",
