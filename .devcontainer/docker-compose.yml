@@ -7,7 +7,7 @@ x-environment: &default-environment
 
 services:
   redis:
-    image: redis:6-alpine
+    image: redis:7-alpine
     command: redis-server --maxmemory-policy volatile-lru --maxmemory 500M
     restart: unless-stopped
     ports:
