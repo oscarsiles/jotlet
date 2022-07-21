@@ -7,14 +7,14 @@
      hx-swap="outerHTML"
      x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
      x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
-    {% cached_as topic None topic_posts_list topic request.session.session_key request.user.username is_moderator %}
+    {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
     <div class="card my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <h5 class="card-title text-break"
                 id="topic-{{ topic.pk }}-subject"
                 hx-disable
                 x-ignore>{{ topic }}</h5>
-            {% if request.user == board.owner or request.user.is_staff %}
+            {% if request.user == topic.board.owner or request.user.is_staff %}
                 <div class="d-flex justify-content-start gap-3">
                     <button class="btn btn-link shadow-none text-muted p-0"
                             id="topic-{{ topic.pk }}-update-url"

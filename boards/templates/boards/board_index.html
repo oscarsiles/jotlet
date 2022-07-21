@@ -26,21 +26,27 @@
     Board: {{ board }}
 {% endblock title %}
 {% block navbar_title %}
-    {{ board }}
-    <small>
-        <span class="badge bg-secondary mx-2 align-middle">
-            {% get_split_string board.slug as board_split_slug %}
-            ID: {{ board_split_slug }} -
-            <span id="board-online-sessions">0</span>
-        </span>
-    </small>
+    <div class="me-2">{{ board }}</div>
 {% endblock navbar_title %}
 {% block navbar_subtitle %}
-    {{ board.description }}
+    <div class="d-flex flex-wrap">
+        <div class="me-2">{{ board.description }}</div>
+        {% if request.user == board.owner or user.is_staff %}
+            <div class="d-flex align-items-center">
+                <small class="d-flex align-items-center">
+                    <span class="badge bg-secondary align-middle">
+                        {% get_split_string board.slug as board_split_slug %}
+                        ID: {{ board_split_slug }} -
+                        <span id="board-online-sessions">0</span>
+                    </span>
+                </small>
+            </div>
+        {% endif %}
+    </div>
 {% endblock navbar_subtitle %}
 {% block navbar-items %}
     {% if is_moderator %}
-        {% cache 86400 navbar-board-index board.pk request.user.username %}
+        {% cache 86400 navbar-board-index board.pk request.user %}
         <li class="nav-item">
             <span data-bs-toggle="collapse" data-bs-target="#navbarText">
                 <a class="nav-link"
@@ -50,6 +56,7 @@
                    data-bs-toggle="modal"
                    data-bs-target="#modal-1-div">
                     <i class="bi bi-qr-code"></i>
+                    <span>QR Code</span>
                 </a>
             </span>
         </li>
@@ -63,6 +70,7 @@
                        data-bs-toggle="modal"
                        data-bs-target="#modal-1-div">
                         <i class="bi bi-gear"></i>
+                        <span>Preferences</span>
                     </a>
                 </span>
             </li>
@@ -75,6 +83,7 @@
                        data-bs-toggle="modal"
                        data-bs-target="#modal-1-div">
                         <i class="bi bi-pen"></i>
+                        <span>Edit Board</span>
                     </a>
                 </span>
             </li>
@@ -87,6 +96,7 @@
                        data-bs-toggle="modal"
                        data-bs-target="#modal-1-div">
                         <i class="bi bi-trash"></i>
+                        <span>Delete Board</span>
                     </a>
                 </span>
             </li>
