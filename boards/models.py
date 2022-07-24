@@ -38,7 +38,7 @@ def resize_image(image, width=3840, height=2160):
     if img.width > width or img.height > height:
         output_size = (width, height)
         # Create a new resized “thumbnail” version of the image with Pillow
-        img.thumbnail(output_size, PILImage.ANTIALIAS)
+        img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
         # Find the file name of the image
         img_filename = Path(image.file.name).name
         # Save the resized image into the buffer, noting the correct file type
