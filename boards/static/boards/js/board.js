@@ -53,7 +53,11 @@ function connectWebsocket() {
         htmx.trigger(htmx.find(boardDiv), "topicDeleted");
         break;
       case "post_created":
-        var newCardDiv = "#newCard-" + data.topic_pk + "-div";
+        var newCardDiv =
+          data.reply_to == null
+            ? "#newCard-" + data.topic_pk + "-div"
+            : "#newCard-post-" + data.reply_to + "-div";
+        console.log(newCardDiv);
         htmx.ajax("GET", data.fetch_url, {
           target: newCardDiv,
           swap: "beforebegin",

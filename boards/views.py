@@ -375,16 +375,38 @@ def get_post_form(form):
     return form
 
 
-class CreatePostView(generic.CreateView):
+class CreatePostView(UserPassesTestMixin, generic.CreateView):
     model = Post
     fields = ["content"]
     template_name = "boards/post_form.html"
+    is_reply = False
+    reply_to = None
+
+    def test_func(self):
+        is_allowed = True
+        if "post_pk" in self.kwargs:
+            self.is_reply = True
+            # check if the user is allowed to reply to the post
+            self.reply_to = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["post_pk"])
+            board = self.reply_to.topic.board
+            allow_guest_replies = board.preferences.allow_guest_replies
+
+            is_allowed = (self.reply_to.approved and allow_guest_replies) or get_is_moderator(
+                self.request.user, board
+            )
+
+        return is_allowed
 
     def get_form(self):
         return get_post_form(super().get_form())
 
     def form_valid(self, form):
-        form.instance.topic_id = self.kwargs.get("topic_pk")
+        if self.is_reply:
+            form.instance.topic_id = self.reply_to.topic_id
+            form.instance.reply_to = self.reply_to
+            form.instance.reply_depth = self.reply_to.reply_depth + 1
+        else:
+            form.instance.topic_id = self.kwargs.get("topic_pk")
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
@@ -393,7 +415,7 @@ class CreatePostView(generic.CreateView):
         if self.request.user.is_authenticated:
             form.instance.user = self.request.user
 
-        if form.instance.topic.board.preferences.require_approval:
+        if form.instance.topic.board.preferences.require_post_approval:
             form.instance.approved = get_is_moderator(self.request.user, form.instance.topic.board)
 
         response = super().form_valid(form)
@@ -622,7 +644,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
         self.board_post = post = Post.objects.prefetch_related("topic__board__preferences").get(pk=self.kwargs["pk"])
         return (
             get_is_moderator(self.request.user, post.topic.board)
-        ) and post.topic.board.preferences.require_approval
+        ) and post.topic.board.preferences.require_post_approval
 
     def post(self, request, *args, **kwargs):
         post = self.board_post

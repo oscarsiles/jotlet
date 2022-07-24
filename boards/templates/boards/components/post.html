@@ -26,9 +26,19 @@
                 <div>
                     <h5 class="card-title"></h5>
                 </div>
-                {% if is_owner or is_moderator %}
-                    <div class="d-flex ms-auto">
-                        {% if post.topic.board.preferences.require_approval %}
+                <div class="d-flex ms-auto">
+                    {% if post.topic.board.preferences.allow_guest_replies or is_moderator %}
+                        <button class="btn btn-link text-black shadow-none p-1"
+                                hx-get="{% url 'boards:post-reply' post.topic.board.slug post.pk %}"
+                                hx-target="#modal-1-body-div"
+                                hx-swap="innerHTML"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modal-1-div">
+                            <i class="bi bi-reply"></i>
+                        </button>
+                    {% endif %}
+                    {% if is_owner or is_moderator %}
+                        {% if post.topic.board.preferences.require_post_approval %}
                             {% if perms.boards.can_approve_posts or is_moderator %}
                                 <button class="btn btn-link text-black shadow-none p-1"
                                         hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
@@ -79,8 +89,8 @@
                                 </li>
                             </ul>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
             <div hx-disable x-data>
                 <p class="card-text text-break my-0
@@ -94,7 +104,23 @@
             </div>
         </div>
     {% endcached_as %}
-    {% include 'boards/components/post_footer.html' %}
+    {% if post.topic.board.preferences.reaction_type != 'n' %}
+        {% include 'boards/components/post_footer.html' %}
+    {% endif %}
 {% endif %}
 </div>
 {% endcached_as %}
+{% if post.topic.board.preferences.type == 'r' %}
+    <div class="flex-grow-1
+                {% if post.reply_depth <= 2 %}
+                    ps-4
+                {% endif %}"
+         x-ref="post-{{ post.pk }}-replies">
+        {% if post.get_replies.count > 0 %}
+            {% for post in post.get_replies|dictsort:"pk" %}
+                {% include 'boards/components/post.html' %}
+            {% endfor %}
+        {% endif %}
+        <div id="newCard-post-{{ post.pk }}-div" hidden></div>
+    </div>
+{% endif %}
