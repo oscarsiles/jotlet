@@ -5,11 +5,13 @@ from boards.forms import BoardPreferencesForm, SearchBoardsForm
 from boards.models import Board, Post, Topic
 
 TEST_FORM_DATA = {
+    "type": "d",
     "background_type": "c",
     "background_color": "#123456",
     "background_image": None,
     "background_opacity": 0.5,
-    "require_approval": True,
+    "require_post_approval": True,
+    "allow_guest_replies": True,
     "enable_latex": True,
     "moderators": "test_user,non_existent_user",
     "reaction_type": "v",
@@ -33,7 +35,7 @@ class BoardPreferencesFormTest(TestCase):
         self.assertEqual(board.preferences.background_type, form_data.get("background_type"))
         self.assertEqual(board.preferences.background_color, form_data.get("background_color"))
         self.assertEqual(board.preferences.background_opacity, form_data.get("background_opacity"))
-        self.assertEqual(board.preferences.require_approval, form_data.get("require_approval"))
+        self.assertEqual(board.preferences.require_post_approval, form_data.get("require_post_approval"))
         self.assertEqual(board.preferences.enable_latex, form_data.get("enable_latex"))
         self.assertEqual(board.preferences.moderators.count(), 1)
         self.assertEqual(board.preferences.moderators.all()[0], User.objects.get(username="test_user"))
@@ -42,17 +44,17 @@ class BoardPreferencesFormTest(TestCase):
     def test_board_preferences_form_approve_all(self):
         board = Board.objects.get(slug="000001")
         form_data = TEST_FORM_DATA
-        form_data["require_approval"] = True
+        form_data["require_post_approval"] = True
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         self.assertTrue(form.is_valid())
         form.save()
-        self.assertEqual(board.preferences.require_approval, True)
+        self.assertEqual(board.preferences.require_post_approval, True)
         topic = Topic.objects.create(board=board, subject="Test Topic")
         for i in range(5):
             post = Post.objects.create(topic=topic, content=f"Test Post {i}", approved=False)
             self.assertEqual(post.approved, False)
 
-        form_data["require_approval"] = False
+        form_data["require_post_approval"] = False
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         self.assertTrue(form.is_valid())
         form.save()

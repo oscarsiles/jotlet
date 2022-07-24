@@ -142,8 +142,9 @@ def post_send_message(sender, instance, created, **kwargs):
             f"board_{board_slug}",
             {
                 "type": "post_created",
-                "topic_pk": instance.topic.pk,
+                "topic_pk": instance.topic_id,
                 "post_pk": instance.pk,
+                "reply_to": instance.reply_to_id,
                 "fetch_url": reverse("boards:post-fetch", kwargs={"slug": board_slug, "pk": instance.pk}),
             },
         )
@@ -152,7 +153,7 @@ def post_send_message(sender, instance, created, **kwargs):
             f"board_{board_slug}",
             {
                 "type": "post_updated",
-                "topic_pk": instance.topic.pk,
+                "topic_pk": instance.topic_id,
                 "post_pk": instance.pk,
             },
         )

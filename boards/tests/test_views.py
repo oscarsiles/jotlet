@@ -226,11 +226,13 @@ class BoardPreferencesViewTest(TestCase):
         response = await sync_to_async(self.client.post)(
             self.board_preferences_changed_url,
             data={
+                "type": "d",
                 "background_type": "c",
                 "background_color": "#ffffff",
                 "background_image": "",
                 "background_opacity": "0.5",
-                "require_approval": True,
+                "require_post_approval": True,
+                "allow_guest_replies": True,
                 "enable_latex": True,
                 "reaction_type": "v",
             },
@@ -712,7 +714,7 @@ class PostCreateViewTest(TestCase):
 
     def test_post_approval(self):
         board = Board.objects.get(title="Test Board")
-        board.preferences.require_approval = True
+        board.preferences.require_post_approval = True
         board.preferences.save()
         topic = Topic.objects.get(subject="Test Topic")
         self.client.post(
@@ -1080,7 +1082,7 @@ class PostFetchViewTest(TestCase):
 
     def test_post_fetch_content_anonymous_not_approved(self):
         board = Board.objects.get(title="Test Board")
-        board.preferences.require_approval = True
+        board.preferences.require_post_approval = True
         board.preferences.save()
         self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
@@ -1092,7 +1094,7 @@ class PostFetchViewTest(TestCase):
     def test_post_fetch_content_other_user_not_approved(self):
         self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
         board = Board.objects.get(title="Test Board")
-        board.preferences.require_approval = True
+        board.preferences.require_post_approval = True
         board.preferences.save()
         self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
@@ -1219,7 +1221,7 @@ class PostToggleApprovalViewTest(TestCase):
         test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         board.preferences.moderators.add(test_user3)
-        board.preferences.require_approval = True
+        board.preferences.require_post_approval = True
         board.preferences.save()
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)

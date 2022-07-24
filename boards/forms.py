@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import BACKGROUND_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
+from .models import BACKGROUND_TYPE, BOARD_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
 
 # make sure to support legacy 6-digit slugs
 slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 lowercase letters and/or digits.")
@@ -87,7 +87,7 @@ class BoardFilterForm(forms.Form):
 
 class BoardPreferencesForm(forms.ModelForm):
     initial_moderators = []
-    initial_require_approval = False
+    initial_require_post_approval = False
     initial_board = None
     moderators = forms.CharField(
         label="Moderators",
@@ -98,8 +98,10 @@ class BoardPreferencesForm(forms.ModelForm):
         model = BoardPreferences
         exclude = ["board"]
         labels = {
+            "type": "Board Type",
             "enable_latex": "Enable LaTeX",
-            "require_approval": "Posts Require Approval",
+            "require_post_approval": "Posts Require Approval",
+            "allow_guest_replies": "Allow Guest Replies",
         }
 
     def __init__(self, *args, **kwargs):
@@ -108,8 +110,13 @@ class BoardPreferencesForm(forms.ModelForm):
 
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
         self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
-        self.initial_require_approval = self.initial["require_approval"]
+        self.initial_require_post_approval = self.initial["require_post_approval"]
 
+        self.fields["type"] = forms.ChoiceField(
+            choices=BOARD_TYPE,
+            widget=forms.RadioSelect,
+            label=False,
+        )
         self.fields["background_type"] = forms.ChoiceField(
             choices=BACKGROUND_TYPE,
             widget=forms.RadioSelect,
@@ -131,7 +138,8 @@ class BoardPreferencesForm(forms.ModelForm):
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
             "x-data": "",
-            "x-init": f"""$store.boardPreferences.bg_type = '{self.initial["background_type"]}';
+            "x-init": f"""$store.boardPreferences.type = '{self.initial["type"]}';
+            $store.boardPreferences.bg_type = '{self.initial["background_type"]}';
             $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
             $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';
@@ -139,6 +147,33 @@ class BoardPreferencesForm(forms.ModelForm):
         }
 
         self.helper.layout = Layout(
+            Div(  # Div for background type (blame Bootstrap + crispy forms)
+                Div(
+                    Div(
+                        HTML('<span class="input-group-text">Board Type</span>'),
+                        InlineRadios(
+                            "type",
+                            wrapper_class="form-control",
+                            id="id_type",
+                            css_class="d-flex justify-content-around",
+                            x_model="$store.boardPreferences.type",
+                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
+                        ),
+                        css_class="input-group",
+                    ),
+                ),
+                css_class="mb-3",
+            ),
+            Div(
+                PrependedText(
+                    "allow_guest_replies",
+                    "Allow Guest Replies",
+                    wrapper_class="d-flex flex-row",
+                    css_class="form-check-input my-0",
+                    style="height: auto;",
+                ),
+                x_show="$store.boardPreferences.type == 'r'",
+            ),
             Div(  # Div for background type (blame Bootstrap + crispy forms)
                 Div(
                     Div(
@@ -185,7 +220,7 @@ class BoardPreferencesForm(forms.ModelForm):
                 style="height: auto;",
             ),
             PrependedText(
-                "require_approval",
+                "require_post_approval",
                 "Posts Require Approval",
                 wrapper_class="d-flex flex-row",
                 css_class="form-check-input my-0",
@@ -235,9 +270,9 @@ class BoardPreferencesForm(forms.ModelForm):
 
         return value
 
-    def clean_require_approval(self):
-        value = self.cleaned_data["require_approval"]
-        if "require_approval" in self.changed_data and not value:
+    def clean_require_post_approval(self):
+        value = self.cleaned_data["require_post_approval"]
+        if "require_post_approval" in self.changed_data and not value:
             posts = Post.objects.filter(topic__board=self.initial_board)
             posts.invalidated_update(approved=True)
 

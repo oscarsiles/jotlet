@@ -38,7 +38,7 @@ def resize_image(image, width=3840, height=2160):
     if img.width > width or img.height > height:
         output_size = (width, height)
         # Create a new resized “thumbnail” version of the image with Pillow
-        img.thumbnail(output_size, PILImage.ANTIALIAS)
+        img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
         # Find the file name of the image
         img_filename = Path(image.file.name).name
         # Save the resized image into the buffer, noting the correct file type
@@ -48,6 +48,29 @@ def resize_image(image, width=3840, height=2160):
         file_object = File(buffer)
         # Save the new resized file as usual, which will save to S3 using django-storages
         image.save(img_filename, file_object)
+
+
+BOARD_TYPE = (
+    ("d", "Default"),
+    ("r", "With Replies"),
+)
+
+BACKGROUND_TYPE = (
+    ("c", "Color"),
+    ("i", "Image"),
+)
+
+REACTION_TYPE = (
+    ("n", "None"),
+    ("l", "Like"),  # 1 = like
+    ("v", "Vote"),  # 1 = like, -1 = dislike
+    ("s", "Star"),  # 1-5 = stars
+)
+
+IMAGE_TYPE = (
+    ("b", "Background"),
+    ("p", "Post"),  # not implemented
+)
 
 
 class Board(models.Model):
@@ -118,22 +141,10 @@ class Board(models.Model):
         ]
 
 
-BACKGROUND_TYPE = (
-    ("c", "Color"),
-    ("i", "Image"),
-)
-
-REACTION_TYPE = (
-    ("n", "None"),
-    ("l", "Like"),  # 1 = like
-    ("v", "Vote"),  # 1 = like, -1 = dislike
-    ("s", "Star"),  # 1-5 = stars
-)
-
-
 class BoardPreferences(models.Model):
     board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     history = HistoricalRecords(cascade_delete_history=True)
+    type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = models.ForeignKey(
         "Image",
@@ -145,7 +156,8 @@ class BoardPreferences(models.Model):
     background_color = models.CharField(max_length=7, default="#ffffff")
     background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
-    require_approval = models.BooleanField(default=False)
+    require_post_approval = models.BooleanField(default=False)
+    allow_guest_replies = models.BooleanField(default=False)
     moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
     reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
 
@@ -182,7 +194,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self).prefetch_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions").order_by("-created_at")
 
     @cached_property
     def get_post_count(self):
@@ -208,6 +220,9 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     approved = models.BooleanField(default=True)
+    reply_to = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
+    reply_depth = models.IntegerField(default=0)
+    allow_replies = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
@@ -216,8 +231,12 @@ class Post(models.Model):
         return self.content
 
     @cached_property
+    def get_replies(self):
+        return Post.objects.filter(reply_to=self).prefetch_related("reactions").order_by("created_at")
+
+    @cached_property
     def get_reactions(self):
-        return self.reactions.filter(type=self.topic.board.preferences.reaction_type).all()
+        return self.reactions.filter(type=self.get_reaction_type).all()
 
     @cached_property
     def get_reaction_type(self):
@@ -300,9 +319,6 @@ class Reaction(models.Model):
 
     class Meta:
         unique_together = (("post", "session_key", "type"), ("post", "user", "type"))
-
-
-IMAGE_TYPE = (("b", "Background"), ("p", "Post"))
 
 
 class Image(models.Model):

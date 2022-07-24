@@ -27,16 +27,16 @@
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
-        <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/alpinejs-mask-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/alpinejs-3.10.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-mask-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
           x-data="{ smallWindow: false }"
           x-init="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;"
           @resize.window="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;">
         <div class="container-fluid vh-100 d-flex flex-column p-0">
-            <nav class="navbar navbar-expand-xl bg-light py-0">
+            <nav class="navbar navbar-expand-xxl bg-light py-0">
                 <div class="container-fluid">
                     <div class="d-flex flex-grow-1 justify-content-between">
                         <ul class="navbar-nav">

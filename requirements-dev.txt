@@ -2,8 +2,9 @@ autoflake8==0.3.2
 black==22.6.0
 coverage==6.4.2
 django-debug-toolbar==3.5.0
-djlint==1.7.0
+djlint==1.7.1
 flake8==4.0.1
 isort==5.10.1
 locust==2.10.1
+pytest-django==4.5.2
 pyupgrade==2.37.2

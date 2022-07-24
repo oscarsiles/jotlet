@@ -63,7 +63,7 @@
     </div>
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk }}">
-    {% for post in topic.posts.all|dictsort:"pk" %}
+    {% for post in topic.get_posts|dictsort:"pk" %}
         {% include 'boards/components/post.html' %}
     {% endfor %}
     <div id="newCard-{{ topic.pk }}-div" hidden></div>
