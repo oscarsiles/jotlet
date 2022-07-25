@@ -389,10 +389,10 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
             # check if the user is allowed to reply to the post
             self.reply_to = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["post_pk"])
             board = self.reply_to.topic.board
-            allow_guest_replies = board.preferences.allow_guest_replies
 
-            is_allowed = (self.reply_to.approved and allow_guest_replies) or get_is_moderator(
-                self.request.user, board
+            is_allowed = board.preferences.type == "r" and (
+                (self.reply_to.approved and board.preferences.allow_guest_replies)
+                or get_is_moderator(self.request.user, board)
             )
 
         return is_allowed

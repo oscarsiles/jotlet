@@ -27,15 +27,17 @@
                     <h5 class="card-title"></h5>
                 </div>
                 <div class="d-flex ms-auto">
-                    {% if post.topic.board.preferences.allow_guest_replies or is_moderator %}
-                        <button class="btn btn-link text-black shadow-none p-1"
-                                hx-get="{% url 'boards:post-reply' post.topic.board.slug post.pk %}"
-                                hx-target="#modal-1-body-div"
-                                hx-swap="innerHTML"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal-1-div">
-                            <i class="bi bi-reply"></i>
-                        </button>
+                    {% if post.topic.board.preferences.type == 'r' %}
+                        {% if post.topic.board.preferences.allow_guest_replies or is_moderator %}
+                            <button class="btn btn-link text-black shadow-none p-1"
+                                    hx-get="{% url 'boards:post-reply' post.topic.board.slug post.pk %}"
+                                    hx-target="#modal-1-body-div"
+                                    hx-swap="innerHTML"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal-1-div">
+                                <i class="bi bi-reply"></i>
+                            </button>
+                        {% endif %}
                     {% endif %}
                     {% if is_owner or is_moderator %}
                         {% if post.topic.board.preferences.require_post_approval %}
