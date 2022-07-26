@@ -16,7 +16,7 @@
     {% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
     <div class="card post-card my-2
                 {% if not post.approved and is_moderator %}
-                    faded-75
+                    opacity-75
                 {% endif %}"
          id="post-{{ post.pk }}"
          x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }">
