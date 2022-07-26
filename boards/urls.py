@@ -24,15 +24,39 @@ urlpatterns = [
         name="topic-posts-delete",
     ),
     path("<slug:slug>/topics/<int:topic_pk>/posts/create/", views.CreatePostView.as_view(), name="post-create"),
-    path("<slug:slug>/posts/<int:pk>/update/", views.UpdatePostView.as_view(), name="post-update"),
-    path("<slug:slug>/posts/<int:pk>/delete/", views.DeletePostView.as_view(), name="post-delete"),
-    path("<slug:slug>/posts/<int:pk>/fetch/post/", views.PostFetchView.as_view(), name="post-fetch"),
-    path("<slug:slug>/posts/<int:pk>/fetch/footer/", views.PostFooterFetchView.as_view(), name="post-footer-fetch"),
-    path("<slug:slug>/posts/<int:pk>/approval/", views.PostToggleApprovalView.as_view(), name="post-toggle-approval"),
-    path("<slug:slug>/posts/<int:post_pk>/reply/", views.CreatePostView.as_view(), name="post-reply"),
-    path("<slug:slug>/posts/<int:pk>/reaction/", views.PostReactionView.as_view(), name="post-reaction"),
     path(
-        "<slug:slug>/posts/<int:pk>/reactions/delete/",
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/update/", views.UpdatePostView.as_view(), name="post-update"
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/delete/", views.DeletePostView.as_view(), name="post-delete"
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/fetch/post/",
+        views.PostFetchView.as_view(),
+        name="post-fetch",
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/fetch/footer/",
+        views.PostFooterFetchView.as_view(),
+        name="post-footer-fetch",
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/approval/",
+        views.PostToggleApprovalView.as_view(),
+        name="post-toggle-approval",
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:post_pk>/reply/",
+        views.CreatePostView.as_view(),
+        name="post-reply",
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/reaction/",
+        views.PostReactionView.as_view(),
+        name="post-reaction",
+    ),
+    path(
+        "<slug:slug>/topics/<int:topic_pk>/posts/<int:pk>/reactions/delete/",
         views.ReactionsDeleteView.as_view(),
         name="post-reactions-delete",
     ),

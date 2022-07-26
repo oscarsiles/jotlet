@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.core.files import File
 from django.db import IntegrityError, models
-from django.db.models import Count
 from django.db.models.functions import Upper
 from django.template.defaultfilters import date
 from django.urls import reverse

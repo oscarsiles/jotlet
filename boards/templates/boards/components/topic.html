@@ -1,7 +1,7 @@
 {% load cacheops %}
 <div class="col-md topic-list px-2"
      id="topic-{{ topic.pk }}"
-     hx-get="{% url 'boards:topic-fetch' topic.board.slug topic.pk %}"
+     hx-get="{% url 'boards:topic-fetch' board.slug topic.pk %}"
      hx-trigger="topicUpdated"
      hx-target="this"
      hx-swap="outerHTML"
@@ -14,11 +14,11 @@
                 id="topic-{{ topic.pk }}-subject"
                 hx-disable
                 x-ignore>{{ topic }}</h5>
-            {% if request.user == topic.board.owner or request.user.is_staff %}
+            {% if request.user == board.owner or request.user.is_staff %}
                 <div class="d-flex justify-content-start gap-3">
                     <button class="btn btn-link shadow-none text-muted p-0"
                             id="topic-{{ topic.pk }}-update-url"
-                            hx-get="{% url 'boards:topic-update' topic.board.slug topic.pk %}"
+                            hx-get="{% url 'boards:topic-update' board.slug topic.pk %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
                             data-bs-toggle="modal"
@@ -27,7 +27,7 @@
                     </button>
                     <button class="btn btn-link shadow-none text-danger p-0"
                             id="topic-{{ topic.pk }}-delete-url"
-                            hx-get="{% url 'boards:topic-posts-delete' topic.board.slug topic.pk %}"
+                            hx-get="{% url 'boards:topic-posts-delete' board.slug topic.pk %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
                             :disabled="isDeletePostsDisabled"
@@ -37,7 +37,7 @@
                     </button>
                     <button class="btn btn-link shadow-none text-danger p-0"
                             id="topic-{{ topic.pk }}-delete-url"
-                            hx-get="{% url 'boards:topic-delete' topic.board.slug topic.pk %}"
+                            hx-get="{% url 'boards:topic-delete' board.slug topic.pk %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
                             data-bs-toggle="modal"
@@ -51,7 +51,7 @@
     <div class="card my-2" id="topic-{{ topic.pk }}-create">
         <div class="card-body">
             <button id="topic-{{ topic.pk }}-create-url"
-                    hx-get="{% url 'boards:post-create' topic.board.slug topic.pk %}"
+                    hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
                     hx-target="#modal-1-body-div"
                     hx-swap="innerHTML"
                     data-bs-toggle="modal"

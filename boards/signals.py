@@ -145,7 +145,14 @@ def post_send_message(sender, instance, created, **kwargs):
                 "topic_pk": instance.topic_id,
                 "post_pk": instance.pk,
                 "reply_to": instance.reply_to_id,
-                "fetch_url": reverse("boards:post-fetch", kwargs={"slug": board_slug, "pk": instance.pk}),
+                "fetch_url": reverse(
+                    "boards:post-fetch",
+                    kwargs={
+                        "slug": board_slug,
+                        "topic_pk": instance.topic_id,
+                        "pk": instance.pk,
+                    },
+                ),
             },
         )
     else:
