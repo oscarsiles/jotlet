@@ -1,7 +1,7 @@
 {% load crispy_forms_tags static %}
 <form id="post-form"
       hx-post="{{ request.build_absolute_uri }}"
-      hx-trigger="post-form-submit from:window">
+      >
     {% csrf_token %}
     <table>
         {% crispy form %}
@@ -18,8 +18,7 @@
             class="btn btn-success"
             form="post-form"
             data-bs-dismiss="modal"
-            tabindex="0"
-            @click.prevent="$dispatch('post-form-submit')">
+            tabindex="0">
         {% if form.instance.pk != None %}
             Save changes
         {% else %}
