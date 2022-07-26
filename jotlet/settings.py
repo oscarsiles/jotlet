@@ -85,6 +85,7 @@ INSTALLED_APPS += [
     "simple_history",
     "cachalot",
     "cacheops",
+    "mptt",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",

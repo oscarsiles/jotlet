@@ -169,7 +169,7 @@ class PostModelTest(TestCase):
 
     def test_get_reaction_score(self):
         post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score, 0)
+        self.assertEqual(post.get_reaction_score(), 0)
 
         # like
         type = "l"
@@ -178,7 +178,7 @@ class PostModelTest(TestCase):
         Reaction.objects.create(post=post, reaction_score=1, session_key="test1")
         Reaction.objects.create(post=post, reaction_score=1, session_key="test2")
         post = Post.objects.get(content="Test Post")  # post has cached property
-        self.assertEqual(post.get_reaction_score, 2)
+        self.assertEqual(post.get_reaction_score(), 2)
 
         # vote
         type = "v"
@@ -189,7 +189,7 @@ class PostModelTest(TestCase):
         Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test3")
         Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test4")
         post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score, (2, 2))
+        self.assertEqual(post.get_reaction_score(), (2, 2))
 
         # star
         type = "s"
@@ -200,21 +200,21 @@ class PostModelTest(TestCase):
         Reaction.objects.create(post=post, reaction_score=3, type=type, session_key="test3")
         Reaction.objects.create(post=post, reaction_score=4, type=type, session_key="test4")
         post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score, f"{((1+2+3+4)/4):.2g}")
+        self.assertEqual(post.get_reaction_score(), f"{((1+2+3+4)/4):.2g}")
 
         # none
         type = "n"
         post.topic.board.preferences.reaction_type = type
         post.topic.board.preferences.save()
         post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score, 0)
+        self.assertEqual(post.get_reaction_score(), 0)
 
         # unknown
         type = "?"
         post.topic.board.preferences.reaction_type = type
         post.topic.board.preferences.save()
         post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score, 0)
+        self.assertEqual(post.get_reaction_score(), 0)
 
     def test_get_has_reacted(self):
         type = "l"
@@ -224,7 +224,12 @@ class PostModelTest(TestCase):
         user = User.objects.get(username="testuser1")
 
         factory = RequestFactory()
-        request = factory.post(reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}))
+        request = factory.post(
+            reverse(
+                "boards:post-reaction",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+            )
+        )
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()

@@ -782,7 +782,9 @@ class PostUpdateViewTest(TestCase):
             content="Test Post",
             topic=topic,
         )
-        cls.post_updated_url = reverse("boards:post-update", kwargs={"slug": board.slug, "pk": post.id})
+        cls.post_updated_url = reverse(
+            "boards:post-update", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+        )
 
     def test_anonymous_permissions(self):
         topic = Topic.objects.get(subject="Test Topic")
@@ -794,7 +796,9 @@ class PostUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(self.client.session.session_key, post.session_key)
         response = self.client.post(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            ),
             data={"content": "Test Post anon NEW"},
         )
         self.assertEqual(response.status_code, 204)
@@ -804,7 +808,9 @@ class PostUpdateViewTest(TestCase):
         self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 403)
 
@@ -812,11 +818,15 @@ class PostUpdateViewTest(TestCase):
         self.client.login(username="testuser3", password="3y6d0A8sB?5")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            ),
             data={"content": "Test Post NEW"},
         )
         self.assertEqual(response.status_code, 204)
@@ -826,11 +836,15 @@ class PostUpdateViewTest(TestCase):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
-            reverse("boards:post-update", kwargs={"slug": post.topic.board.slug, "pk": post.id}),
+            reverse(
+                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            ),
             data={"content": "Test Post NEW"},
         )
         self.assertEqual(response.status_code, 204)
@@ -865,11 +879,15 @@ class PostDeleteViewTest(TestCase):
         board.preferences.save()
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic)
-        cls.post_deleted_url = reverse("boards:post-delete", kwargs={"slug": board.slug, "pk": post.id})
+        cls.post_deleted_url = reverse(
+            "boards:post-delete", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+        )
 
     def test_anonymous_permissions(self):
         post = Post.objects.get(content="Test Post")
-        self.client.post(reverse("boards:post-delete", kwargs={"slug": "test-board", "pk": post.pk}))
+        self.client.post(
+            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": post.topic_id, "pk": post.pk})
+        )
         self.assertEqual(Post.objects.count(), 1)
         self.client.post(
             reverse("boards:post-create", kwargs={"slug": "test-board", "topic_pk": post.topic.pk}),
@@ -877,14 +895,18 @@ class PostDeleteViewTest(TestCase):
         )
         post2 = Post.objects.get(content="Test Post anon")
         self.assertEqual(Post.objects.count(), 2)
-        self.client.post(reverse("boards:post-delete", kwargs={"slug": "test-board", "pk": post2.pk}))
+        self.client.post(
+            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": post.topic_id, "pk": post2.pk})
+        )
         self.assertEqual(Post.objects.count(), 1)
 
     def test_other_user_permissions(self):
         self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
         post = Post.objects.get(content="Test Post")
         response = self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Post.objects.count(), 1)
@@ -893,7 +915,9 @@ class PostDeleteViewTest(TestCase):
         self.client.login(username="testuser3", password="3y6d0A8sB?5")
         post = Post.objects.get(content="Test Post")
         response = self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
@@ -902,7 +926,9 @@ class PostDeleteViewTest(TestCase):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         post = Post.objects.get(content="Test Post")
         response = self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
@@ -944,27 +970,44 @@ class ReactionsDeleteViewTest(TestCase):
                 for j in range(5):
                     Reaction.objects.create(post=post, session_key=f"{i}{j}", type=type[0], reaction_score="1")
         cls.reactions_delete_url = reverse(
-            "boards:post-reactions-delete", kwargs={"slug": board.slug, "pk": Post.objects.first().pk}
+            "boards:post-reactions-delete",
+            kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": Post.objects.first().pk},
         )
 
     def test_anonymous_permissions(self):
         post = Post.objects.get(content="Test Post 0")
-        response = self.client.get(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        response = self.client.get(
+            reverse(
+                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
+            )
+        )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
-        response = self.client.post(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        response = self.client.post(
+            reverse(
+                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
+            )
+        )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
     def test_moderator_permissions(self):
         self.client.login(username="testuser3", password="3y6d0A8sB?5")
         post = Post.objects.get(content="Test Post 0")
-        response = self.client.get(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        response = self.client.get(
+            reverse(
+                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
+            )
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
-        response = self.client.post(reverse("boards:post-reactions-delete", kwargs={"slug": "000000", "pk": post.pk}))
+        response = self.client.post(
+            reverse(
+                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
+            )
+        )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
 
@@ -1074,7 +1117,9 @@ class PostFetchViewTest(TestCase):
         post.approved = True
         post.save()
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["post"], post)
@@ -1087,7 +1132,9 @@ class PostFetchViewTest(TestCase):
         self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertNotContains(response, "Test Post", html=True)
 
@@ -1099,7 +1146,9 @@ class PostFetchViewTest(TestCase):
         self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertNotContains(response, "Test Post", html=True)
 
@@ -1107,7 +1156,9 @@ class PostFetchViewTest(TestCase):
         self.client.login(username="testuser3", password="3y6d0A8sB?5")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertContains(response, "Test Post", html=True)
 
@@ -1115,7 +1166,9 @@ class PostFetchViewTest(TestCase):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertContains(response, "Test Post", html=True)
 
@@ -1125,7 +1178,9 @@ class PostFetchViewTest(TestCase):
         self.client.login(username="testuser4", password="2HJ1vRV0Z&3iD")
         post = Post.objects.get(content="Test Post")
         response = self.client.get(
-            reverse("boards:post-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            )
         )
         self.assertContains(response, "Test Post", html=True)
 
@@ -1162,7 +1217,10 @@ class PostFooterFetchViewTest(TestCase):
             post.save()
 
             response = self.client.get(
-                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+                reverse(
+                    "boards:post-footer-fetch",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                )
             )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
@@ -1171,7 +1229,10 @@ class PostFooterFetchViewTest(TestCase):
             post.approved = True
             post.save()
             response = self.client.get(
-                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+                reverse(
+                    "boards:post-footer-fetch",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                )
             )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
@@ -1195,7 +1256,10 @@ class PostFooterFetchViewTest(TestCase):
             post.save()
 
             response = self.client.get(
-                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+                reverse(
+                    "boards:post-footer-fetch",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                )
             )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
@@ -1204,7 +1268,10 @@ class PostFooterFetchViewTest(TestCase):
             post.approved = True
             post.save()
             response = self.client.get(
-                reverse("boards:post-footer-fetch", kwargs={"slug": post.topic.board.slug, "pk": post.pk})
+                reverse(
+                    "boards:post-footer-fetch",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                )
             )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
@@ -1225,13 +1292,18 @@ class PostToggleApprovalViewTest(TestCase):
         board.preferences.save()
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
-        cls.post_approval_url = reverse("boards:post-toggle-approval", kwargs={"slug": board.slug, "pk": post.id})
+        cls.post_approval_url = reverse(
+            "boards:post-toggle-approval", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+        )
 
     def test_post_toggle_approval_anonymous(self):
         post = Post.objects.get(content="Test Post")
         self.assertFalse(post.approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 302)
 
@@ -1240,7 +1312,10 @@ class PostToggleApprovalViewTest(TestCase):
         post = Post.objects.get(content="Test Post")
         self.assertFalse(post.approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 403)
 
@@ -1249,12 +1324,18 @@ class PostToggleApprovalViewTest(TestCase):
         post = Post.objects.get(content="Test Post")
         self.assertFalse(post.approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
@@ -1264,12 +1345,18 @@ class PostToggleApprovalViewTest(TestCase):
         post = Post.objects.get(content="Test Post")
         self.assertFalse(post.approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertTrue(Post.objects.get(content="Test Post").approved)
         response = self.client.post(
-            reverse("boards:post-toggle-approval", kwargs={"slug": post.topic.board.slug, "pk": post.id})
+            reverse(
+                "boards:post-toggle-approval",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
+            )
         )
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.get(content="Test Post").approved)
@@ -1303,7 +1390,9 @@ class PostReactionViewTest(TestCase):
         board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
         topic = Topic.objects.create(subject="Test Topic", board=board)
         post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", user=test_user1)
-        cls.post_reaction_url = reverse("boards:post-reaction", kwargs={"slug": board.slug, "pk": post.pk})
+        cls.post_reaction_url = reverse(
+            "boards:post-reaction", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.pk}
+        )
 
     def test_post_reaction_repeat_anonymous(self):
         post = Post.objects.get(content="Test Post")
@@ -1315,14 +1404,20 @@ class PostReactionViewTest(TestCase):
             post.topic.board.preferences.save()
 
             response = self.client.post(
-                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                reverse(
+                    "boards:post-reaction",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                ),
                 {"score": 1},
             )
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 1)
 
             response = self.client.post(
-                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                reverse(
+                    "boards:post-reaction",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                ),
                 {"score": 1},
             )
             self.assertEqual(response.status_code, 204)
@@ -1342,7 +1437,10 @@ class PostReactionViewTest(TestCase):
                 second_score = 2
 
             response = self.client.post(
-                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                reverse(
+                    "boards:post-reaction",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                ),
                 {"score": 1},
             )
             self.assertEqual(response.status_code, 204)
@@ -1350,7 +1448,10 @@ class PostReactionViewTest(TestCase):
             self.assertEqual(Reaction.objects.first().reaction_score, 1)
 
             response = self.client.post(
-                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                reverse(
+                    "boards:post-reaction",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                ),
                 {"score": second_score},
             )
             self.assertEqual(response.status_code, 204)
@@ -1364,7 +1465,10 @@ class PostReactionViewTest(TestCase):
         self.assertEqual(Reaction.objects.count(), 0)
 
         response = self.client.post(
-            reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+            reverse(
+                "boards:post-reaction",
+                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+            ),
             {"score": 1},
         )
         self.assertEqual(response.status_code, 204)
@@ -1382,7 +1486,10 @@ class PostReactionViewTest(TestCase):
             post.topic.board.preferences.save()
 
             response = self.client.post(
-                reverse("boards:post-reaction", kwargs={"slug": post.topic.board.slug, "pk": post.pk}),
+                reverse(
+                    "boards:post-reaction",
+                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                ),
                 {"score": 1},
             )
             self.assertEqual(response.status_code, 204)

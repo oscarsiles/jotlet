@@ -1,12 +1,17 @@
 {% load cacheops static post_extras %}
+{% if reactions == None %}
+    {% get_reactions post board.preferences.reaction_type as reactions %}
+{% endif %}
 {% if has_reacted.0 == None %}
-    {{ has_reacted.0 }}
-    {% get_has_reacted post request as has_reacted %}
+    {% get_has_reacted post request reactions as has_reacted %}
+{% endif %}
+{% if reaction_score == None and board.preferences.reaction_type != "n" %}
+    {% get_reaction_score post reactions board.preferences.reaction_type as reaction_score %}
 {% endif %}
 {% if is_owner == None %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
-{% cached_as post None post_footer_cache post.pk post.approved post.get_reaction_score request.session.session_key is_owner has_reacted is_moderator board.preferences.reaction_type %}
+{% cached_as post None post_footer_cache post.pk post.approved request.session.session_key is_owner reactions has_reacted reaction_score is_moderator board.preferences.reaction_type %}
 {% if board.preferences.reaction_type != 'n' %}
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
@@ -14,18 +19,18 @@
              x-data="{ isDisabled: !isApproved, isOwner: {{ is_owner|lower }}, }">
             <div class="post-card-footer-htmx-div"
                  id="post-{{ post.pk }}-footer-htmx-div"
-                 hx-get="{% url 'boards:post-footer-fetch' board.slug post.pk %}"
+                 hx-get="{% url 'boards:post-footer-fetch' board.slug topic.pk post.pk %}"
                  hx-trigger="reactionUpdated"
                  hx-target="closest .card-footer"
                  hx-swap="outerHTML">
                 <form id="post-{{ post.pk }}-reaction-form"
-                      hx-post="{% url 'boards:post-reaction' board.slug post.pk %}"
+                      hx-post="{% url 'boards:post-reaction' board.slug topic.pk post.pk %}"
                       hx-trigger="postReaction"
                       hx-swap="none"
                       @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
                     {% csrf_token %}
                     <div class="d-flex align-items-center gap-2">
-                        {% cached_as post None post_footer_form_cache post.pk post.get_reaction_score board.preferences.reaction_type has_reacted %}
+                        {% cached_as post None post_footer_form_cache post.pk reaction_score board.preferences.reaction_type has_reacted %}
                         {% if board.preferences.reaction_type == 'l' %}
                             <button class="btn btn-link text-muted shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-like"
@@ -53,7 +58,7 @@
                                     <i class="bi bi-hand-thumbs-up"></i>
                                 {% endif %}
                             </button>
-                            <div>{{ post.get_reaction_score.0 }}</div>
+                            <div>{{ reaction_score.0 }}</div>
                             <button class="btn btn-link text-muted shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-thumbs-down"
                                     name="score"
@@ -68,7 +73,7 @@
                                     <i class="bi bi-hand-thumbs-down"></i>
                                 {% endif %}
                             </button>
-                            <div>{{ post.get_reaction_score.1 }}</div>
+                            <div>{{ reaction_score.1 }}</div>
                         {% elif board.preferences.reaction_type == 's' %}
                             <div class="d-flex align-items-center stars-div"
                                  id="stars-{{ post.pk }}-div"
@@ -92,9 +97,7 @@
                             </div>
                         {% endif %}
                         <div>
-                            {% if post.get_reaction_score and not board.preferences.reaction_type == 'v' %}
-                                {{ post.get_reaction_score }}
-                            {% endif %}
+                            {% if reaction_score and not board.preferences.reaction_type == 'v' %}{{ reaction_score }}{% endif %}
                         </div>
                     {% endcached_as %}
                     {{ is_owner|json_script:"is_post_owner" }}
@@ -109,7 +112,7 @@
         </div>
         {% if is_moderator and post.get_reaction_count > 0 %}
             <div class="d-flex align-items-center">
-                <button hx-get="{% url 'boards:post-reactions-delete' board.slug post.pk %}"
+                <button hx-get="{% url 'boards:post-reactions-delete' board.slug topic.pk post.pk %}"
                         hx-target="#modal-1-body-div"
                         hx-swap="innerHTML"
                         data-bs-toggle="modal"
