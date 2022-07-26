@@ -136,11 +136,9 @@
                         ps-4
                     {% endif %}"
              x-ref="post-{{ post.pk }}-replies">
-            {% if post.get_replies.count > 0 %}
-                {% for post in post.get_replies|dictsort:"pk" %}
-                    {% include 'boards/components/post.html' %}
-                {% endfor %}
-            {% endif %}
+            {% for post in post.replies.all|dictsort:"pk" %}
+                {% include 'boards/components/post.html' %}
+            {% endfor %}
             <div id="newCard-post-{{ post.pk }}-div" hidden></div>
         </div>
     {% endif %}

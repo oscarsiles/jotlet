@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.core.files import File
 from django.db import IntegrityError, models
+from django.db.models import Count
 from django.db.models.functions import Upper
 from django.template.defaultfilters import date
 from django.urls import reverse
@@ -109,7 +110,7 @@ class Board(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic__board=self).prefetch_related("reactions")
 
     @cached_property
     def get_post_count(self):
@@ -194,7 +195,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions")
 
     @cached_property
     def get_post_count(self):
@@ -229,10 +230,6 @@ class Post(models.Model):
 
     def __str__(self):
         return self.content
-
-    @cached_property
-    def get_replies(self):
-        return Post.objects.filter(reply_to=self).prefetch_related("reactions").order_by("created_at")
 
     @cached_property
     def get_reactions(self):
