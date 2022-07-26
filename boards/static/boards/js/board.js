@@ -64,7 +64,7 @@ function connectWebsocket() {
         });
         break;
       case "post_updated":
-        var postDiv = "#post-" + data.post_pk;
+        var postDiv = "#container-post-" + data.post_pk;
         htmx.trigger(htmx.find(postDiv), "postUpdated");
         break;
       case "post_deleted":

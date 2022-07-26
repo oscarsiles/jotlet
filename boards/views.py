@@ -608,7 +608,8 @@ class TopicFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["topic"] = topic = get_topic_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["topic"] = topic = board.topics.get(pk=self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, topic.board)
         return context
 
@@ -619,7 +620,9 @@ class PostFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
+        context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
@@ -631,7 +634,9 @@ class PostFooterFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["post"] = post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
+        context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context
@@ -680,7 +685,7 @@ class PostReactionView(generic.View):
             else:
                 reaction_score = int(request.POST.get("score"))
 
-            has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
+            has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, list(post.reactions.all()))
 
             if has_reacted:
                 reaction = Reaction.objects.get(id=reaction_id)

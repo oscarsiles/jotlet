@@ -1,128 +1,167 @@
-{% load cacheops post_extras %}
-{% if has_reacted.0 == None %}
-    {% get_has_reacted post request as has_reacted %}
+{% load cacheops mptt_tags post_extras %}
+{% if reactions == None or post.reply_depth > 0 %}
+    {% get_reactions post board.preferences.reaction_type as reactions %}
 {% endif %}
-{% if is_owner == None %}
+{% if has_reacted.0 == None or post.reply_depth > 0 %}
+    {% get_has_reacted post request reactions as has_reacted %}
+{% endif %}
+{% if is_owner == None or post.reply_depth > 0 %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
-{% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
-<div class="card post-card my-2
-            {% if not post.approved and is_moderator %}
-                faded-75
-            {% endif %}"
-     id="post-{{ post.pk }}"
-     hx-get="{% url 'boards:post-fetch' post.topic.board.slug post.pk %}"
-     hx-trigger="postUpdated"
+<div id="container-post-{{ post.pk }}"
+     hx-get="{% url 'boards:post-fetch' board.slug topic.pk post.pk %}"
+     hx-trigger="postUpdated consume"
      hx-target="this"
      hx-swap="outerHTML"
-     x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }"
+     x-data="{ isRepliesCollapsed: false }"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
      {% endif %}>
-    {% if post.approved or is_owner or is_moderator %}
-        {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at post.topic.board.preferences %}
-        <div class="card-body">
-            <div class="d-flex">
-                <div>
-                    <h5 class="card-title"></h5>
-                </div>
-                <div class="d-flex ms-auto">
-                    {% if post.topic.board.preferences.type == 'r' %}
-                        {% if post.topic.board.preferences.allow_guest_replies or is_moderator %}
-                            <button class="btn btn-link text-black shadow-none p-1"
-                                    hx-get="{% url 'boards:post-reply' post.topic.board.slug post.pk %}"
-                                    hx-target="#modal-1-body-div"
-                                    hx-swap="innerHTML"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal-1-div">
-                                <i class="bi bi-reply"></i>
-                            </button>
-                        {% endif %}
-                    {% endif %}
-                    {% if is_owner or is_moderator %}
-                        {% if post.topic.board.preferences.require_post_approval %}
-                            {% if perms.boards.can_approve_posts or is_moderator %}
-                                <button class="btn btn-link text-black shadow-none p-1"
-                                        hx-post="{% url 'boards:post-toggle-approval' post.topic.board.slug post.pk %}"
-                                        hx-trigger="click"
-                                        hx-swap="none"
-                                        x-data="{ isDisabled: false }"
-                                        :disabled="isDisabled"
-                                        @click="isDisabled = true">
-                                    {% if not post.approved %}
-                                        <i class="bi bi-check-circle-fill" title="Approve"></i>
-                                    {% else %}
-                                        <i class="bi bi-x-circle" title="Unapprove"></i>
+    {% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator reactions has_reacted post.updated_at board.preferences %}
+    <div class="card post-card mb-2
+                {% if not post.approved and is_moderator %}
+                    opacity-75
+                {% endif %}"
+         id="post-{{ post.pk }}"
+         x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }">
+        <div class="row g-0">
+            <div class="col-auto rounded-start
+                        {% if post.reply_depth == 1 %}
+                            bg-primary
+                        {% elif post.reply_depth == 2 %}
+                            bg-success
+                        {% elif post.reply_depth == 3 %}
+                            bg-danger
+                        {% elif post.reply_depth > 3 %}
+                            bg-warning
+                        {% endif %}">
+                &ensp;
+            </div>
+            <div class="col-auto flex-grow-1">
+                {% if post.approved or is_owner or is_moderator %}
+                    {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="card-title text-truncate w-25 opacity-25" x-markdown>
+                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ post.reply_to.content }}{% endif %}
+                            </div>
+                            <div class="d-flex ms-auto">
+                                {% if board.preferences.type == 'r' %}
+                                    {% if post.approved %}
+                                        {% if post.get_descendant_count > 0 %}
+                                        {# djlint:off #}
+                                            <button class="btn btn-link text-black shadow-none p-1"
+                                                    @click="isRepliesCollapsed = !isRepliesCollapsed">
+                                                <i class="bi bi-arrows-collapse"
+                                                   title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}"
+                                                   x-show="!isRepliesCollapsed"></i>
+                                                <i class="bi bi-arrows-expand"
+                                                   title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}"
+                                                   x-show="isRepliesCollapsed"></i>
+                                            </button>
+                                            {# djlint:on #}
+                                        {% endif %}
+                                        {% if board.preferences.allow_guest_replies or is_moderator %}
+                                            <button class="btn btn-link text-black shadow-none p-1"
+                                                    hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
+                                                    hx-target="#modal-1-body-div"
+                                                    hx-swap="innerHTML"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modal-1-div">
+                                                <i class="bi bi-reply" title="Reply"></i>
+                                            </button>
+                                        {% endif %}
                                     {% endif %}
-                                </button>
-                            {% endif %}
-                        {% endif %}
-                        <div>
-                            <button class="btn btn-link text-black shadow-none p-1"
-                                    type="button"
-                                    id="dropdownMenuButton1"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item"
-                                       role="button"
-                                       hx-get="{% url 'boards:post-update' post.topic.board.slug post.pk %}"
-                                       hx-target="#modal-1-body-div"
-                                       hx-swap="innerHTML"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal-1-div">
-                                        <i class="bi bi-pen pe-2"></i>Edit Post
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                       role="button"
-                                       hx-get="{% url 'boards:post-delete' post.topic.board.slug post.pk %}"
-                                       hx-target="#modal-1-body-div"
-                                       hx-swap="innerHTML"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#modal-1-div"
-                                       class="btn btn-link text-black shadow-none p-1">
-                                        <i class="bi bi-trash pe-2"></i>Delete Post
-                                    </a>
-                                </li>
-                            </ul>
+                                {% endif %}
+                                {% if is_owner or is_moderator %}
+                                    {% if board.preferences.require_post_approval %}
+                                        {% if perms.boards.can_approve_posts or is_moderator %}
+                                            <button class="btn btn-link text-black shadow-none p-1"
+                                                    hx-post="{% url 'boards:post-toggle-approval' board.slug topic.pk post.pk %}"
+                                                    hx-trigger="click"
+                                                    hx-swap="none"
+                                                    x-data="{ isDisabled: false }"
+                                                    :disabled="isDisabled"
+                                                    @click="isDisabled = true">
+                                                {% if not post.approved %}
+                                                    <i class="bi bi-check-circle-fill" title="Approve"></i>
+                                                {% else %}
+                                                    <i class="bi bi-x-circle" title="Unapprove"></i>
+                                                {% endif %}
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                    <div>
+                                        <button class="btn btn-link text-black shadow-none p-1"
+                                                type="button"
+                                                id="dropdownMenuButton1"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   role="button"
+                                                   hx-get="{% url 'boards:post-update' board.slug topic.pk post.pk %}"
+                                                   hx-target="#modal-1-body-div"
+                                                   hx-swap="innerHTML"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#modal-1-div">
+                                                    <i class="bi bi-pen pe-2"></i>Edit Post
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   role="button"
+                                                   hx-get="{% url 'boards:post-delete' board.slug topic.pk post.pk %}"
+                                                   hx-target="#modal-1-body-div"
+                                                   hx-swap="innerHTML"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#modal-1-div"
+                                                   class="btn btn-link text-black shadow-none p-1">
+                                                    <i class="bi bi-trash pe-2"></i>Delete Post
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                    {% endif %}
-                </div>
-            </div>
-            <div hx-disable x-data>
-                <p class="card-text text-break my-0
-                          {% if not post.approved and is_moderator %}
-                              opacity-75
-                          {% endif %}"
-                   id="post-{{ post.pk }}-text"
-                   x-markdown>
-                    <span class="my-0">{{ post|linebreaksbr }}</span>
-                </p>
-            </div>
+                        <div hx-disable x-data>
+                            <p class="card-text text-break my-0
+                                      {% if not post.approved and is_moderator %}
+                                          opacity-75
+                                      {% endif %}"
+                               id="post-{{ post.pk }}-text"
+                               x-markdown>
+                                <span class="my-0">{{ post|linebreaksbr }}</span>
+                            </p>
+                        </div>
+                    </div>
+                {% endcached_as %}
+                {% if board.preferences.reaction_type != 'n' %}
+                    {% include 'boards/components/post_footer.html' %}
+                {% endif %}
+            {% endif %}
         </div>
-    {% endcached_as %}
-    {% if post.topic.board.preferences.reaction_type != 'n' %}
-        {% include 'boards/components/post_footer.html' %}
+    </div>
+</div>
+{% endcached_as %}
+{% if board.preferences.type == 'r' %}
+    {% if post.approved or is_owner or is_moderator %}
+        <div class="flex-grow-1
+                    {% if post.reply_depth <= 2 %}
+                        ps-4
+                    {% endif %}"
+             x-ref="post-{{ post.pk }}-replies"
+             x-show="!isRepliesCollapsed"
+             x-collapse>
+            {% for post in post.replies.all|dictsort:"pk" %}
+                {% include 'boards/components/post.html' %}
+            {% endfor %}
+            <div id="newCard-post-{{ post.pk }}-div" hidden></div>
+        </div>
     {% endif %}
 {% endif %}
 </div>
-{% endcached_as %}
-{% if post.topic.board.preferences.type == 'r' %}
-    <div class="flex-grow-1
-                {% if post.reply_depth <= 2 %}
-                    ps-4
-                {% endif %}"
-         x-ref="post-{{ post.pk }}-replies">
-        {% if post.get_replies.count > 0 %}
-            {% for post in post.get_replies|dictsort:"pk" %}
-                {% include 'boards/components/post.html' %}
-            {% endfor %}
-        {% endif %}
-        <div id="newCard-post-{{ post.pk }}-div" hidden></div>
-    </div>
-{% endif %}

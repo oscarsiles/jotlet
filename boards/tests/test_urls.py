@@ -43,23 +43,23 @@ class UrlsTest(TestCase):
         url = reverse("boards:post-create", kwargs={"slug": "slug", "topic_pk": 1})
         self.assertEqual(url, "/boards/slug/topics/1/posts/create/")
 
-        url = reverse("boards:post-update", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/update/")
+        url = reverse("boards:post-update", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/update/")
 
-        url = reverse("boards:post-delete", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/delete/")
+        url = reverse("boards:post-delete", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/delete/")
 
-        url = reverse("boards:post-fetch", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/fetch/post/")
+        url = reverse("boards:post-fetch", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/fetch/post/")
 
-        url = reverse("boards:post-footer-fetch", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/fetch/footer/")
+        url = reverse("boards:post-footer-fetch", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/fetch/footer/")
 
-        url = reverse("boards:post-toggle-approval", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/approval/")
+        url = reverse("boards:post-toggle-approval", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/approval/")
 
-        url = reverse("boards:post-reaction", kwargs={"slug": "slug", "pk": 1})
-        self.assertEqual(url, "/boards/slug/posts/1/reaction/")
+        url = reverse("boards:post-reaction", kwargs={"slug": "slug", "topic_pk": 1, "pk": 1})
+        self.assertEqual(url, "/boards/slug/topics/1/posts/1/reaction/")
 
     def test_resolve_url(self):
         resolver = resolve("/boards/")
@@ -101,20 +101,20 @@ class UrlsTest(TestCase):
         resolver = resolve("/boards/slug/topics/1/posts/create/")
         self.assertEqual(resolver.view_name, "boards:post-create")
 
-        resolver = resolve("/boards/slug/posts/1/update/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/update/")
         self.assertEqual(resolver.view_name, "boards:post-update")
 
-        resolver = resolve("/boards/slug/posts/1/delete/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/delete/")
         self.assertEqual(resolver.view_name, "boards:post-delete")
 
-        resolver = resolve("/boards/slug/posts/1/fetch/post/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/fetch/post/")
         self.assertEqual(resolver.view_name, "boards:post-fetch")
 
-        resolver = resolve("/boards/slug/posts/1/fetch/footer/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/fetch/footer/")
         self.assertEqual(resolver.view_name, "boards:post-footer-fetch")
 
-        resolver = resolve("/boards/slug/posts/1/approval/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/approval/")
         self.assertEqual(resolver.view_name, "boards:post-toggle-approval")
 
-        resolver = resolve("/boards/slug/posts/1/reaction/")
+        resolver = resolve("/boards/slug/topics/1/posts/1/reaction/")
         self.assertEqual(resolver.view_name, "boards:post-reaction")

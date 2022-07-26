@@ -34,7 +34,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 
-TESTING = True if "test" in sys.argv else False
+TESTING = (sys.argv[1:2] == ["test"]) or ("pytest" in sys.modules)
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
@@ -85,6 +85,7 @@ INSTALLED_APPS += [
     "simple_history",
     "cachalot",
     "cacheops",
+    "mptt",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",

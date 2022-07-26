@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+from mptt.models import MPTTModel, TreeForeignKey
 from PIL import Image as PILImage
 from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
@@ -109,7 +110,7 @@ class Board(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic__board=self).prefetch_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic__board=self).prefetch_related("reactions")
 
     @cached_property
     def get_post_count(self):
@@ -194,7 +195,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions").order_by("-created_at")
+        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions")
 
     @cached_property
     def get_post_count(self):
@@ -214,59 +215,51 @@ class Topic(models.Model):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(models.Model):
+class Post(MPTTModel):
     content = models.TextField(max_length=1000)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     approved = models.BooleanField(default=True)
-    reply_to = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
-    reply_depth = models.IntegerField(default=0)
+    reply_to = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
     allow_replies = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True)
+
+    class MPTTMeta:
+        parent_attr = "reply_to"
+        level_attr = "reply_depth"
 
     def __str__(self):
         return self.content
 
-    @cached_property
-    def get_replies(self):
-        return Post.objects.filter(reply_to=self).prefetch_related("reactions").order_by("created_at")
+    def get_is_owner(self, request):
+        return self.session_key == request.session.session_key or (
+            request.user.is_authenticated and self.user == request.user
+        )
 
-    @cached_property
-    def get_reactions(self):
-        return self.reactions.filter(type=self.get_reaction_type).all()
+    def get_reactions(self, reaction_type=None):
+        reaction_type = reaction_type or self.get_reaction_type
+        return self.reactions.filter(type=reaction_type).all()
 
     @cached_property
     def get_reaction_type(self):
         return self.topic.board.preferences.reaction_type
 
-    @cached_property
-    def get_reaction_count(self):
-        return len(self.get_reactions)
-
-    def get_is_owner(self, request):
-        return self.user == request.user or self.session_key == request.session.session_key
-
-    @cached_property
-    def get_reaction_score(self):
+    def get_reaction_score(self, reactions=None, reaction_type=None):
         try:
-            reaction_type = self.get_reaction_type
-            if reaction_type == "n":
-                return 0
-
-            reactions = self.get_reactions
+            reaction_type = reaction_type or self.get_reaction_type
+            reactions = reactions or list(self.get_reactions(reaction_type))
 
             if reaction_type == "l":  # cannot use match/switch before python 3.10
-                return reactions.count()
+                return len(reactions)
             elif reaction_type == "v":
                 return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
                     1 for reaction in reactions if reaction.reaction_score == -1
                 )
             elif reaction_type == "s":
                 score = ""
-                count = reactions.count()
+                count = len(reactions)
                 if count != 0:
                     sumvar = sum(reaction.reaction_score for reaction in reactions)
                     score = f"{(sumvar / count):.2g}"
@@ -276,13 +269,13 @@ class Post(models.Model):
         except Exception:
             raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
-    def get_has_reacted(self, request):
-        post_reactions = self.get_reactions
+    def get_has_reacted(self, request, post_reactions=None):
+        post_reactions = post_reactions or self.get_reactions()
         has_reacted = False
         reaction_id = None
         reacted_score = 1  # default score
 
-        if post_reactions.count() > 0:
+        if len(post_reactions) > 0:
             if request.session.session_key:
                 for reaction in post_reactions:
                     if reaction.session_key == request.session.session_key:
