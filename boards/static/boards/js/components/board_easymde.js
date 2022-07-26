@@ -7,7 +7,9 @@ var easyMDE = new EasyMDE({
     italic: "bi bi-type-italic",
     preview: "bi bi-eye-fill",
   },
+  inputStyle: "textarea",
   maxHeight: "100%",
+  nativeSpellChecker: false,
   renderingConfig: {
     sanitizerFunction: (renderedHTML) => {
       return DOMPurify.sanitize(renderedHTML, {
