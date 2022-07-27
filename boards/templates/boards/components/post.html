@@ -25,18 +25,20 @@
          id="post-{{ post.pk }}"
          x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }">
         <div class="row flex-nowrap g-0">
-            <div class="col-auto rounded-start
-                        {% if post.reply_depth == 1 %}
-                            bg-primary
-                        {% elif post.reply_depth == 2 %}
-                            bg-success
-                        {% elif post.reply_depth == 3 %}
-                            bg-danger
-                        {% elif post.reply_depth > 3 %}
-                            bg-warning
-                        {% endif %}">
-                &ensp;
-            </div>
+            {% if post.reply_depth > 0 %}
+                <div class="col-auto rounded-start
+                            {% if post.reply_depth == 1 %}
+                                bg-primary
+                            {% elif post.reply_depth == 2 %}
+                                bg-success
+                            {% elif post.reply_depth == 3 %}
+                                bg-danger
+                            {% elif post.reply_depth > 3 %}
+                                bg-warning
+                            {% endif %}">
+                    &ensp;
+                </div>
+            {% endif %}
             <div class="col-auto flex-fill">
                 {% if post.approved or is_owner or is_moderator %}
                     {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
@@ -49,15 +51,10 @@
                                 {% if board.preferences.type == 'r' %}
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
-                                        {# djlint:off #}
-                                            <button class="btn btn-link text-black shadow-none p-1"
-                                                    @click="isRepliesCollapsed = !isRepliesCollapsed">
-                                                <i class="bi bi-arrows-collapse"
-                                                   title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}"
-                                                   x-show="!isRepliesCollapsed"></i>
-                                                <i class="bi bi-arrows-expand"
-                                                   title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}"
-                                                   x-show="isRepliesCollapsed"></i>
+                                            {# djlint:off #}
+                                            <button class="btn btn-link text-black shadow-none p-1" @click="isRepliesCollapsed = !isRepliesCollapsed">
+                                                <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
+                                                <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
                                             </button>
                                             {# djlint:on #}
                                         {% endif %}

@@ -127,24 +127,32 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
 def post_created_invalidate_cache(sender, instance, created, **kwargs):
     if created:
         invalidate_post_cache(instance)
+        tree = instance.get_root().get_descendants(include_self=True)
+        for post in tree:
+            invalidate_obj(post)
 
 
 @receiver(post_delete, sender=Post)
 def post_deleted_invalidate_cache(sender, instance, **kwargs):
     invalidate_post_cache(instance)
+    try:
+        tree = instance.get_root().get_descendants(include_self=True)
+        for post in tree:
+            invalidate_obj(post)
+    except Exception:
+        pass
 
 
 @receiver(post_save, sender=Post)
 def post_send_message(sender, instance, created, **kwargs):
     board_slug = instance.topic.board.slug
-    if created:
+    if created and instance.is_root_node():
         channel_group_send(
             f"board_{board_slug}",
             {
                 "type": "post_created",
                 "topic_pk": instance.topic_id,
                 "post_pk": instance.pk,
-                "reply_to": instance.reply_to_id,
                 "fetch_url": reverse(
                     "boards:post-fetch",
                     kwargs={
@@ -161,7 +169,7 @@ def post_send_message(sender, instance, created, **kwargs):
             {
                 "type": "post_updated",
                 "topic_pk": instance.topic_id,
-                "post_pk": instance.pk,
+                "post_pk": instance.get_root().pk,
             },
         )
 
