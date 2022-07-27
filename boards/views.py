@@ -404,7 +404,6 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
         if self.is_reply:
             form.instance.topic_id = self.reply_to.topic_id
             form.instance.reply_to = self.reply_to
-            form.instance.reply_depth = self.reply_to.reply_depth + 1
         else:
             form.instance.topic_id = self.kwargs.get("topic_pk")
 
