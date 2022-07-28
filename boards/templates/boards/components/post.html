@@ -12,7 +12,8 @@
      hx-get="{% url 'boards:post-fetch' board.slug topic.pk post.pk %}"
      hx-trigger="postUpdated consume"
      hx-target="this"
-     hx-swap="outerHTML"
+     hx-ext="alpine-morph"
+     hx-swap="morph"
      x-data="{ isRepliesCollapsed: false }"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
@@ -52,7 +53,7 @@
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
                                             {# djlint:off #}
-                                            <button class="btn btn-link text-black shadow-none p-1" @click="isRepliesCollapsed = !isRepliesCollapsed">
+                                            <button class="btn btn-link text-black shadow-none p-1" key="{{ post.pk }}-collapse-replies" x-on:click="isRepliesCollapsed = !isRepliesCollapsed">
                                                 <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
                                                 <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
                                             </button>
@@ -63,6 +64,7 @@
                                                     hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
                                                     hx-target="#modal-1-body-div"
                                                     hx-swap="innerHTML"
+                                                    key="{{ post.pk }}-reply-button"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modal-1-div">
                                                 <i class="bi bi-reply" title="Reply"></i>
@@ -77,9 +79,11 @@
                                                     hx-post="{% url 'boards:post-toggle-approval' board.slug topic.pk post.pk %}"
                                                     hx-trigger="click"
                                                     hx-swap="none"
+                                                    key="{{ post.pk }}-approve-button"
                                                     x-data="{ isDisabled: false }"
-                                                    :disabled="isDisabled"
-                                                    @click="isDisabled = true">
+                                                    x-effect="isDisabled = false"
+                                                    x-bind:disabled="isDisabled"
+                                                    x-on:click="isDisabled = true">
                                                 {% if not post.approved %}
                                                     <i class="bi bi-check-circle-fill" title="Approve"></i>
                                                 {% else %}
