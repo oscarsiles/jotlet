@@ -1,18 +1,18 @@
 {% load cacheops static post_extras %}
-{% if reactions == None %}
-    {% get_reactions post board.preferences.reaction_type as reactions %}
-{% endif %}
-{% if has_reacted.0 == None %}
-    {% get_has_reacted post request reactions as has_reacted %}
-{% endif %}
-{% if reaction_score == None and board.preferences.reaction_type != "n" %}
-    {% get_reaction_score post reactions board.preferences.reaction_type as reaction_score %}
-{% endif %}
-{% if is_owner == None %}
-    {% get_is_owner post request as is_owner %}
-{% endif %}
-{% cached_as post None post_footer_cache post.pk post.approved request.session.session_key is_owner reactions has_reacted reaction_score is_moderator board.preferences.reaction_type %}
 {% if board.preferences.reaction_type != 'n' %}
+    {% if reactions == None %}
+        {% get_reactions post board.preferences.reaction_type as reactions %}
+    {% endif %}
+    {% if has_reacted.0 == None %}
+        {% get_has_reacted post request reactions as has_reacted %}
+    {% endif %}
+    {% if reaction_score == None or post.reply_depth > 0 %}
+        {% get_reaction_score post reactions board.preferences.reaction_type as reaction_score %}
+    {% endif %}
+    {% if is_owner == None %}
+        {% get_is_owner post request as is_owner %}
+    {% endif %}
+    {% cached_as post None post_footer_cache post.pk post.approved request.session.session_key is_owner reactions has_reacted reaction_score is_moderator board.preferences.reaction_type %}
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
              id="post-{{ post.pk }}-footer"
@@ -110,7 +110,7 @@
                 </div>
             </form>
         </div>
-        {% if is_moderator and post.get_reaction_count > 0 %}
+        {% if is_moderator and reactions.count > 0 %}
             <div class="d-flex align-items-center">
                 <button hx-get="{% url 'boards:post-reactions-delete' board.slug topic.pk post.pk %}"
                         hx-target="#modal-1-body-div"
@@ -124,5 +124,5 @@
         {% endif %}
     </div>
 {% endif %}
-{% endif %}
 {% endcached_as %}
+{% endif %}

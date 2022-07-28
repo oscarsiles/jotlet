@@ -1,9 +1,11 @@
 {% load cacheops mptt_tags post_extras %}
-{% if reactions == None or post.reply_depth > 0 %}
-    {% get_reactions post board.preferences.reaction_type as reactions %}
-{% endif %}
-{% if has_reacted.0 == None or post.reply_depth > 0 %}
-    {% get_has_reacted post request reactions as has_reacted %}
+{% if board.preferences.reaction_type != 'n' %}
+    {% if reactions == None or post.reply_depth > 0 %}
+        {% get_reactions post board.preferences.reaction_type as reactions %}
+    {% endif %}
+    {% if has_reacted.0 == None or post.reply_depth > 0 %}
+        {% get_has_reacted post request reactions as has_reacted %}
+    {% endif %}
 {% endif %}
 {% if is_owner == None or post.reply_depth > 0 %}
     {% get_is_owner post request as is_owner %}
@@ -46,7 +48,7 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="card-title text-truncate w-25 opacity-25" x-markdown>
-                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ post.reply_to.content }}{% endif %}
+                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ parent.content }}{% endif %}
                             </div>
                             <div class="d-flex ms-auto">
                                 {% if board.preferences.type == 'r' %}
@@ -158,7 +160,7 @@
              x-ref="post-{{ post.pk }}-replies"
              x-show="!isRepliesCollapsed"
              x-collapse>
-            {% for post in post.replies.all|dictsort:"pk" %}
+            {% for post in post.get_children|dictsort:"pk" %}
                 {% include 'boards/components/post.html' %}
             {% endfor %}
             <div id="newCard-post-{{ post.pk }}-div" hidden></div>

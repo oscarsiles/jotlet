@@ -10,13 +10,13 @@ def get_is_owner(post, request):
 
 @register.simple_tag
 def get_reactions(post, reaction_type):
-    return list(post.get_reactions(reaction_type))
+    return post.get_reactions(reaction_type)
 
 
 @register.simple_tag
 def get_has_reacted(post, request, reactions):
-    has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, reactions)
-    return has_reacted, reaction_id, reacted_score
+    has_reacted, reaction_id, reaction_score = post.get_has_reacted(request, reactions)
+    return has_reacted, reaction_id, reaction_score
 
 
 @register.simple_tag
