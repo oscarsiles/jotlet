@@ -129,6 +129,7 @@ function starRating() {
 
 connectWebsocket();
 
+// Alpine x-markdown
 document.addEventListener("alpine:initializing", () => {
   Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
     let getHTML = evaluateLater();
