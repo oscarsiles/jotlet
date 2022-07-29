@@ -3,7 +3,8 @@
      id="board-{{ board.slug }}"
      hx-get="{% url 'boards:board' board.slug %}"
      hx-trigger="topicCreated"
-     hx-swap="outerHTML"
+     hx-ext="alpine-morph"
+     hx-swap="morph"
      x-data="{ topicCount: 0 }"
      x-init="topicCount = $el.querySelectorAll('.topic-list').length;"
      x-cloak
