@@ -30,18 +30,19 @@
 {% endfor %}
 </div>
 <style nonce="{{ CSP_NONCE }}">
-  .card-img-top {
-    position: inherit;
-  }
-
-  .card-img-top input[type="radio"]:checked+label::before{
-    background: url({% static 'boards/images/check_mark.png' %}) no-repeat center center;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    content: '';
+    .card-img-top {
+      position: inherit;
     }
-  .card-img-top input[type="radio"]:checked+label > picture > img {
+    
+    .card-img-top input[type="radio"]:checked+label::before {
+      background: url({% static 'boards/images/check_mark.png' %}) no-repeat center center;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      content: '';
+    }
+    
+    .card-img-top input[type="radio"]:checked+label>picture>img {
       opacity: 0.5;
     }
 </style>

@@ -174,29 +174,29 @@
 {% include 'boards/components/modal.html' with num=2 %}
 {% if not request.htmx %}
     <script type="module" nonce="{{ CSP_NONCE }}">
-        {% cache 86400 base-script-modals %}
-        htmx.on("hidden.bs.modal", function (e) {
-            var modal2 = bootstrap.Modal.getInstance(
+        /* beautify ignore:start */{% cache 86400 base-script-modals %}/* beautify ignore:end */
+        htmx.on("hidden.bs.modal", function(e) {
+          var modal2 = bootstrap.Modal.getInstance(
             document.getElementById("modal-2-div")
-            );
-            var modal2_isShown = false;
-            try {
+          );
+          var modal2_isShown = false;
+          try {
             modal2_isShown = modal2._isShown;
-            } catch (err) {}
+          } catch (err) {}
         
-            if (!modal2_isShown && e.target.id == "modal-1-div") {
+          if (!modal2_isShown && e.target.id == "modal-1-div") {
             htmx.find(
-                "#modal-1-div"
+              "#modal-1-div"
             ).outerHTML = `{% include 'boards/components/modal.html' with num=1 %}`;
-            }
+          }
         
-            if (e.target.id == "modal-2-div") {
+          if (e.target.id == "modal-2-div") {
             htmx.find(
-                "#modal-2-div"
+              "#modal-2-div"
             ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
-            }
+          }
         });
-        {% endcache %}
+        /* beautify ignore:start */{% endcache %}/* beautify ignore:end */
     </script>
 {% endif %}
 {% block script %}
