@@ -89,7 +89,6 @@
                                             :id="'post-{{ post.pk }}-star-' + star"
                                             name="score"
                                             type="submit"
-                                            :key="'{{ post.pk }}-star-button' + star"
                                             :value="star"
                                             :class="isHover ? 'text-black' : 'text-black-50'"
                                             :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
