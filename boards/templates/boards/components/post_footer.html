@@ -16,8 +16,8 @@
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
              id="post-{{ post.pk }}-footer"
-             x-data="{ isDisabled: !isApproved, isOwner: {{ is_owner|lower }}, }"
-             x-effect="isDisabled = !isApproved">
+             x-data="{ isApproved: {{ post.approved|yesno:'true,false' }}, isDisabled: !false, isOwner: {{ is_owner|lower }} }"
+             x-effect="isApproved = {{ post.approved|yesno:'true,false' }}; isDisabled = !isApproved;">
             <div class="post-card-footer-htmx-div"
                  id="post-{{ post.pk }}-footer-htmx-div"
                  hx-get="{% url 'boards:post-footer-fetch' board.slug topic.pk post.pk %}"
@@ -82,8 +82,7 @@
                         {% elif board.preferences.reaction_type == 's' %}
                             <div class="d-flex align-items-center stars-div"
                                  id="stars-{{ post.pk }}-div"
-                                 x-data="starRating()"
-                                 x-init="rating = $el.parentElement.querySelector('#reacted_score').textContent">
+                                 x-data="starRating()">
                                 <template x-for="star in ratings">
                                     <button class="d-flex align-items-center btn btn-link shadow-none p-0"
                                             :id="'post-{{ post.pk }}-star-' + star"
