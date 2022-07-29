@@ -16,13 +16,15 @@
     {% if post.approved or is_owner or is_moderator %}
         <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
              id="post-{{ post.pk }}-footer"
-             x-data="{ isDisabled: !isApproved, isOwner: {{ is_owner|lower }}, }">
+             x-data="{ isDisabled: !isApproved, isOwner: {{ is_owner|lower }}, }"
+             x-effect="isDisabled = !isApproved">
             <div class="post-card-footer-htmx-div"
                  id="post-{{ post.pk }}-footer-htmx-div"
                  hx-get="{% url 'boards:post-footer-fetch' board.slug topic.pk post.pk %}"
                  hx-trigger="reactionUpdated"
                  hx-target="closest .card-footer"
-                 hx-swap="outerHTML">
+                 hx-ext="alpine-morph"
+                 hx-swap="morph">
                 <form id="post-{{ post.pk }}-reaction-form"
                       hx-post="{% url 'boards:post-reaction' board.slug topic.pk post.pk %}"
                       hx-trigger="postReaction"
@@ -35,6 +37,7 @@
                             <button class="btn btn-link text-muted shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-like"
                                     type="submit"
+                                    key="{{ post.pk }}-like-button"
                                     :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
                                     :disabled="isOwner || isDisabled">
                                 {% if has_reacted.0 %}
@@ -49,6 +52,7 @@
                                     name="score"
                                     type="submit"
                                     value="1"
+                                    key="{{ post.pk }}-up-button"
                                     :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
                                     :disabled="isOwner || isDisabled"
                                     x-on:click="$el.focus()">
@@ -64,6 +68,7 @@
                                     name="score"
                                     type="submit"
                                     value="-1"
+                                    key="{{ post.pk }}-down-button"
                                     :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
                                     :disabled="isOwner || isDisabled"
                                     x-on:click="$el.focus()">
@@ -84,6 +89,7 @@
                                             :id="'post-{{ post.pk }}-star-' + star"
                                             name="score"
                                             type="submit"
+                                            :key="'{{ post.pk }}-star-button' + star"
                                             :value="star"
                                             :class="isHover ? 'text-black' : 'text-black-50'"
                                             :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
@@ -112,12 +118,12 @@
         </div>
         {% if is_moderator and reactions.count > 0 %}
             <div class="d-flex align-items-center">
-                <button hx-get="{% url 'boards:post-reactions-delete' board.slug topic.pk post.pk %}"
+                <button class="btn btn-link text-black shadow-none p-0"
+                        hx-get="{% url 'boards:post-reactions-delete' board.slug topic.pk post.pk %}"
                         hx-target="#modal-1-body-div"
                         hx-swap="innerHTML"
                         data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div"
-                        class="btn btn-link text-black shadow-none p-0">
+                        data-bs-target="#modal-1-div">
                     <i class="bi bi-x-square" title="Delete post reactions"></i>
                 </button>
             </div>

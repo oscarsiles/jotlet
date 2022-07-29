@@ -26,7 +26,8 @@
                     opacity-75
                 {% endif %}"
          id="post-{{ post.pk }}"
-         x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }">
+         x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }"
+         x-effect="isApproved = {{ post.approved|yesno:'true,false' }}">
         <div class="row flex-nowrap g-0">
             {% if post.reply_depth > 0 %}
                 <div class="col-auto rounded-start
