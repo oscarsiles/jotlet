@@ -239,7 +239,8 @@ class Post(MPTTModel):
         )
 
     def get_reactions(self, reaction_type=None):
-        reaction_type = reaction_type or self.get_reaction_type
+        if reaction_type is None:
+            reaction_type = self.get_reaction_type
         return self.reactions.filter(type=reaction_type).all()
 
     @cached_property
@@ -248,18 +249,20 @@ class Post(MPTTModel):
 
     def get_reaction_score(self, reactions=None, reaction_type=None):
         try:
-            reaction_type = reaction_type or self.get_reaction_type
-            reactions = reactions or list(self.get_reactions(reaction_type))
+            if reaction_type is None:
+                reaction_type = self.get_reaction_type
+            if reactions is None:
+                reactions = self.get_reactions(reaction_type)
 
             if reaction_type == "l":  # cannot use match/switch before python 3.10
-                return len(reactions)
+                return reactions.count()
             elif reaction_type == "v":
                 return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
                     1 for reaction in reactions if reaction.reaction_score == -1
                 )
             elif reaction_type == "s":
                 score = ""
-                count = len(reactions)
+                count = reactions.count()
                 if count != 0:
                     sumvar = sum(reaction.reaction_score for reaction in reactions)
                     score = f"{(sumvar / count):.2g}"
@@ -270,12 +273,14 @@ class Post(MPTTModel):
             raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
     def get_has_reacted(self, request, post_reactions=None):
-        post_reactions = post_reactions or self.get_reactions()
+        if post_reactions is None:
+            post_reactions = self.get_reactions()
+
         has_reacted = False
         reaction_id = None
         reacted_score = 1  # default score
 
-        if len(post_reactions) > 0:
+        if post_reactions:
             if request.session.session_key:
                 for reaction in post_reactions:
                     if reaction.session_key == request.session.session_key:

@@ -36,8 +36,12 @@ function connectWebsocket() {
     switch (data.type) {
       case "session_connected":
       case "session_disconnected":
-        htmx.find("#board-online-sessions").textContent = data.sessions;
-        break;
+        try {
+          htmx.find("#board-online-sessions").textContent = data.sessions;
+          break;
+        } catch (e) {
+          break;
+        }
       case "board_preferences_changed":
       case "topic_created":
         var boardDiv = "#board-" + board_slug;
@@ -129,6 +133,7 @@ function starRating() {
 
 connectWebsocket();
 
+// Alpine x-markdown
 document.addEventListener("alpine:initializing", () => {
   Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
     let getHTML = evaluateLater();

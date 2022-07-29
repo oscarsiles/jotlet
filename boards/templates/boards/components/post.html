@@ -1,9 +1,11 @@
 {% load cacheops mptt_tags post_extras %}
-{% if reactions == None or post.reply_depth > 0 %}
-    {% get_reactions post board.preferences.reaction_type as reactions %}
-{% endif %}
-{% if has_reacted.0 == None or post.reply_depth > 0 %}
-    {% get_has_reacted post request reactions as has_reacted %}
+{% if board.preferences.reaction_type != 'n' %}
+    {% if reactions == None or post.reply_depth > 0 %}
+        {% get_reactions post board.preferences.reaction_type as reactions %}
+    {% endif %}
+    {% if has_reacted.0 == None or post.reply_depth > 0 %}
+        {% get_has_reacted post request reactions as has_reacted %}
+    {% endif %}
 {% endif %}
 {% if is_owner == None or post.reply_depth > 0 %}
     {% get_is_owner post request as is_owner %}
@@ -12,7 +14,8 @@
      hx-get="{% url 'boards:post-fetch' board.slug topic.pk post.pk %}"
      hx-trigger="postUpdated consume"
      hx-target="this"
-     hx-swap="outerHTML"
+     hx-ext="alpine-morph"
+     hx-swap="morph"
      x-data="{ isRepliesCollapsed: false }"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
@@ -22,8 +25,7 @@
                 {% if not post.approved and is_moderator %}
                     opacity-75
                 {% endif %}"
-         id="post-{{ post.pk }}"
-         x-data="{ isApproved: {{ post.approved|yesno:'true,false' }} }">
+         id="post-{{ post.pk }}">
         <div class="row flex-nowrap g-0">
             {% if post.reply_depth > 0 %}
                 <div class="col-auto rounded-start
@@ -45,14 +47,14 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="card-title text-truncate w-25 opacity-25" x-markdown>
-                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ post.reply_to.content }}{% endif %}
+                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ parent.content }}{% endif %}
                             </div>
                             <div class="d-flex ms-auto">
                                 {% if board.preferences.type == 'r' %}
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
                                             {# djlint:off #}
-                                            <button class="btn btn-link text-black shadow-none p-1" @click="isRepliesCollapsed = !isRepliesCollapsed">
+                                            <button class="btn btn-link text-black shadow-none p-1" key="{{ post.pk }}-collapse-replies" x-on:click="isRepliesCollapsed = !isRepliesCollapsed">
                                                 <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
                                                 <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
                                             </button>
@@ -63,6 +65,7 @@
                                                     hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
                                                     hx-target="#modal-1-body-div"
                                                     hx-swap="innerHTML"
+                                                    key="{{ post.pk }}-reply-button"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modal-1-div">
                                                 <i class="bi bi-reply" title="Reply"></i>
@@ -77,9 +80,11 @@
                                                     hx-post="{% url 'boards:post-toggle-approval' board.slug topic.pk post.pk %}"
                                                     hx-trigger="click"
                                                     hx-swap="none"
+                                                    key="{{ post.pk }}-approve-button"
                                                     x-data="{ isDisabled: false }"
-                                                    :disabled="isDisabled"
-                                                    @click="isDisabled = true">
+                                                    x-effect="isDisabled = false"
+                                                    x-bind:disabled="isDisabled"
+                                                    x-on:click="isDisabled = true">
                                                 {% if not post.approved %}
                                                     <i class="bi bi-check-circle-fill" title="Approve"></i>
                                                 {% else %}
@@ -154,7 +159,7 @@
              x-ref="post-{{ post.pk }}-replies"
              x-show="!isRepliesCollapsed"
              x-collapse>
-            {% for post in post.replies.all|dictsort:"pk" %}
+            {% for post in post.get_children|dictsort:"pk" %}
                 {% include 'boards/components/post.html' %}
             {% endfor %}
             <div id="newCard-post-{{ post.pk }}-div" hidden></div>

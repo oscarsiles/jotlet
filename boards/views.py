@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -29,9 +29,9 @@ def get_is_moderator(user, board):
 
 
 def get_board_with_prefetches(slug):
-    board = Board.objects.select_related("preferences__background_image").get(slug=slug)
+    board = Board.objects.select_related("preferences").get(slug=slug)
     return (
-        Board.objects.select_related("owner", "preferences")
+        Board.objects.select_related("owner", "preferences__background_image")
         .prefetch_related(get_topics_prefetch(board.preferences))
         .get(slug=slug)
     )
@@ -48,8 +48,10 @@ def get_topic_with_prefetches(slug, topic_pk):
 
 def get_post_with_prefetches(slug, post_pk):
     board = Board.objects.select_related("preferences").get(slug=slug)
-    post = Post.objects.prefetch_related("topic__board__preferences", get_reactions_prefetch(board.preferences)).get(
-        pk=post_pk
+    post = (
+        Post.objects.prefetch_related("topic__board__preferences", get_reactions_prefetch(board.preferences))
+        .annotate(Count("reactions"))
+        .get(pk=post_pk)
     )
     return post
 
@@ -69,7 +71,7 @@ def get_posts_prefetch(preferences):
         if preferences.reaction_type != "n"
         else Post.objects.all()
     )
-    return Prefetch("posts", queryset=qs)
+    return Prefetch("posts", queryset=qs.annotate(Count("reactions")))
 
 
 def get_reactions_prefetch(preferences):
@@ -684,7 +686,7 @@ class PostReactionView(generic.View):
             else:
                 reaction_score = int(request.POST.get("score"))
 
-            has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, list(post.reactions.all()))
+            has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, post.reactions.all())
 
             if has_reacted:
                 reaction = Reaction.objects.get(id=reaction_id)

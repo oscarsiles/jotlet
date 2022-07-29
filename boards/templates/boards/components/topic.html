@@ -4,7 +4,8 @@
      hx-get="{% url 'boards:topic-fetch' board.slug topic.pk %}"
      hx-trigger="topicUpdated"
      hx-target="this"
-     hx-swap="outerHTML"
+     hx-ext="alpine-morph"
+     hx-swap="morph"
      x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
      x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
     {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
