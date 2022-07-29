@@ -240,14 +240,14 @@ class Post(MPTTModel):
 
     def get_reactions(self, reaction_type=None):
         if reaction_type is None:
-            reaction_type = self.get_reaction_type()
+            reaction_type = self.get_reaction_type
         return self.reactions.filter(type=reaction_type).all()
 
     @cached_property
     def get_reaction_type(self):
         return self.topic.board.preferences.reaction_type
 
-    def get_reaction_score(self, reactions=None, reaction_type=None, reaction_count=None):
+    def get_reaction_score(self, reactions=None, reaction_type=None):
         try:
             if reaction_type is None:
                 reaction_type = self.get_reaction_type
@@ -272,7 +272,7 @@ class Post(MPTTModel):
         except Exception:
             raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
-    def get_has_reacted(self, request, post_reactions=None, reaction_count=None):
+    def get_has_reacted(self, request, post_reactions=None):
         if post_reactions is None:
             post_reactions = self.get_reactions()
 
