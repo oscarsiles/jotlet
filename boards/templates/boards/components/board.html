@@ -40,13 +40,14 @@
     {% if request.user == board.owner or user.is_staff %}
         {% cache 86400 board-newTopic board.pk %}
         <div class="col-md-auto px-2" id="newTopic-div">
-            <div class="d-flex my-2" id="newTopic-card-div">
+            <div class="d-flex bg-white rounded my-2" id="newTopic-card-div">
                 <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"
                         hx-get="{% url 'boards:topic-create' board.slug %}"
                         hx-target="#modal-1-body-div"
                         hx-swap="innerHTML"
                         data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
+                        data-bs-target="#modal-1-div"
+                        title="Create Topic">
                     <strong><i class="bi bi-bookmark-plus px-2"></i></strong>
                 </button>
             </div>
