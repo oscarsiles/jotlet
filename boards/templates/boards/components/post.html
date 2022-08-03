@@ -47,7 +47,7 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="card-title text-truncate w-25 opacity-25" x-markdown>
-                                {% if post.reply_depth > 0 %}<i class="bi bi-quote"></i> {{ parent.content }}{% endif %}
+                                {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{{ parent.content }}{% endif %}
                             </div>
                             <div class="d-flex ms-auto">
                                 {% if board.preferences.type == 'r' %}
@@ -159,9 +159,11 @@
              x-ref="post-{{ post.pk }}-replies"
              x-show="!isRepliesCollapsed"
              x-collapse>
-            {% for post in post.get_children|dictsort:"pk" %}
-                {% include 'boards/components/post.html' %}
-            {% endfor %}
+            {% with post as parent %}
+                {% for post in post.get_children|dictsort:"pk" %}
+                    {% include 'boards/components/post.html' %}
+                {% endfor %}
+            {% endwith %}
             <div id="newCard-post-{{ post.pk }}-div" hidden></div>
         </div>
     {% endif %}
