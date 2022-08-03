@@ -71,7 +71,7 @@
             </div>
         </div>
     </div>
-    <div class="d-flex my-2" id="topic-{{ topic.pk }}-create">
+    <div class="d-flex bg-white rounded my-2" id="topic-{{ topic.pk }}-create">
         <button id="topic-{{ topic.pk }}-create-url"
                 class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
                 hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
