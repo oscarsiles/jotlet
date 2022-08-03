@@ -38,6 +38,24 @@ TESTING = (sys.argv[1:2] == ["test"]) or ("pytest" in sys.modules)
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
+if not DEBUG and env("SENTRY_ENABLED", default=False):
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=env("SENTRY_DSN"),
+        integrations=[
+            DjangoIntegration(),
+        ],
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=env("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True,
+    )
+
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 
