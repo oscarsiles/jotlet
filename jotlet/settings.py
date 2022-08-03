@@ -246,6 +246,7 @@ if USE_S3:
     AWS_S3_CUSTOM_DOMAIN = env("AWS_S3_CUSTOM_DOMAIN")
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=2592000"}
     AWS_IS_GZIPPED = False
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
     # s3 public media settings
     THUMBNAIL_FORCE_OVERWRITE = True
     PUBLIC_MEDIA_LOCATION = "media"

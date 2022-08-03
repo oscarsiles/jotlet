@@ -1587,14 +1587,14 @@ class QrViewTest(TestCase):
         board = Board.objects.get(title="Test Board")
         response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
-        self.assertIn("data:image/png;base64", response.content.decode("utf-8"))
+        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
 
     def test_qr_owner(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         board = Board.objects.get(title="Test Board")
         response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
-        self.assertIn("data:image/png;base64", response.content.decode("utf-8"))
+        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
 
     def test_qr_staff(self):
         User.objects.create_user(username="testuser4", password="2HJ1vRV0Z&3iD", is_staff=True)

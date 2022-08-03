@@ -27,6 +27,7 @@ urlpatterns = [
     path("boards/", include("boards.urls")),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy-policy"),
     path("terms/", views.TermsOfUseView.as_view(), name="terms-of-use"),
+    path("qr_code/", include("qr_code.urls", namespace="qr_code")),
     path("", RedirectView.as_view(url="boards/")),
 ]
 

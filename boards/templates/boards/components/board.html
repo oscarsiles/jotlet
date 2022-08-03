@@ -11,26 +11,28 @@
      @topic-created.camel="topicCount = $el.querySelectorAll('.topic-list').length;"
      @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length;">
     <style nonce="{{ CSP_NONCE }}">
-      {% cache 86400 board-preferences-style board.preferences.pk %}
+        /* beautify ignore:start */
+        {% cache 86400 board-preferences-style board.preferences.pk %}
         #main-content-div{
-        {% if board.preferences.background_type == 'i' %}
-        background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
-        background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-        -webkit-image-set(
-            url("{{ board.preferences.background_image.get_webp.url }}") 1x,
-            url("{{ board.preferences.background_image.image.url }}") 1x           
-        );
-        background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-        image-set(
-            url("{{ board.preferences.background_image.get_webp.url }}") 1x type("image/webp"),
-            url("{{ board.preferences.background_image.image.url }}") 1x type("image/jpeg")
-        );
-        background-size: cover;
-        {% else %}
-        background-color: {{ board.preferences.background_color }};
-        {% endif %}
-        }
+            {% if board.preferences.background_type == 'i' %}
+            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
+            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+            -webkit-image-set(
+                url("{{ board.preferences.background_image.get_webp.url }}") 1x,
+                url("{{ board.preferences.background_image.image.url }}") 1x           
+            );
+            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+            image-set(
+                url("{{ board.preferences.background_image.get_webp.url }}") 1x type("image/webp"),
+                url("{{ board.preferences.background_image.image.url }}") 1x type("image/jpeg")
+            );
+            background-size: cover;
+            {% else %}
+            background-color: {{ board.preferences.background_color }};
+            {% endif %}
+            }
         {% endcache %}
+        /* beautify ignore:end */
     </style>
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
@@ -38,17 +40,15 @@
     {% if request.user == board.owner or user.is_staff %}
         {% cache 86400 board-newTopic board.pk %}
         <div class="col-md-auto px-2" id="newTopic-div">
-            <div class="card my-2" id="newTopic-card-div">
-                <div class="card-body">
-                    <button class="btn btn-link shadow-none card-link my-2"
-                            hx-get="{% url 'boards:topic-create' board.slug %}"
-                            hx-target="#modal-1-body-div"
-                            hx-swap="innerHTML"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal-1-div">
-                        <strong>Create topic</strong>
-                    </button>
-                </div>
+            <div class="d-flex my-2" id="newTopic-card-div">
+                <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"
+                        hx-get="{% url 'boards:topic-create' board.slug %}"
+                        hx-target="#modal-1-body-div"
+                        hx-swap="innerHTML"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-1-div">
+                    <strong><i class="bi bi-bookmark-plus px-2"></i></strong>
+                </button>
             </div>
         </div>
     {% endcache %}

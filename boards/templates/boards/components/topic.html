@@ -9,58 +9,79 @@
      x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
      x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
     {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
-    <div class="card my-2" id="topic-{{ topic.pk }}-title">
+    <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
-            <h5 class="card-title text-break"
-                id="topic-{{ topic.pk }}-subject"
-                hx-disable
-                x-ignore>{{ topic }}</h5>
-            {% if request.user == board.owner or request.user.is_staff %}
-                <div class="d-flex justify-content-start gap-3">
-                    <button class="btn btn-link shadow-none text-muted p-0"
-                            id="topic-{{ topic.pk }}-update-url"
-                            hx-get="{% url 'boards:topic-update' board.slug topic.pk %}"
-                            hx-target="#modal-1-body-div"
-                            hx-swap="innerHTML"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal-1-div">
-                        Edit
-                    </button>
-                    <button class="btn btn-link shadow-none text-danger p-0"
-                            id="topic-{{ topic.pk }}-delete-url"
-                            hx-get="{% url 'boards:topic-posts-delete' board.slug topic.pk %}"
-                            hx-target="#modal-1-body-div"
-                            hx-swap="innerHTML"
-                            :disabled="isDeletePostsDisabled"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal-1-div">
-                        Delete Posts
-                    </button>
-                    <button class="btn btn-link shadow-none text-danger p-0"
-                            id="topic-{{ topic.pk }}-delete-url"
-                            hx-get="{% url 'boards:topic-delete' board.slug topic.pk %}"
-                            hx-target="#modal-1-body-div"
-                            hx-swap="innerHTML"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal-1-div">
-                        Delete Topic
-                    </button>
+            <div class="d-flex justify-content-between">
+                <div class="card-title text-break my-0 fs-5 fw-semibold"
+                     id="topic-{{ topic.pk }}-subject"
+                     hx-disable
+                     x-ignore>
+                    {{ topic }}
                 </div>
-            {% endif %}
+                {% if request.user == board.owner or request.user.is_staff %}
+                    <div>
+                        <button class="btn btn-link text-black shadow-none p-1"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item"
+                                   role="button"
+                                   id="topic-{{ topic.pk }}-update-url"
+                                   hx-get="{% url 'boards:topic-update' board.slug topic.pk %}"
+                                   hx-target="#modal-1-body-div"
+                                   hx-swap="innerHTML"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#modal-1-div">
+                                    <i class="bi bi-pen pe-2"></i>Edit Topic
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   role="button"
+                                   id="topic-{{ topic.pk }}-delete-url"
+                                   hx-get="{% url 'boards:topic-posts-delete' board.slug topic.pk %}"
+                                   hx-target="#modal-1-body-div"
+                                   hx-swap="innerHTML"
+                                   :disabled="isDeletePostsDisabled"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#modal-1-div">
+                                    <i class="bi bi-envelope-slash pe-2"></i>Delete Posts
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   role="button"
+                                   id="topic-{{ topic.pk }}-delete-url"
+                                   hx-get="{% url 'boards:topic-delete' board.slug topic.pk %}"
+                                   hx-target="#modal-1-body-div"
+                                   hx-swap="innerHTML"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#modal-1-div">
+                                    <i class="bi bi-trash pe-2"></i>Delete Topic
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <div class="card my-2" id="topic-{{ topic.pk }}-create">
-        <div class="card-body">
-            <button id="topic-{{ topic.pk }}-create-url"
-                    hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
-                    hx-target="#modal-1-body-div"
-                    hx-swap="innerHTML"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div"
-                    class="btn btn-link shadow-none card-link">
-                <strong>Create post</strong>
-            </button>
-        </div>
+    <div class="d-flex my-2" id="topic-{{ topic.pk }}-create">
+        <button id="topic-{{ topic.pk }}-create-url"
+                class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
+                hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
+                hx-target="#modal-1-body-div"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#modal-1-div"
+                title="Create Post">
+            <strong><i class="bi bi-plus-square"></i></strong>
+        </button>
     </div>
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk }}">

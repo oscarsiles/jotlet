@@ -2,6 +2,16 @@
   width: 400px;
 }
 
+.blink {
+  animation: blinking 0.5s 2;
+}
+
+@keyframes blinking {
+  50% {
+    opacity: 0;
+  }
+}
+
 .faded-75 {
   background: rgba(255, 255, 255, 0.75);
 }
