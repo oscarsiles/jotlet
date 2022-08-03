@@ -9,7 +9,7 @@
      x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
      x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
     {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
-    <div class="card my-2" id="topic-{{ topic.pk }}-title">
+    <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <div class="card-title text-break my-0 fs-5 fw-semibold"
@@ -71,18 +71,17 @@
             </div>
         </div>
     </div>
-    <div class="card my-2" id="topic-{{ topic.pk }}-create">
-        <div class="card-body">
-            <button id="topic-{{ topic.pk }}-create-url"
-                    hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
-                    hx-target="#modal-1-body-div"
-                    hx-swap="innerHTML"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal-1-div"
-                    class="btn btn-link shadow-none card-link">
-                <strong>Create post</strong>
-            </button>
-        </div>
+    <div class="d-flex my-2" id="topic-{{ topic.pk }}-create">
+        <button id="topic-{{ topic.pk }}-create-url"
+                class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
+                hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
+                hx-target="#modal-1-body-div"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#modal-1-div"
+                title="Create Post">
+            <strong><i class="bi bi-plus-square"></i></strong>
+        </button>
     </div>
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk }}">
