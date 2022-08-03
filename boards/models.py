@@ -199,7 +199,11 @@ class Topic(models.Model):
 
     @cached_property
     def get_post_count(self):
-        return self.get_posts.count()
+        count = 0
+        for post in self.get_posts:
+            count += 1
+            count += post.get_descendant_count()
+        return count
 
     get_post_count.short_description = "Post Count"
 
