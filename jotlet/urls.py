@@ -17,7 +17,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.decorators.cache import cache_page
 from django.views.generic import RedirectView
+from django.views.generic.base import TemplateView
 
 from . import views
 
@@ -28,6 +30,10 @@ urlpatterns = [
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy-policy"),
     path("terms/", views.TermsOfUseView.as_view(), name="terms-of-use"),
     path("qr_code/", include("qr_code.urls", namespace="qr_code")),
+    path(
+        "robots.txt",
+        cache_page(60 * 60 * 24)(TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    ),
     path("", RedirectView.as_view(url="boards/")),
 ]
 
