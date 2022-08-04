@@ -395,11 +395,16 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 EMAIL_BACKEND = (
     "django.core.mail.backends.console.EmailBackend"
     if TESTING
-    else env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+    else env("EMAIL_BACKEND", default="django_q_email.backends.DjangoQBackend")
 )
+DJANGO_Q_EMAIL_BACKEND = env("DJANGO_Q_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env("EMAIL_PORT", default=25)
+EMAIL_USE_TLS = env("EMAIL_USE_TLS", default=False)
+EMAIL_USE_SSL = env("EMAIL_USE_SSL", default=False)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
-
 
 ACCOUNT_ADAPTER = "accounts.adapter.CustomAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "accounts.adapter.CustomSocialAccountAdapter"
