@@ -3,6 +3,7 @@ channels-redis[cryptography]==3.4.1
 channels==3.0.5
 crispy-bootstrap5==0.6
 django-allauth==0.51.0
+django-anymail[sendgrid]==8.6
 django-axes==5.36.0
 django-cachalot==2.5.1
 django-cacheops==6.1

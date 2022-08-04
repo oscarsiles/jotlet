@@ -91,6 +91,7 @@ INSTALLED_APPS += [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.microsoft",
+    "anymail",
     "axes",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -405,6 +406,10 @@ EMAIL_USE_SSL = env("EMAIL_USE_SSL", default=False)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
+
+ANYMAIL = {
+    "SENDGRID_API_KEY": env("SENDGRID_API_KEY", default=""),
+}
 
 ACCOUNT_ADAPTER = "accounts.adapter.CustomAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "accounts.adapter.CustomSocialAccountAdapter"
