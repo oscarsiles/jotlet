@@ -6,7 +6,9 @@ RUN mkdir /app
 WORKDIR /app
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install libpq-dev gcc libwebp-dev
+    && apt-get -y install libpq-dev gcc libwebp-dev \
+    && python -m pip install --upgrade pip
+RUN pip install 'poetry==1.1.14'
 COPY poetry.lock pyproject.toml /app/
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev --no-interaction --no-ansi
