@@ -7,6 +7,7 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install libpq-dev gcc libwebp-dev
-COPY requirements.txt /app/
-RUN pip install -r requirements.txt
+COPY poetry.lock pyproject.toml /app/
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-dev --no-interaction --no-ansi
 ADD . /app/

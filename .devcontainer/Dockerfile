@@ -12,10 +12,10 @@ RUN apt-get update \
     && apt-get -y install git libpq-dev gcc libwebp-dev postgresql-client \
     && apt-get -y upgrade \
     && python -m pip install --upgrade pip
-COPY ../requirements.txt /workspace/
-RUN pip install -r requirements.txt && pip uninstall --yes watchfiles
-COPY ../requirements-dev.txt /workspace/
-RUN pip install -r requirements-dev.txt
+RUN pip install 'poetry==1.1.14'
+COPY poetry.lock pyproject.toml /workspace/
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction --no-ansi
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 ENV DEBIAN_FRONTEND=dialog
