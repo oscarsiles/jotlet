@@ -29,7 +29,7 @@ license = "GPL-3.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-boto3 = "^1.24.46"
+boto3 = "^1.24.47"
 channels-redis = { extras = ["cryptography"], version = "^3.4.1" }
 channels = "^3.0.5"
 crispy-bootstrap5 = "^0.6"
