@@ -105,6 +105,7 @@ INSTALLED_APPS += [
     "cachalot",
     "cacheops",
     "mptt",
+    "notices",
     "accounts",
     "boards",
     "django_cleanup.apps.CleanupConfig",
@@ -124,6 +125,7 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "notices.middleware.NoticesMiddleware",
     "axes.middleware.AxesMiddleware",
 ]
 
