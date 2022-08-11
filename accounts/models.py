@@ -1,10 +1,11 @@
+import auto_prefetch
 from django.contrib.auth.models import User
 from django.db import models
 from simple_history.models import HistoricalRecords
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+class UserProfile(auto_prefetch.Model):
+    user = auto_prefetch.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
