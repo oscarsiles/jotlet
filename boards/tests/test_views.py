@@ -1001,6 +1001,7 @@ class ReactionsDeleteViewTest(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
+        count = Reaction.objects.count()
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
         response = self.client.post(
@@ -1009,6 +1010,7 @@ class ReactionsDeleteViewTest(TestCase):
             )
         )
         self.assertEqual(response.status_code, 204)
+        count = Reaction.objects.count()
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
 
     async def test_post_toggle_websocket_message(self):

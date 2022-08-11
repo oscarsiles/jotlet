@@ -5,6 +5,7 @@ import uuid
 from io import BytesIO
 from pathlib import Path
 
+import auto_prefetch
 from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.core.files import File
@@ -74,11 +75,11 @@ IMAGE_TYPE = (
 )
 
 
-class Board(models.Model):
+class Board(auto_prefetch.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
-    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
+    owner = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
@@ -110,7 +111,7 @@ class Board(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic__board=self).prefetch_related("reactions")
+        return Post.objects.filter(topic__board=self)
 
     @cached_property
     def get_post_count(self):
@@ -142,12 +143,12 @@ class Board(models.Model):
         ]
 
 
-class BoardPreferences(models.Model):
-    board = models.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
+class BoardPreferences(auto_prefetch.Model):
+    board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     history = HistoricalRecords(cascade_delete_history=True)
     type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
-    background_image = models.ForeignKey(
+    background_image = auto_prefetch.ForeignKey(
         "Image",
         on_delete=models.SET_NULL,
         null=True,
@@ -180,9 +181,9 @@ class BoardPreferences(models.Model):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
 
-class Topic(models.Model):
+class Topic(auto_prefetch.Model):
     subject = models.TextField(max_length=400)
-    board = models.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
+    board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
@@ -195,7 +196,7 @@ class Topic(models.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self, reply_to=None).prefetch_related("reactions")
+        return Post.objects.filter(topic=self, reply_to=None)
 
     @cached_property
     def get_post_count(self):
@@ -219,10 +220,10 @@ class Topic(models.Model):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(MPTTModel):
+class Post(auto_prefetch.Model, MPTTModel):
     content = models.TextField(max_length=1000)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
+    topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
+    user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     approved = models.BooleanField(default=True)
     reply_to = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
@@ -310,9 +311,9 @@ class Post(MPTTModel):
         permissions = (("can_approve_posts", "Can approve posts"),)
 
 
-class Reaction(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions")
+class Reaction(auto_prefetch.Model):
+    post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
+    user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions")
     session_key = models.CharField(max_length=40, null=False, blank=False)
     type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
     reaction_score = models.IntegerField(default=1)

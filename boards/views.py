@@ -3,9 +3,7 @@ from urllib.parse import urlparse
 
 from crispy_forms.helper import FormHelper
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -25,61 +23,6 @@ def get_is_moderator(user, board):
         or user in board.preferences.moderators.all()
         or user == board.owner
         or user.is_staff
-    )
-
-
-def get_board_with_prefetches(slug):
-    board = Board.objects.select_related("preferences").get(slug=slug)
-    return (
-        Board.objects.select_related("owner", "preferences__background_image")
-        .prefetch_related(get_topics_prefetch(board.preferences))
-        .get(slug=slug)
-    )
-
-
-def get_topic_with_prefetches(slug, topic_pk):
-    board = Board.objects.select_related("preferences").get(slug=slug)
-    topic = Topic.objects.prefetch_related(
-        "board__preferences",
-        get_posts_prefetch(board.preferences),
-    ).get(pk=topic_pk)
-    return topic
-
-
-def get_post_with_prefetches(slug, post_pk):
-    board = Board.objects.select_related("preferences").get(slug=slug)
-    post = (
-        Post.objects.prefetch_related("topic__board__preferences", get_reactions_prefetch(board.preferences))
-        .annotate(Count("reactions"))
-        .get(pk=post_pk)
-    )
-    return post
-
-
-def get_topics_prefetch(preferences):
-    return Prefetch(
-        "topics",
-        queryset=Topic.objects.prefetch_related(
-            get_posts_prefetch(preferences),
-        ),
-    )
-
-
-def get_posts_prefetch(preferences):
-    qs = (
-        Post.objects.prefetch_related(get_reactions_prefetch(preferences))
-        if preferences.reaction_type != "n"
-        else Post.objects.all()
-    )
-    return Prefetch("posts", queryset=qs.annotate(Count("reactions")))
-
-
-def get_reactions_prefetch(preferences):
-    return Prefetch(
-        "reactions",
-        queryset=Reaction.objects.filter(type=preferences.reaction_type).prefetch_related(
-            Prefetch("user", queryset=User.objects.all())
-        ),
     )
 
 
@@ -131,7 +74,7 @@ class BoardView(generic.DetailView):
     template_name = "boards/board_index.html"
 
     def get_object(self):
-        return get_board_with_prefetches(self.kwargs["slug"])
+        return Board.objects.get(slug=self.kwargs["slug"])
 
     def get_template_names(self):
         template_names = super().get_template_names()
@@ -349,11 +292,11 @@ class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Temp
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["topic"] = get_topic_with_prefetches(self.kwargs["slug"], self.kwargs["topic_pk"])
+        context["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
         return context
 
     def post(self, request, *args, **kwargs):
-        topic = Topic.objects.prefetch_related("posts__reactions").get(pk=self.kwargs["topic_pk"])
+        topic = Topic.objects.get(pk=self.kwargs["topic_pk"])
         topic.posts.all().delete()
         response = HttpResponse(status=204)
 
@@ -389,7 +332,7 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
         if "post_pk" in self.kwargs:
             self.is_reply = True
             # check if the user is allowed to reply to the post
-            self.reply_to = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["post_pk"])
+            self.reply_to = Post.objects.get(pk=self.kwargs["post_pk"])
             board = self.reply_to.topic.board
 
             is_allowed = board.preferences.type == "r" and (
@@ -536,12 +479,12 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
 
     def get_object(self):
         if not self.board_post:
-            self.board_post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+            self.board_post = Post.objects.get(pk=self.kwargs["pk"])
         return self.board_post
 
     def post(self, request, *args, **kwargs):
         post = self.get_object()
-        post.reactions.all().delete()
+        post.reactions.filter(type=post.topic.board.preferences.reaction_type).delete()
         post_reaction_send_update_message(post)
 
         response = HttpResponse(status=204)
@@ -609,7 +552,7 @@ class TopicFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
         context["topic"] = topic = board.topics.get(pk=self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, topic.board)
         return context
@@ -621,7 +564,7 @@ class PostFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         context["is_owner"] = post.get_is_owner(self.request)
@@ -635,7 +578,7 @@ class PostFooterFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = get_board_with_prefetches(self.kwargs["slug"])
+        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         context["is_owner"] = post.get_is_owner(self.request)
@@ -647,7 +590,9 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
     board_post = None
 
     def test_func(self):
-        self.board_post = post = Post.objects.prefetch_related("topic__board__preferences").get(pk=self.kwargs["pk"])
+        self.board_post = post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
+            pk=self.kwargs["pk"]
+        )
         return (
             get_is_moderator(self.request.user, post.topic.board)
         ) and post.topic.board.preferences.require_post_approval
@@ -662,7 +607,7 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
 
 class PostReactionView(generic.View):
     def post(self, request, *args, **kwargs):
-        post = get_post_with_prefetches(self.kwargs["slug"], self.kwargs["pk"])
+        post = Post.objects.get(pk=self.kwargs["pk"])
         type = post.topic.board.preferences.reaction_type
         message_text = "Reaction Saved"
         message_color = "success"
