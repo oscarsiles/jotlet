@@ -1525,6 +1525,7 @@ class ImageSelectViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        board = Board.objects.create(title="Test Board")
         module_dir = os.path.dirname(__file__)
         image_path = os.path.join(module_dir, "images/white_horizontal.png")
         for type, text in IMAGE_TYPE:
@@ -1537,6 +1538,7 @@ class ImageSelectViewTest(TestCase):
                             content=image_file.read(),
                             content_type="image/png",
                         ),
+                        board=board if type == "p" else None,
                         title=f"{text} {i}",
                     )
                     image.save()
