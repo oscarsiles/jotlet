@@ -277,6 +277,8 @@ else:
     MEDIA_URL = "media/"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+MAX_IMAGE_SIZE = env("MAX_IMAGE_SIZE", default=1024 * 1024 * 2)
+
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_STORAGE = (
@@ -345,6 +347,7 @@ CACHALOT_UNCACHABLE_APPS = frozenset(
 CACHALOT_UNCACHABLE_TABLES = frozenset(
     (
         "django_migrations",
+        "boards_image",
         "boards_post",
         "boards_reaction",
     )
@@ -353,6 +356,7 @@ CACHALOT_UNCACHABLE_TABLES = frozenset(
 CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
 CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
+    "boards.image": {"ops": "all"},
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
     "*.*": {"ops": ()},

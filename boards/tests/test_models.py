@@ -278,6 +278,7 @@ MEDIA_ROOT = tempfile.mkdtemp()
 class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
+        board = Board.objects.create(title="Test Board")
         module_dir = os.path.dirname(__file__)
         for type, text in IMAGE_TYPE:
             for orientation in ["horizontal", "vertical"]:
@@ -290,6 +291,7 @@ class ImageModelTest(TestCase):
                             content=image_file.read(),
                             content_type="image/png",
                         ),
+                        board=board if type == "p" else None,
                         title=f"{text} - {orientation}",
                     )
                     img.save()
@@ -309,14 +311,18 @@ class ImageModelTest(TestCase):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertEqual(img.image.url, f"/media/images/{type}/{img.uuid}.png")
+                self.assertRegex(img.image.url, rf"/media/images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.uuid}.png")
 
     def test_image_max_dimensions(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertLessEqual(img.image.width, 3840)
-                self.assertLessEqual(img.image.height, 2160)
+                if img.type == "p":
+                    self.assertLessEqual(img.image.width, 500)
+                    self.assertLessEqual(img.image.height, 500)
+                else:
+                    self.assertLessEqual(img.image.width, 3840)
+                    self.assertLessEqual(img.image.height, 2160)
 
     def test_get_board_usage_count(self):
         board = Board.objects.create(title="Test Board", description="Test Board Description")

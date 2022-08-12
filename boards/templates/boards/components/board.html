@@ -12,27 +12,27 @@
      @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length;">
     <style nonce="{{ CSP_NONCE }}">
         /* beautify ignore:start */
-        {% cache 86400 board-preferences-style board.preferences.pk %}
-        #main-content-div{
-            {% if board.preferences.background_type == 'i' %}
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-            -webkit-image-set(
-                url("{{ board.preferences.background_image.get_webp.url }}") 1x,
-                url("{{ board.preferences.background_image.image.url }}") 1x           
-            );
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-            image-set(
-                url("{{ board.preferences.background_image.get_webp.url }}") 1x type("image/webp"),
-                url("{{ board.preferences.background_image.image.url }}") 1x type("image/jpeg")
-            );
-            background-size: cover;
-            {% else %}
-            background-color: {{ board.preferences.background_color }};
-            {% endif %}
-            }
-        {% endcache %}
-        /* beautify ignore:end */
+                {% cache 86400 board-preferences-style board.preferences.pk %}
+                #main-content-div{
+                    {% if board.preferences.background_type == 'i' %}
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.image.url }}");
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+                    -webkit-image-set(
+                        url("{{ board.preferences.background_image.get_webp.url }}") 1x,
+                        url("{{ board.preferences.background_image.image.url }}") 1x           
+                    );
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+                    image-set(
+                        url("{{ board.preferences.background_image.get_webp.url }}") 1x type("image/webp"),
+                        url("{{ board.preferences.background_image.image.url }}") 1x type("image/jpeg")
+                    );
+                    background-size: cover;
+                    {% else %}
+                    background-color: {{ board.preferences.background_color }};
+                    {% endif %}
+                    }
+                {% endcache %}
+                /* beautify ignore:end */
     </style>
     {% for topic in board.topics.all|dictsort:"pk" %}
         {% include 'boards/components/topic.html' %}
@@ -58,6 +58,7 @@
 <div id="board-scripts">
     {{ board.slug|json_script:"board_slug" }}
     {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
+    {{ board.preferences.allow_image_uploads|json_script:"allow_image_uploads" }}
     {% if board.preferences.enable_latex %}
         <script defer src="{% static 'boards/js/components/board_mathjax.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6" nonce="{{ CSP_NONCE }}"></script>
