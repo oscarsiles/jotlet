@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlparse
 
 from crispy_forms.helper import FormHelper
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -665,6 +666,29 @@ class PostReactionView(generic.View):
             status=204,
             headers={"HX-Trigger": json.dumps(to_json)},
         )
+
+
+class PostImageUploadView(UserPassesTestMixin, generic.View):
+    board = None
+
+    def test_func(self):
+        self.board = Board.objects.get(slug=self.kwargs["slug"])
+        return self.board.preferences.allow_image_uploads
+
+    def post(self, request, *args, **kwargs):
+        response_data = {}
+        image = request.FILES.get("image")
+        if image.size > settings.MAX_IMAGE_SIZE:
+            response_data["error"] = "Image is too large"
+        elif self.board.images.count() >= 500:
+            response_data["error"] = "Board image quota exceeded"
+        else:
+            im = Image(image=image, type="p", board=self.board)
+            im.save()
+            file_path = {"filePath": im.image.url}
+            response_data["data"] = file_path
+
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 @method_decorator(cache_control(public=True), name="dispatch")

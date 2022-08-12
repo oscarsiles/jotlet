@@ -102,6 +102,7 @@ class BoardPreferencesForm(forms.ModelForm):
             "enable_latex": "Enable LaTeX",
             "require_post_approval": "Posts Require Approval",
             "allow_guest_replies": "Allow Guest Replies",
+            "allow_image_uploads": "Allow Image Uploads",
         }
 
     def __init__(self, *args, **kwargs):
@@ -215,6 +216,13 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "enable_latex",
                 "Enable LaTeX",
+                wrapper_class="d-flex flex-row",
+                css_class="form-check-input my-0",
+                style="height: auto;",
+            ),
+            PrependedText(
+                "allow_image_uploads",
+                "Allow Image Uploads",
                 wrapper_class="d-flex flex-row",
                 css_class="form-check-input my-0",
                 style="height: auto;",

@@ -197,22 +197,23 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Image)
 def create_thumbnail(sender, instance, created, **kwargs):
-    if created:
+    if created and instance.type == "b":
         async_task("boards.tasks.create_thumbnails", instance)
 
 
 @receiver(post_save, sender=Image)
 @receiver(post_delete, sender=Image)
 def update_image_select(sender, instance, **kwargs):
-    keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
-    keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
-    try:
-        if cache.get(keyImageSelect1) is not None:
-            cache.delete(keyImageSelect1)
-        if cache.get(keyImageSelect2) is not None:
-            cache.delete(keyImageSelect2)
-    except Exception:
-        raise Exception(f"Could not delete cache: image-select-{instance.type}")
+    if instance.type == "b":
+        keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
+        keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
+        try:
+            if cache.get(keyImageSelect1) is not None:
+                cache.delete(keyImageSelect1)
+            if cache.get(keyImageSelect2) is not None:
+                cache.delete(keyImageSelect2)
+        except Exception:
+            raise Exception(f"Could not delete cache: image-select-{instance.type}")
 
 
 @receiver(cleanup_pre_delete)

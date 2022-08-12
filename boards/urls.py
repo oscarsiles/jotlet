@@ -12,6 +12,7 @@ urlpatterns = [
     path("<slug:slug>/", views.BoardView.as_view(), name="board"),
     path("<slug:slug>/update/", views.UpdateBoardView.as_view(), name="board-update"),
     path("<slug:slug>/delete/", views.DeleteBoardView.as_view(), name="board-delete"),
+    path("<slug:slug>/image/post/upload/", views.PostImageUploadView.as_view(), name="image-upload"),
     path("<slug:slug>/qr/", views.QrView.as_view(), name="board-qr"),
     path("<slug:slug>/preferences/", views.BoardPreferencesView.as_view(), name="board-preferences"),
     path("<slug:slug>/topics/create/", views.CreateTopicView.as_view(), name="topic-create"),

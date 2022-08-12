@@ -29,13 +29,22 @@ def get_random_string(length):
 
 def get_image_upload_path(instance, filename):
     _, ext = os.path.splitext(filename)
-    file_path = "images/{type}/{name}.{ext}".format(type=instance.type, name=instance.uuid, ext=ext.replace(".", ""))
+    file_path = "images/{type}/{sub1}/{sub2}/{name}.{ext}".format(
+        type=instance.type,
+        sub1=instance.board.slug if instance.type == "p" else get_random_string(2),
+        sub2=get_random_string(2),
+        name=instance.uuid,
+        ext=ext.replace(".", ""),
+    )
     return file_path
 
 
-def resize_image(image, width=3840, height=2160):
+def resize_image(image, type="b", width=3840, height=2160):
     # Open the image using Pillow
     img = PILImage.open(image)
+    if type == "p":
+        width = 400
+        height = 400
     # check if either the width or height is greater than the max
     if img.width > width or img.height > height:
         output_size = (width, height)
@@ -160,6 +169,7 @@ class BoardPreferences(auto_prefetch.Model):
     enable_latex = models.BooleanField(default=False)
     require_post_approval = models.BooleanField(default=False)
     allow_guest_replies = models.BooleanField(default=False)
+    allow_image_uploads = models.BooleanField(default=False)
     moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
     reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
 
@@ -324,7 +334,7 @@ class Reaction(auto_prefetch.Model):
         unique_together = (("post", "session_key", "type"), ("post", "user", "type"))
 
 
-class Image(models.Model):
+class Image(auto_prefetch.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50)
     attribution = models.CharField(max_length=100, null=True, blank=True)
@@ -334,6 +344,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to=get_image_upload_path)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
+    board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
 
     class Meta:
         ordering = ["title"]
@@ -343,8 +354,8 @@ class Image(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.created_at:
-            resize_image(self.image)
-        return super().save(*args, **kwargs)
+            resize_image(self.image, self.type)
+        super().save(*args, **kwargs)
 
     @cached_property
     def get_board_usage_count(self):

@@ -1,7 +1,5 @@
 {% load crispy_forms_tags static %}
-<form id="post-form"
-      hx-post="{{ request.build_absolute_uri }}"
-      >
+<form id="post-form" hx-post="{{ request.build_absolute_uri }}">
     {% csrf_token %}
     <table>
         {% crispy form %}

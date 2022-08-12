@@ -141,7 +141,7 @@ document.addEventListener("alpine:initializing", () => {
     effect(() => {
       getHTML(() => {
         el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
-          ALLOWED_TAGS: ["b", "i", "em", "strong", "br", "p", "code"],
+          ALLOWED_TAGS: ["b", "i", "em", "strong", "br", "p", "code", "img"],
         });
       });
     });
