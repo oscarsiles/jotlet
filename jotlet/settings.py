@@ -130,10 +130,16 @@ MIDDLEWARE = [
 ]
 
 if DEBUG_TOOLBAR_ENABLED and DEBUG:
-    RENDER_PANELS = False
-    INSTALLED_APPS += ["debug_toolbar"]
-    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
     import socket
+
+    from debug_toolbar import settings as debug_toolbar_settings
+
+    RENDER_PANELS = False
+    INSTALLED_APPS += ["debug_toolbar", "template_profiler_panel"]
+    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+    DEBUG_TOOLBAR_PANELS = debug_toolbar_settings.PANELS_DEFAULTS + [
+        "template_profiler_panel.panels.template.TemplateProfilerPanel"
+    ]
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
