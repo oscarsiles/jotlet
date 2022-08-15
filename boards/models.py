@@ -137,6 +137,14 @@ class Board(auto_prefetch.Model):
             return date(self.get_posts.first().created_at, "d/m/Y")
         return None
 
+    get_last_post_date.short_description = "Last Post Date"
+
+    @cached_property
+    def get_image_count(self):
+        return Image.objects.filter(board=self, type="p").count()
+
+    get_image_count.short_description = "Image Count"
+
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
 
@@ -363,7 +371,7 @@ class Image(auto_prefetch.Model):
         ordering = ["title"]
 
     def __str__(self):
-        return self.title
+        return self.title if self.title else str(self.uuid)
 
     def save(self, *args, **kwargs):
         if self.created_at is not None:
