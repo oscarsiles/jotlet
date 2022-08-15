@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+from django_q.tasks import async_task
 from mptt.models import MPTTModel, TreeForeignKey
 from PIL import Image as PILImage
 from simple_history.models import HistoricalRecords
@@ -80,7 +81,7 @@ REACTION_TYPE = (
 
 IMAGE_TYPE = (
     ("b", "Background"),
-    ("p", "Post"),  # not implemented
+    ("p", "Post"),
 )
 
 
@@ -112,6 +113,8 @@ class Board(auto_prefetch.Model):
                         self.code = get_random_string(max_length)
                 else:
                     success = True
+                    BoardPreferences.objects.create(board=self)
+
         else:
             super().save(*args, **kwargs)
 
@@ -133,6 +136,14 @@ class Board(auto_prefetch.Model):
         if self.get_post_count > 0:
             return date(self.get_posts.first().created_at, "d/m/Y")
         return None
+
+    get_last_post_date.short_description = "Last Post Date"
+
+    @cached_property
+    def get_image_count(self):
+        return Image.objects.filter(board=self, type="p").count()
+
+    get_image_count.short_description = "Image Count"
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
@@ -248,6 +259,15 @@ class Post(auto_prefetch.Model, MPTTModel):
     def __str__(self):
         return self.content
 
+    def save(self, *args, **kwargs):
+        prev_post = None
+        if self.created_at is not None:
+            prev_post = Post.objects.get(pk=self.pk)
+        super().save(*args, **kwargs)
+        if prev_post is not None:
+            if self.content != prev_post.content and self.topic.board.preferences.allow_image_uploads:
+                async_task("boards.tasks.post_image_cleanup_task", self)
+
     def get_is_owner(self, request):
         return self.session_key == request.session.session_key or (
             request.user.is_authenticated and self.user == request.user
@@ -351,12 +371,16 @@ class Image(auto_prefetch.Model):
         ordering = ["title"]
 
     def __str__(self):
-        return self.title
+        return self.title if self.title else str(self.uuid)
 
     def save(self, *args, **kwargs):
-        if not self.created_at:
+        if self.created_at is not None:
             resize_image(self.image, self.type)
         super().save(*args, **kwargs)
+
+        if self.created_at is not None:
+            if self.type == "b":
+                async_task("boards.tasks.create_thumbnails", self)
 
     @cached_property
     def get_board_usage_count(self):

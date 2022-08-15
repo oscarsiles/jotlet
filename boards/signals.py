@@ -5,7 +5,6 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django_cleanup.signals import cleanup_pre_delete
-from django_q.tasks import async_task
 from sorl.thumbnail import delete
 
 from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
@@ -48,12 +47,6 @@ def invalidate_reaction_cache(reaction):
     invalidate_obj(reaction)
     if Post.objects.filter(id=reaction.post_id).exists():
         invalidate_post_cache(reaction.post)
-
-
-@receiver(post_save, sender=Board)
-def create_board_preferences(sender, instance, created, **kwargs):
-    if created:
-        BoardPreferences.objects.create(board=instance)
 
 
 @receiver(post_save, sender=BoardPreferences)
@@ -144,12 +137,6 @@ def post_deleted_invalidate_cache(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Post)
-def post_clean_images(sender, instance, created, **kwargs):
-    if instance.topic.board.preferences.allow_image_uploads:
-        async_task("boards.tasks.post_image_cleanup_task", instance)
-
-
-@receiver(post_save, sender=Post)
 def post_send_message(sender, instance, created, **kwargs):
     board_slug = instance.topic.board.slug
     if created and instance.is_root_node():
@@ -199,12 +186,6 @@ def post_delete_send_message(sender, instance, **kwargs):
 @receiver(post_delete, sender=Reaction)
 def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
     invalidate_reaction_cache(instance)
-
-
-@receiver(post_save, sender=Image)
-def create_thumbnail(sender, instance, created, **kwargs):
-    if created and instance.type == "b":
-        async_task("boards.tasks.create_thumbnails", instance)
 
 
 @receiver(post_save, sender=Image)
