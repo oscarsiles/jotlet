@@ -144,6 +144,12 @@ def post_deleted_invalidate_cache(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Post)
+def post_clean_images(sender, instance, created, **kwargs):
+    if instance.topic.board.preferences.allow_image_uploads:
+        async_task("boards.tasks.post_image_cleanup_task", instance)
+
+
+@receiver(post_save, sender=Post)
 def post_send_message(sender, instance, created, **kwargs):
     board_slug = instance.topic.board.slug
     if created and instance.is_root_node():
