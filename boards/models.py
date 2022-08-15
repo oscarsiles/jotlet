@@ -96,25 +96,27 @@ class Board(auto_prefetch.Model):
 
     def save(self, *args, **kwargs):
         # from https://stackoverflow.com/questions/34935156/
-        if not self.slug:
-            max_length = Board._meta.get_field("slug").max_length
-            self.slug = get_random_string(max_length)
-            success = False
-            errors = 0
-            while not success:
-                try:
-                    super().save(*args, **kwargs)
-                except IntegrityError:
-                    errors += 1
-                    if errors > 5:
-                        # tried 5 times, no dice. raise the integrity error and handle elsewhere
-                        raise
+        if self._state.adding:
+            if not self.slug:
+                max_length = Board._meta.get_field("slug").max_length
+                self.slug = get_random_string(max_length)
+                success = False
+                errors = 0
+                while not success:
+                    try:
+                        super().save(*args, **kwargs)
+                    except IntegrityError:
+                        errors += 1
+                        if errors > 5:
+                            # tried 5 times, no dice. raise the integrity error and handle elsewhere
+                            raise
+                        else:
+                            self.code = get_random_string(max_length)
                     else:
-                        self.code = get_random_string(max_length)
-                else:
-                    success = True
-                    BoardPreferences.objects.create(board=self)
-
+                        success = True
+            else:
+                super().save(*args, **kwargs)
+            BoardPreferences.objects.create(board=self)
         else:
             super().save(*args, **kwargs)
 
@@ -261,7 +263,7 @@ class Post(auto_prefetch.Model, MPTTModel):
 
     def save(self, *args, **kwargs):
         prev_post = None
-        if self.created_at is not None:
+        if not self._state.adding:
             prev_post = Post.objects.get(pk=self.pk)
         super().save(*args, **kwargs)
         if prev_post is not None:
@@ -374,11 +376,11 @@ class Image(auto_prefetch.Model):
         return self.title if self.title else str(self.uuid)
 
     def save(self, *args, **kwargs):
-        if self.created_at is not None:
+        if self._state.adding:
             resize_image(self.image, self.type)
         super().save(*args, **kwargs)
 
-        if self.created_at is not None:
+        if self._state.adding:
             if self.type == "b":
                 async_task("boards.tasks.create_thumbnails", self)
 
