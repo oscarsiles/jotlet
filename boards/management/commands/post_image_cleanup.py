@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import pluralize
 
 from boards.models import Board, Image, Post
-from boards.tasks import post_image_cleanup_task
 
 
 class Command(BaseCommand):
@@ -43,5 +42,5 @@ class Command(BaseCommand):
                 )
             )
             self.stdout.write(self.style.SUCCESS(f"{count_orphans} orphan image{pluralize(count_orphans)} deleted."))
-        except Exception as e:
+        except Exception:
             raise CommandError("Failed to cleanup post images.")
