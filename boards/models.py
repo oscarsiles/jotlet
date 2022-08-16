@@ -1,14 +1,8 @@
-import os
-import random
-import string
 import uuid
-from io import BytesIO
-from pathlib import Path
 
 import auto_prefetch
 from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
-from django.core.files import File
 from django.db import IntegrityError, models
 from django.db.models.functions import Upper
 from django.template.defaultfilters import date
@@ -18,67 +12,10 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django_q.tasks import async_task
 from mptt.models import MPTTModel, TreeForeignKey
-from PIL import Image as PILImage
 from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
 
-
-def get_random_string(length):
-    code = "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
-    return code
-
-
-def get_image_upload_path(instance, filename):
-    _, ext = os.path.splitext(filename)
-    file_path = "images/{type}/{sub1}/{sub2}/{name}.{ext}".format(
-        type=instance.type,
-        sub1=instance.board.slug if instance.type == "p" else get_random_string(2),
-        sub2=get_random_string(2),
-        name=instance.uuid,
-        ext=ext.replace(".", ""),
-    )
-    return file_path
-
-
-def process_image(image, type="b", width=3840, height=2160):
-    process = False
-    # Open the image using Pillow
-    img = PILImage.open(image)
-    if type == "p":
-        width = 400
-        height = 400
-
-    if img.format not in ["JPEG", "PNG"]:
-        output_format = "JPEG"
-        name, _ = os.path.splitext(image.file.name)
-        image.file.name = name + ".jpg"
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-        process = True
-    else:
-        output_format = img.format
-
-    if img.width > width or img.height > height:
-        process = True
-    else:
-        width = img.width
-        height = img.height
-
-    if process:
-        # Adapted from https://blog.soards.me/posts/resize-image-on-save-in-django-before-sending-to-amazon-s3/
-        output_size = (width, height)
-        # Create a new resized “thumbnail” version of the image with Pillow
-        img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
-        # Find the file name of the image
-        img_filename = Path(image.file.name).name
-        # Save the resized image into the buffer, noting the correct file type
-        buffer = BytesIO()
-        img.save(buffer, format=output_format, quality=80, optimize=True)
-        # Wrap the buffer in File object
-        file_object = File(buffer)
-        # Save the new resized file as usual, which will save to S3 using django-storages
-        image.save(img_filename, file_object)
-
+from .utils import get_image_upload_path, get_random_string, process_image
 
 BOARD_TYPE = (
     ("d", "Default"),
@@ -395,7 +332,7 @@ class Image(auto_prefetch.Model):
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            process_image(self.image, self.type)
+            self.image = process_image(self.image, self.type)
         super().save(*args, **kwargs)
 
         if self._state.adding:
@@ -440,6 +377,10 @@ class BackgroundImageManager(models.Manager):
 class PostImageManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(type="p")
+
+    def create(self, *args, **kwargs):
+        kwargs.update({"type": "p"})
+        return super().create(*args, **kwargs)
 
 
 class BgImage(Image):

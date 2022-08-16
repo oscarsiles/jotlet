@@ -14,7 +14,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
-from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .models import Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
 from .utils import channel_group_send
 
 
@@ -687,8 +687,7 @@ class PostImageUploadView(UserPassesTestMixin, generic.View):
         elif self.board.images.count() >= settings.MAX_BOARD_IMAGE_COUNT:
             response_data["error"] = "Board image quota exceeded"
         else:
-            im = Image(image=image, type="p", board=self.board)
-            im.save()
+            im = PostImage.objects.create(image=image, board=self.board)
             file_path = {"filePath": im.image.url}
             response_data["data"] = file_path
 
