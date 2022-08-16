@@ -677,9 +677,13 @@ class PostImageUploadView(UserPassesTestMixin, generic.View):
 
     def post(self, request, *args, **kwargs):
         response_data = {}
+        valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
         image = request.FILES.get("image")
-        if image.size > settings.MAX_IMAGE_SIZE:
-            response_data["error"] = "Image is too large"
+
+        if image.content_type not in valid_image_types:
+            response_data["error"] = "Invalid image type (only PNG, JPEG, BMP, and WEBP are allowed)"
+        elif image.size > settings.MAX_IMAGE_SIZE:
+            response_data["error"] = f"Image is too large (max size is {settings.MAX_IMAGE_SIZE // (1024*1024)}MB)"
         elif self.board.images.count() >= settings.MAX_BOARD_IMAGE_COUNT:
             response_data["error"] = "Board image quota exceeded"
         else:

@@ -14,6 +14,7 @@ var easyMDE = new EasyMDE({
     "upload-image": "bi bi-image",
     preview: "bi bi-eye-fill",
   },
+  imageAccept: ["image/png", "image/jpeg", "image/webp", "image/bmp"],
   imagePathAbsolute: true,
   imageCSRFToken: csrf_token,
   imageMaxSize: allow_image_uploads ? 1024 * 1024 * 2 : 0,

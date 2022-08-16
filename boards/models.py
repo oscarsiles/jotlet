@@ -40,14 +40,31 @@ def get_image_upload_path(instance, filename):
     return file_path
 
 
-def resize_image(image, type="b", width=3840, height=2160):
+def process_image(image, type="b", width=3840, height=2160):
+    process = False
     # Open the image using Pillow
     img = PILImage.open(image)
     if type == "p":
         width = 400
         height = 400
-    # check if either the width or height is greater than the max
+
+    if img.format not in ["JPEG", "PNG"]:
+        output_format = "JPEG"
+        name, _ = os.path.splitext(image.file.name)
+        image.file.name = name + ".jpg"
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        process = True
+    else:
+        output_format = img.format
+
     if img.width > width or img.height > height:
+        process = True
+    else:
+        width = img.width
+        height = img.height
+
+    if process:
         output_size = (width, height)
         # Create a new resized “thumbnail” version of the image with Pillow
         img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
@@ -55,7 +72,7 @@ def resize_image(image, type="b", width=3840, height=2160):
         img_filename = Path(image.file.name).name
         # Save the resized image into the buffer, noting the correct file type
         buffer = BytesIO()
-        img.save(buffer, format=img.format, quality=80, optimize=True)
+        img.save(buffer, format=output_format, quality=80, optimize=True)
         # Wrap the buffer in File object
         file_object = File(buffer)
         # Save the new resized file as usual, which will save to S3 using django-storages
@@ -377,7 +394,7 @@ class Image(auto_prefetch.Model):
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            resize_image(self.image, self.type)
+            process_image(self.image, self.type)
         super().save(*args, **kwargs)
 
         if self._state.adding:
