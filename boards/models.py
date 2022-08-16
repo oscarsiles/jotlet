@@ -65,6 +65,7 @@ def process_image(image, type="b", width=3840, height=2160):
         height = img.height
 
     if process:
+        # Adapted from https://blog.soards.me/posts/resize-image-on-save-in-django-before-sending-to-amazon-s3/
         output_size = (width, height)
         # Create a new resized “thumbnail” version of the image with Pillow
         img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
