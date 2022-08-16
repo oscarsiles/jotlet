@@ -430,3 +430,29 @@ class Image(auto_prefetch.Model):
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
+
+
+class BackgroundImageManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(type="b")
+
+
+class PostImageManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(type="p")
+
+
+class BgImage(Image):
+    objects = BackgroundImageManager()
+
+    class Meta:
+        verbose_name = "background image"
+        proxy = True
+
+
+class PostImage(Image):
+    objects = PostImageManager()
+
+    class Meta:
+        verbose_name = "post image"
+        proxy = True

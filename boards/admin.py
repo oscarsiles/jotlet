@@ -3,7 +3,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from jotlet.admin import DisableDeleteInlineFormSet
 
-from .models import Board, BoardPreferences, Image, Post, Topic
+from .models import BgImage, Board, BoardPreferences, Image, Post, PostImage, Topic
 
 
 class BoardPreferencesInline(admin.StackedInline):
@@ -63,32 +63,17 @@ class PostAdmin(SimpleHistoryAdmin):
     fields = ("content", "topic")
 
 
-class BgImage(Image):
-    class Meta:
-        verbose_name_plural = "Images: Background"
-        proxy = True
-
-
 @admin.register(BgImage)
-class ImageAdmin(SimpleHistoryAdmin):
+class BackgroundImageAdmin(SimpleHistoryAdmin):
     list_display = ("__str__", "get_board_usage_count", "created_at", "updated_at")
     fields = ("image_tag", "title", "attribution", "image", "type")
 
-    readonly_fields = ["image_tag"]
-
-    def get_queryset(self, request):
-        return self.model.objects.filter(type="b")
+    readonly_fields = ["image_tag", "type"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
             return self.readonly_fields + ["image", "type"]
         return self.readonly_fields
-
-
-class PostImage(Image):
-    class Meta:
-        verbose_name_plural = "Images: Posts"
-        proxy = True
 
 
 @admin.register(PostImage)
@@ -98,5 +83,5 @@ class PostImageAdmin(SimpleHistoryAdmin):
 
     readonly_fields = list(fields)
 
-    def get_queryset(self, request):
-        return self.model.objects.filter(type="p")
+    def has_add_permission(self, request, obj=None):
+        return False
