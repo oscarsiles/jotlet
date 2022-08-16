@@ -221,8 +221,14 @@ class Post(auto_prefetch.Model, MPTTModel):
         if not self._state.adding:
             prev_post = Post.objects.get(pk=self.pk)
         super().save(*args, **kwargs)
-        if prev_post is not None:
-            if self.content != prev_post.content and self.topic.board.preferences.allow_image_uploads:
+
+        if self.topic.board.preferences.allow_image_uploads:
+            cleanup_task = False
+            if prev_post is None:
+                cleanup_task = True
+            elif prev_post.content != self.content:
+                cleanup_task = True
+            if cleanup_task:
                 async_task("boards.tasks.post_image_cleanup_task", self)
 
     def get_is_owner(self, request):
