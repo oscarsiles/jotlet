@@ -680,7 +680,7 @@ class PostImageUploadView(UserPassesTestMixin, generic.View):
         image = request.FILES.get("image")
         if image.size > settings.MAX_IMAGE_SIZE:
             response_data["error"] = "Image is too large"
-        elif self.board.images.count() >= 500:
+        elif self.board.images.count() >= settings.MAX_BOARD_IMAGE_COUNT:
             response_data["error"] = "Board image quota exceeded"
         else:
             im = Image(image=image, type="p", board=self.board)
