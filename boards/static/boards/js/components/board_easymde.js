@@ -18,10 +18,12 @@ var easyMDE = new EasyMDE({
   imagePathAbsolute: true,
   imageCSRFToken: csrf_token,
   imageMaxSize: allow_image_uploads ? 1024 * 1024 * 2 : 0,
+  imageTexts: { sbInit: "" },
   imageUploadEndpoint: `/boards/${board_slug}/image/post/upload/`,
   inputStyle: "textarea",
   maxHeight: "100%",
   nativeSpellChecker: false,
+  previewImagesInEditor: true,
   renderingConfig: {
     sanitizerFunction: (renderedHTML) => {
       return DOMPurify.sanitize(renderedHTML, {
@@ -30,7 +32,7 @@ var easyMDE = new EasyMDE({
     },
   },
   spellChecker: false,
-  status: false,
+  status: allow_image_uploads ? ["upload-image"] : false,
   toolbar: allow_image_uploads
     ? ["bold", "italic", "upload-image", "|", "preview"]
     : ["bold", "italic", "|", "preview"],
