@@ -3,6 +3,7 @@ import shutil
 import tempfile
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -11,15 +12,60 @@ from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
 from django.utils.html import escape
+from PIL import Image as PILImage
 
-from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
+from boards.models import IMAGE_TYPE, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
+
+MEDIA_ROOT = tempfile.mkdtemp()
+IMAGE_EXTS = ["png", "jpg", "bmp", "gif"]
+BASE_TEST_IMAGE_PATH = "images/white_"
 
 
+def create_image(file, name, type, board=None, title="test"):
+    module_dir = os.path.dirname(__file__)
+    image_path = os.path.join(module_dir, file)
+    with open(image_path, "rb") as image_file:
+        image = Image.objects.create(
+            type=type,
+            image=SimpleUploadedFile(
+                name=name,
+                content=image_file.read(),
+            ),
+            board=board,
+            title=title,
+        )
+    return image
+
+
+def create_images(board=None):
+    if board is None:
+        board = Board.objects.create(title="Test Board")
+    count = 0
+    for ext in IMAGE_EXTS:
+        for type, text in IMAGE_TYPE:
+            for orientation in ["horizontal", "vertical"]:
+                create_image(
+                    f"{BASE_TEST_IMAGE_PATH}{orientation}.{ext}",
+                    f"{type}.{ext}",
+                    type,
+                    board=board if type == "p" else None,
+                    title=f"{type}_{text}_{orientation}_{ext}",
+                )
+                count += 1
+    return count
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class BoardModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def test_title_max_length(self):
         board = Board.objects.get(title="Test Board")
@@ -69,6 +115,17 @@ class BoardModelTest(TestCase):
         Post.objects.create(topic=topic2, content="Test Post 3")
         board = Board.objects.get(title="Test Board")
         self.assertEqual(board.get_last_post_date, date(post2.created_at, "d/m/Y"))
+
+    def test_get_image_count(self):
+        board = Board.objects.get(title="Test Board")
+        self.assertEqual(board.get_image_count, 0)
+
+        img_count1 = create_images(board)
+        img_count2 = create_images(Board.objects.create(title="Test Board 2"))
+        board = Board.objects.get(title="Test Board")
+        self.assertEqual(Image.objects.count(), img_count1 + img_count2)
+        self.assertLess(board.get_image_count, img_count1)
+        self.assertEqual(board.get_image_count, len(IMAGE_EXTS) * 2)  # extensions * orientations
 
     def test_get_absolute_url(self):
         board = Board.objects.get(title="Test Board")
@@ -147,6 +204,7 @@ class TopicModelTest(TestCase):
         self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
 
 
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class PostModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -157,6 +215,11 @@ class PostModelTest(TestCase):
         topic = Topic.objects.create(subject="Test Topic", board=board)
         Post.objects.create(content="Test Post", topic=topic)
         Post.objects.create(content="Test Post 2", topic=topic)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
     def test_content_max_length(self):
         post = Post.objects.get(content="Test Post")
@@ -266,12 +329,39 @@ class PostModelTest(TestCase):
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post1.id)
         self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
 
+    def test_cleanup_image_uploads(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        board = Board.objects.get(title="Test Board")
+        board.preferences.allow_image_uploads = True
+        board.preferences.save()
+
+        for i in range(2):
+            create_image(
+                f"{BASE_TEST_IMAGE_PATH}horizontal.png",
+                "test.png",
+                type="p",
+                board=board,
+                title=f"Test Post Image {i}",
+            )
+        self.assertEqual(PostImage.objects.count(), 2)
+
+        # test on create
+        post_image1 = PostImage.objects.get(title="Test Post Image 0")
+        post = Post.objects.create(content=f"<img src='{post_image1.image.url}'/>", topic=topic)
+        post_image1 = PostImage.objects.get(title="Test Post Image 0")
+        self.assertEqual(post_image1.post, post)
+
+        # test after update
+        post_image2 = PostImage.objects.get(title="Test Post Image 1")
+        post = Post.objects.get(content="Test Post")
+        post.content = f"<img src='{post_image2.image.url}'/>"
+        post.save()
+        post_image2 = PostImage.objects.get(title="Test Post Image 1")
+        self.assertEqual(post_image2.post, post)
+
 
 class ReactionModelTest(TestCase):
     pass
-
-
-MEDIA_ROOT = tempfile.mkdtemp()
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
@@ -279,22 +369,7 @@ class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         board = Board.objects.create(title="Test Board")
-        module_dir = os.path.dirname(__file__)
-        for type, text in IMAGE_TYPE:
-            for orientation in ["horizontal", "vertical"]:
-                image_path = os.path.join(module_dir, f"images/white_{orientation}.png")
-                with open(image_path, "rb") as image_file:
-                    img = Image(
-                        type=type,
-                        image=SimpleUploadedFile(
-                            name=f"{type}.png",
-                            content=image_file.read(),
-                            content_type="image/png",
-                        ),
-                        board=board if type == "p" else None,
-                        title=f"{text} - {orientation}",
-                    )
-                    img.save()
+        create_images(board)
 
     @classmethod
     def tearDownClass(cls):
@@ -311,18 +386,21 @@ class ImageModelTest(TestCase):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertRegex(img.image.url, rf"/media/images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.uuid}.png")
+                _, ext = os.path.splitext(img.image.name)
+                self.assertRegex(
+                    img.image.url, rf"^{settings.MEDIA_URL}images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.uuid}{ext}$"
+                )
 
     def test_image_max_dimensions(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 if img.type == "p":
-                    self.assertLessEqual(img.image.width, 500)
-                    self.assertLessEqual(img.image.height, 500)
+                    self.assertLessEqual(img.image.width, settings.MAX_POST_IMAGE_WIDTH)
+                    self.assertLessEqual(img.image.height, settings.MAX_POST_IMAGE_HEIGHT)
                 else:
-                    self.assertLessEqual(img.image.width, 3840)
-                    self.assertLessEqual(img.image.height, 2160)
+                    self.assertLessEqual(img.image.width, settings.MAX_IMAGE_WIDTH)
+                    self.assertLessEqual(img.image.height, settings.MAX_IMAGE_HEIGHT)
 
     def test_get_board_usage_count(self):
         board = Board.objects.create(title="Test Board", description="Test Board Description")
@@ -337,8 +415,18 @@ class ImageModelTest(TestCase):
                 else:
                     self.assertEqual(img.get_board_usage_count, 0)
 
-    def test_thumbnail_url_and_dimensions(self):
+    def test_get_image_dimenstions(self):
+        imgs = Image.objects.all()
+        for img in imgs:
+            self.assertEqual(img.get_image_dimensions, f"{img.image.width}x{img.image.height}")
 
+    def test_get_webp(self):
+        imgs = Image.objects.all()
+        for img in imgs:
+            pilimage = PILImage.open(img.get_webp)
+            self.assertEqual(pilimage.format, "WEBP")
+
+    def test_thumbnail_url_and_dimensions(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
@@ -346,10 +434,27 @@ class ImageModelTest(TestCase):
                 self.assertIsNotNone(thumbnail)
                 self.assertEqual(thumbnail.width, 300)
                 self.assertEqual(thumbnail.height, 200)
-                self.assertIn("/media/cache/", thumbnail.url)
+                self.assertIn(f"{settings.MEDIA_URL}cache/", thumbnail.url)
 
     def test_image_tag(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
                 self.assertEqual(f'<img src="{escape(img.get_thumbnail.url)}" />', img.image_tag)
+
+    def test_proxy_background_image(self):
+        self.assertEqual(list(Image.objects.filter(type="b")), list(BgImage.objects.all()))
+
+    def test_proxy_post_image(self):
+        self.assertEqual(list(Image.objects.filter(type="p")), list(PostImage.objects.all()))
+
+        count_before = PostImage.objects.count()
+        module_dir = os.path.dirname(__file__)
+        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
+        with open(image_path, "rb") as image_file:
+            PostImage.objects.create(
+                image=SimpleUploadedFile(name="test.png", content=image_file.read()),
+                board=Board.objects.first(),
+                title="test",
+            )
+        self.assertEqual(PostImage.objects.count(), count_before + 1)

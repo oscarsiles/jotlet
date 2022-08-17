@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import tempfile
@@ -5,6 +6,7 @@ import tempfile
 from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
+from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +19,11 @@ from django_htmx.middleware import HtmxMiddleware
 from boards.models import IMAGE_TYPE, REACTION_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
 from boards.routing import websocket_urlpatterns
 from boards.views import BoardView
+
+from .test_models import BASE_TEST_IMAGE_PATH
+
+MEDIA_ROOT = tempfile.mkdtemp()
+module_dir = os.path.dirname(__file__)
 
 
 def dummy_request(request):
@@ -93,6 +100,10 @@ class BoardViewTest(TestCase):
         board = Board.objects.get(title="Test Board")
         response = self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
         self.assertEqual(response.status_code, 200)
+
+    def test_board_not_exist(self):
+        response = self.client.get(reverse("boards:board", kwargs={"slug": "000000"}))
+        self.assertEqual(response.status_code, 404)
 
     def test_htmx_requests(self):
         board = Board.objects.get(title="Test Board")
@@ -648,15 +659,12 @@ class DeleteTopicPostsViewTest(TestCase):
     def test_owner_permissions(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(
-            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
-        )
+        delete_url = reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        response = self.client.get(delete_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Post.objects.filter(topic=topic).count(), 10)
 
-        response = self.client.post(
-            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
-        )
+        response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.filter(topic=topic).count(), 0)
 
@@ -691,17 +699,75 @@ class PostCreateViewTest(TestCase):
 
     def test_anonymous_permissions(self):
         topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(
-            reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
-        )
+        post_url = reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        response = self.client.get(post_url)
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id}),
-            data={"content": "Test Message anon"},
-        )
-        topic = Topic.objects.prefetch_related("posts").get(subject="Test Topic")
+        response = self.client.post(post_url, data={"content": "Test Message anon"})
+        topic = Topic.objects.get(subject="Test Topic")
         self.assertEqual(response.status_code, 204)
         self.assertEqual(topic.posts.first().content, "Test Message anon")
+
+    def test_replies_permissions_anonymous(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        post = Post.objects.create(content="Test Message", topic=topic)
+        reply_url = reverse(
+            "boards:post-reply",
+            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+        )
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 302)
+
+        topic.board.preferences.type = "r"
+        topic.board.preferences.save()
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 302)
+
+        topic.board.preferences.allow_guest_replies = True
+        topic.board.preferences.save()
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 200)
+
+        post.approved = False
+        post.save()
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_replies_permissions_owner(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        post = Post.objects.create(content="Test Message", topic=topic)
+        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        reply_url = reverse(
+            "boards:post-reply",
+            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+        )
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 403)
+
+        topic.board.preferences.type = "r"
+        topic.board.preferences.save()
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 200)
+
+        post.approved = False
+        post.save()
+        response = self.client.get(reply_url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_reply(self):
+        topic = Topic.objects.get(subject="Test Topic")
+        post = Post.objects.create(content="Test Message", topic=topic)
+        reply_url = reverse(
+            "boards:post-reply",
+            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+        )
+        topic.board.preferences.type = "r"
+        topic.board.preferences.allow_guest_replies = True
+        topic.board.preferences.save()
+
+        self.client.post(reply_url, data={"content": "Test Message reply"})
+        reply = Post.objects.get(content="Test Message reply")
+        self.assertEqual(reply.topic, topic)
+        self.assertEqual(reply.reply_to, post)
 
     def test_post_session_key(self):
         topic = Topic.objects.get(subject="Test Topic")
@@ -1517,7 +1583,70 @@ class PostReactionViewTest(TestCase):
             self.assertIn(f'"post_pk": {post.id}', message)
 
 
-MEDIA_ROOT = tempfile.mkdtemp()
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class PostImageUploadViewTest(TestCase):
+    upload_url = None
+
+    @classmethod
+    def setUpTestData(cls):
+        board = Board.objects.create(title="Test Board")
+        board.preferences.allow_image_uploads = True
+        board.preferences.save()
+        cls.upload_url = reverse("boards:post-image-upload", kwargs={"slug": board.slug})
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
+
+    def test_permissions(self):
+        board = Board.objects.get(title="Test Board")
+
+        response = self.client.get(self.upload_url)
+        self.assertEqual(response.status_code, 405)
+
+        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
+        valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
+        for image_type in valid_image_types:
+            with open(image_path, "rb") as image_file:
+                response = self.client.post(
+                    self.upload_url,
+                    {"image": SimpleUploadedFile("test.png", image_file.read(), content_type=image_type)},
+                )
+            self.assertEqual(response.status_code, 200)
+            image = Image.objects.order_by("created_at").last()
+            data = json.loads(response.content)
+            self.assertEqual(data["data"]["filePath"], image.image.url)
+
+        board.preferences.allow_image_uploads = False
+        board.preferences.save()
+
+        response = self.client.post(self.upload_url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_upload_image_over_max_count(self):
+        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
+        for i in range(settings.MAX_POST_IMAGE_COUNT + 1):
+            with open(image_path, "rb") as image_file:
+                response = self.client.post(
+                    self.upload_url,
+                    {"image": SimpleUploadedFile(f"test{i}.png", image_file.read(), content_type="image/png")},
+                )
+                data = json.loads(response.content)
+                if i < settings.MAX_POST_IMAGE_COUNT:
+                    self.assertEqual(data["data"]["filePath"], Image.objects.order_by("created_at").last().image.url)
+                else:
+                    self.assertEqual(data["error"], "Board image quota exceeded")
+
+    def test_upload_invalid_image(self):
+        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.gif")
+        with open(image_path, "rb") as image_file:
+            response = self.client.post(
+                self.upload_url,
+                {"image": SimpleUploadedFile("test.gif", image_file.read(), content_type="image/gif")},
+            )
+            data = json.loads(response.content)
+            self.assertEqual(data["error"], "Invalid image type (only PNG, JPEG, BMP, and WEBP are allowed)")
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
@@ -1526,7 +1655,6 @@ class ImageSelectViewTest(TestCase):
     def setUpTestData(cls):
         User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         board = Board.objects.create(title="Test Board")
-        module_dir = os.path.dirname(__file__)
         image_path = os.path.join(module_dir, "images/white_horizontal.png")
         for type, text in IMAGE_TYPE:
             for i in range(5):
