@@ -57,13 +57,13 @@ def post_reaction_send_update_message(post):
         raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 
-def process_image(image, type="b", width=3840, height=2160):
+def process_image(image, type="b", width=settings.MAX_IMAGE_WIDTH, height=settings.MAX_IMAGE_HEIGHT):
     process = False
     # Open the image using Pillow
     img = PILImage.open(image)
     if type == "p":
-        width = settings.MAX_BOARD_IMAGE_WIDTH
-        height = settings.MAX_BOARD_IMAGE_HEIGHT
+        width = settings.MAX_POST_IMAGE_WIDTH
+        height = settings.MAX_POST_IMAGE_HEIGHT
 
     if img.format not in ["JPEG", "PNG"]:
         output_format = "JPEG"
