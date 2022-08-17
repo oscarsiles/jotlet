@@ -650,6 +650,7 @@ class PostReactionView(generic.View):
 
 
 class PostImageUploadView(UserPassesTestMixin, generic.View):
+    http_method_names = ["post"]
     board = None
 
     def test_func(self):
