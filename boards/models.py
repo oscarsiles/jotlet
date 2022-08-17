@@ -337,11 +337,12 @@ class Image(auto_prefetch.Model):
         return self.title if self.title else str(self.uuid)
 
     def save(self, *args, **kwargs):
-        if self._state.adding:
+        created = self._state.adding
+        if created:
             self.image = process_image(self.image, self.type)
         super().save(*args, **kwargs)
 
-        if self._state.adding:
+        if created:
             if self.type == "b":
                 async_task("boards.tasks.create_thumbnails", self)
 
