@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -75,7 +75,11 @@ class BoardView(generic.DetailView):
     template_name = "boards/board_index.html"
 
     def get_object(self):
-        return Board.objects.get(slug=self.kwargs["slug"])
+        board = Board.objects.filter(slug=self.kwargs["slug"])
+        if board.exists():
+            return board.first()
+        else:
+            raise Http404("Board not found")
 
     def get_template_names(self):
         template_names = super().get_template_names()
