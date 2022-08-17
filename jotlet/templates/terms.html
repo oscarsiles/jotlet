@@ -4,7 +4,7 @@
     Jotlet - Terms
 {% endblock title %}
 {% block content %}
-    {% cache None terms %}
+    {% cache 43200 terms %}
     {% include "terms_content.html" %}
 {% endcache %}
 {% endblock content %}
