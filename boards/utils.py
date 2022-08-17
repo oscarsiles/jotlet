@@ -3,7 +3,6 @@ import random
 import string
 import sys
 from io import BytesIO
-from pathlib import Path
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -87,7 +86,7 @@ def process_image(image, type="b", width=settings.MAX_IMAGE_WIDTH, height=settin
         # Create a new resized “thumbnail” version of the image with Pillow
         img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
         # Find the file name of the image
-        img_filename = Path(image.file.name).name
+        img_filename = os.path.basename(image.file.name)
         # Save the resized image into the buffer, noting the correct file type
         buffer = BytesIO()
         img.save(buffer, format=output_format, quality=80, optimize=True)
