@@ -15,30 +15,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from .filters import BoardFilter
 from .forms import BoardPreferencesForm, SearchBoardsForm
 from .models import Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
-from .utils import channel_group_send
-
-
-def get_is_moderator(user, board):
-    return (
-        user.has_perm("boards.can_approve_posts")
-        or user in board.preferences.moderators.all()
-        or user == board.owner
-        or user.is_staff
-    )
-
-
-def post_reaction_send_update_message(post):
-    try:
-        channel_group_send(
-            f"board_{post.topic.board.slug}",
-            {
-                "type": "reaction_updated",
-                "topic_pk": post.topic.pk,
-                "post_pk": post.pk,
-            },
-        )
-    except Exception:
-        raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
+from .utils import get_is_moderator, post_reaction_send_update_message
 
 
 class IndexView(generic.FormView):

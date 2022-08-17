@@ -16,21 +16,44 @@ def channel_group_send(group_name, message):
     async_to_sync(channel_layer.group_send)(group_name, message)
 
 
-def get_image_upload_path(instance, filename):
+def get_image_upload_path(image, filename):
     _, ext = os.path.splitext(filename)
     file_path = "images/{type}/{sub1}/{sub2}/{name}.{ext}".format(
-        type=instance.type,
-        sub1=instance.board.slug if instance.type == "p" else get_random_string(2),
+        type=image.type,
+        sub1=image.board.slug if image.type == "p" else get_random_string(2),
         sub2=get_random_string(2),
-        name=instance.uuid,
+        name=image.uuid,
         ext=ext.replace(".", ""),
     )
     return file_path
 
 
+def get_is_moderator(user, board):
+    return (
+        user.has_perm("boards.can_approve_posts")
+        or user in board.preferences.moderators.all()
+        or user == board.owner
+        or user.is_staff
+    )
+
+
 def get_random_string(length):
     code = "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
     return code
+
+
+def post_reaction_send_update_message(post):
+    try:
+        channel_group_send(
+            f"board_{post.topic.board.slug}",
+            {
+                "type": "reaction_updated",
+                "topic_pk": post.topic.pk,
+                "post_pk": post.pk,
+            },
+        )
+    except Exception:
+        raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 
 def process_image(image, type="b", width=3840, height=2160):
