@@ -283,8 +283,10 @@ else:
     MEDIA_URL = "media/"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-MAX_IMAGE_SIZE = env("MAX_IMAGE_SIZE", default=1024 * 1024 * 2)
+MAX_IMAGE_FILE_SIZE = env("MAX_IMAGE_FILE_SIZE", default=1024 * 1024 * 2)
 MAX_BOARD_IMAGE_COUNT = env("MAX_BOARD_IMAGE_COUNT", default=100)
+MAX_BOARD_IMAGE_WIDTH = env("MAX_BOARD_IMAGE_WIDTH", default=400)
+MAX_BOARD_IMAGE_HEIGHT = env("MAX_BOARD_IMAGE_HEIGHT", default=MAX_BOARD_IMAGE_WIDTH)
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

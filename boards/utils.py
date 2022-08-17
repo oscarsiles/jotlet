@@ -7,6 +7,7 @@ from pathlib import Path
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image as PILImage
 
@@ -61,8 +62,8 @@ def process_image(image, type="b", width=3840, height=2160):
     # Open the image using Pillow
     img = PILImage.open(image)
     if type == "p":
-        width = 400
-        height = 400
+        width = settings.MAX_BOARD_IMAGE_WIDTH
+        height = settings.MAX_BOARD_IMAGE_HEIGHT
 
     if img.format not in ["JPEG", "PNG"]:
         output_format = "JPEG"
