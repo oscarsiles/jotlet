@@ -16,7 +16,9 @@ class BoardFilterTest(TestCase):
         user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
         user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
         yesterday = timezone.now() - timedelta(days=1)
-        board1 = Board.objects.create(title="Test Board 1", slug="000001", owner=user1)
+        board1 = Board.objects.create(
+            title="Test Board 1", description="Test Description", slug="000001", owner=user1
+        )
         board1.created_at = yesterday
         board1.save()
         Board.objects.create(title="Test Board 2", slug="000002", owner=user1)
@@ -39,7 +41,10 @@ class BoardFilterTest(TestCase):
         filterset = BoardFilter(request.GET, request=request)
         self.assertEqual(filterset.qs.count(), 2)
 
-        request.GET["q"] = "Test Board 1"
+        request.GET["q"] = "board"
+        filterset = BoardFilter(request.GET, request=request)
+        self.assertEqual(filterset.qs.count(), 2)
+        request.GET["q"] = "description"
         filterset = BoardFilter(request.GET, request=request)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["q"] = ""
@@ -82,7 +87,13 @@ class BoardFilterTest(TestCase):
         request.GET["owner"] = "testuser2"
         filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
         self.assertEqual(filterset.qs.count(), 1)
+        request.GET["owner"] = "testUser2"  # case insensitive
+        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        self.assertEqual(filterset.qs.count(), 1)
 
         request.GET["owner"] = "testuser1,testuser2"
+        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        self.assertEqual(filterset.qs.count(), 3)
+        request.GET["owner"] = "tesTuSer1,tEStusEr2"
         filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
         self.assertEqual(filterset.qs.count(), 3)

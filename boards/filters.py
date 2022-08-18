@@ -1,3 +1,5 @@
+from functools import reduce
+
 import django_filters
 from django.db.models import Q
 
@@ -7,7 +9,7 @@ from .models import Board
 
 class BoardFilter(django_filters.FilterSet):
     q = django_filters.CharFilter(method="filter_title_description", label="Title/Description")
-    owner = django_filters.CharFilter(method="filter_username", label="User")
+    owner = django_filters.CharFilter(method="filter_username", label="User", lookup_expr="iexact")
     before = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="lt")
     after = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="gt")
 
@@ -42,4 +44,8 @@ class BoardFilter(django_filters.FilterSet):
         return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
 
     def filter_username(self, queryset, name, value):
-        return queryset.filter(owner__username__in=value.split(","))
+        # https://stackoverflow.com/a/14908214
+        value = value.split(",")
+        value = map(lambda n: Q(owner__username__iexact=n), value)
+        value = reduce(lambda a, b: a | b, value)
+        return queryset.filter(value)
