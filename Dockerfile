@@ -1,15 +1,22 @@
 FROM python:3.10-slim-bullseye
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV REDIS_HOST "redis"
+ARG USERNAME=jotlet
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    REDIS_HOST="redis"
 RUN mkdir /app
 WORKDIR /app
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get -y install libpq-dev gcc libwebp-dev \
-    && python -m pip install --upgrade pip
-RUN pip install 'poetry==1.1.14'
+RUN apt-get update && apt-get -y upgrade && apt-get -y install \
+    libpq-dev \
+    gcc \
+    libwebp-dev
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+RUN python -m pip install --upgrade pip \
+    && pip install "poetry==1.1.14"
+USER $USERNAME
 COPY poetry.lock pyproject.toml /app/
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev --no-interaction --no-ansi
 ADD . /app/
