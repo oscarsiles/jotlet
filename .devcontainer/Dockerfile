@@ -16,14 +16,14 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     gcc \
     libwebp-dev \
     postgresql-client
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 RUN python -m pip install --upgrade pip \
     && pip install "poetry==1.1.14"
-USER $USERNAME
 COPY poetry.lock pyproject.toml /workspace/
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+USER $USERNAME
 ENV DEBIAN_FRONTEND=dialog
 RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
     && chown -R $USERNAME /home/$USERNAME/.vscode-server
