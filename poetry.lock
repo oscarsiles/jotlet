@@ -197,10 +197,10 @@ tomli = {version = ">=1.1.0", markers = "python_full_version < \"3.11.0a7\""}
 typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-colorama = ["colorama (>=0.4.3)"]
-d = ["aiohttp (>=3.7.4)"]
-jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
+jupyter = ["tokenize-rt (>=3.2.0)", "ipython (>=7.8.0)"]
+d = ["aiohttp (>=3.7.4)"]
+colorama = ["colorama (>=0.4.3)"]
 
 [[package]]
 name = "blessed"
@@ -217,14 +217,14 @@ wcwidth = ">=0.1.4"
 
 [[package]]
 name = "boto3"
-version = "1.24.54"
+version = "1.24.55"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.54,<1.28.0"
+botocore = ">=1.27.55,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -233,7 +233,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.54"
+version = "1.27.55"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -306,8 +306,8 @@ cryptography = {version = ">=1.3.0", optional = true, markers = "extra == \"cryp
 msgpack = ">=1.0,<2.0"
 
 [package.extras]
+tests = ["async-timeout", "async-generator", "pytest-asyncio (==0.14.0)", "pytest", "cryptography (>=1.3.0)"]
 cryptography = ["cryptography (>=1.3.0)"]
-tests = ["cryptography (>=1.3.0)", "pytest", "pytest-asyncio (==0.14.0)", "async-generator", "async-timeout"]
 
 [[package]]
 name = "charset-normalizer"
@@ -431,7 +431,7 @@ autobahn = ">=0.18"
 twisted = {version = ">=18.7", extras = ["tls"]}
 
 [package.extras]
-tests = ["hypothesis (==4.23)", "pytest (>=3.10,<4.0)", "pytest-asyncio (>=0.8,<1.0)"]
+tests = ["pytest-asyncio (>=0.8,<1.0)", "pytest (>=3.10,<4.0)", "hypothesis (==4.23)"]
 
 [[package]]
 name = "defusedxml"
@@ -505,7 +505,7 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-axes"
-version = "5.38.0"
+version = "5.39.0"
 description = "Keep track of failed login attempts in Django-powered sites."
 category = "main"
 optional = false
@@ -686,7 +686,7 @@ python-versions = ">=3.6"
 django-js-asset = "*"
 
 [package.extras]
-tests = ["coverage", "mock-django"]
+tests = ["mock-django", "coverage"]
 
 [[package]]
 name = "django-picklefield"
@@ -718,9 +718,9 @@ django-picklefield = ">=3.0.1,<4.0.0"
 redis = ">=3.5.3,<4.0.0"
 
 [package.extras]
-testing = ["hiredis (>=1.0.1,<2.0.0)", "psutil (>=5.7.0,<6.0.0)", "django-redis (>=4.12.1,<5.0.0)", "iron-mq (>=0.9,<0.10)", "boto3 (>=1.14.12,<2.0.0)", "pymongo (>=3.10.1,<4.0.0)", "croniter (>=0.3.34,<0.4.0)"]
-rollbar = ["django-q-rollbar (>=0.1)"]
 sentry = ["django-q-sentry (>=0.1)"]
+rollbar = ["django-q-rollbar (>=0.1)"]
+testing = ["croniter (>=0.3.34,<0.4.0)", "pymongo (>=3.10.1,<4.0.0)", "boto3 (>=1.14.12,<2.0.0)", "iron-mq (>=0.9,<0.10)", "django-redis (>=4.12.1,<5.0.0)", "psutil (>=5.7.0,<6.0.0)", "hiredis (>=1.0.1,<2.0.0)"]
 
 [[package]]
 name = "django-q-email"
@@ -795,16 +795,16 @@ python-versions = ">=3.7"
 Django = ">=3.2"
 
 [package.extras]
-azure = ["azure-storage-blob (>=12.0.0)"]
-boto3 = ["boto3 (>=1.4.4)"]
-dropbox = ["dropbox (>=7.2.1)"]
-google = ["google-cloud-storage (>=1.27.0)"]
-libcloud = ["apache-libcloud"]
 sftp = ["paramiko"]
+libcloud = ["apache-libcloud"]
+google = ["google-cloud-storage (>=1.27.0)"]
+dropbox = ["dropbox (>=7.2.1)"]
+boto3 = ["boto3 (>=1.4.4)"]
+azure = ["azure-storage-blob (>=12.0.0)"]
 
 [[package]]
 name = "djlint"
-version = "1.10.0"
+version = "1.11.0"
 description = "HTML Template Linter and Formatter"
 category = "dev"
 optional = false
@@ -861,8 +861,8 @@ Jinja2 = ">=3.0"
 Werkzeug = ">=2.2.2"
 
 [package.extras]
-async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
+async = ["asgiref (>=3.2)"]
 
 [[package]]
 name = "flask-basicauth"
@@ -1080,7 +1080,7 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-scripts = ["click (>=6.0)", "twisted (>=16.4.0)"]
+scripts = ["twisted (>=16.4.0)", "click (>=6.0)"]
 
 [[package]]
 name = "iniconfig"
@@ -1254,8 +1254,8 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-issues (>=3.0.1)", "sphinx-removed-in", "sphinxext-opengraph"]
-tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
+tests = ["pytest-timeout", "pytest-cov", "pytest", "pyroma", "packaging", "olefile", "markdown2", "defusedxml", "coverage", "check-manifest"]
+docs = ["sphinxext-opengraph", "sphinx-removed-in", "sphinx-issues (>=3.0.1)", "sphinx-copybutton", "sphinx (>=2.4)", "olefile", "furo"]
 
 [[package]]
 name = "platformdirs"
@@ -1829,9 +1829,9 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-all = ["zope.interface (>=5.2.0)", "twisted (>=20.3.0)"]
-dev = ["wheel", "pytest (>=2.6.4)", "pytest-cov (>=1.8.1)", "pep8 (>=1.6.2)", "sphinx (>=1.2.3)", "pyenchant (>=1.6.6)", "sphinxcontrib-spelling (>=2.1.2)", "sphinx-rtd-theme (>=0.1.9)", "tox (>=2.1.1)", "twine (>=1.6.5)", "tox-gh-actions (>=2.2.0)"]
-twisted = ["zope.interface (>=5.2.0)", "twisted (>=20.3.0)"]
+twisted = ["twisted (>=20.3.0)", "zope.interface (>=5.2.0)"]
+dev = ["tox-gh-actions (>=2.2.0)", "twine (>=1.6.5)", "tox (>=2.1.1)", "sphinx-rtd-theme (>=0.1.9)", "sphinxcontrib-spelling (>=2.1.2)", "pyenchant (>=1.6.6)", "sphinx (>=1.2.3)", "pep8 (>=1.6.2)", "pytest-cov (>=1.8.1)", "pytest (>=2.6.4)", "wheel"]
+all = ["twisted (>=20.3.0)", "zope.interface (>=5.2.0)"]
 
 [[package]]
 name = "typer"
@@ -2017,7 +2017,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "4aa48781a3056cf21d8c3cd87763f6069131794b4b2e55997c565d3b70087ab0"
+content-hash = "9ac073034b0a0fd4ccddb0aa3c01e4d5561b8f18c9fa071c838903e1b10e55a8"
 
 [metadata.files]
 aioredis = [
@@ -2137,12 +2137,12 @@ blessed = [
     {file = "blessed-1.19.1.tar.gz", hash = "sha256:9a0d099695bf621d4680dd6c73f6ad547f6a3442fbdbe80c4b1daa1edbc492fc"},
 ]
 boto3 = [
-    {file = "boto3-1.24.54-py3-none-any.whl", hash = "sha256:70bf68f291ce40329ca95a1a9e33020027703bb30248da214b46642c5df0b444"},
-    {file = "boto3-1.24.54.tar.gz", hash = "sha256:732bbe266773125d233c77171978195bfd2fd03204ee1eec257a640c3e3dbd94"},
+    {file = "boto3-1.24.55-py3-none-any.whl", hash = "sha256:4b620f55f3015c516a8f8063b02060a7bb9a763e10de3c0f3ec90102cdfa28db"},
+    {file = "boto3-1.24.55.tar.gz", hash = "sha256:9fe6c7c5019671cbea82f02dbaae7e743ec86187443ab5f333ebb3d3bef63dce"},
 ]
 botocore = [
-    {file = "botocore-1.27.54-py3-none-any.whl", hash = "sha256:2d7631187d8f9f3e3a6dfd79fd10def4d26136a79fcc6a354b99352ea1ddfaec"},
-    {file = "botocore-1.27.54.tar.gz", hash = "sha256:811113dd97072b7f157a25a94d58ca2e6dd4577b8a6bdfe7e1fa6635adf64467"},
+    {file = "botocore-1.27.55-py3-none-any.whl", hash = "sha256:0b4a17e81c17845245c0e7a3fbf83753c7f6a5544b93dcf6e0fcc0f3f2156ab2"},
+    {file = "botocore-1.27.55.tar.gz", hash = "sha256:929d6be4bdb33a693e6c8e06383dba76fa628bb72fdb1f9353fd13f5d115dd19"},
 ]
 brotli = [
     {file = "Brotli-1.0.9-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:268fe94547ba25b58ebc724680609c8ee3e5a843202e9a381f6f9c5e8bdb5c70"},
@@ -2413,8 +2413,8 @@ django-auto-prefetch = [
     {file = "django_auto_prefetch-1.3.0-py3-none-any.whl", hash = "sha256:f8d14d0e803924d1f9bbc1872106786146ce58eeefaf46f707b2527ace2b0562"},
 ]
 django-axes = [
-    {file = "django-axes-5.38.0.tar.gz", hash = "sha256:854671e40e4458de9d41921efe9a0988ac48d7b123cf2f5945609a4bed6954bf"},
-    {file = "django_axes-5.38.0-py3-none-any.whl", hash = "sha256:dc5aa02a70ea86c20f340f5fcb78e5f67d409d6d668b4734270eab4104bd0e1e"},
+    {file = "django-axes-5.39.0.tar.gz", hash = "sha256:97702552f7939c81db5bba2ef855ae43f20df92fa261cb79fd4c8633ba3b3955"},
+    {file = "django_axes-5.39.0-py3-none-any.whl", hash = "sha256:8f039f8e98f050f13f654efca599d8a04d0b57d330c590cf89ec2bf731c9a7fb"},
 ]
 django-cachalot = [
     {file = "django-cachalot-2.5.1.tar.gz", hash = "sha256:54cfdf3cf60863b762ff5b8ff9905be531639c52ebc05e2487365538f9bcec17"},
@@ -2505,8 +2505,8 @@ django-storages = [
     {file = "django_storages-1.13.1-py3-none-any.whl", hash = "sha256:3540b45618b04be2c867c0982e8d2bd8e34f84dae922267fcebe4691fb93daf0"},
 ]
 djlint = [
-    {file = "djlint-1.10.0-py3-none-any.whl", hash = "sha256:58a805c064d3a1df2e30f68258fe38e3ee6e8fb8c11c3b1fa90e1161a9b94bf8"},
-    {file = "djlint-1.10.0.tar.gz", hash = "sha256:e1de5430f70b24adb1d0e5799fc42e4aa52cf4ce416c0213d4520c1142518083"},
+    {file = "djlint-1.11.0-py3-none-any.whl", hash = "sha256:69945e5e2c10073b8f6842f2a3062434ee9d68b635239832660f0e42217d9f18"},
+    {file = "djlint-1.11.0.tar.gz", hash = "sha256:ccd92d6825d8134cd24e16b047ea41df43f21aeb456f9b7912c6496585329761"},
 ]
 editorconfig = [
     {file = "EditorConfig-0.12.3-py3-none-any.whl", hash = "sha256:6b0851425aa875b08b16789ee0eeadbd4ab59666e9ebe728e526314c4a2e52c1"},
