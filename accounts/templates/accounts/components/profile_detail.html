@@ -1,46 +1,63 @@
 <div id="profile"
-     class="d-flex flex-column text-secondary"
+     class="d-flex flex-column gap-2"
      hx-target="this"
      hx-swap="outerHTML">
-    <span>
-        Email: {{ user.email }}
-        {% if is_email_verified %}
-            <i class="bi bi-check-square" title="Email verified"></i>
-        {% else %}
-            <a href="{% url 'account_email' %}"><i class="bi bi-x-square" title="Email not verified"></i></a>
-        {% endif %}
-    </span>
-    <span>First Name: {{ user.first_name }}</span>
-    <span>Last Name: {{ user.last_name }}</span>
-    <span>
-        Newsletter:
-        {% if user.profile.optin_newsletter %}
-            <i class="bi bi-check-square" title="Opted in"></i>
-        {% else %}
-            <i class="bi bi-x-square" title="Opted out"></i>
-        {% endif %}
-    </span>
-    <span>
-        <a class="btn btn-link"
-           role="button"
-           hx-get="{% url 'account_profile_edit' %}">Edit Profile</a></span><span>
-    <a class="btn btn-link"
-       role="button"
-       hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
-       hx-target="#modal-1-body-div"
-       hx-swap="innerHTML"
-       data-bs-toggle="modal"
-       data-bs-target="#modal-1-div">
-        Change Password
-    </a>
-    <a class="btn btn-link text-danger"
-       role="button"
-       hx-get="{% url 'account_delete' %}"
-       hx-target="#modal-1-body-div"
-       hx-swap="innerHTML"
-       data-bs-toggle="modal"
-       data-bs-target="#modal-1-div">
-        Delete Account
-    </a>
-</span>
+    <div class="d-flex flex-column gap-2 my-2">
+        <div>
+            <h6 class="mb-0">
+                Email
+                {% if is_email_verified %}
+                    <i class="bi bi-check-square" title="Email verified"></i>
+                {% else %}
+                    <a href="{% url 'account_email' %}"><i class="bi bi-x-square" title="Email not verified"></i></a>
+                {% endif %}
+            </h6>
+            {{ user.email }}
+        </div>
+        <div>
+            <h6 class="mb-0">First Name</h6>
+            {{ user.first_name }}
+        </div>
+        <div>
+            <h6 class="mb-0">Last Name</h6>
+            {{ user.last_name }}
+        </div>
+        <div>
+            <h6 class="mb-0">Newsletter</h6>
+            {% if user.profile.optin_newsletter %}
+                Opted in
+            {% else %}
+                Opted out
+            {% endif %}
+        </div>
+    </div>
+    <div class="d-flex flex-column gap-2">
+        <div>
+            <a class="btn btn-outline-primary"
+               role="button"
+               hx-get="{% url 'account_profile_edit' %}">Edit Profile</a>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary"
+               role="button"
+               hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
+               hx-target="#modal-1-body-div"
+               hx-swap="innerHTML"
+               data-bs-toggle="modal"
+               data-bs-target="#modal-1-div">
+                Change Password
+            </a>
+        </div>
+        <div>
+            <a class="btn btn-danger"
+               role="button"
+               hx-get="{% url 'account_delete' %}"
+               hx-target="#modal-1-body-div"
+               hx-swap="innerHTML"
+               data-bs-toggle="modal"
+               data-bs-target="#modal-1-div">
+                Delete Account
+            </a>
+        </div>
+    </div>
 </div>
