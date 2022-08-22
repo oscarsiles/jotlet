@@ -4,6 +4,7 @@ from crispy_bootstrap5.bootstrap5 import Field, FloatingField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
 from django import forms
+from django.contrib.auth.models import User
 
 from accounts.utils import hcaptcha_verified
 
@@ -36,6 +37,33 @@ class CustomLoginForm(LoginForm):
         # Add Axes compatibility
         credentials["login"] = credentials.get("email") or credentials.get("username")
         return credentials
+
+
+class CustomProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("email", "first_name", "last_name")
+
+    def __init__(self, *args, **kwargs):
+        optin_newsletter = kwargs.pop("optin_newsletter", False)
+        super().__init__(*args, **kwargs)
+
+        self.fields["email"].disabled = True
+        self.fields["optin_newsletter"] = forms.BooleanField(
+            required=False,
+            initial=optin_newsletter,
+            label="Opt-in to newsletter",
+        )
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+
+        self.helper.layout = Layout(
+            FloatingField("email"),
+            FloatingField("first_name"),
+            FloatingField("last_name"),
+            Field("optin_newsletter", wrapper_class="ms-2 form-check form-switch"),
+        )
 
 
 class CustomSignupForm(SignupForm):

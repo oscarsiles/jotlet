@@ -113,20 +113,11 @@
                                             aria-labelledby="navbarDropdownMenuLink">
                                             {% if user.is_staff %}
                                                 <li>
-                                                    <a href="{% url 'admin:index' %}" class="dropdown-item">Admin Panel</a>
+                                                    <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a>
                                                 </li>
                                             {% endif %}
                                             <li>
-                                                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                                                    <a class="dropdown-item"
-                                                       role="button"
-                                                       hx-get="{% url 'account_change_password' %}?next={{ request.path }}"
-                                                       hx-target="#modal-1-body-div"
-                                                       data-bs-toggle="modal"
-                                                       data-bs-target="#modal-1-div">
-                                                        Change Password
-                                                    </a>
-                                                </span>
+                                                <a class="dropdown-item" href="{% url 'account_profile' %}">Profile</a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item"
@@ -166,6 +157,7 @@
     {% include 'components/messages.html' %}
     {% block content %}
     {% endblock content %}
+    {{ request.user.is_authenticated|json_script:"is_logged_in" }}
     {% include 'components/footer.html' %}
     {% include 'boards/components/toast.html' %}
 </div>

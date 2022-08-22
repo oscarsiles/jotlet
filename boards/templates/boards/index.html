@@ -16,25 +16,7 @@
             {% endif %}
             {% if request.user.is_authenticated %}
                 {% cache 86400 index-list-title request.user is_all_boards %}
-                <div class="py-2">
-                    <div class="d-flex gap-2">
-                        <h4>
-                            {% if is_all_boards %}
-                                All boards:
-                            {% else %}
-                                Your boards ({{ request.user }}):
-                            {% endif %}
-                        </h4>
-                        <div class="spinner-border htmx-indicator" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                {{ is_all_boards|json_script:"is_all_boards" }}
-                <div id="board-list"
-                     hx-get="{% url 'boards:board-list' %}"
-                     hx-trigger="load"
-                     hx-swap="innerHTML"></div>
+                {% include "boards/components/user_boards.html" %}
             {% endcache %}
         {% endif %}
         {% if perms.boards.can_view_all_boards and not is_all_boards %}
@@ -45,5 +27,4 @@
     </div>
     <div class="col-md" x-show="!smallWindow"></div>
 </div>
-{{ request.user.is_authenticated|json_script:"is_logged_in" }}
 {% endblock content %}
