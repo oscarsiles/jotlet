@@ -6,14 +6,17 @@
 {% endblock head %}
 {% block content %}
     <div class="flex-column flex-fill">
-        <div class="d-flex align-items-start gap-4 mx-4">
-            <div class="col-2 mt-2">
+        <div class="d-md-flex align-items-start gap-4 mx-4">
+            <div class="col-lg-2 mt-2">
                 <h5>Welcome {{ user.username }}</h5>
                 {% include "accounts/components/profile_detail.html" %}
             </div>
-            <div class="col-1 vr text-secondary"></div>
-            <div class="col">{% include "boards/components/user_boards.html" %}</div>
-            <div class="col-2" x-show="!smallWindow"></div>
+            <div class="col-md-1 d-none d-md-block vr text-secondary"></div>
+            <div class="col col-md-0 d-block d-md-none text-secondary">
+                <hr/>
+            </div>
+            <div class="col-md">{% include "boards/components/user_boards.html" %}</div>
+            <div class="col-xl-2" x-show="!smallWindow"></div>
         </div>
     </div>
 {% endblock content %}
