@@ -1,7 +1,11 @@
+from functools import cached_property
+
 import auto_prefetch
 from django.contrib.auth.models import User
 from django.db import models
 from simple_history.models import HistoricalRecords
+
+from boards.models import Board
 
 
 class UserProfile(auto_prefetch.Model):
@@ -11,9 +15,12 @@ class UserProfile(auto_prefetch.Model):
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
     history = HistoricalRecords(cascade_delete_history=True)
 
+    class Meta:
+        verbose_name = "profile"
+
     def __str__(self):
         return f"{self.user.username}'s profile"
 
-    class Meta:
-        verbose_name = "Profile"
-        verbose_name_plural = "Profiles"
+    @cached_property
+    def get_board_count(self):
+        return Board.objects.filter(owner=self.user).count()

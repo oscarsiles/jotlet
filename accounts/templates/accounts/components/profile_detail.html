@@ -3,7 +3,7 @@
      hx-target="this"
      hx-swap="outerHTML">
     <div class="d-flex flex-column gap-2 my-2">
-        <div>
+        <div class="text-truncate">
             <h6 class="mb-0">
                 Email
                 {% if is_email_verified %}
@@ -12,15 +12,19 @@
                     <a href="{% url 'account_email' %}"><i class="bi bi-x-square" title="Email not verified"></i></a>
                 {% endif %}
             </h6>
-            {{ user.email }}
+            <span title="{{ user.email }}">{{ user.email }}</span>
         </div>
-        <div>
+        <div class="text-truncate">
             <h6 class="mb-0">First Name</h6>
-            {{ user.first_name }}
+            <span title="{{ user.first_name }}">{{ user.first_name }}</span>
+        </div>
+        <div class="text-truncate">
+            <h6 class="mb-0">Last Name</h6>
+            <span title="{{ user.last_name }}">{{ user.last_name }}</span>
         </div>
         <div>
-            <h6 class="mb-0">Last Name</h6>
-            {{ user.last_name }}
+            <h6>Board Count</h6>
+            <span>{{ user.profile.get_board_count }}</span>
         </div>
         <div>
             <h6 class="mb-0">Newsletter</h6>
