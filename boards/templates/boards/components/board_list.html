@@ -17,24 +17,40 @@
             {% endcache %}
         </div>
         <div class="d-flex align-items-center">
-            {% if request.user == board.owner or perms.boards.change_board %}
-                <button class="btn btn-link shadow-none text-black p-1"
-                        hx-get="{% url 'boards:board-update' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-pen"></i>
-                </button>
-            {% endif %}
-            {% if request.user == board.owner or perms.boards.delete_board %}
-                <button class="btn btn-link shadow-none text-black p-1"
-                        hx-get="{% url 'boards:board-delete' board.slug %}"
-                        hx-target="#modal-1-body-div"
-                        data-bs-toggle="modal"
-                        data-bs-target="#modal-1-div">
-                    <i class="bi bi-trash"></i>
-                </button>
-            {% endif %}
+            <button class="btn btn-link text-black shadow-none p-1"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if request.user == board.owner or perms.boards.change_board %}
+                    <li>
+                        <a class="dropdown-item"
+                           role="button"
+                           hx-get="{% url 'boards:board-update' board.slug %}"
+                           hx-target="#modal-1-body-div"
+                           hx-swap="innerHTML"
+                           data-bs-toggle="modal"
+                           data-bs-target="#modal-1-div">
+                            <i class="bi bi-pen pe-2"></i>Edit Board
+                        </a>
+                    </li>
+                {% endif %}
+                {% if request.user == board.owner or perms.boards.delete_board %}
+                    <li>
+                        <a class="dropdown-item"
+                           role="button"
+                           hx-get="{% url 'boards:board-delete' board.slug %}"
+                           hx-target="#modal-1-body-div"
+                           hx-swap="innerHTML"
+                           data-bs-toggle="modal"
+                           data-bs-target="#modal-1-div">
+                            <i class="bi bi-trash pe-2"></i>Delete Board
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </li>
 {% endfor %}
