@@ -2,9 +2,10 @@
 {% load crispy_forms_tags static cache %}
 {% block head %}
     {% if is_all_boards %}
-        <link href="{% static 'css/3rdparty/tagify-4.11.0.css' %}" rel="stylesheet"/>
-        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/tagify-4.11.0.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <link href="{% static 'css/3rdparty/tagify-4.16.2.min.css' %}"
+              rel="stylesheet"/>
+        <script defer src="{% static 'js/3rdparty/tagify-4.16.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/tagify-4.16.2.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
     <script defer src="{% static 'boards/js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}

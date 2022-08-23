@@ -49,6 +49,7 @@ if (is_logged_in) {
           delimiters: ",| ",
           originalInputValueFormat: (valuesArr) =>
             valuesArr.map((item) => item.value).join(","),
+          trim: false,
         });
         tagify = null;
       }

@@ -15,4 +15,5 @@ tagify = new Tagify(moderatorsInput, {
   delimiters: ",| ",
   originalInputValueFormat: (valuesArr) =>
     valuesArr.map((item) => item.value).join(","),
+  trim: false,
 });
