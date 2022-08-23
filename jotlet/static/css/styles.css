@@ -12,6 +12,11 @@
   }
 }
 
+.dropdown-item-del-bg {
+  --bs-dropdown-link-hover-bg: rgba(var(--bs-danger-rgb), 0.2);
+  --bs-dropdown-link-active-bg: var(--bs-danger);
+}
+
 .faded-75 {
   background: rgba(255, 255, 255, 0.75);
 }

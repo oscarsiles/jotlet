@@ -39,7 +39,7 @@
                 {% endif %}
                 {% if request.user == board.owner or perms.boards.delete_board %}
                     <li>
-                        <a class="dropdown-item"
+                        <a class="dropdown-item dropdown-item-del-bg"
                            role="button"
                            hx-get="{% url 'boards:board-delete' board.slug %}"
                            hx-target="#modal-1-body-div"
