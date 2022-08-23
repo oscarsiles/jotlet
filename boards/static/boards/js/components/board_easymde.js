@@ -1,11 +1,12 @@
-var csrf_token = document.querySelector("[name=csrfmiddlewaretoken]").value;
-var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
 var allow_image_uploads = JSON.parse(
   document.getElementById("allow_image_uploads").textContent
 );
+var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
+var csrf_token = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
 var easyMDE = new EasyMDE({
   autoDownloadFontAwesome: true,
+  autofocus: true,
   element: document.getElementsByName("content")[0],
   forceSync: true,
   iconClassMap: {
@@ -14,20 +15,28 @@ var easyMDE = new EasyMDE({
     "upload-image": "bi bi-image",
     preview: "bi bi-eye-fill",
   },
-  imageAccept: ["image/png", "image/jpeg", "image/webp", "image/bmp"],
+  imageAccept: allow_image_uploads
+    ? ["image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp"]
+    : [],
   imagePathAbsolute: true,
-  imageCSRFToken: csrf_token,
+  imageCSRFToken: allow_image_uploads ? csrf_token : "",
   imageMaxSize: allow_image_uploads ? 1024 * 1024 * 2 : 0,
   imageTexts: { sbInit: "" },
-  imageUploadEndpoint: `/boards/${board_slug}/image/post/upload/`,
+  imageUploadEndpoint: allow_image_uploads
+    ? `/boards/${board_slug}/image/post/upload/`
+    : "",
   inputStyle: "textarea",
   maxHeight: "100%",
   nativeSpellChecker: false,
-  previewImagesInEditor: true,
+  previewImagesInEditor: allow_image_uploads,
   renderingConfig: {
     sanitizerFunction: (renderedHTML) => {
       return DOMPurify.sanitize(renderedHTML, {
-        ALLOWED_TAGS: ["b", "i", "em", "strong", "br", "p", "code", "img"],
+        ALLOWED_ATTR: ["alt", "src", "title", "x-ignore"],
+        ALLOWED_TAGS: allow_image_uploads
+          ? ["span", "b", "i", "em", "strong", "br", "p", "code", "img"]
+          : ["span", "b", "i", "em", "strong", "br", "p", "code"],
+        SANITIZE_NAMED_PROPS: true,
       });
     },
   },

@@ -659,11 +659,11 @@ class PostImageUploadView(UserPassesTestMixin, generic.View):
 
     def post(self, request, *args, **kwargs):
         response_data = {}
-        valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
+        valid_image_types = ["image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp"]
         image = request.FILES.get("image")
 
         if image.content_type not in valid_image_types:
-            response_data["error"] = "Invalid image type (only PNG, JPEG, BMP, and WEBP are allowed)"
+            response_data["error"] = "Invalid image type (only PNG, JPEG, GIF, BMP, and WEBP are allowed)"
         elif image.size > settings.MAX_POST_IMAGE_FILE_SIZE:
             response_data[
                 "error"

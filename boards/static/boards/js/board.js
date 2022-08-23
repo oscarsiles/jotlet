@@ -1,3 +1,6 @@
+var allow_image_uploads = JSON.parse(
+  document.getElementById("allow_image_uploads").textContent
+);
 var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
 var boardSocket = null;
 var baseUrl =
@@ -141,7 +144,11 @@ document.addEventListener("alpine:initializing", () => {
     effect(() => {
       getHTML(() => {
         el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
-          ALLOWED_TAGS: ["b", "i", "em", "strong", "br", "p", "code", "img"],
+          ALLOWED_ATTR: ["alt", "src", "title", "x-ignore"],
+          ALLOWED_TAGS: allow_image_uploads
+            ? ["span", "b", "i", "em", "strong", "br", "p", "code", "img"]
+            : ["span", "b", "i", "em", "strong", "br", "p", "code"],
+          SANITIZE_NAMED_PROPS: true,
         });
       });
     });

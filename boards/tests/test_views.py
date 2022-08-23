@@ -1643,10 +1643,10 @@ class PostImageUploadViewTest(TestCase):
         with open(image_path, "rb") as image_file:
             response = self.client.post(
                 self.upload_url,
-                {"image": SimpleUploadedFile("test.gif", image_file.read(), content_type="image/gif")},
+                {"image": SimpleUploadedFile("test.avif", image_file.read(), content_type="image/avif")},
             )
             data = json.loads(response.content)
-            self.assertEqual(data["error"], "Invalid image type (only PNG, JPEG, BMP, and WEBP are allowed)")
+            self.assertEqual(data["error"], "Invalid image type (only PNG, JPEG, GIF, BMP, and WEBP are allowed)")
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)

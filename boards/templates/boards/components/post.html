@@ -136,14 +136,14 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div hx-disable x-data>
+                        <div hx-disable>
                             <p class="card-text text-break my-0
                                       {% if not post.approved and is_moderator %}
                                           opacity-75
                                       {% endif %}"
                                id="post-{{ post.pk }}-text"
                                x-markdown>
-                                <span class="my-0">{{ post|linebreaksbr }}</span>
+                                <span x-ignore>{{ post|linebreaksbr }}</span>
                             </p>
                         </div>
                     </div>
