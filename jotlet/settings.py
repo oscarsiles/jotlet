@@ -477,7 +477,6 @@ if HCAPTCHA_ENABLED:
 CSP_DEFAULT_SRC = ["'none'"]
 CSP_SCRIPT_SRC = [
     "'self'",
-    "cdn.jsdelivr.net",
     "polyfill.io",
     "unpkg.com",
     "'unsafe-eval'",
