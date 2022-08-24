@@ -258,7 +258,7 @@ class BoardPreferencesForm(forms.ModelForm):
                 placeholder="Add Moderators By Username",
             ),
             ButtonHolder(
-                Submit("submit", "Save", hidden="true")
+                Submit("submit", "Save", css_class="visually-hidden")
             ),  # Hidden submit button, use modal one to trigger form submit
         )
 

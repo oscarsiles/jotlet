@@ -3,8 +3,13 @@
 <div class="modal fade"
      id="modal-{{ num }}-div"
      tabindex="-1"
-     {% if num == 2 %} data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}>
-    <div class="modal-dialog modal-dialog-scrollable{% if num == 2 %} modal-xl{% endif %}">
+     {% if num == 2 %}
+         data-bs-backdrop="static" data-bs-keyboard="false"
+     {% endif %}>
+    <div class="modal-dialog modal-dialog-scrollable
+                {% if num == 2 %}
+                    modal-xl
+                {% endif %}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modal-{{ num }}-title-div">Loading...</h5>
@@ -31,8 +36,8 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer" id="modal-{{ num }}-footer-div" hidden="true"></div>
-            <div id="modal-{{ num }}-scripts" hidden="true"></div>
+            <div class="modal-footer" id="modal-{{ num }}-footer-div" hidden></div>
+            <div id="modal-{{ num }}-scripts" hidden></div>
         </div>
     </div>
 </div>
