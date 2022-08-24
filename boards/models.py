@@ -1,6 +1,7 @@
 import uuid
 
 import auto_prefetch
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.db import IntegrityError, models
@@ -357,20 +358,40 @@ class Image(auto_prefetch.Model):
         return f"{self.image.width}x{self.image.height}"
 
     @cached_property
+    def get_half_image_dimensions(self):
+        return f"{self.image.width // 2}x{self.image.height // 2}"
+
+    @cached_property
+    def get_small_thumbnail_dimensions(self):
+        return f"{settings.SMALL_THUMBNAIL_WIDTH}x{settings.SMALL_THUMBNAIL_HEIGHT}"
+
+    @cached_property
     def get_webp(self):
         return get_thumbnail(self.image, self.get_image_dimensions, quality=70, format="WEBP")
 
     @cached_property
-    def get_thumbnail(self):
-        return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="JPEG")
+    def get_large_thumbnail(self):
+        return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="JPEG")
 
     @cached_property
-    def get_thumbnail_webp(self):
-        return get_thumbnail(self.image, "300x200", crop="center", quality=80, format="WEBP")
+    def get_large_thumbnail_webp(self):
+        return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="WEBP")
+
+    @cached_property
+    def get_small_thumbnail(self):
+        return get_thumbnail(
+            self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="JPEG"
+        )
+
+    @cached_property
+    def get_small_thumbnail_webp(self):
+        return get_thumbnail(
+            self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="WEBP"
+        )
 
     @cached_property
     def image_tag(self):
-        return mark_safe(f'<img src="{escape(self.get_thumbnail.url)}" />')
+        return mark_safe(f'<img src="{escape(self.get_small_thumbnail.url)}" />')
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True

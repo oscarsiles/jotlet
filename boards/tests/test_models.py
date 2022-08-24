@@ -415,10 +415,21 @@ class ImageModelTest(TestCase):
                 else:
                     self.assertEqual(img.get_board_usage_count, 0)
 
-    def test_get_image_dimenstions(self):
+    def test_get_image_dimensions(self):
         imgs = Image.objects.all()
         for img in imgs:
             self.assertEqual(img.get_image_dimensions, f"{img.image.width}x{img.image.height}")
+
+    def test_get_half_image_dimensions(self):
+        imgs = Image.objects.all()
+        for img in imgs:
+            self.assertEqual(img.get_half_image_dimensions, f"{img.image.width // 2}x{img.image.height // 2}")
+
+    def test_get_small_thumbnail_dimensions(self):
+        self.assertEqual(
+            Image.objects.first().get_small_thumbnail_dimensions,
+            f"{settings.SMALL_THUMBNAIL_WIDTH}x{settings.SMALL_THUMBNAIL_HEIGHT}",
+        )
 
     def test_get_webp(self):
         imgs = Image.objects.all()
@@ -430,17 +441,27 @@ class ImageModelTest(TestCase):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                thumbnail = img.get_thumbnail
-                self.assertIsNotNone(thumbnail)
-                self.assertEqual(thumbnail.width, 300)
-                self.assertEqual(thumbnail.height, 200)
-                self.assertIn(f"{settings.MEDIA_URL}cache/", thumbnail.url)
+                small_thumb = img.get_small_thumbnail
+                large_thumb = img.get_large_thumbnail
+                thumbs = [small_thumb, large_thumb]
+                for thumb in thumbs:
+                    self.assertIsNotNone(thumb)
+                    self.assertIn(f"{settings.MEDIA_URL}cache/", thumb.url)
+                    self.assertTrue(os.path.exists(f"{settings.MEDIA_ROOT}/{thumb.name}"))
+                    for res in settings.THUMBNAIL_ALTERNATIVE_RESOLUTIONS:
+                        name, ext = os.path.splitext(thumb.name)
+                        self.assertTrue(os.path.exists(f"{settings.MEDIA_ROOT}/{name}@{res}x{ext}"))
+
+                self.assertLessEqual(small_thumb.width, settings.SMALL_THUMBNAIL_WIDTH)
+                self.assertLessEqual(small_thumb.height, settings.SMALL_THUMBNAIL_HEIGHT)
+                self.assertLessEqual(large_thumb.width, img.image.width / 2)
+                self.assertLessEqual(large_thumb.height, img.image.height / 2)
 
     def test_image_tag(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
-                self.assertEqual(f'<img src="{escape(img.get_thumbnail.url)}" />', img.image_tag)
+                self.assertEqual(f'<img src="{escape(img.get_small_thumbnail.url)}" />', img.image_tag)
 
     def test_proxy_background_image(self):
         self.assertEqual(list(Image.objects.filter(type="b")), list(BgImage.objects.all()))

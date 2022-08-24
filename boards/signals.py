@@ -5,9 +5,9 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django_cleanup.signals import cleanup_pre_delete
-from sorl.thumbnail import delete
+from django_q.tasks import async_task
 
-from .models import Board, BoardPreferences, Image, Post, Reaction, Topic
+from .models import BgImage, Board, BoardPreferences, Post, Reaction, Topic
 from .utils import channel_group_send
 
 
@@ -188,21 +188,20 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
     invalidate_reaction_cache(instance)
 
 
-@receiver(post_save, sender=Image)
-@receiver(post_delete, sender=Image)
+@receiver(post_save, sender=BgImage)
+@receiver(post_delete, sender=BgImage)
 def update_image_select(sender, instance, **kwargs):
-    if instance.type == "b":
-        keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
-        keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
-        try:
-            if cache.get(keyImageSelect1) is not None:
-                cache.delete(keyImageSelect1)
-            if cache.get(keyImageSelect2) is not None:
-                cache.delete(keyImageSelect2)
-        except Exception:
-            raise Exception(f"Could not delete cache: image-select-{instance.type}")
+    keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
+    keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
+    try:
+        if cache.get(keyImageSelect1) is not None:
+            cache.delete(keyImageSelect1)
+        if cache.get(keyImageSelect2) is not None:
+            cache.delete(keyImageSelect2)
+    except Exception:
+        raise Exception(f"Could not delete cache: image-select-{instance.type}")
 
 
 @receiver(cleanup_pre_delete)
 def sorl_delete(**kwargs):
-    delete(kwargs["file"])
+    async_task("boards.tasks.delete_thumbnails", kwargs["file"])

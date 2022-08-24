@@ -132,8 +132,10 @@ class BoardPreferencesForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_id = "board-preferences-form"
-        webp_url = self.instance.background_image.get_thumbnail_webp.url if self.instance.background_image else ""
-        jpeg_url = self.instance.background_image.get_thumbnail.url if self.instance.background_image else ""
+        webp_url = (
+            self.instance.background_image.get_small_thumbnail_webp.url if self.instance.background_image else ""
+        )
+        jpeg_url = self.instance.background_image.get_small_thumbnail.url if self.instance.background_image else ""
         self.helper.attrs = {
             "hx-post": reverse("boards:board-preferences", kwargs={"slug": self.initial_board.slug}),
             "hx-target": "#modal-1-body-div",

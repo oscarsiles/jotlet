@@ -1,12 +1,20 @@
 from django.core import management
+from sorl.thumbnail import delete as sorl_delete
 
 from .models import Image
 
 
 def create_thumbnails(img):
-    img.get_webp
-    img.get_thumbnail
-    img.get_thumbnail_webp
+    img.get_large_thumbnail
+    img.get_large_thumbnail_webp
+    img.get_small_thumbnail
+    img.get_small_thumbnail_webp
+    return f"created thumbnails for {img}"
+
+
+def delete_thumbnails(file):
+    sorl_delete(file)
+    return f"deleted thumbnails for {file}"
 
 
 def post_image_cleanup_task(post, imgs=None):

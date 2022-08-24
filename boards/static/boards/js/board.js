@@ -94,6 +94,12 @@ function connectWebsocket() {
 }
 
 document.addEventListener("alpine:init", () => {
+  function img_srcset_res(pathfilename, res) {
+    var filepath = pathfilename.substr(0, pathfilename.lastIndexOf("."));
+    var ext = pathfilename.split(".").pop();
+    return `${filepath}@${res}x.${ext}`;
+  }
+
   Alpine.store("boardPreferences", {
     bg_type: "",
     bg_opacity: "",
@@ -105,6 +111,12 @@ document.addEventListener("alpine:init", () => {
     },
     get imageVisible() {
       return this.bg_type == "i" ? true : false;
+    },
+    img_srcset_jpeg_res(res) {
+      return img_srcset_res(this.img_srcset_jpeg, res);
+    },
+    img_srcset_webp_res(res) {
+      return img_srcset_res(this.img_srcset_webp, res);
     },
   });
 });

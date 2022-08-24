@@ -1,10 +1,11 @@
-{% load cache static %}
+{% load board_extras cache sorl_thumbnail static %}
 {% cache 86400 image-select type %}
+{% settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select"
      x-data>
     {% for image in images %}
-        {% cache 86400 image-select-image image.pk %}
+        {% cache 86400 image-select-image image.pk res_list %}
         <div class="col-sm">
             <div class="card">
                 <div class="card-img-top">
@@ -12,24 +13,28 @@
                            type="radio"
                            name="flexRadioDefault"
                            x-model="$store.boardPreferences.img_uuid"
-                           @click="$store.boardPreferences.img_srcset_webp = '{{ image.get_thumbnail_webp.url }}'; $store.boardPreferences.img_srcset_jpeg = '{{ image.get_thumbnail.url }}'"
+                           @click="$store.boardPreferences.img_srcset_webp = '{{ image.get_small_thumbnail_webp.url }}'; $store.boardPreferences.img_srcset_jpeg = '{{ image.get_small_thumbnail.url }}'"
                            value="{{ image.uuid }}"
                            id="{{ image.uuid }}"/>
                     <label class="form-check-label d-flex" for="{{ image.uuid }}">
                         <picture>
-                            <source srcset="{{ image.get_thumbnail_webp.url }}" type="image/webp"/>
-                            <source srcset="{{ image.get_thumbnail.url }}" type="image/jpeg"/>
-                            <img class="w-100" src="{{ image.get_thumbnail.url }}" alt="{{ image }}"/>
-                        </picture>
-                    </label>
+                            <source {# djlint:off #}srcset="{{ image.get_small_thumbnail_webp.url }} 1x{% for res in res_list %}{% with res|addstr:"x" as resx %}, {{ image.get_small_thumbnail_webp.url|resolution:resx }} {{ res }}x{% endwith %}{% endfor %}"{# djlint:on #}
+                                type="image/webp"/>
+                                <source {# djlint:off #}srcset="{{ image.get_small_thumbnail.url }} 1x{% for res in res_list %}{% with res|addstr:"x" as resx %}, {{ image.get_small_thumbnail.url|resolution:resx }} {{ res }}x{% endwith %}{% endfor %}"{# djlint:on #}
+                                    type="image/jpeg"/>
+                                    <img class="w-100"
+                                         src="{{ image.get_small_thumbnail.url }}"
+                                         alt="{{ image }}"/>
+                                </picture>
+                            </label>
+                        </div>
+                        <div class="card-footer">{{ image }}</div>
+                    </div>
                 </div>
-                <div class="card-footer">{{ image }}</div>
-            </div>
-        </div>
-    {% endcache %}
-{% endfor %}
-</div>
-<style nonce="{{ CSP_NONCE }}">
+            {% endcache %}
+        {% endfor %}
+    </div>
+    <style nonce="{{ CSP_NONCE }}">
     .card-img-top {
       position: inherit;
     }
@@ -45,20 +50,20 @@
     .card-img-top input[type="radio"]:checked+label>picture>img {
       opacity: 0.5;
     }
-</style>
-<div class="modal-footer" id="modal-2-footer-div" hx-swap-oob="true">
-    <button class="btn btn-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#modal-1-div">Select Image</button>
-</div>
-<h5 id="modal-2-title-div" hx-swap-oob="true">
-    {% if type == 'b' %}
-        Background
-    {% else %}
-        Image
-    {% endif %}
-    Select
-</h5>
+    </style>
+    <div class="modal-footer" id="modal-2-footer-div" hx-swap-oob="true">
+        <button class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#modal-1-div">Select Image</button>
+    </div>
+    <h5 id="modal-2-title-div" hx-swap-oob="true">
+        {% if type == 'b' %}
+            Background
+        {% else %}
+            Image
+        {% endif %}
+        Select
+    </h5>
 {% endcache %}
 <div id="modal-2-scripts" hidden="true" hx-swap-oob="true">
     <script defer src="{% static 'boards/js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
