@@ -22,9 +22,12 @@
                                 type="image/webp"/>
                                 <source {# djlint:off #}srcset="{{ image.get_small_thumbnail.url }} 1x{% for res in res_list %}{% with res|addstr:"x" as resx %}, {{ image.get_small_thumbnail.url|resolution:resx }} {{ res }}x{% endwith %}{% endfor %}"{# djlint:on #}
                                     type="image/jpeg"/>
-                                    <img class="w-100"
+                                    <img class="img-fluid card-img-top"
                                          src="{{ image.get_small_thumbnail.url }}"
-                                         alt="{{ image }}"/>
+                                         alt="{{ image }}"
+                                         width="300"
+                                         height="200"
+                                         loading="lazy"/>
                                 </picture>
                             </label>
                         </div>

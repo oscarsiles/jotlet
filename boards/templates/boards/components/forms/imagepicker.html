@@ -60,7 +60,7 @@
                     </button>
                 {% endif %}
                 <picture id="img-picture-tag"
-                         class="form-control p-0"
+                         class="form-control p-0 rounded-end"
                          x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
                     <source id="src-webp"
                         {# djlint:off #}x-bind:srcset="$store.boardPreferences.img_srcset_webp + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_webp_res({{ res }}) + ' {{ res }}x'{% endfor %}"{# djlint:on #}
@@ -68,7 +68,7 @@
                         <source id="src-jpeg"
                             {# djlint:off #}x-bind:srcset="$store.boardPreferences.img_srcset_jpeg + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_jpeg_res({{ res }}) + ' {{ res }}x'{% endfor %}"{# djlint:on #}
                             type="image/jpeg"/>
-                            <img class="p-0 rounded-end form-control
+                            <img class="p-0 img-fluid rounded-end
                                         {% if field.errors %}
                                             is-invalid
                                         {% endif %}"
@@ -77,6 +77,8 @@
                                  hx-target="#modal-2-body-div"
                                  :src="$store.boardPreferences.img_srcset_jpeg"
                                  :style="{ opacity: $store.boardPreferences.bg_opacity }"
+                                 width="300"
+                                 height="200"
                                  data-bs-toggle="modal"
                                  data-bs-target="#modal-2-div"
                                  id="img-{{ field.auto_id }}"/>

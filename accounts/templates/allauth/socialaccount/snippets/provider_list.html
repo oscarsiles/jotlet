@@ -29,10 +29,13 @@
                           class="d-flex flex-fill justify-content-center"
                           id="login-{{ provider.id }}-form">
                         {% csrf_token %}
-                        <button type="submit" class="btn shadow-none col-sm-6 align-self-center p-0">
+                        <button type="submit"
+                                class="btn btn-link shadow-none col-sm-6 align-self-center p-0">
                             <img src="{% static svg_url %}"
                                  alt=""
-                                 class="img-fluid w-100 socialaccount_provider {{ provider.id }}"/>
+                                 class="img-fluid socialaccount_provider {{ provider.id }}"
+                                 width="215"
+                                 height="45"/>
                         </button>
                     </form>
                 </div>
