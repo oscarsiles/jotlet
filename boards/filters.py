@@ -13,7 +13,7 @@ class BoardFilter(django_filters.FilterSet):
     before = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="lt")
     after = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="gt")
 
-    is_all_boards = False
+    board_list_type = "own"
 
     class Meta:
         model = Board
@@ -25,16 +25,28 @@ class BoardFilter(django_filters.FilterSet):
         ]
 
     def __init__(self, *args, **kwargs):
-        self.is_all_boards = kwargs.pop("is_all_boards", False)
+        self.board_list_type = kwargs.pop("board_list_type", "own")
         super().__init__(*args, **kwargs)
-        if not self.is_all_boards:
+        if self.board_list_type == "own":
             self.filters.pop("owner")
+
+    @property
+    def form(self):
+        if not hasattr(self, "_form"):
+            Form = self.get_form_class()
+            if self.is_bound:
+                self._form = Form(self.data, prefix=self.form_prefix, board_list_type=self.board_list_type)
+            else:
+                self._form = Form(prefix=self.form_prefix, board_list_type=self.board_list_type)
+        return self._form
 
     @property
     def qs(self):
         qs = super().qs.select_related("owner").distinct()
-        if self.is_all_boards:
+        if self.board_list_type == "all":
             qs = qs.order_by("-created_at", "id")
+        elif self.board_list_type == "mod":
+            qs = qs.filter(preferences__moderators__in=[self.request.user]).order_by("-created_at", "id")
         else:
             qs = qs.filter(owner=self.request.user).order_by("-created_at", "id")
 

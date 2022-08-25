@@ -1,4 +1,25 @@
-{% load cache crispy_forms_tags static %}
+{% load board_extras cache crispy_forms_tags static %}
+{% if board_list_type is None %}
+    {% define "own" as board_list_type %}
+{% endif %}
+{{ board_list_type|json_script:"board_list_type" }}
+<script defer src="{% static 'boards/js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
+<div class="py-2">
+    <div class="d-flex gap-2">
+        <h4>
+            {% if board_list_type == "all" %}
+                All boards:
+            {% elif board_list_type == "mod" %}
+                Moderated boards:
+            {% else %}
+                Your boards:
+            {% endif %}
+        </h4>
+        <div id="spinner" class="spinner-border htmx-indicator" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
 {% crispy filter.form %}
 <ul class="list-group">
     {% for board in boards %}
@@ -6,7 +27,7 @@
             <div class="ms-2">
                 <div class="fw-bold">
                     <a href="{{ board.get_absolute_url }}">{{ board }}</a>
-                    {% if is_all_boards %}- ({{ board.owner }}){% endif %}
+                    {% if board_list_type != "own" %}- ({{ board.owner }}){% endif %}
                 </div>
                 <div>{{ board.description }}</div>
                 {% cache 86400 board-list-post-count board.pk %}
@@ -62,7 +83,8 @@
         <li class="page-item">
             <a class="page-link"
                href=""
-               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.previous_page_number }}
+               hx-indicator="#spinner"
+               hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.previous_page_number }}
                {% if querystring %}
                    &amp;{{ querystring }}
                {% endif %}">«</a>
@@ -86,7 +108,8 @@
                 <li class="page-item">
                     <a class="page-link"
                        href=""
-                       hx-get="{% url 'boards:board-list' %}?page={{ i }}
+                       hx-indicator="#spinner"
+                       hx-get="{% url 'boards:board-list' board_list_type %}?page={{ i }}
                        {% if querystring %}
                            &amp;{{ querystring }}
                        {% endif %}">{{ i }}</a>
@@ -98,7 +121,8 @@
         <li class="page-item">
             <a class="page-link"
                href=""
-               hx-get="{% url 'boards:board-list' %}?page={{ page_obj.next_page_number }}
+               hx-indicator="#spinner"
+               hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.next_page_number }}
                {% if querystring %}
                    &amp;{{ querystring }}
                {% endif %}">»</a>

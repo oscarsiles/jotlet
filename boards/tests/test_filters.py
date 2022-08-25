@@ -10,6 +10,7 @@ from boards.filters import BoardFilter
 from boards.models import Board
 
 
+# TODO: Implement full set of tests for all board_list_types
 class BoardFilterTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -31,69 +32,71 @@ class BoardFilterTest(TestCase):
     def test_board_filter(self):
         user1 = User.objects.get(username="testuser1")
         user2 = User.objects.get(username="testuser2")
-        request = self.factory.get(reverse("boards:board-list"))
+        board_list_type = "own"
+        request = self.factory.get(reverse("boards:board-list", kwargs={"board_list_type": board_list_type}))
         request.user = user1
         request.GET = request.GET.copy()
         request.GET["q"] = ""
         request.GET["after"] = ""
         request.GET["before"] = ""
         request.GET["owner"] = "testuser2"
-        filterset = BoardFilter(request.GET, request=request)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 2)
 
         request.GET["q"] = "board"
-        filterset = BoardFilter(request.GET, request=request)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 2)
         request.GET["q"] = "description"
-        filterset = BoardFilter(request.GET, request=request)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["q"] = ""
 
         request.GET["before"] = date.today().strftime("%Y-%m-%d")
-        filterset = BoardFilter(request.GET, request=request)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["before"] = ""
 
         request.user = user2
-        filterset = BoardFilter(request.GET, request=request)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
 
     def test_board_filter_is_all_boards(self):
         user1 = User.objects.get(username="testuser1")
-        request = self.factory.get(reverse("boards:board-list"))
+        board_list_type = "all"
+        request = self.factory.get(reverse("boards:board-list", kwargs={"board_list_type": board_list_type}))
         request.user = user1
         request.GET = request.GET.copy()
         request.GET["q"] = ""
         request.GET["after"] = ""
         request.GET["before"] = ""
         request.GET["owner"] = ""
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 3)
 
         request.GET["q"] = "Test Board 1"
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["q"] = ""
 
         request.GET["before"] = date.today().strftime("%Y-%m-%d")
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["before"] = ""
 
         request.GET["owner"] = ""
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 3)
 
         request.GET["owner"] = "testuser2"
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
         request.GET["owner"] = "testUser2"  # case insensitive
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 1)
 
         request.GET["owner"] = "testuser1,testuser2"
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 3)
         request.GET["owner"] = "tesTuSer1,tEStusEr2"
-        filterset = BoardFilter(request.GET, request=request, is_all_boards=True)
+        filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         self.assertEqual(filterset.qs.count(), 3)

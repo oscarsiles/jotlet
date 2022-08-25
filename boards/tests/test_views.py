@@ -1093,6 +1093,7 @@ class ReactionsDeleteViewTest(TestCase):
         self.assertIn(f'"post_pk": {post.pk}', message)
 
 
+# TODO: Implement further tests for all board_list_types
 class BoardListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -1107,19 +1108,25 @@ class BoardListViewTest(TestCase):
             )
 
     def test_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board-list"))
+        response = self.client.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
         self.assertEqual(response.status_code, 302)
 
     def test_user_index(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index"))
+        response = self.client.get(
+            reverse("boards:board-list", kwargs={"board_list_type": "own"}), {}, HTTP_REFERER=reverse("boards:index")
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
         self.assertEqual(len(response.context["boards"]), 3)
 
     def test_user_no_perm_all_boards(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index-all"))
+        response = self.client.get(
+            reverse("boards:board-list", kwargs={"board_list_type": "own"}),
+            {},
+            HTTP_REFERER=reverse("boards:index-all"),
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
         self.assertEqual(len(response.context["boards"]), 3)
@@ -1129,7 +1136,11 @@ class BoardListViewTest(TestCase):
         test_user1.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
         test_user1.save()
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        response = self.client.get(reverse("boards:board-list"), {}, HTTP_REFERER=reverse("boards:index-all"))
+        response = self.client.get(
+            reverse("boards:board-list", kwargs={"board_list_type": "all"}),
+            {},
+            HTTP_REFERER=reverse("boards:index-all"),
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
         self.assertEqual(len(response.context["boards"]), 5)
@@ -1142,7 +1153,9 @@ class BoardListViewTest(TestCase):
         test_user1.save()
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         response = self.client.get(
-            reverse("boards:board-list"), {"page": 2}, HTTP_REFERER=reverse("boards:index-all")
+            reverse("boards:board-list", kwargs={"board_list_type": "all"}),
+            {"page": 2},
+            HTTP_REFERER=reverse("boards:index-all"),
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")

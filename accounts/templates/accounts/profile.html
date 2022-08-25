@@ -1,6 +1,10 @@
 {% extends "base_generic.html" %}
 {% load static %}
 {% block head %}
+    <link href="{% static 'css/3rdparty/tagify-4.16.2.min.css' %}"
+          rel="stylesheet"/>
+    <script defer src="{% static 'js/3rdparty/tagify-4.16.2.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer src="{% static 'js/3rdparty/tagify-4.16.2.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'boards/js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'accounts/js/profile.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
@@ -15,7 +19,17 @@
             <div class="col col-md-0 d-block d-md-none text-secondary">
                 <hr/>
             </div>
-            <div class="col-md">{% include "boards/components/user_boards.html" %}</div>
+            <div class="col-md">
+                <div id="board-list"
+                     hx-get="{% url 'boards:board-list' "own" %}"
+                     hx-trigger="load"
+                     hx-indicator="#spinner"
+                     hx-swap="innerHTML">
+                    <div id="spinner" class="spinner-border htmx-indicator" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
             <div class="col-xl-2 d-none d-xl-block"></div>
         </div>
     </div>

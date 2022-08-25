@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.urls import resolve, reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import cache_control
@@ -27,6 +27,8 @@ class IndexView(generic.FormView):
         context = super().get_context_data(**kwargs)
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
+
+        context["board_list_type"] = "own"
         return context
 
     def form_valid(self, form):
@@ -43,7 +45,7 @@ class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.Templa
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["is_all_boards"] = True
+        context["board_list_type"] = "all"
         return context
 
 
@@ -504,15 +506,13 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
     paginate_by = 5
-    is_all_boards = False
+    board_list_type = "own"
     filterset = None
 
     def get_queryset(self):
-        view = resolve(urlparse(self.request.META.get("HTTP_REFERER", "")).path).url_name
-        if view == "index-all" and self.request.user.has_perm("boards.can_view_all_boards"):
-            self.is_all_boards = True
+        self.board_list_type = self.kwargs["board_list_type"]
 
-        self.filterset = BoardFilter(self.request.GET, request=self.request, is_all_boards=self.is_all_boards)
+        self.filterset = BoardFilter(self.request.GET, request=self.request, board_list_type=self.board_list_type)
 
         return self.filterset.qs
 
@@ -524,7 +524,7 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
 
         context["filter"] = self.filterset
         context["page_range"] = page_range
-        context["is_all_boards"] = self.is_all_boards
+        context["board_list_type"] = self.board_list_type
         return context
 
 

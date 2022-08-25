@@ -27,9 +27,12 @@ def validate_percentage(percentage):
 
 
 class BoardFilterForm(forms.Form):
+    board_list_type = "own"
+
     def __init__(self, *args, **kwargs):
+        self.board_list_type = kwargs.pop("board_list_type", "own")
         super().__init__(*args, **kwargs)
-        reverse_url = reverse("boards:board-list")
+        reverse_url = reverse("boards:board-list", kwargs={"board_list_type": self.board_list_type})
 
         if self.changed_data:
             self.fields[self.changed_data[0]].widget.attrs.update({"autofocus": "autofocus"})

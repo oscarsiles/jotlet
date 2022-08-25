@@ -24,3 +24,7 @@ class UserProfile(auto_prefetch.Model):
     @cached_property
     def get_board_count(self):
         return Board.objects.filter(owner=self.user).count()
+
+    @cached_property
+    def get_mod_board_count(self):
+        return Board.objects.filter(preferences__moderators__in=[self.user]).count()
