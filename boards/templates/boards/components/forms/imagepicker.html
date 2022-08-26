@@ -60,44 +60,43 @@
                     </button>
                 {% endif %}
                 <picture id="img-picture-tag"
-                         class="form-control p-0 rounded-end"
-                         x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
-                    <source id="src-webp"
-                        {# djlint:off #}x-bind:srcset="$store.boardPreferences.img_srcset_webp + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_webp_res({{ res }}) + ' {{ res }}x'{% endfor %}"{# djlint:on #}
-                        type="image/webp"/>
-                        <source id="src-jpeg"
-                            {# djlint:off #}x-bind:srcset="$store.boardPreferences.img_srcset_jpeg + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_jpeg_res({{ res }}) + ' {{ res }}x'{% endfor %}"{# djlint:on #}
-                            type="image/jpeg"/>
-                            <img class="p-0 img-fluid rounded-end
-                                        {% if field.errors %}
-                                            is-invalid
-                                        {% endif %}"
-                                 alt="{{ object.background_image }}"
-                                 hx-get="{% url 'boards:image-select' 'b' %}"
-                                 hx-target="#modal-2-body-div"
-                                 :src="$store.boardPreferences.img_srcset_jpeg"
-                                 :style="{ opacity: $store.boardPreferences.bg_opacity }"
-                                 width="300"
-                                 height="200"
-                                 data-bs-toggle="modal"
-                                 data-bs-target="#modal-2-div"
-                                 id="img-{{ field.auto_id }}"/>
-                        </picture>
-                        {% if field.errors %}
-                            {% crispy_field field 'class' 'form-select is-invalid' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
-                        {% else %}
-                            {% crispy_field field 'class' 'form-select' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
-                        {% endif %}
-                        {% if field.errors %}
-                            <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
-                                  class="invalid-feedback">
-                                <strong>{{ field.errors.0 }}</strong>
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% if tag %}
-                    </{{ tag }}>
+                    class="form-control p-0 rounded-end"
+                    x-data="{ srcset_webp: '', srcset_jpeg: '' }"
+                    {# djlint:off #}x-effect="if ($store.boardPreferences.img_srcset_webp) { srcset_webp = $store.boardPreferences.img_srcset_webp + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_webp_res({{ res }}) + ' {{ res }}x'{% endfor %}};
+                    if ($store.boardPreferences.img_srcset_jpeg) { srcset_jpeg = $store.boardPreferences.img_srcset_jpeg + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_jpeg_res({{ res }}) + ' {{ res }}x'{% endfor %}};"{# djlint:on #}
+                    x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
+                    <source id="src-webp" x-bind:srcset="srcset_webp" type="image/webp"/>
+                    <source id="src-jpeg" x-bind:srcset="srcset_jpeg" type="image/jpeg"/>
+                    <img class="p-0 img-fluid rounded-end
+                                {% if field.errors %}
+                                    is-invalid
+                                {% endif %}"
+                         alt="{{ object.background_image }}"
+                         hx-get="{% url 'boards:image-select' 'b' %}"
+                         hx-target="#modal-2-body-div"
+                         :src="$store.boardPreferences.img_srcset_jpeg"
+                         :style="{ opacity: $store.boardPreferences.bg_opacity }"
+                         width="300"
+                         height="200"
+                         data-bs-toggle="modal"
+                         data-bs-target="#modal-2-div"
+                         id="img-{{ field.auto_id }}"/>
+                </picture>
+                {% if field.errors %}
+                    {% crispy_field field 'class' 'form-select is-invalid' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
                 {% else %}
-                </div>
-            {% endif %}
+                    {% crispy_field field 'class' 'form-select' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
+                {% endif %}
+                {% if field.errors %}
+                    <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"
+                          class="invalid-feedback">
+                        <strong>{{ field.errors.0 }}</strong>
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% if tag %}
+            </{{ tag }}>
+        {% else %}
+        </div>
+    {% endif %}
