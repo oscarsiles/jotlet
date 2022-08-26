@@ -68,9 +68,10 @@
                     <a class="nav-link"
                        role="button"
                        hx-get="{% url 'boards:board-preferences' board.slug %}"
-                       hx-target="#modal-1-body-div"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal-1-div">
+                       hx-target="#offcanvasPreferences-body-div"
+                       hx-swap="innerHTML"
+                       data-bs-toggle="offcanvas"
+                       data-bs-target="#offcanvasPreferences">
                         <i class="bi bi-gear"></i>
                         <span>Preferences</span>
                     </a>
@@ -108,4 +109,30 @@
 {% endblock navbar-items %}
 {% block content %}
     {% include 'boards/components/board.html' %}
+    <div id="offcanvasPreferences"
+         class="offcanvas offcanvas-end offcanvas-wide"
+         tabindex="-1"
+         data-bs-backdrop="static"
+         data-bs-keyboard="false"
+         x-data="{isOpen: false, img_select_open: false}"
+         @keyup.escape.window="if (isOpen && !img_select_open) { bootstrap.Offcanvas.getInstance($el).hide(); }"
+         @shown-bs-offcanvas.dot="isOpen = true"
+         @hidden-bs-offcanvas.dot="isOpen = false"
+         @show-bs-modal.dot.window="img_select_open = true"
+         @hidden-bs-modal.dot.window="img_select_open = false">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Board Preferences</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+        </div>
+        <div id="offcanvasPreferences-body-div" class="offcanvas-body">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}

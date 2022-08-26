@@ -1,14 +1,14 @@
 from cachalot.api import invalidate
-from crispy_forms.bootstrap import Field, InlineRadios, PrependedText
+from crispy_forms.bootstrap import Field, PrependedText
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, ButtonHolder, Div, Layout, Submit
+from crispy_forms.layout import ButtonHolder, Div, Layout, Submit
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import BACKGROUND_TYPE, BOARD_TYPE, REACTION_TYPE, Board, BoardPreferences, Post
+from .models import Board, BoardPreferences, Post
 
 # make sure to support legacy 6-digit slugs
 slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 lowercase letters and/or digits.")
@@ -116,22 +116,6 @@ class BoardPreferencesForm(forms.ModelForm):
         self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
         self.initial_require_post_approval = self.initial["require_post_approval"]
 
-        self.fields["type"] = forms.ChoiceField(
-            choices=BOARD_TYPE,
-            widget=forms.RadioSelect,
-            label=False,
-        )
-        self.fields["background_type"] = forms.ChoiceField(
-            choices=BACKGROUND_TYPE,
-            widget=forms.RadioSelect,
-            label=False,
-        )
-        self.fields["reaction_type"] = forms.ChoiceField(
-            choices=REACTION_TYPE,
-            widget=forms.RadioSelect,
-            label=False,
-        )
-
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_id = "board-preferences-form"
@@ -153,49 +137,26 @@ class BoardPreferencesForm(forms.ModelForm):
         }
 
         self.helper.layout = Layout(
-            Div(  # Div for background type (blame Bootstrap + crispy forms)
-                Div(
-                    Div(
-                        HTML('<span class="input-group-text">Board Type</span>'),
-                        InlineRadios(
-                            "type",
-                            wrapper_class="form-control",
-                            id="id_type",
-                            css_class="d-flex justify-content-around",
-                            x_model="$store.boardPreferences.type",
-                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
-                        ),
-                        css_class="input-group",
-                    ),
-                ),
-                css_class="mb-3",
+            PrependedText(
+                "type",
+                "Board Type",
+                css_class="form-select h-auto my-0",
+                x_model="$store.boardPreferences.type",
             ),
             Div(
                 PrependedText(
                     "allow_guest_replies",
                     "Allow Guest Replies",
-                    wrapper_class="d-flex flex-row",
-                    css_class="form-check-input my-0",
-                    style="height: auto;",
+                    wrapper_class="d-flex",
+                    css_class="form-check-input h-auto my-0",
                 ),
                 x_show="$store.boardPreferences.type == 'r'",
             ),
-            Div(  # Div for background type (blame Bootstrap + crispy forms)
-                Div(
-                    Div(
-                        HTML('<span class="input-group-text">Background Type</span>'),
-                        InlineRadios(
-                            "background_type",
-                            wrapper_class="form-control",
-                            id="id_background_type",
-                            css_class="d-flex justify-content-around",
-                            x_model="$store.boardPreferences.bg_type",
-                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
-                        ),
-                        css_class="input-group",
-                    ),
-                ),
-                css_class="mb-3",
+            PrependedText(
+                "background_type",
+                "Background Type",
+                css_class="form-select h-auto my-0",
+                x_model="$store.boardPreferences.bg_type",
             ),
             Div(
                 PrependedText(
@@ -221,48 +182,41 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "enable_latex",
                 "Enable LaTeX",
-                wrapper_class="d-flex flex-row",
-                css_class="form-check-input my-0",
-                style="height: auto;",
+                wrapper_class="d-flex",
+                css_class="form-check-input h-auto my-0",
             ),
             PrependedText(
                 "allow_image_uploads",
                 "Allow Image Uploads",
-                wrapper_class="d-flex flex-row",
-                css_class="form-check-input my-0",
-                style="height: auto;",
+                wrapper_class="d-flex",
+                css_class="form-check-input h-auto my-0",
             ),
             PrependedText(
                 "require_post_approval",
                 "Posts Require Approval",
-                wrapper_class="d-flex flex-row",
-                css_class="form-check-input my-0",
-                style="height: auto;",
+                wrapper_class="d-flex",
+                css_class="form-check-input h-auto my-0",
             ),
-            Div(  # Div for reaction type (blame Bootstrap + crispy forms)
-                Div(
-                    Div(
-                        HTML('<span class="input-group-text">Reaction Type</span>'),
-                        InlineRadios(
-                            "reaction_type",
-                            wrapper_class="form-control",
-                            id="id_reaction_type",
-                            css_class="d-flex justify-content-around",
-                            x_init="() => { $el.parentElement.classList.remove('mb-3') }",
-                        ),
-                        css_class="input-group",
-                    ),
-                ),
-                css_class="mb-3",
+            PrependedText(
+                "reaction_type",
+                "Reaction Type",
+                css_class="form-select h-auto my-0",
             ),
             PrependedText(
                 "moderators",
                 "Moderators",
                 placeholder="Add Moderators By Username",
+                css_class="rounded-end",
             ),
             ButtonHolder(
-                Submit("submit", "Save", css_class="visually-hidden")
-            ),  # Hidden submit button, use modal one to trigger form submit
+                Submit(
+                    "submit",
+                    "Save Changes",
+                    css_class="btn-success",
+                    data_bs_dismiss="offcanvas",
+                ),
+                css_class="d-flex justify-content-end",
+            ),
         )
 
     def clean_background_opacity(self):
