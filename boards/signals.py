@@ -175,6 +175,7 @@ def post_delete_send_message(sender, instance, **kwargs):
                 f"board_{instance.topic.board.slug}",
                 {
                     "type": "post_deleted",
+                    "topic_pk": instance.topic_id,
                     "post_pk": instance.pk,
                 },
             )

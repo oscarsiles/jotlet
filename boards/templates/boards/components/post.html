@@ -17,6 +17,7 @@
      hx-ext="alpine-morph"
      hx-swap="morph"
      x-data="{ isRepliesCollapsed: false }"
+     x-init="postCount++"
      {% if post.reply_depth > 0 %}
          data-parentid="{{ parent.pk }}"
      {% endif %}
@@ -50,12 +51,13 @@
                     {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <button type="button"
-                                    class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
-                                    title="Highlight parent post"
-                                    @click="document.getElementById('post-' + $root.dataset.parentid).classList.toggle('blink');">
+                            <a type="button"
+                               class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
+                               href="#post-{{ parent.pk }}"
+                               title="Highlight parent post"
+                               @click="document.getElementById('post-' + $root.dataset.parentid).classList.toggle('blink');">
                                 {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
-                            </button>
+                            </a>
                             <div class="d-flex">
                                 {% if board.preferences.type == 'r' %}
                                     {% if post.approved %}

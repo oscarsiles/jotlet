@@ -108,7 +108,17 @@
 {% endif %}
 {% endblock navbar-items %}
 {% block content %}
-    {% include 'boards/components/board.html' %}
+    <div class="d-flex flex-column overflow-auto flex-grow-1"
+         data-bs-spy="scroll"
+         data-bs-target="#navbar-topicList"
+         data-bs-root-margin="0px 0px -40%"
+         data-bs-smooth-scroll="true"
+         tagindex="0"
+         x-data="{ updateOverflow() { $store.board.is_overflow = $el.offsetHeight < $el.scrollHeight } }"
+         x-effect="new ResizeObserver(updateOverflow).observe(document.getElementById('board-{{ board.slug }}'))">
+        {% include 'boards/components/board.html' %}
+        {% include 'components/footer.html' %}
+    </div>
     <div id="offcanvasPreferences"
          class="offcanvas offcanvas-end offcanvas-wide"
          tabindex="-1"
@@ -136,3 +146,5 @@
         </div>
     </div>
 {% endblock content %}
+{% block footer %}
+{% endblock footer %}

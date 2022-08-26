@@ -8,8 +8,19 @@
      x-data="{ topicCount: 0 }"
      x-init="topicCount = $el.querySelectorAll('.topic-list').length;"
      x-cloak
-     @topic-created.camel="topicCount = $el.querySelectorAll('.topic-list').length;"
-     @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length;">
+     @topic-created.camel="topicCount = $el.querySelectorAll('.topic-list').length"
+     @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length">
+    <div class="position-absolute bottom-0 end-0 sticky-bottom d-md-none m-4"
+         x-show="$store.board.is_overflow">
+        <a class="btn btn-light shadow-none rounded-circle border-secondary"
+           role="button"
+           href=""
+           data-bs-toggle="offcanvas"
+           data-bs-target="#offcanvasTopicList"
+           x-show="$store.board.is_overflow">
+            <i class="bi bi-list-ul fs-4"></i>
+        </a>
+    </div>
     <style nonce="{{ CSP_NONCE }}">
         {% cache 86400 board-preferences-style board.preferences.pk %}
         #main-content-div{
@@ -66,5 +77,35 @@
         <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6" nonce="{{ CSP_NONCE }}"></script>
         <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei" crossorigin="anonymous" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}
+</div>
+</div>
+<div id="offcanvasTopicList"
+     class="offcanvas offcanvas-bottom offcanvas-tall"
+     tabindex="-1"
+     x-data="{isOpen: false}"
+     @shown-bs-offcanvas.dot="isOpen = true"
+     @hidden-bs-offcanvas.dot="isOpen = false">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Topics</h5>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div id="offcanvasTopicList-body-div"
+         class="offcanvas-body"
+         data-bs-smooth-scroll="true">
+        {% cached_as board None board_topic_list_cache board.pk %}
+        <ul class="nav nav-pills flex-column">
+            {% for topic in board.topics.all|dictsort:"pk" %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="#topic-{{ topic.pk }}"
+                       data-bs-toggle="offcanvas"
+                       data-bs-target="#offcanvasTopicList">{{ topic }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endcached_as %}
 </div>
 </div>

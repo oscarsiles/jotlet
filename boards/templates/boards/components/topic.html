@@ -6,8 +6,9 @@
      hx-target="this"
      hx-ext="alpine-morph"
      hx-swap="morph"
-     x-data="{ isDeletePostsDisabled: false, checkDeletePostsDisabled: function() { return $refs.topicPosts_{{ topic.pk }}.childElementCount <= 1 } }"
-     x-init="isDeletePostsDisabled = checkDeletePostsDisabled()">
+     x-data="{ postCount: 0 }"
+     x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
+     @post-deleted.camel="postCount--">
     {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
     <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
@@ -47,7 +48,7 @@
                                    hx-get="{% url 'boards:topic-posts-delete' board.slug topic.pk %}"
                                    hx-target="#modal-1-body-div"
                                    hx-swap="innerHTML"
-                                   :disabled="isDeletePostsDisabled"
+                                   x-show="postCount > 0"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal-1-div">
                                     <i class="bi bi-envelope-slash pe-2"></i>Delete Posts

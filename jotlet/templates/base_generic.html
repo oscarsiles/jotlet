@@ -158,7 +158,9 @@
     {% block content %}
     {% endblock content %}
     {{ request.user.is_authenticated|json_script:"is_logged_in" }}
-    {% include 'components/footer.html' %}
+    {% block footer %}
+        {% include 'components/footer.html' %}
+    {% endblock footer %}
     {% include 'boards/components/toast.html' %}
 </div>
 </div>

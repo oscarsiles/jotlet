@@ -35,6 +35,7 @@ function connectWebsocket() {
 
   boardSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
+    var boardDiv = "#board-" + board_slug;
 
     switch (data.type) {
       case "session_connected":
@@ -47,7 +48,6 @@ function connectWebsocket() {
         }
       case "board_preferences_changed":
       case "topic_created":
-        var boardDiv = "#board-" + board_slug;
         htmx.trigger(htmx.find(boardDiv), "topicCreated");
         break;
       case "topic_updated":
@@ -55,7 +55,6 @@ function connectWebsocket() {
         htmx.trigger(htmx.find(topicDiv), "topicUpdated");
         break;
       case "topic_deleted":
-        var boardDiv = "#board-" + board_slug;
         htmx.find("#topic-" + data.topic_pk).remove();
         htmx.trigger(htmx.find(boardDiv), "topicDeleted");
         break;
@@ -68,13 +67,16 @@ function connectWebsocket() {
           target: newCardDiv,
           swap: "beforebegin",
         });
+        htmx.trigger(htmx.find(boardDiv), "postCreated");
         break;
       case "post_updated":
         var postDiv = "#container-post-" + data.post_pk;
         htmx.trigger(htmx.find(postDiv), "postUpdated");
         break;
       case "post_deleted":
-        htmx.find("#post-" + data.post_pk).remove();
+        var topicDiv = "#topic-" + data.topic_pk;
+        htmx.find("#container-post-" + data.post_pk).remove();
+        htmx.trigger(htmx.find(topicDiv), "postDeleted");
         break;
       case "reaction_updated":
         var postFooterDiv = "#post-" + data.post_pk + "-footer-htmx-div";
@@ -99,6 +101,10 @@ document.addEventListener("alpine:init", () => {
     var ext = pathfilename.split(".").pop();
     return `${filepath}@${res}x.${ext}`;
   }
+
+  Alpine.store("board", {
+    is_overflow: false,
+  });
 
   Alpine.store("boardPreferences", {
     bg_type: "",
