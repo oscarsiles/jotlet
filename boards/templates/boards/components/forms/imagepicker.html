@@ -67,7 +67,7 @@
                     x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
                     <source id="src-webp" x-bind:srcset="srcset_webp" type="image/webp"/>
                     <source id="src-jpeg" x-bind:srcset="srcset_jpeg" type="image/jpeg"/>
-                    <img class="p-0 img-fluid rounded-end
+                    <img class="p-0 img-fluid w-100 rounded-end
                                 {% if field.errors %}
                                     is-invalid
                                 {% endif %}"
