@@ -8,7 +8,7 @@
      hx-swap="morph"
      x-data="{ postCount: 0 }"
      x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
-     @post-deleted.camel="postCount--">
+     x-on:post-deleted.camel="postCount--">
     {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
     <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">

@@ -16,11 +16,8 @@
      hx-target="this"
      hx-ext="alpine-morph"
      hx-swap="morph"
-     x-data="{ isRepliesCollapsed: false }"
+     x-data="{ isRepliesCollapsed: false, isShownParent{{ post.reply_depth }}: false }"
      x-init="postCount++"
-     {% if post.reply_depth > 0 %}
-         data-parentid="{{ parent.pk }}"
-     {% endif %}
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
      {% endif %}>
@@ -30,6 +27,9 @@
                     opacity-75
                 {% endif %}"
          id="post-{{ post.pk }}"
+         x-intersect:enter.half="isShownParent{{ post.reply_depth }} = true"
+         x-intersect:leave.half="isShownParent{{ post.reply_depth }} = false"
+         :data-shown="isShownParent{{ post.reply_depth }}"
          @animationend="$el.classList.remove('blink')">
         <div class="row flex-nowrap g-0">
             {% if post.reply_depth > 0 %}
@@ -51,13 +51,17 @@
                     {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <a type="button"
-                               class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
-                               href="#post-{{ parent.pk }}"
-                               title="Highlight parent post"
-                               @click="document.getElementById('post-' + $root.dataset.parentid).classList.toggle('blink');">
-                                {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
-                            </a>
+                            {% if post.reply_depth > 0 %}
+                                <button type="button"
+                                        class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
+                                        x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
+                                        title="Highlight parent post"
+                                        @click="if (!isShownParent{{ post.reply_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
+                                    {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
+                                </button>
+                            {% else %}
+                                <div "d-none"></div>
+                            {% endif %}
                             <div class="d-flex">
                                 {% if board.preferences.type == 'r' %}
                                     {% if post.approved %}
