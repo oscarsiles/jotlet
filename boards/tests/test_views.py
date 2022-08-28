@@ -48,19 +48,21 @@ class IndexViewTest(TestCase):
     def test_board_search_invalid(self):
         response = self.client.post(reverse("boards:index"), {"board_slug": "invalid"})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "board_slug", "ID should be 6 or 8 lowercase letters and/or digits.")
+        self.assertFormError(
+            response.context["form"], "board_slug", "ID should be 6 or 8 lowercase letters and/or digits."
+        )
 
     def test_board_search_not_found(self):
         board = Board.objects.get(title="Test Board")
         bad_slug = "000000" if board.slug != "000000" else "111111"
         response = self.client.post(reverse("boards:index"), {"board_slug": bad_slug})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "board_slug", "Board does not exist.")
+        self.assertFormError(response.context["form"], "board_slug", "Board does not exist.")
 
     def test_board_search_no_slug(self):
         response = self.client.post(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "board_slug", "This field is required.")
+        self.assertFormError(response.context["form"], "board_slug", "This field is required.")
 
 
 class IndexAllBoardsViewTest(TestCase):
@@ -281,16 +283,18 @@ class CreateBoardViewTest(TestCase):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         response = self.client.post(reverse("boards:board-create"), {"title": "", "description": ""})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "title", "This field is required.")
-        self.assertFormError(response, "form", "description", "This field is required.")
+        self.assertFormError(response.context["form"], "title", "This field is required.")
+        self.assertFormError(response.context["form"], "description", "This field is required.")
 
     def test_board_create_invalid(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
         response = self.client.post(reverse("boards:board-create"), {"title": "x" * 51, "description": "x" * 101})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "title", "Ensure this value has at most 50 characters (it has 51).")
         self.assertFormError(
-            response, "form", "description", "Ensure this value has at most 100 characters (it has 101)."
+            response.context["form"], "title", "Ensure this value has at most 50 characters (it has 51)."
+        )
+        self.assertFormError(
+            response.context["form"], "description", "Ensure this value has at most 100 characters (it has 101)."
         )
 
 
@@ -345,8 +349,8 @@ class UpdateBoardViewTest(TestCase):
             {"title": "", "description": ""},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "title", "This field is required.")
-        self.assertFormError(response, "form", "description", "This field is required.")
+        self.assertFormError(response.context["form"], "title", "This field is required.")
+        self.assertFormError(response.context["form"], "description", "This field is required.")
 
     def test_board_update_invalid(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
@@ -356,9 +360,11 @@ class UpdateBoardViewTest(TestCase):
             {"title": "x" * 51, "description": "x" * 101},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "title", "Ensure this value has at most 50 characters (it has 51).")
         self.assertFormError(
-            response, "form", "description", "Ensure this value has at most 100 characters (it has 101)."
+            response.context["form"], "title", "Ensure this value has at most 50 characters (it has 51)."
+        )
+        self.assertFormError(
+            response.context["form"], "description", "Ensure this value has at most 100 characters (it has 101)."
         )
 
 
@@ -464,7 +470,7 @@ class TopicCreateViewTest(TestCase):
             data={"subject": ""},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "subject", "This field is required.")
+        self.assertFormError(response.context["form"], "subject", "This field is required.")
 
     def test_topic_create_invalid(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
@@ -475,7 +481,7 @@ class TopicCreateViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertFormError(
-            response, "form", "subject", "Ensure this value has at most 400 characters (it has 401)."
+            response.context["form"], "subject", "Ensure this value has at most 400 characters (it has 401)."
         )
 
     async def test_topic_created_websocket_message(self):
@@ -547,7 +553,7 @@ class TopicUpdateViewTest(TestCase):
             data={"subject": ""},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, "form", "subject", "This field is required.")
+        self.assertFormError(response.context["form"], "subject", "This field is required.")
 
     def test_topic_update_invalid(self):
         self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
@@ -558,7 +564,7 @@ class TopicUpdateViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertFormError(
-            response, "form", "subject", "Ensure this value has at most 400 characters (it has 401)."
+            response.context["form"], "subject", "Ensure this value has at most 400 characters (it has 401)."
         )
 
     async def test_topic_updated_websocket_message(self):
