@@ -129,7 +129,6 @@ python-versions = ">=3.7"
 [package.dependencies]
 cryptography = ">=3.4.6"
 hyperlink = ">=21.0.0"
-setuptools = "*"
 txaio = ">=21.2.1"
 
 [package.extras]
@@ -156,7 +155,7 @@ python-versions = ">=3.7,<4.0"
 pyflakes = ">=2.3.0"
 
 [[package]]
-name = "Automat"
+name = "automat"
 version = "20.2.0"
 description = "Self-service finite-state machines for the programmer on the go."
 category = "main"
@@ -249,7 +248,7 @@ urllib3 = ">=1.25.4,<1.27"
 crt = ["awscrt (==0.14.0)"]
 
 [[package]]
-name = "Brotli"
+name = "brotli"
 version = "1.0.9"
 description = "Python bindings for the Brotli compression library"
 category = "main"
@@ -341,7 +340,7 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
-name = "ConfigArgParse"
+name = "configargparse"
 version = "1.5.3"
 description = "A drop-in replacement for argparse that allows options to also be set via config files and/or environment variables."
 category = "dev"
@@ -349,8 +348,8 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
-test = ["PyYAML", "mock", "pytest"]
-yaml = ["PyYAML"]
+test = ["mock", "pytest", "pyyaml"]
+yaml = ["pyyaml"]
 
 [[package]]
 name = "constantly"
@@ -398,7 +397,7 @@ python-versions = ">=3.6"
 cffi = ">=1.12"
 
 [package.extras]
-docs = ["sphinx (>=1.6.5,!=1.8.0,!=3.1.0,!=3.1.1)", "sphinx_rtd_theme"]
+docs = ["sphinx (>=1.6.5,!=1.8.0,!=3.1.0,!=3.1.1)", "sphinx-rtd-theme"]
 docstest = ["pyenchant (>=1.6.11)", "sphinxcontrib-spelling (>=4.0.1)", "twine (>=1.12.0)"]
 pep8test = ["black", "flake8", "flake8-import-order", "pep8-naming"]
 sdist = ["setuptools_rust (>=0.11.4)"]
@@ -443,7 +442,7 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
-name = "Django"
+name = "django"
 version = "4.1"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
@@ -515,7 +514,6 @@ python-versions = ">=3.7"
 [package.dependencies]
 django = ">=3.2"
 django-ipware = ">=3"
-setuptools = "*"
 
 [[package]]
 name = "django-cachalot"
@@ -827,7 +825,7 @@ tomli = {version = ">=2.0.1,<3.0.0", markers = "python_version < \"3.11\""}
 tqdm = ">=4.62.2,<5.0.0"
 
 [[package]]
-name = "EditorConfig"
+name = "editorconfig"
 version = "0.12.3"
 description = "EditorConfig File Locator and Interpreter for Python"
 category = "dev"
@@ -848,7 +846,7 @@ pycodestyle = ">=2.9.0,<2.10.0"
 pyflakes = ">=2.5.0,<2.6.0"
 
 [[package]]
-name = "Flask"
+name = "flask"
 version = "2.2.2"
 description = "A simple framework for building complex web applications."
 category = "dev"
@@ -867,7 +865,7 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
-name = "Flask-BasicAuth"
+name = "flask-basicauth"
 version = "0.2.0"
 description = "HTTP basic access authentication for Flask."
 category = "dev"
@@ -878,7 +876,7 @@ python-versions = "*"
 Flask = "*"
 
 [[package]]
-name = "Flask-Cors"
+name = "flask-cors"
 version = "3.0.10"
 description = "A Flask extension adding a decorator for CORS support"
 category = "dev"
@@ -908,7 +906,6 @@ python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5"
 [package.dependencies]
 cffi = {version = ">=1.12.2", markers = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\""}
 greenlet = {version = ">=1.1.0,<2.0", markers = "platform_python_implementation == \"CPython\""}
-setuptools = "*"
 "zope.event" = "*"
 "zope.interface" = "*"
 
@@ -942,7 +939,7 @@ optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 
 [package.extras]
-docs = ["Sphinx"]
+docs = ["sphinx"]
 
 [[package]]
 name = "gunicorn"
@@ -951,9 +948,6 @@ description = "WSGI HTTP Server for UNIX"
 category = "main"
 optional = false
 python-versions = ">=3.5"
-
-[package.dependencies]
-setuptools = ">=3.0"
 
 [package.extras]
 eventlet = ["eventlet (>=0.24.1)"]
@@ -1119,7 +1113,7 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
-name = "Jinja2"
+name = "jinja2"
 version = "3.1.2"
 description = "A very fast and expressive template engine."
 category = "dev"
@@ -1188,7 +1182,7 @@ typing-extensions = ">=3.7.4.3"
 Werkzeug = ">=2.0.0"
 
 [[package]]
-name = "MarkupSafe"
+name = "markupsafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
 category = "dev"
@@ -1252,7 +1246,7 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
-name = "Pillow"
+name = "pillow"
 version = "9.2.0"
 description = "Python Imaging Library (Fork)"
 category = "main"
@@ -1386,7 +1380,7 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
-name = "PyJWT"
+name = "pyjwt"
 version = "2.4.0"
 description = "JSON Web Token implementation in Python"
 category = "main"
@@ -1403,7 +1397,7 @@ docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
-name = "pyOpenSSL"
+name = "pyopenssl"
 version = "22.0.0"
 description = "Python wrapper module around the OpenSSL library"
 category = "main"
@@ -1462,7 +1456,7 @@ pytest = ">=5.4.0"
 
 [package.extras]
 docs = ["sphinx", "sphinx-rtd-theme"]
-testing = ["Django", "django-configurations (>=2.0)"]
+testing = ["django", "django-configurations (>=2.0)"]
 
 [[package]]
 name = "python-dateutil"
@@ -1529,7 +1523,7 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "PyYAML"
+name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
 category = "main"
@@ -1695,23 +1689,10 @@ pyasn1-modules = "*"
 six = "*"
 
 [package.extras]
-dev = ["coverage[toml] (>=5.0.2)", "furo", "idna", "pyOpenSSL", "pytest", "sphinx"]
+dev = ["coverage[toml] (>=5.0.2)", "furo", "idna", "pyopenssl", "pytest", "sphinx"]
 docs = ["furo", "sphinx"]
 idna = ["idna"]
 tests = ["coverage[toml] (>=5.0.2)", "pytest"]
-
-[[package]]
-name = "setuptools"
-version = "65.3.0"
-description = "Easily download, build, install, upgrade, and uninstall Python packages"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8 (<5)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mock", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
-testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
 name = "shortuuid"
@@ -1795,7 +1776,7 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
-name = "Twisted"
+name = "twisted"
 version = "22.4.0"
 description = "An asynchronous networking framework written in Python"
 category = "main"
@@ -1818,14 +1799,14 @@ typing-extensions = ">=3.6.5"
 [package.extras]
 all_non_platform = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "pywin32 (!=226)", "service-identity (>=18.1.0)"]
 conch = ["appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "cryptography (>=2.6)", "pyasn1"]
-conch_nacl = ["PyNaCl", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "cryptography (>=2.6)", "pyasn1"]
+conch_nacl = ["appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "cryptography (>=2.6)", "pyasn1", "pynacl"]
 contextvars = ["contextvars (>=2.4,<3)"]
 dev = ["coverage (>=6b1,<7)", "pydoctor (>=21.9.0,<21.10.0)", "pyflakes (>=2.2,<3.0)", "python-subunit (>=1.4,<2.0)", "readthedocs-sphinx-ext (>=2.1,<3.0)", "sphinx (>=4.1.2,<6)", "sphinx-rtd-theme (>=0.5,<1.0)", "towncrier (>=19.2,<20.0)", "twistedchecker (>=0.7,<1.0)"]
 dev_release = ["pydoctor (>=21.9.0,<21.10.0)", "readthedocs-sphinx-ext (>=2.1,<3.0)", "sphinx (>=4.1.2,<6)", "sphinx-rtd-theme (>=0.5,<1.0)", "towncrier (>=19.2,<20.0)"]
 http2 = ["h2 (>=3.0,<5.0)", "priority (>=1.1.0,<2.0)"]
-macos_platform = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pyobjc-core", "pyobjc-framework-CFNetwork", "pyobjc-framework-Cocoa", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "pywin32 (!=226)", "service-identity (>=18.1.0)"]
-mypy = ["PyHamcrest (>=1.9.0)", "PyNaCl", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "coverage (>=6b1,<7)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "mypy (==0.930)", "mypy-zope (==0.3.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pydoctor (>=21.9.0,<21.10.0)", "pyflakes (>=2.2,<3.0)", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "python-subunit (>=1.4,<2.0)", "pywin32 (!=226)", "readthedocs-sphinx-ext (>=2.1,<3.0)", "service-identity (>=18.1.0)", "sphinx (>=4.1.2,<6)", "sphinx-rtd-theme (>=0.5,<1.0)", "towncrier (>=19.2,<20.0)", "twistedchecker (>=0.7,<1.0)", "types-pyOpenSSL", "types-setuptools"]
-osx_platform = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pyobjc-core", "pyobjc-framework-CFNetwork", "pyobjc-framework-Cocoa", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "pywin32 (!=226)", "service-identity (>=18.1.0)"]
+macos_platform = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pyobjc-core", "pyobjc-framework-cfnetwork", "pyobjc-framework-cocoa", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "pywin32 (!=226)", "service-identity (>=18.1.0)"]
+mypy = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "coverage (>=6b1,<7)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "mypy (==0.930)", "mypy-zope (==0.3.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pydoctor (>=21.9.0,<21.10.0)", "pyflakes (>=2.2,<3.0)", "pynacl", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "python-subunit (>=1.4,<2.0)", "pywin32 (!=226)", "readthedocs-sphinx-ext (>=2.1,<3.0)", "service-identity (>=18.1.0)", "sphinx (>=4.1.2,<6)", "sphinx-rtd-theme (>=0.5,<1.0)", "towncrier (>=19.2,<20.0)", "twistedchecker (>=0.7,<1.0)", "types-pyopenssl", "types-setuptools"]
+osx_platform = ["PyHamcrest (>=1.9.0)", "appdirs (>=1.4.0)", "bcrypt (>=3.0.0)", "contextvars (>=2.4,<3)", "cryptography (>=2.6)", "cython-test-exception-raiser (>=1.0.2,<2)", "h2 (>=3.0,<5.0)", "idna (>=2.4)", "priority (>=1.1.0,<2.0)", "pyasn1", "pyobjc-core", "pyobjc-framework-cfnetwork", "pyobjc-framework-cocoa", "pyopenssl (>=16.0.0)", "pyserial (>=3.0)", "pywin32 (!=226)", "service-identity (>=18.1.0)"]
 serial = ["pyserial (>=3.0)", "pywin32 (!=226)"]
 test = ["PyHamcrest (>=1.9.0)", "cython-test-exception-raiser (>=1.0.2,<2)"]
 tls = ["idna (>=2.4)", "pyopenssl (>=16.0.0)", "service-identity (>=18.1.0)"]
@@ -1961,7 +1942,7 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
-name = "Werkzeug"
+name = "werkzeug"
 version = "2.2.2"
 description = "The comprehensive WSGI web application library."
 category = "dev"
@@ -1986,7 +1967,7 @@ python-versions = ">=3.7"
 Brotli = {version = "*", optional = true, markers = "extra == \"brotli\""}
 
 [package.extras]
-brotli = ["Brotli"]
+brotli = ["brotli"]
 
 [[package]]
 name = "wrapt"
@@ -2016,11 +1997,8 @@ category = "dev"
 optional = false
 python-versions = "*"
 
-[package.dependencies]
-setuptools = "*"
-
 [package.extras]
-docs = ["Sphinx"]
+docs = ["sphinx"]
 test = ["zope.testrunner"]
 
 [[package]]
@@ -2031,11 +2009,8 @@ category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
-[package.dependencies]
-setuptools = "*"
-
 [package.extras]
-docs = ["Sphinx", "repoze.sphinx.autointerface"]
+docs = ["repoze.sphinx.autointerface", "sphinx"]
 test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
@@ -2110,7 +2085,7 @@ autoflake8 = [
     {file = "autoflake8-0.3.2-py3-none-any.whl", hash = "sha256:db2f068766db0a747833198aee37317c3eae114948130e7a54aa5743f9261709"},
     {file = "autoflake8-0.3.2.tar.gz", hash = "sha256:4465a10186e29830eb5df5ada7eed29fdc0918b7d8eafbb06a681236639ca695"},
 ]
-Automat = [
+automat = [
     {file = "Automat-20.2.0-py2.py3-none-any.whl", hash = "sha256:b6feb6455337df834f6c9962d6ccf771515b7d939bca142b29c20c2376bc6111"},
     {file = "Automat-20.2.0.tar.gz", hash = "sha256:7979803c74610e11ef0c0d68a2942b152df52da55336e0c9d58daf1831cbdf33"},
 ]
@@ -2169,7 +2144,7 @@ botocore = [
     {file = "botocore-1.27.61-py3-none-any.whl", hash = "sha256:535c8e97ed28a38fd09dd8f4735195e761bbee54e4c6021f3a709a97b1287dd6"},
     {file = "botocore-1.27.61.tar.gz", hash = "sha256:99012965e2409665c7d86706862c5a141e01e1c4d2c81cb9409a44200ee59631"},
 ]
-Brotli = [
+brotli = [
     {file = "Brotli-1.0.9-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:268fe94547ba25b58ebc724680609c8ee3e5a843202e9a381f6f9c5e8bdb5c70"},
     {file = "Brotli-1.0.9-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:c2415d9d082152460f2bd4e382a1e85aed233abc92db5a3880da2257dc7daf7b"},
     {file = "Brotli-1.0.9-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:5913a1177fc36e30fcf6dc868ce23b0453952c78c04c266d3149b3d39e1410d6"},
@@ -2323,7 +2298,7 @@ colorama = [
     {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
     {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
-ConfigArgParse = [
+configargparse = [
     {file = "ConfigArgParse-1.5.3-py3-none-any.whl", hash = "sha256:18f6535a2db9f6e02bd5626cc7455eac3e96b9ab3d969d366f9aafd5c5c00fe7"},
     {file = "ConfigArgParse-1.5.3.tar.gz", hash = "sha256:1b0b3cbf664ab59dada57123c81eff3d9737e0d11d8cf79e3d6eb10823f1739f"},
 ]
@@ -2422,7 +2397,7 @@ defusedxml = [
     {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
     {file = "defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69"},
 ]
-Django = [
+django = [
     {file = "Django-4.1-py3-none-any.whl", hash = "sha256:031ccb717782f6af83a0063a1957686e87cb4581ea61b47b3e9addf60687989a"},
     {file = "Django-4.1.tar.gz", hash = "sha256:032f8a6fc7cf05ccd1214e4a2e21dfcd6a23b9d575c6573cacc8c67828dbe642"},
 ]
@@ -2533,7 +2508,7 @@ djlint = [
     {file = "djlint-1.12.0-py3-none-any.whl", hash = "sha256:fe04278d753653d955ca196d02aa6a5f3ee80a5414066d439b21fd8621b37d9a"},
     {file = "djlint-1.12.0.tar.gz", hash = "sha256:7d03e13c5302118a4b3f7df24746ae8e75f5a8bd97ed8d1af213aa51450300a0"},
 ]
-EditorConfig = [
+editorconfig = [
     {file = "EditorConfig-0.12.3-py3-none-any.whl", hash = "sha256:6b0851425aa875b08b16789ee0eeadbd4ab59666e9ebe728e526314c4a2e52c1"},
     {file = "EditorConfig-0.12.3.tar.gz", hash = "sha256:57f8ce78afcba15c8b18d46b5170848c88d56fd38f05c2ec60dbbfcb8996e89e"},
 ]
@@ -2541,14 +2516,14 @@ flake8 = [
     {file = "flake8-5.0.4-py2.py3-none-any.whl", hash = "sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248"},
     {file = "flake8-5.0.4.tar.gz", hash = "sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db"},
 ]
-Flask = [
+flask = [
     {file = "Flask-2.2.2-py3-none-any.whl", hash = "sha256:b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526"},
     {file = "Flask-2.2.2.tar.gz", hash = "sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b"},
 ]
-Flask-BasicAuth = [
+flask-basicauth = [
     {file = "Flask-BasicAuth-0.2.0.tar.gz", hash = "sha256:df5ebd489dc0914c224419da059d991eb72988a01cdd4b956d52932ce7d501ff"},
 ]
-Flask-Cors = [
+flask-cors = [
     {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
     {file = "Flask_Cors-3.0.10-py2.py3-none-any.whl", hash = "sha256:74efc975af1194fc7891ff5cd85b0f7478be4f7f59fe158102e91abb72bb4438"},
 ]
@@ -2847,7 +2822,7 @@ itsdangerous = [
     {file = "itsdangerous-2.1.2-py3-none-any.whl", hash = "sha256:2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44"},
     {file = "itsdangerous-2.1.2.tar.gz", hash = "sha256:5dbbc68b317e5e42f327f9021763545dc3fc3bfe22e6deb96aaf1fc38874156a"},
 ]
-Jinja2 = [
+jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
@@ -2866,7 +2841,7 @@ locust = [
     {file = "locust-2.11.1-py3-none-any.whl", hash = "sha256:a0d2a81729acf057991e376a61194d50d70e3c420ba67d4d73b2462e8d7c029a"},
     {file = "locust-2.11.1.tar.gz", hash = "sha256:2c8ead881ade240d8988c1c94a9d84b1d38f3df0583f5a7b3bc8ddbd93181dfe"},
 ]
-MarkupSafe = [
+markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:f121a1420d4e173a5d96e47e9a0c0dcff965afdf1626d28de1460815f7c4ee7a"},
     {file = "MarkupSafe-2.1.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a49907dd8420c5685cfa064a1335b6754b74541bbb3706c259c02ed65b644b3e"},
@@ -2982,7 +2957,7 @@ pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
     {file = "pathspec-0.9.0.tar.gz", hash = "sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1"},
 ]
-Pillow = [
+pillow = [
     {file = "Pillow-9.2.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:a9c9bc489f8ab30906d7a85afac4b4944a572a7432e00698a7239f44a44e6efb"},
     {file = "Pillow-9.2.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:510cef4a3f401c246cfd8227b300828715dd055463cdca6176c2e4036df8bd4f"},
     {file = "Pillow-9.2.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7888310f6214f19ab2b6df90f3f06afa3df7ef7355fc025e78a3044737fab1f5"},
@@ -3184,11 +3159,11 @@ pyflakes = [
     {file = "pyflakes-2.5.0-py2.py3-none-any.whl", hash = "sha256:4579f67d887f804e67edb544428f264b7b24f435b263c4614f384135cea553d2"},
     {file = "pyflakes-2.5.0.tar.gz", hash = "sha256:491feb020dca48ccc562a8c0cbe8df07ee13078df59813b83959cbdada312ea3"},
 ]
-PyJWT = [
+pyjwt = [
     {file = "PyJWT-2.4.0-py3-none-any.whl", hash = "sha256:72d1d253f32dbd4f5c88eaf1fdc62f3a19f676ccbadb9dbc5d07e951b2b26daf"},
     {file = "PyJWT-2.4.0.tar.gz", hash = "sha256:d42908208c699b3b973cbeb01a969ba6a96c821eefb1c5bfe4c390c01d67abba"},
 ]
-pyOpenSSL = [
+pyopenssl = [
     {file = "pyOpenSSL-22.0.0-py2.py3-none-any.whl", hash = "sha256:ea252b38c87425b64116f808355e8da644ef9b07e429398bfece610f893ee2e0"},
     {file = "pyOpenSSL-22.0.0.tar.gz", hash = "sha256:660b1b1425aac4a1bea1d94168a85d99f0b3144c869dd4390d27629d0087f1bf"},
 ]
@@ -3240,7 +3215,7 @@ pywin32 = [
     {file = "pywin32-304-cp39-cp39-win32.whl", hash = "sha256:25746d841201fd9f96b648a248f731c1dec851c9a08b8e33da8b56148e4c65cc"},
     {file = "pywin32-304-cp39-cp39-win_amd64.whl", hash = "sha256:d24a3382f013b21aa24a5cfbfad5a2cd9926610c0affde3e8ab5b3d7dbcf4ac9"},
 ]
-PyYAML = [
+pyyaml = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},
     {file = "PyYAML-6.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9df7ed3b3d2e0ecfe09e14741b857df43adb5a3ddadc919a2d94fbdf78fea53c"},
     {file = "PyYAML-6.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:77f396e6ef4c73fdc33a9157446466f1cff553d979bd00ecb64385760c6babdc"},
@@ -3435,10 +3410,6 @@ service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
     {file = "service_identity-21.1.0-py2.py3-none-any.whl", hash = "sha256:f0b0caac3d40627c3c04d7a51b6e06721857a0e10a8775f2d1d7e72901b3a7db"},
 ]
-setuptools = [
-    {file = "setuptools-65.3.0-py3-none-any.whl", hash = "sha256:2e24e0bec025f035a2e72cdd1961119f557d78ad331bb00ff82efb2ab8da8e82"},
-    {file = "setuptools-65.3.0.tar.gz", hash = "sha256:7732871f4f7fa58fb6bdcaeadb0161b2bd046c85905dbaa066bdcbcc81953b57"},
-]
 shortuuid = [
     {file = "shortuuid-1.0.9-py3-none-any.whl", hash = "sha256:b2bb9eb7773170e253bb7ba25971023acb473517a8b76803d9618668cb1dd46f"},
     {file = "shortuuid-1.0.9.tar.gz", hash = "sha256:459f12fa1acc34ff213b1371467c0325169645a31ed989e268872339af7563d5"},
@@ -3475,7 +3446,7 @@ tqdm = [
     {file = "tqdm-4.64.0-py2.py3-none-any.whl", hash = "sha256:74a2cdefe14d11442cedf3ba4e21a3b84ff9a2dbdc6cfae2c34addb2a14a5ea6"},
     {file = "tqdm-4.64.0.tar.gz", hash = "sha256:40be55d30e200777a307a7585aee69e4eabb46b4ec6a4b4a5f2d9f11e7d5408d"},
 ]
-Twisted = [
+twisted = [
     {file = "Twisted-22.4.0-py3-none-any.whl", hash = "sha256:f9f7a91f94932477a9fc3b169d57f54f96c6e74a23d78d9ce54039a7f48928a2"},
     {file = "Twisted-22.4.0.tar.gz", hash = "sha256:a047990f57dfae1e0bd2b7df2526d4f16dcdc843774dc108b78c52f2a5f13680"},
 ]
@@ -3609,7 +3580,7 @@ websockets = [
     {file = "websockets-10.3-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:3eda1cb7e9da1b22588cefff09f0951771d6ee9fa8dbe66f5ae04cc5f26b2b55"},
     {file = "websockets-10.3.tar.gz", hash = "sha256:fc06cc8073c8e87072138ba1e431300e2d408f054b27047d047b549455066ff4"},
 ]
-Werkzeug = [
+werkzeug = [
     {file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5"},
     {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
 ]
