@@ -37,13 +37,15 @@ SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 TESTING = (sys.argv[1:2] == ["test"]) or ("pytest" in sys.modules)
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
+SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
 
-if not DEBUG and env("SENTRY_ENABLED", default=False):
+if not DEBUG and SENTRY_ENABLED:
+    SENTRY_DSN = env("SENTRY_DSN")
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
     sentry_sdk.init(
-        dsn=env("SENTRY_DSN"),
+        dsn=SENTRY_DSN,
         integrations=[
             DjangoIntegration(),
         ],
@@ -209,6 +211,13 @@ Q_CLUSTER = {
     "bulk": 10,
     "orm": "default",
 }
+
+if not TESTING and SENTRY_ENABLED:
+    Q_CLUSTER["error_reporter"] = {
+        "sentry": {
+            "dsn": SENTRY_DSN,
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

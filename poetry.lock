@@ -715,6 +715,7 @@ arrow = ">=1.1.0,<2.0.0"
 blessed = ">=1.17.6,<2.0.0"
 django = ">=2.2"
 django-picklefield = ">=3.0.1,<4.0.0"
+django-q-sentry = {version = ">=0.1", optional = true, markers = "extra == \"sentry\""}
 redis = ">=3.5.3,<4.0.0"
 
 [package.extras]
@@ -732,6 +733,17 @@ python-versions = "*"
 
 [package.dependencies]
 django-q = "*"
+
+[[package]]
+name = "django-q-sentry"
+version = "0.1.6"
+description = "A Sentry support plugin for Django Q"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+sentry-sdk = ">=1.5.5"
 
 [[package]]
 name = "django-qr-code"
@@ -2017,7 +2029,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "39f357d6bc4e97e07eb287e9a5cc8155425bb9dc5af00b1906c68070593e7f3e"
+content-hash = "eb06fb9793428bea4ce784c0282c4a3525e1ba34f279cdc5bc70a07629e78bcb"
 
 [metadata.files]
 aioredis = [
@@ -2485,6 +2497,10 @@ django-q = [
 ]
 django-q-email = [
     {file = "django-q-email-5.0.1.tar.gz", hash = "sha256:a8fdaa2efd25bcb67d0880d795b0ba2b175fefcd13c5c529869393e1a9fe6f6a"},
+]
+django-q-sentry = [
+    {file = "django-q-sentry-0.1.6.linux-x86_64.tar.gz", hash = "sha256:bdbd9c7a48d543c2d74ae9a4c9004dfc0965cb11bc145c6cf4de3429be1b58ae"},
+    {file = "django_q_sentry-0.1.6-py3-none-any.whl", hash = "sha256:9b8b4d7fad253a7d9a47f2c2ab0d9dea83078b7ef45c8849dbb1e4176ef8d050"},
 ]
 django-qr-code = [
     {file = "django-qr-code-3.1.1.tar.gz", hash = "sha256:f47dee4636b5e44cb46915e14747f043be856f21e5e635a94c48939ed18c783f"},
