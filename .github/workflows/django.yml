@@ -3,6 +3,8 @@ name: Django CI
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  POETRY_VERSION: 1.2.0
+  POETRY_VIRTUALENVS_PATH: ~/.cache/pypoetry/virtualenvs/.venv
 
 on:
   push:
@@ -41,21 +43,23 @@ jobs:
         uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
+        id: setup-python
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: 1.2.0
+        run: |
+          pip install poetry==${{ poetry_version }}
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          path: ${{ env.POETRY_VIRTUALENVS_PATH }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-poetry${{ env.POETRY_VERSION }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install Dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --without dev --no-interaction --no-ansi
+        run: |
+          python -m venv $POETRY_VIRTUALENVS_PATH
+          poetry install --without dev --no-interaction --no-ansi
       - name: Run Tests
         env:
           DB_HOST: 127.0.0.1
@@ -63,6 +67,7 @@ jobs:
           DB_PASSWORD: hunter2
           DB_PORT: 5432
         run: |
+          source $POETRY_VIRTUALENVS_PATH/bin/activate
           poetry run pytest
 
   docker-image:
