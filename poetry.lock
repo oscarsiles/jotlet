@@ -669,17 +669,6 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [[package]]
-name = "django-jazzmin"
-version = "2.5.0"
-description = "Drop-in theme for django admin, that utilises AdminLTE 3 & Bootstrap 4 to make yo' admin look jazzy"
-category = "main"
-optional = false
-python-versions = ">=3.6.2"
-
-[package.dependencies]
-django = ">=2.2"
-
-[[package]]
 name = "django-js-asset"
 version = "2.0.0"
 description = "script tag with additional attributes for django.forms.Media"
@@ -2035,7 +2024,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "42acdf05faf3f67b81994036f2bcea31d56bd816fb7f249456ee9f6508357f4e"
+content-hash = "3d01d252039d0ab4bf9bbf290116e0916bcc1719ef1073da6b3b4bcfa44b1389"
 
 [metadata.files]
 aioredis = [
@@ -2484,10 +2473,6 @@ django-huey-monitor = [
 django-ipware = [
     {file = "django-ipware-4.0.2.tar.gz", hash = "sha256:602a58325a4808bd19197fef2676a0b2da2df40d0ecf21be414b2ff48c72ad05"},
     {file = "django_ipware-4.0.2-py2.py3-none-any.whl", hash = "sha256:878dbb06a87e25550798e9ef3204ed70a200dd8b15e47dcef848cf08244f04c9"},
-]
-django-jazzmin = [
-    {file = "django-jazzmin-2.5.0.tar.gz", hash = "sha256:2ee5ea548e9d5d6cf6495025d006b063ecae84702304eb90c9c5ef37ba99078a"},
-    {file = "django_jazzmin-2.5.0-py3-none-any.whl", hash = "sha256:6b9f9951eee41f60793a0d2f6f3d57213bd5605ddda7a106acb2bcdec4ef124e"},
 ]
 django-js-asset = [
     {file = "django_js_asset-2.0.0-py3-none-any.whl", hash = "sha256:86f9f300d682537ddaf0487dc2ab356581b8f50c069bdba91d334a46e449f923"},
