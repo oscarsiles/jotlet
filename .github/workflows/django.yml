@@ -4,7 +4,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   POETRY_VERSION: 1.2.0
-  POETRY_VIRTUALENVS_PATH: ~/.cache/pypoetry/virtualenvs/.venv
+  POETRY_VIRTUALENVS_CREATE: true
+  POETRY_VIRTUALENVS_IN_PROJECT: true
 
 on:
   push:
@@ -53,12 +54,12 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ${{ env.POETRY_VIRTUALENVS_PATH }}
+          path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-poetry${{ env.POETRY_VERSION }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install Dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          python -m venv $POETRY_VIRTUALENVS_PATH
+          pythsource .venv/bin/activate
           poetry install --without dev --no-interaction --no-ansi
       - name: Run Tests
         env:
@@ -67,8 +68,8 @@ jobs:
           DB_PASSWORD: hunter2
           DB_PORT: 5432
         run: |
-          source $POETRY_VIRTUALENVS_PATH/bin/activate
-          poetry run pytest
+          source .venv/bin/activate
+          python -m pytest
 
   docker-image:
     runs-on: ubuntu-latest
