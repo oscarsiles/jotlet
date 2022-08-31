@@ -294,6 +294,7 @@ STATICFILES_STORAGE = (
     if TESTING
     else "whitenoise.storage.CompressedManifestStaticFilesStorage"
 )
+WHITENOISE_MANIFEST_STRICT = False  # fix for missing map files
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
 if not TESTING:
