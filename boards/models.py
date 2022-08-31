@@ -391,7 +391,9 @@ class Image(auto_prefetch.Model):
 
     @cached_property
     def image_tag(self):
-        return mark_safe(f'<img src="{escape(self.get_small_thumbnail.url)}" />')
+        if self.image:
+            return mark_safe(f'<img src="{escape(self.get_small_thumbnail.url)}" />')
+        return ""
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
