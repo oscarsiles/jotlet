@@ -63,7 +63,7 @@ jobs:
           DB_PASSWORD: hunter2
           DB_PORT: 5432
         run: |
-          python -m pytest
+          poetry run pytest
 
   docker-image:
     runs-on: ubuntu-latest
