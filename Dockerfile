@@ -15,7 +15,7 @@ RUN python -m pip install --upgrade pip \
     && pip install "poetry==1.2.0"
 COPY poetry.lock pyproject.toml /app/
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry install --without dev,test --no-interaction --no-ansi
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 USER $USERNAME

@@ -68,17 +68,19 @@ whitenoise = { extras = ["brotli"], version = "^6.2.0" }
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.3.2"
 black = "^22.6.0"
-coverage = "^6.4.4"
 django-debug-toolbar = "^3.6.0"
 django-debug-toolbar-template-profiler = "^2.1.0"
 djlint = "^1.12.1"
 flake8 = "^5.0.4"
 isort = "^5.10.1"
-locust = "^2.11.1"
 poetryup = "^0.10.0"
+pyupgrade = "^2.37.3"
+
+[tool.poetry.group.test.dependencies]
+coverage = "^6.4.4"
+locust = "^2.11.1"
 pytest-cov = "^3.0.0"
 pytest-django = "^4.5.2"
-pyupgrade = "^2.37.3"
 
 [build-system]
 requires = ["poetry-core>=1.1.0"]
