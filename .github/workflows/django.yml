@@ -63,7 +63,6 @@ jobs:
           DB_PASSWORD: hunter2
           DB_PORT: 5432
         run: |
-          source ~/.cache/pypoetry/virtualenvs/bin/activate
           python -m pytest
 
   docker-image:
