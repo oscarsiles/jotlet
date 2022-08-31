@@ -5,9 +5,9 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django_cleanup.signals import cleanup_pre_delete
-from django_q.tasks import async_task
 
 from .models import BgImage, Board, BoardPreferences, Post, Reaction, Topic
+from .tasks import delete_thumbnails
 from .utils import channel_group_send
 
 
@@ -205,4 +205,4 @@ def update_image_select(sender, instance, **kwargs):
 
 @receiver(cleanup_pre_delete)
 def sorl_delete(**kwargs):
-    async_task("boards.tasks.delete_thumbnails", kwargs["file"])
+    delete_thumbnails(kwargs["file"])()

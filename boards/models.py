@@ -11,11 +11,11 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from django_q.tasks import async_task
 from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
 
+from .tasks import create_thumbnails, post_image_cleanup
 from .utils import get_image_upload_path, get_random_string, process_image
 
 BOARD_TYPE = (
@@ -230,7 +230,7 @@ class Post(auto_prefetch.Model, MPTTModel):
             elif prev_post.content != self.content:
                 cleanup_task = True
             if cleanup_task:
-                async_task("boards.tasks.post_image_cleanup_task", self)
+                post_image_cleanup(self)()
 
     def get_is_owner(self, request):
         return self.session_key == request.session.session_key or (
@@ -345,7 +345,7 @@ class Image(auto_prefetch.Model):
 
         if created:
             if self.type == "b":
-                async_task("boards.tasks.create_thumbnails", self)
+                create_thumbnails(self)()
 
     @cached_property
     def get_board_usage_count(self):

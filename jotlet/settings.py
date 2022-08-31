@@ -99,7 +99,10 @@ INSTALLED_APPS += [
     "crispy_bootstrap5",
     "channels",
     "django_htmx",
-    "django_q",
+    "huey.contrib.djhuey",
+    "hueymail",
+    "bx_django_utils",
+    "huey_monitor",
     "django_filters",
     "qr_code",
     "sorl.thumbnail",
@@ -200,25 +203,6 @@ CONN_MAX_AGE = env("CONN_MAX_AGE", default=60)
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
-Q_CLUSTER = {
-    "name": "DjangORM",
-    "sync": TESTING,
-    "workers": 2,
-    "timeout": 1800,
-    "retry": 1800,
-    "catch_up": False,
-    "queue_limit": 50,
-    "bulk": 10,
-    "orm": "default",
-}
-
-if not TESTING and SENTRY_ENABLED:
-    Q_CLUSTER["error_reporter"] = {
-        "sentry": {
-            "dsn": SENTRY_DSN,
-        }
-    }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -313,11 +297,12 @@ STATICFILES_STORAGE = (
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
 if not TESTING:
-    REDIS_URL = env("REDIS_URL", default="redis://localhost:6379")
+    REDIS_URL = env("REDIS_URL", default=None)
     REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
     if not REDIS_UNIX_SOCKET:
         REDIS_HOST = env("REDIS_HOST", default=("localhost"))
         REDIS_PORT = env("REDIS_PORT", default=6379)
+        REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
     CACHES = {
         "default": {
@@ -325,7 +310,9 @@ if not TESTING:
             "LOCATION": REDIS_URL,
             "KEY_PREFIX": "jotlet",
             "OPTIONS": {
-                "parser_class": "redis.connection.HiredisParser",
+                # this connection pool is also used for Huey
+                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+                "PARSER_CLASS": "redis.connection.HiredisParser",
             },
         }
     }
@@ -389,6 +376,21 @@ CACHEOPS = {
 }
 CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
 
+if TESTING:
+    HUEY = {
+        "huey_class": "huey.SqliteHuey",
+        "filepath": os.path.join(BASE_DIR, "huey_test.db"),
+    }
+else:
+    HUEY = {
+        "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
+        "immediate": TESTING,
+        "consumer": {
+            "workers": env("HUEY_WORKERS", default=4),
+            "worker_type": "thread",
+        },
+    }
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -425,12 +427,14 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_FAIL_SILENTLY = not DEBUG
 
-EMAIL_BACKEND = (
-    "django.core.mail.backends.console.EmailBackend"
-    if TESTING
-    else env("EMAIL_BACKEND", default="django_q_email.backends.DjangoQBackend")
-)
-DJANGO_Q_EMAIL_BACKEND = env("DJANGO_Q_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")
+if TESTING:
+    HUEY_EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+elif env("DJANGO_Q_EMAIL_BACKEND", default=None) is not None:
+    # backwards compatibility with previous django-q settings
+    HUEY_EMAIL_BACKEND = env("DJANGO_Q_EMAIL_BACKEND")
+else:
+    HUEY_EMAIL_BACKEND = env("HUEY_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env("EMAIL_PORT", default=25)
 EMAIL_USE_TLS = env("EMAIL_USE_TLS", default=False)
