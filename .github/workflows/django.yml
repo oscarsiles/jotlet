@@ -51,7 +51,7 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: .venv
+          path: ~/.cache/pypoetry/virtualenvs
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install Dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -63,8 +63,8 @@ jobs:
           DB_PASSWORD: hunter2
           DB_PORT: 5432
         run: |
-          source .venv/bin/activate
-          python manage.py test
+          source ~/.cache/pypoetry/virtualenvs/bin/activate
+          python -m pytest
 
   docker-image:
     runs-on: ubuntu-latest
