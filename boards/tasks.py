@@ -42,17 +42,17 @@ def history_clean_duplicates_past_hour_command():
     return management.call_command("clean_duplicate_history", "-m", "60", "--auto")
 
 
-@db_periodic_task(crontab(hour="1"))
+@db_periodic_task(crontab(minute="0", hour="1"))
 def history_clean_old_command():
     return management.call_command("clean_old_history", "--auto")
 
 
-@db_periodic_task(crontab(hour="2"))
+@db_periodic_task(crontab(minute="0", hour="2"))
 @lock_task("post_image_cleanup-lock")
 def post_image_cleanup_command():
     return management.call_command("post_image_cleanup")
 
 
-@db_periodic_task(crontab(hour="3", day_of_week="0"))
+@db_periodic_task(crontab(minute="0", hour="3", day_of_week="0"))
 def thumbnail_cleanup_command():
     return management.call_command("thumbnail", "cleanup")
