@@ -1,7 +1,7 @@
 import os
 import shutil
 import tempfile
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,6 +11,7 @@ from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import escape
 from PIL import Image as PILImage
 
@@ -107,8 +108,8 @@ class BoardModelTest(TestCase):
         board = Board.objects.get(title="Test Board")
         self.assertIsNone(board.get_last_post_date)
         topic = Topic.objects.create(board=board, subject="Test Topic")
-        Post.objects.create(topic=topic, content="Test Post", created_at=datetime.now() - timedelta(days=2))
-        post2 = Post.objects.create(topic=topic, content="Test Post 2", created_at=datetime.now() - timedelta(days=1))
+        Post.objects.create(topic=topic, content="Test Post", created_at=timezone.now() - timedelta(days=2))
+        post2 = Post.objects.create(topic=topic, content="Test Post 2", created_at=timezone.now() - timedelta(days=1))
         # make sure another board's posts are not counted
         board2 = Board.objects.create(title="Test Board 2", description="Test Board Description")
         topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
@@ -188,7 +189,7 @@ class TopicModelTest(TestCase):
     def test_get_last_post_date(self):
         topic = Topic.objects.get(subject="Test Topic")
         self.assertIsNone(topic.get_last_post_date)
-        Post.objects.create(topic=topic, content="Test Post", created_at=datetime.today() - timedelta(days=1))
+        Post.objects.create(topic=topic, content="Test Post", created_at=timezone.now() - timedelta(days=1))
         post2 = Post.objects.create(topic=topic, content="Test Post 2")
         topic = Topic.objects.get(subject="Test Topic")
         self.assertEqual(topic.get_last_post_date, date(post2.created_at, "d/m/Y"))
