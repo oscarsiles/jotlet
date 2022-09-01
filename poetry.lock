@@ -1563,6 +1563,7 @@ python-versions = ">=3.6"
 [package.dependencies]
 async-timeout = ">=4.0.2"
 deprecated = ">=1.2.3"
+hiredis = {version = ">=1.0.0", optional = true, markers = "extra == \"hiredis\""}
 packaging = ">=20.4"
 
 [package.extras]
@@ -2041,7 +2042,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e85a87f21da70280439cf2ca58b9a5e7b4abcb3ab2203bf2ef61b4350933a174"
+content-hash = "97c983d3eb256fcd73dae47deacfab72c162624d79de4ea8df5f1fc647b4bc1d"
 
 [metadata.files]
 aioredis = [
