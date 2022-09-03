@@ -146,8 +146,9 @@ class BoardPreferencesModelTest(TestCase):
         self.assertEqual(self.board.preferences.get_inverse_opacity, 1.0 - self.board.preferences.background_opacity)
 
     def test_preferences_deleted_after_board_delete(self):
+        preferences_pk = self.board.preferences.pk
         self.board.delete()
-        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, board=self.board)
+        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, pk=preferences_pk)
 
 
 class TopicModelTest(TestCase):
