@@ -216,6 +216,7 @@ class PostModelTest(TestCase):
         type = "v"
         self.post.topic.board.preferences.reaction_type = type
         self.post.topic.board.preferences.save()
+        ReactionFactory.reset_sequence(1)
         ReactionFactory.create_batch(
             4,
             post=self.post,
@@ -230,11 +231,12 @@ class PostModelTest(TestCase):
         type = "s"
         self.post.topic.board.preferences.reaction_type = type
         self.post.topic.board.preferences.save()
+        ReactionFactory.reset_sequence(1)
         ReactionFactory.create_batch(
             4,
             post=self.post,
             type=type,
-            reaction_score=factory.Sequence(lambda n: n + 1),  # 1, 2, 3, 4
+            reaction_score=factory.Sequence(lambda n: n),  # 1, 2, 3, 4
         )
         self.post = Post.objects.get(pk=self.post.pk)
         self.assertEqual(self.post.get_reaction_score(), f"{((1+2+3+4)/4):.2g}")
