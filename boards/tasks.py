@@ -23,9 +23,7 @@ def delete_thumbnails(file):
 @lock_task("post_image_cleanup-lock")
 def post_image_cleanup(post, imgs=None):
     if imgs is None:
-        from .models import PostImage
-
-        imgs = PostImage.objects.filter(board=post.topic.board)
+        raise ValueError("Post images must be provided")
     for img in imgs:
         if img.image.url in post.content and not img.post == post:
             img.post = post

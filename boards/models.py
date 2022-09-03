@@ -230,7 +230,7 @@ class Post(auto_prefetch.Model, MPTTModel):
             elif prev_post.content != self.content:
                 cleanup_task = True
             if cleanup_task:
-                post_image_cleanup(self)()
+                post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
 
     def get_is_owner(self, request):
         return self.session_key == request.session.session_key or (
