@@ -3,8 +3,8 @@ import shutil
 import tempfile
 from datetime import timedelta
 
+import factory
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.defaultfilters import date
@@ -15,13 +15,17 @@ from django.utils import timezone
 from django.utils.html import escape
 from PIL import Image as PILImage
 
+from accounts.tests.factories import UserFactory
 from boards.models import IMAGE_TYPE, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
+
+from .factories import BgImageFactory, BoardFactory, PostFactory, PostImageFactory, ReactionFactory, TopicFactory
 
 MEDIA_ROOT = tempfile.mkdtemp()
 IMAGE_EXTS = ["png", "jpg", "bmp", "gif"]
 BASE_TEST_IMAGE_PATH = "images/white_"
 
 
+# TODO: Move to factories
 def create_image(file, name, type, board=None, title="test"):
     module_dir = os.path.dirname(__file__)
     image_path = os.path.join(module_dir, file)
@@ -40,7 +44,7 @@ def create_image(file, name, type, board=None, title="test"):
 
 def create_images(board=None):
     if board is None:
-        board = Board.objects.create(title="Test Board")
+        board = BoardFactory()
     count = 0
     for ext in IMAGE_EXTS:
         for type, text in IMAGE_TYPE:
@@ -60,8 +64,7 @@ def create_images(board=None):
 class BoardModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
+        cls.board = BoardFactory()
 
     @classmethod
     def tearDownClass(cls):
@@ -69,153 +72,124 @@ class BoardModelTest(TestCase):
         super().tearDownClass()
 
     def test_title_max_length(self):
-        board = Board.objects.get(title="Test Board")
-        max_length = board._meta.get_field("title").max_length
+        max_length = self.board._meta.get_field("title").max_length
         self.assertEqual(max_length, 50)
 
     def test_description_max_length(self):
-        board = Board.objects.get(title="Test Board")
-        max_length = board._meta.get_field("description").max_length
+        max_length = self.board._meta.get_field("description").max_length
         self.assertEqual(max_length, 100)
 
     def test_object_name_is_title(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(str(board), board.title)
+        self.assertEqual(str(self.board), self.board.title)
 
     def test_slug_format(self):
-        slug = Board.objects.get(title="Test Board").slug
-        self.assertRegex(slug, r"^[a-z0-9]{8}$")  # make sure we are only generating the new type of slug
+        self.assertRegex(self.board.slug, r"^[a-z0-9]{8}$")  # make sure we are only generating the new type of slug
 
     def test_board_remain_after_user_delete(self):
-        user = User.objects.get(username="testuser1")
+        user = self.board.owner
         board_count_before = Board.objects.count()
         user.delete()
         board_count_after = Board.objects.count()
         self.assertEqual(board_count_before, board_count_after)
-        self.assertIsNone(Board.objects.get(title="Test Board").owner)
+        self.assertIsNone(Board.objects.get(pk=self.board.pk).owner)
 
     def test_get_post_count(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.get_post_count, 0)
-        self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
-        topic = Topic.objects.create(board=board, subject="Test Topic")
-        Post.objects.create(topic=topic, content="Test Post")
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.get_post_count, 1)
-        self.assertEqual(board.get_post_count, Post.objects.filter(topic__board=board).count())
+        self.assertEqual(self.board.get_post_count, 0)
+        self.assertEqual(self.board.get_post_count, Post.objects.filter(topic__board=self.board).count())
+        topic = TopicFactory(board=self.board)
+        PostFactory(topic=topic)
+        self.board = Board.objects.get(pk=self.board.pk)
+        self.assertEqual(self.board.get_post_count, 1)
+        self.assertEqual(self.board.get_post_count, Post.objects.filter(topic__board=self.board).count())
 
     def test_get_last_post_date(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertIsNone(board.get_last_post_date)
-        topic = Topic.objects.create(board=board, subject="Test Topic")
-        Post.objects.create(topic=topic, content="Test Post", created_at=timezone.now() - timedelta(days=2))
-        post2 = Post.objects.create(topic=topic, content="Test Post 2", created_at=timezone.now() - timedelta(days=1))
+        self.assertIsNone(self.board.get_last_post_date)
+        topic = TopicFactory(board=self.board)
+        PostFactory(topic=topic, created_at=timezone.now() - timedelta(days=2))
+        post2 = PostFactory(topic=topic, created_at=timezone.now() - timedelta(days=1))
         # make sure another board's posts are not counted
-        board2 = Board.objects.create(title="Test Board 2", description="Test Board Description")
-        topic2 = Topic.objects.create(board=board2, subject="Test Topic 2")
-        Post.objects.create(topic=topic2, content="Test Post 3")
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.get_last_post_date, date(post2.created_at, "d/m/Y"))
+        board2 = BoardFactory()
+        topic2 = TopicFactory(board=board2)
+        PostFactory(topic=topic2)
+        self.board = Board.objects.get(pk=self.board.pk)
+        self.assertEqual(self.board.get_last_post_date, date(post2.created_at, "d/m/Y"))
 
     def test_get_image_count(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.get_image_count, 0)
+        self.assertEqual(self.board.get_image_count, 0)
 
-        img_count1 = create_images(board)
-        img_count2 = create_images(Board.objects.create(title="Test Board 2"))
-        board = Board.objects.get(title="Test Board")
+        img_count1 = create_images(self.board)
+        img_count2 = create_images(BoardFactory())
+        self.board = Board.objects.get(pk=self.board.pk)
         self.assertEqual(Image.objects.count(), img_count1 + img_count2)
-        self.assertLess(board.get_image_count, img_count1)
-        self.assertEqual(board.get_image_count, len(IMAGE_EXTS) * 2)  # extensions * orientations
+        self.assertLess(self.board.get_image_count, img_count1)
+        self.assertEqual(self.board.get_image_count, len(IMAGE_EXTS) * 2)  # extensions * orientations
 
     def test_get_absolute_url(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.get_absolute_url(), f"/boards/{board.slug}/")
+        self.assertEqual(self.board.get_absolute_url(), f"/boards/{self.board.slug}/")
 
 
 class BoardPreferencesModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
+        cls.board = BoardFactory()
 
     def test_board_has_preferences(self):
-        board = Board.objects.get(title="Test Board")
-        self.assertIsNotNone(board.preferences)
+        self.assertIsNotNone(self.board.preferences)
 
     def test_preferences_name(self):
-        preferences = BoardPreferences.objects.get(board=Board.objects.get(title="Test Board"))
-        self.assertEqual(str(preferences), "Test Board preferences")
+        self.assertEqual(str(self.board.preferences), f"{self.board} preferences")
 
     def test_get_absolute_url(self):
-        preferences = BoardPreferences.objects.get(board=Board.objects.get(title="Test Board"))
-        self.assertEqual(preferences.get_absolute_url(), f"/boards/{preferences.board.slug}/preferences/")
+        self.assertEqual(self.board.preferences.get_absolute_url(), f"/boards/{self.board.slug}/preferences/")
 
     def test_inverse_opacity(self):
-        preferences = BoardPreferences.objects.get(board=Board.objects.get(title="Test Board"))
-        self.assertEqual(preferences.get_inverse_opacity, 1.0 - preferences.background_opacity)
+        self.assertEqual(self.board.preferences.get_inverse_opacity, 1.0 - self.board.preferences.background_opacity)
 
     def test_preferences_deleted_after_board_delete(self):
-        board = Board.objects.get(title="Test Board")
-        preferences = BoardPreferences.objects.get(board=board)
-        board.delete()
-        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, id=preferences.id)
+        self.board.delete()
+        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, board=self.board)
 
 
 class TopicModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        # Create two users
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board1 = Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
-        Topic.objects.create(subject="Test Topic", board=board1)
-        board2 = Board.objects.create(title="Test Board 2", description="Test Board 2 Description", owner=test_user2)
-        Topic.objects.create(subject="Test Topic 2", board=board2)
+        cls.topic = TopicFactory()
 
     def test_subject_max_length(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        max_length = topic._meta.get_field("subject").max_length
-        self.assertEqual(max_length, 400)
+        self.assertEqual(self.topic._meta.get_field("subject").max_length, 400)
 
     def test_object_name_is_subject(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        self.assertEqual(str(topic), topic.subject)
+        self.assertEqual(str(self.topic), self.topic.subject)
 
     def test_get_board_name(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        self.assertEqual(topic.get_board_name(), topic.board.title)
+        self.assertEqual(self.topic.get_board_name(), self.topic.board.title)
 
     def test_get_last_post_date(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        self.assertIsNone(topic.get_last_post_date)
-        Post.objects.create(topic=topic, content="Test Post", created_at=timezone.now() - timedelta(days=1))
-        post2 = Post.objects.create(topic=topic, content="Test Post 2")
-        topic = Topic.objects.get(subject="Test Topic")
-        self.assertEqual(topic.get_last_post_date, date(post2.created_at, "d/m/Y"))
+        self.assertIsNone(self.topic.get_last_post_date)
+        post = PostFactory(topic=self.topic)
+        self.topic = Topic.objects.get(pk=self.topic.pk)
+        self.assertEqual(self.topic.get_last_post_date, date(post.created_at, "d/m/Y"))
+        PostFactory(topic=self.topic, created_at=timezone.now() - timedelta(days=1))
+        self.topic = Topic.objects.get(pk=self.topic.pk)
+        self.assertEqual(self.topic.get_last_post_date, date(post.created_at, "d/m/Y"))
 
     def test_get_absolute_url(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        self.assertEqual(topic.get_absolute_url(), f"/boards/{topic.board.slug}/")
+        self.assertEqual(self.topic.get_absolute_url(), f"/boards/{self.topic.board.slug}/")
 
     def test_topic_deleted_after_board_delete(self):
-        board = Board.objects.get(title="Test Board")
-        topic = Topic.objects.get(board=board)
-        board.delete()
-        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+        self.topic.board.delete()
+        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, pk=self.topic.pk)
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class PostModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        # Create two users
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        Post.objects.create(content="Test Post", topic=topic)
-        Post.objects.create(content="Test Post 2", topic=topic)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.post = PostFactory()
+        cls.post.topic.board.owner = cls.user
+        cls.post.topic.board.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -223,144 +197,128 @@ class PostModelTest(TestCase):
         super().tearDownClass()
 
     def test_content_max_length(self):
-        post = Post.objects.get(content="Test Post")
-        max_length = post._meta.get_field("content").max_length
-        self.assertEqual(max_length, 1000)
+        self.assertEqual(self.post._meta.get_field("content").max_length, 1000)
 
     def test_object_name_is_content(self):
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(str(post), post.content)
+        self.assertEqual(str(self.post), self.post.content)
 
-    def test_get_reaction_score(self):
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score(), 0)
-
-        # like
+    def test_get_reaction_score_like(self):
+        self.assertEqual(self.post.get_reaction_score(), 0)
         type = "l"
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        Reaction.objects.create(post=post, reaction_score=1, session_key="test1")
-        Reaction.objects.create(post=post, reaction_score=1, session_key="test2")
-        post = Post.objects.get(content="Test Post")  # post has cached property
-        self.assertEqual(post.get_reaction_score(), 2)
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
+        ReactionFactory.create_batch(2, post=self.post)
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_reaction_score(), 2)
 
-        # vote
+    def test_get_reaction_score_vote(self):
+        self.assertEqual(self.post.get_reaction_score(), 0)
         type = "v"
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test1")
-        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test2")
-        Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test3")
-        Reaction.objects.create(post=post, reaction_score=-1, type=type, session_key="test4")
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score(), (2, 2))
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
+        ReactionFactory.create_batch(
+            4,
+            post=self.post,
+            type=type,
+            reaction_score=factory.Sequence(lambda n: 1 if n % 2 == 0 else -1),  # 2 upvotes, 2 downvotes
+        )
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_reaction_score(), (2, 2))
 
-        # star
+    def test_get_reaction_score_star(self):
+        self.assertEqual(self.post.get_reaction_score(), 0)
         type = "s"
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        Reaction.objects.create(post=post, reaction_score=1, type=type, session_key="test1")
-        Reaction.objects.create(post=post, reaction_score=2, type=type, session_key="test2")
-        Reaction.objects.create(post=post, reaction_score=3, type=type, session_key="test3")
-        Reaction.objects.create(post=post, reaction_score=4, type=type, session_key="test4")
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score(), f"{((1+2+3+4)/4):.2g}")
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
+        ReactionFactory.create_batch(
+            4,
+            post=self.post,
+            type=type,
+            reaction_score=factory.Sequence(lambda n: n + 1),  # 1, 2, 3, 4
+        )
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_reaction_score(), f"{((1+2+3+4)/4):.2g}")
 
-        # none
+    def test_get_reaction_score_none(self):
+        self.assertEqual(self.post.get_reaction_score(), 0)
         type = "n"
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score(), 0)
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_reaction_score(), 0)
 
-        # unknown
+    def test_get_reaction_score_unknown(self):
+        self.assertEqual(self.post.get_reaction_score(), 0)
         type = "?"
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_reaction_score(), 0)
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_reaction_score(), 0)
 
     def test_get_has_reacted(self):
         type = "l"
-        post = Post.objects.get(content="Test Post")
-        post.topic.board.preferences.reaction_type = type
-        post.topic.board.preferences.save()
-        user = User.objects.get(username="testuser1")
+        self.post.topic.board.preferences.reaction_type = type
+        self.post.topic.board.preferences.save()
 
         factory = RequestFactory()
         request = factory.post(
             reverse(
                 "boards:post-reaction",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
+                kwargs={"slug": self.post.topic.board.slug, "topic_pk": self.post.topic_id, "pk": self.post.pk},
             )
         )
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
 
-        Reaction.objects.create(post=post, reaction_score=1, session_key=request.session.session_key, user=user)
-        has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
+        ReactionFactory(post=self.post, reaction_score=1, session_key=request.session.session_key, user=self.user)
+        has_reacted, reaction_id, reacted_score = self.post.get_has_reacted(request)
         self.assertTrue(has_reacted)
-        self.assertEqual(reaction_id, Reaction.objects.get(post=post, user=user).pk)
+        self.assertEqual(reaction_id, Reaction.objects.get(post=self.post, user=self.user).pk)
         self.assertEqual(reacted_score, 1)
 
-        Reaction.objects.filter(post=post, user=user).update(session_key="test")
-        post = Post.objects.get(content="Test Post")
-        has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
+        Reaction.objects.filter(post=self.post, user=self.user).update(session_key="test")
+        self.post = Post.objects.get(pk=self.post.pk)
+        has_reacted, reaction_id, reacted_score = self.post.get_has_reacted(request)
         self.assertTrue(has_reacted)
-        self.assertEqual(reaction_id, Reaction.objects.get(post=post, user=user).pk)
+        self.assertEqual(reaction_id, Reaction.objects.get(post=self.post, user=self.user).pk)
         self.assertEqual(reacted_score, 1)
 
     def test_get_absolute_url(self):
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.get_absolute_url(), f"/boards/{post.topic.board.slug}/")
+        self.assertEqual(self.post.get_absolute_url(), f"/boards/{self.post.topic.board.slug}/")
 
     def test_post_deleted_after_topic_delete(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        post = Post.objects.get(content="Test Post")
-        topic.delete()
-        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post.id)
+        self.post.topic.delete()
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, pk=self.post.pk)
 
     def test_post_deleted_after_board_delete(self):
-        board = Board.objects.get(title="Test Board")
-        post1 = Post.objects.get(content="Test Post")
-        post2 = Post.objects.get(content="Test Post 2")
-        board.delete()
-        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post1.id)
-        self.assertRaises(Post.DoesNotExist, Post.objects.get, id=post2.id)
+        post2 = PostFactory(topic=self.post.topic)
+        self.post.topic.board.delete()
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, pk=self.post.pk)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, pk=post2.pk)
 
     def test_cleanup_image_uploads(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        board = Board.objects.get(title="Test Board")
-        board.preferences.allow_image_uploads = True
-        board.preferences.save()
+        self.post.topic.board.preferences.allow_image_uploads = True
+        self.post.topic.board.preferences.save()
 
-        for i in range(2):
-            create_image(
-                f"{BASE_TEST_IMAGE_PATH}horizontal.png",
-                "test.png",
-                type="p",
-                board=board,
-                title=f"Test Post Image {i}",
-            )
+        post_image1, post_image2 = PostImageFactory.create_batch(2, board=self.post.topic.board)
         self.assertEqual(PostImage.objects.count(), 2)
 
         # test on create
-        post_image1 = PostImage.objects.get(title="Test Post Image 0")
-        post = Post.objects.create(content=f"<img src='{post_image1.image.url}'/>", topic=topic)
-        post_image1 = PostImage.objects.get(title="Test Post Image 0")
+        post = PostFactory(content=f"<img src='{post_image1.image.url}'/>", topic=self.post.topic)
+        post_image1 = PostImage.objects.get(pk=post_image1.pk)
         self.assertEqual(post_image1.post, post)
 
         # test after update
-        post_image2 = PostImage.objects.get(title="Test Post Image 1")
-        post = Post.objects.get(content="Test Post")
+        post = Post.objects.get(pk=self.post.pk)
         post.content = f"<img src='{post_image2.image.url}'/>"
         post.save()
-        post_image2 = PostImage.objects.get(title="Test Post Image 1")
+        post_image2 = PostImage.objects.get(pk=post_image2.pk)
         self.assertEqual(post_image2.post, post)
 
 
+# TODO: Reaction model tests
 class ReactionModelTest(TestCase):
     pass
 
@@ -369,8 +327,8 @@ class ReactionModelTest(TestCase):
 class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        board = Board.objects.create(title="Test Board")
-        create_images(board)
+        cls.board = BoardFactory()
+        create_images(cls.board)
 
     @classmethod
     def tearDownClass(cls):
@@ -404,7 +362,7 @@ class ImageModelTest(TestCase):
                     self.assertLessEqual(img.image.height, settings.MAX_IMAGE_HEIGHT)
 
     def test_get_board_usage_count(self):
-        board = Board.objects.create(title="Test Board", description="Test Board Description")
+        board = BoardFactory()
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
             for img in imgs:
@@ -467,16 +425,13 @@ class ImageModelTest(TestCase):
     def test_proxy_background_image(self):
         self.assertEqual(list(Image.objects.filter(type="b")), list(BgImage.objects.all()))
 
+        count_before = BgImage.objects.count()
+        BgImageFactory()
+        self.assertEqual(BgImage.objects.count(), count_before + 1)
+
     def test_proxy_post_image(self):
         self.assertEqual(list(Image.objects.filter(type="p")), list(PostImage.objects.all()))
 
         count_before = PostImage.objects.count()
-        module_dir = os.path.dirname(__file__)
-        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
-        with open(image_path, "rb") as image_file:
-            PostImage.objects.create(
-                image=SimpleUploadedFile(name="test.png", content=image_file.read()),
-                board=Board.objects.first(),
-                title="test",
-            )
+        PostImageFactory()
         self.assertEqual(PostImage.objects.count(), count_before + 1)
