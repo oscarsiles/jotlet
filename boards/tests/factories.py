@@ -2,7 +2,7 @@ import factory
 from faker import Faker
 
 from accounts.tests.factories import UserFactory
-from boards.models import BgImage, Board, Image, Post, PostImage, Reaction, Topic
+from boards.models import BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
 
 fake = Faker()
 
@@ -14,6 +14,13 @@ class BoardFactory(factory.django.DjangoModelFactory):
     owner = factory.SubFactory(UserFactory)
     title = factory.Faker("text", max_nb_chars=50)
     description = factory.Faker("text", max_nb_chars=100)
+
+
+class BoardPreferencesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BoardPreferences
+
+    board = factory.SubFactory(BoardFactory)
 
 
 class TopicFactory(factory.django.DjangoModelFactory):
