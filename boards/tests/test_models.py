@@ -28,7 +28,7 @@ from .factories import (
 )
 
 MEDIA_ROOT = tempfile.mkdtemp()
-IMAGE_EXTS = ["png", "jpg", "bmp", "gif"]
+IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
 BASE_TEST_IMAGE_PATH = "images/white_"
 
 
@@ -303,7 +303,7 @@ class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.board = BoardFactory()
-        for ext in IMAGE_EXTS:
+        for ext in IMAGE_FORMATS:
             for type, text in IMAGE_TYPE:
                 ImageFactory(board=cls.board if type == "p" else None, type=type)
 

@@ -1,38 +1,41 @@
-import os
 import shutil
 import tempfile
 
+import factory
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import Permission
 from django.test import TestCase, override_settings
 from PIL import Image as PILImage
 
-from boards.models import IMAGE_TYPE, Board, Image
-from boards.utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
+from accounts.tests.factories import UserFactory
+from boards.models import IMAGE_TYPE
+from boards.utils import get_image_upload_path, get_is_moderator, get_random_string
+
+from .factories import BoardFactory, ImageFactory
+from .test_models import IMAGE_FORMATS
 
 MEDIA_ROOT = tempfile.mkdtemp()
 
 
 class UtilsTest(TestCase):
     def test_get_is_moderator(self):
-        normal_user = User.objects.create_user(username="normal_user", password="test")
-        owner_user = User.objects.create_user(username="owner", password="test")
-        mod_user = User.objects.create_user(username="moderator", password="test")
-        perms_user = User.objects.create_user(username="perms", password="test")
+        normal_user = UserFactory()
+        owner_user = UserFactory()
+        mod_user = UserFactory()
+        perms_user = UserFactory()
         perms_user.user_permissions.add(
             Permission.objects.get(content_type__app_label="boards", codename="can_approve_posts")
         )
-        staff_user = User.objects.create_user(username="staff", password="test", is_staff=True)
+        staff_user = UserFactory(is_staff=True)
 
-        board = Board.objects.create(title="Test Board", owner=owner_user)
+        board = BoardFactory(owner=owner_user)
         self.assertFalse(get_is_moderator(normal_user, board))
         self.assertFalse(get_is_moderator(mod_user, board))
         self.assertTrue(get_is_moderator(perms_user, board))
         self.assertTrue(get_is_moderator(owner_user, board))
         self.assertTrue(get_is_moderator(staff_user, board))
 
-        board_mod = Board.objects.create(title="Test Board Mod", owner=owner_user)
+        board_mod = BoardFactory(owner=owner_user)
         board_mod.preferences.moderators.add(mod_user)
         self.assertFalse(get_is_moderator(normal_user, board_mod))
         self.assertTrue(get_is_moderator(mod_user, board_mod))
@@ -47,28 +50,22 @@ class UtilsTest(TestCase):
             self.assertRegex(randstr, rf"^[a-z0-9]{{{i}}}$")
 
 
-@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+@override_settings(
+    MEDIA_ROOT=MEDIA_ROOT,
+    # reduce resolution to speed up tests
+    MAX_IMAGE_HEIGHT=500,
+    MAX_IMAGE_WIDTH=500,
+)
 class TestImageUtils(TestCase):
-    module_dir = os.path.dirname(__file__)
-    image_path = os.path.join(module_dir, "images/white_horizontal.png")
-
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
     def test_get_image_upload_path(self):
-        board = Board.objects.create(title="Test Board")
+        board = BoardFactory()
         for type, _ in IMAGE_TYPE:
-            with open(self.image_path, "rb") as image_file:
-                img = Image(
-                    type=type,
-                    image=SimpleUploadedFile(
-                        name=f"{type}.png",
-                        content=image_file.read(),
-                    ),
-                    board=board if type == "p" else None,
-                )
+            img = ImageFactory(board=board if type == "p" else None, type=type)
             if type == "p":
                 sub1 = board.slug
                 self.assertEqual(img.board, board)
@@ -82,19 +79,37 @@ class TestImageUtils(TestCase):
             )
 
     def test_process_image(self):
-        exts = ["png", "jpg", "bmp", "gif"]
-        for ext in exts:
-            for type, _ in IMAGE_TYPE:
-                for orientation in ["horizontal", "vertical"]:
-                    image_path = os.path.join(self.module_dir, f"images/white_{orientation}.{ext}")
-                    with open(image_path, "rb") as image_file:
-                        img = Image(
-                            image=SimpleUploadedFile(
-                                name=f"{type}-{orientation}.{ext}",
-                                content=image_file.read(),
-                            )
-                        )
-                    img.image = process_image(img.image, type=type)
+        from PIL import ImageFile
+
+        from boards.utils import process_image
+
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+        resolutions = [
+            (settings.MAX_IMAGE_HEIGHT + 100, settings.MAX_IMAGE_WIDTH),
+            (settings.MAX_IMAGE_HEIGHT, settings.MAX_IMAGE_WIDTH + 100),
+        ]
+
+        for height, width in resolutions:
+            for format in IMAGE_FORMATS:
+                for type, _ in IMAGE_TYPE:
+                    img = ImageFactory(
+                        image=factory.django.ImageField(
+                            board=None,
+                            filename=f"{height}x{width}.{format}",
+                            height=height,
+                            width=width,
+                            format=format,
+                            palette="P" if format == "bmp" else "RGB",
+                        ),
+                    )
+                    img.image.open()  # fixes "ValueError: seek of closed file"
+                    img.image = process_image(
+                        img.image,
+                        type=type,
+                        height=settings.MAX_IMAGE_HEIGHT,
+                        width=settings.MAX_IMAGE_WIDTH,
+                    )
 
                     if type == "p":
                         max_width = settings.MAX_POST_IMAGE_WIDTH
@@ -106,6 +121,7 @@ class TestImageUtils(TestCase):
                     self.assertLessEqual(img.image.width, max_width)
                     self.assertLessEqual(img.image.height, max_height)
 
-                    if ext not in ["jpg", "png"]:
-                        pilimage = PILImage.open(img.image)
+                    pilimage = PILImage.open(img.image)
+                    self.assertEqual(pilimage.mode, "RGB")
+                    if format not in ["jpeg", "png"]:
                         self.assertEqual(pilimage.format, "JPEG")

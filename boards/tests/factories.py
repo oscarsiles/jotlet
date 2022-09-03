@@ -52,7 +52,7 @@ class ImageFactory(factory.django.DjangoModelFactory):
         model = Image
 
     title = factory.Faker("text", max_nb_chars=50)
-    image = factory.django.ImageField()
+    image = factory.django.ImageField(filename="example.png", format="png", width=100, height=100)
 
 
 class BgImageFactory(ImageFactory):
