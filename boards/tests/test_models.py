@@ -6,7 +6,6 @@ from datetime import timedelta
 import factory
 from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
@@ -18,46 +17,19 @@ from PIL import Image as PILImage
 from accounts.tests.factories import UserFactory
 from boards.models import IMAGE_TYPE, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
 
-from .factories import BgImageFactory, BoardFactory, PostFactory, PostImageFactory, ReactionFactory, TopicFactory
+from .factories import (
+    BgImageFactory,
+    BoardFactory,
+    ImageFactory,
+    PostFactory,
+    PostImageFactory,
+    ReactionFactory,
+    TopicFactory,
+)
 
 MEDIA_ROOT = tempfile.mkdtemp()
 IMAGE_EXTS = ["png", "jpg", "bmp", "gif"]
 BASE_TEST_IMAGE_PATH = "images/white_"
-
-
-# TODO: Move to factories
-def create_image(file, name, type, board=None, title="test"):
-    module_dir = os.path.dirname(__file__)
-    image_path = os.path.join(module_dir, file)
-    with open(image_path, "rb") as image_file:
-        image = Image.objects.create(
-            type=type,
-            image=SimpleUploadedFile(
-                name=name,
-                content=image_file.read(),
-            ),
-            board=board,
-            title=title,
-        )
-    return image
-
-
-def create_images(board=None):
-    if board is None:
-        board = BoardFactory()
-    count = 0
-    for ext in IMAGE_EXTS:
-        for type, text in IMAGE_TYPE:
-            for orientation in ["horizontal", "vertical"]:
-                create_image(
-                    f"{BASE_TEST_IMAGE_PATH}{orientation}.{ext}",
-                    f"{type}.{ext}",
-                    type,
-                    board=board if type == "p" else None,
-                    title=f"{type}_{text}_{orientation}_{ext}",
-                )
-                count += 1
-    return count
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
@@ -114,15 +86,15 @@ class BoardModelTest(TestCase):
         self.board = Board.objects.get(pk=self.board.pk)
         self.assertEqual(self.board.get_last_post_date, date(post2.created_at, "d/m/Y"))
 
-    def test_get_image_count(self):
-        self.assertEqual(self.board.get_image_count, 0)
+    def test_get_postimage_count(self):
+        self.assertEqual(self.board.get_postimage_count, 0)
 
-        img_count1 = create_images(self.board)
-        img_count2 = create_images(BoardFactory())
+        img_count1 = len(PostImageFactory.create_batch(3, board=self.board))
+        img_count2 = len(BgImageFactory.create_batch(2))
         self.board = Board.objects.get(pk=self.board.pk)
         self.assertEqual(Image.objects.count(), img_count1 + img_count2)
-        self.assertLess(self.board.get_image_count, img_count1)
-        self.assertEqual(self.board.get_image_count, len(IMAGE_EXTS) * 2)  # extensions * orientations
+        self.assertLess(self.board.get_postimage_count, img_count1 + img_count2)
+        self.assertEqual(self.board.get_postimage_count, img_count1)
 
     def test_get_absolute_url(self):
         self.assertEqual(self.board.get_absolute_url(), f"/boards/{self.board.slug}/")
@@ -331,7 +303,9 @@ class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.board = BoardFactory()
-        create_images(cls.board)
+        for ext in IMAGE_EXTS:
+            for type, text in IMAGE_TYPE:
+                ImageFactory(board=cls.board if type == "p" else None, type=type)
 
     @classmethod
     def tearDownClass(cls):

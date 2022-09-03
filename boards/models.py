@@ -98,10 +98,10 @@ class Board(auto_prefetch.Model):
     get_last_post_date.short_description = "Last Post Date"
 
     @cached_property
-    def get_image_count(self):
+    def get_postimage_count(self):
         return Image.objects.filter(board=self, type="p").count()
 
-    get_image_count.short_description = "Image Count"
+    get_postimage_count.short_description = "Image Count"
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})

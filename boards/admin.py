@@ -38,7 +38,7 @@ class BoardAdmin(SimpleHistoryAdmin):
         "owner",
         "get_post_count",
         "get_last_post_date",
-        "get_image_count",
+        "get_postimage_count",
         "created_at",
     )
     fields = (
