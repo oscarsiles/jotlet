@@ -112,6 +112,7 @@ INSTALLED_APPS += [
     "notices",
     "accounts",
     "boards",
+    "jotlet",
     "django_cleanup.apps.CleanupConfig",
 ]
 
