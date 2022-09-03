@@ -2,7 +2,7 @@ import factory
 from faker import Faker
 
 from accounts.tests.factories import UserFactory
-from boards.models import Board, Image, Post, Reaction, Topic
+from boards.models import BgImage, Board, Image, Post, PostImage, Reaction, Topic
 
 fake = Faker()
 
@@ -40,12 +40,6 @@ class ReactionFactory(factory.django.DjangoModelFactory):
     session_key = factory.LazyFunction(lambda: fake.unique.sha1())
 
 
-# black_pixel_gif = (
-#     b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x05\x04\x04\x00\x00"
-#     b"\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b"
-# )
-
-
 class ImageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Image
@@ -55,9 +49,12 @@ class ImageFactory(factory.django.DjangoModelFactory):
 
 
 class BgImageFactory(ImageFactory):
-    type = "b"
+    class Meta:
+        model = BgImage
 
 
 class PostImageFactory(ImageFactory):
-    type = "p"
+    class Meta:
+        model = PostImage
+
     board = factory.SubFactory(BoardFactory)
