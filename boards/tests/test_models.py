@@ -29,7 +29,6 @@ from .factories import (
 
 MEDIA_ROOT = tempfile.mkdtemp()
 IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
-BASE_TEST_IMAGE_PATH = "images/white_"
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
