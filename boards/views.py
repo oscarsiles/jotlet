@@ -452,7 +452,10 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
 
     def test_func(self):
         post = self.get_object()
-        return get_is_moderator(self.request.user, post.topic.board)
+        return (
+            get_is_moderator(self.request.user, post.topic.board)
+            and post.topic.board.preferences.reaction_type != "n"
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -549,6 +552,8 @@ class PostFetchView(generic.TemplateView):
         context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
+        if not board.preferences.require_post_approval and not post.approved:
+            context["post"].approved = True
         context["is_owner"] = post.get_is_owner(self.request)
         context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
         return context

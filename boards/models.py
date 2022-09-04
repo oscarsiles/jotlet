@@ -233,7 +233,7 @@ class Post(auto_prefetch.Model, MPTTModel):
                 post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
 
     def get_is_owner(self, request):
-        return self.session_key == request.session.session_key or (
+        return (self.session_key == request.session.session_key and self.session_key is not None) or (
             request.user.is_authenticated and self.user == request.user
         )
 

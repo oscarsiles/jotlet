@@ -1,8 +1,9 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 
+from accounts.tests.factories import UserFactory
 from boards.forms import BoardPreferencesForm, SearchBoardsForm
-from boards.models import Board, Post, Topic
+from boards.models import Post
+from boards.tests.factories import BoardFactory, PostFactory, TopicFactory
 
 TEST_FORM_DATA = {
     "type": "d",
@@ -21,54 +22,50 @@ TEST_FORM_DATA = {
 class BoardPreferencesFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        User.objects.create_user(username="test_user", password="test_password")
-        Board.objects.create(title="Test Board", slug="000001")
+        cls.user = UserFactory(username="test_user")  # username to match test form data
+        cls.board = BoardFactory(slug="000001")
 
     def test_board_preferences_form_valid(self):
-        board = Board.objects.get(slug="000001")
         form_data = TEST_FORM_DATA
-        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=self.board, instance=self.board.preferences)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.helper.attrs["hx-post"], "/boards/000001/preferences/")
         form.save()
-        board = Board.objects.prefetch_related("preferences").get(slug="000001")
-        self.assertEqual(board.preferences.background_type, form_data.get("background_type"))
-        self.assertEqual(board.preferences.background_color, form_data.get("background_color"))
-        self.assertEqual(board.preferences.background_opacity, form_data.get("background_opacity"))
-        self.assertEqual(board.preferences.require_post_approval, form_data.get("require_post_approval"))
-        self.assertEqual(board.preferences.enable_latex, form_data.get("enable_latex"))
-        self.assertEqual(board.preferences.moderators.count(), 1)
-        self.assertEqual(board.preferences.moderators.all()[0], User.objects.get(username="test_user"))
-        self.assertEqual(board.preferences.reaction_type, form_data.get("reaction_type"))
+        self.assertEqual(self.board.preferences.background_type, form_data.get("background_type"))
+        self.assertEqual(self.board.preferences.background_color, form_data.get("background_color"))
+        self.assertEqual(self.board.preferences.background_opacity, form_data.get("background_opacity"))
+        self.assertEqual(self.board.preferences.require_post_approval, form_data.get("require_post_approval"))
+        self.assertEqual(self.board.preferences.enable_latex, form_data.get("enable_latex"))
+        self.assertEqual(self.board.preferences.moderators.count(), 1)
+        self.assertEqual(self.board.preferences.moderators.all()[0], self.user)
+        self.assertEqual(self.board.preferences.reaction_type, form_data.get("reaction_type"))
 
     def test_board_preferences_form_approve_all(self):
-        board = Board.objects.get(slug="000001")
         form_data = TEST_FORM_DATA
         form_data["require_post_approval"] = True
-        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=self.board, instance=self.board.preferences)
         self.assertTrue(form.is_valid())
         form.save()
-        self.assertEqual(board.preferences.require_post_approval, True)
-        topic = Topic.objects.create(board=board, subject="Test Topic")
+        self.assertEqual(self.board.preferences.require_post_approval, True)
+        topic = TopicFactory(board=self.board)
         for i in range(5):
-            post = Post.objects.create(topic=topic, content=f"Test Post {i}", approved=False)
+            post = PostFactory(topic=topic, approved=False)
             self.assertEqual(post.approved, False)
 
+        self.assertEqual(Post.objects.filter(approved=True).count(), 0)
         form_data["require_post_approval"] = False
-        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=self.board, instance=self.board.preferences)
         self.assertTrue(form.is_valid())
         form.save()
-        for i in range(5):
-            self.assertEqual(Post.objects.get(content=f"Test Post {i}").approved, True)
+        self.assertEqual(Post.objects.filter(approved=True).count(), 5)
 
     def test_board_preferences_form_invalid(self):
-        board = Board.objects.get(slug="000001")
         form_data = {
             "background_type": "x",
             "background_color": "fffffffff",
             "background_opacity": "2.0",
         }
-        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
+        form = BoardPreferencesForm(data=form_data, board=self.board, instance=self.board.preferences)
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["background_type"], ["Select a valid choice. x is not one of the available choices."]
@@ -80,7 +77,7 @@ class BoardPreferencesFormTest(TestCase):
 class SearchBoardsFormTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        Board.objects.create(title="Test Board", slug="123456ab")
+        BoardFactory(slug="123456ab")
 
     def test_search_boards_form_valid(self):
         form_data = {

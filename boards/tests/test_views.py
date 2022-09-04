@@ -3,11 +3,12 @@ import os
 import shutil
 import tempfile
 
+import factory
 from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import Permission
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
@@ -16,14 +17,19 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 from django_htmx.middleware import HtmxMiddleware
 
+from accounts.tests.factories import USER_TEST_PASSWORD, UserFactory
 from boards.models import IMAGE_TYPE, REACTION_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
 from boards.routing import websocket_urlpatterns
 from boards.views import BoardView
 
-from .test_models import BASE_TEST_IMAGE_PATH
+from .factories import BoardFactory, ImageFactory, PostFactory, ReactionFactory, TopicFactory
 
 MEDIA_ROOT = tempfile.mkdtemp()
 module_dir = os.path.dirname(__file__)
+
+
+def create_image(type):
+    return factory.Faker("image", image_format=type).evaluate({}, None, {"locale": "en"})
 
 
 def dummy_request(request):
@@ -33,16 +39,15 @@ def dummy_request(request):
 class IndexViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        Board.objects.create(title="Test Board", description="Test Board Description", owner=test_user1)
+        test_user1 = UserFactory()
+        cls.board = BoardFactory(owner=test_user1)
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:index"))
         self.assertEqual(response.status_code, 200)
 
     def test_board_search_success(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.post(reverse("boards:index"), {"board_slug": board.slug})
+        response = self.client.post(reverse("boards:index"), {"board_slug": self.board.slug})
         self.assertEqual(response.status_code, 302)
 
     def test_board_search_invalid(self):
@@ -53,8 +58,7 @@ class IndexViewTest(TestCase):
         )
 
     def test_board_search_not_found(self):
-        board = Board.objects.get(title="Test Board")
-        bad_slug = "000000" if board.slug != "000000" else "111111"
+        bad_slug = "000000" if self.board.slug != "000000" else "111111"
         response = self.client.post(reverse("boards:index"), {"board_slug": bad_slug})
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "board_slug", "Board does not exist.")
@@ -68,20 +72,20 @@ class IndexViewTest(TestCase):
 class IndexAllBoardsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="1X<ISRUkw+tuK", is_staff=True)
+        cls.user1 = UserFactory()
+        cls.user2 = UserFactory(is_staff=True)
 
     def test_anonymous_all_boards(self):
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 302)
 
     def test_board_non_staff_all_boards(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user1.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 403)
 
     def test_board_staff_all_boards(self):
-        self.client.login(username="testuser2", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 200)
 
@@ -89,9 +93,8 @@ class IndexAllBoardsViewTest(TestCase):
 class BoardViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1, slug="000001")
+        cls.user = UserFactory()
+        cls.board = BoardFactory(owner=cls.user, slug="000001")
 
     def setUp(self):
         super().setUp()
@@ -99,8 +102,7 @@ class BoardViewTest(TestCase):
         self.htmx_middleware = HtmxMiddleware(dummy_request)
 
     def test_anonymous_permissions(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_board_not_exist(self):
@@ -108,16 +110,14 @@ class BoardViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_htmx_requests(self):
-        board = Board.objects.get(title="Test Board")
-        user = User.objects.get(username="testuser1")
-        kwargs = {"slug": board.slug}
+        kwargs = {"slug": self.board.slug}
 
         # request with no current_url
         request = self.factory.get(reverse("boards:board", kwargs=kwargs), HTTP_HX_REQUEST="true")
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
         self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
@@ -133,7 +133,7 @@ class BoardViewTest(TestCase):
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
         self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
@@ -149,7 +149,7 @@ class BoardViewTest(TestCase):
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
         self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
@@ -165,7 +165,7 @@ class BoardViewTest(TestCase):
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
         self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
@@ -181,7 +181,7 @@ class BoardViewTest(TestCase):
         session_middleware = SessionMiddleware(request)
         session_middleware.process_request(request)
         request.session.save()
-        request.user = user
+        request.user = self.user
         self.htmx_middleware(request)
 
         response = BoardView.as_view()(request, **kwargs)
@@ -190,50 +190,44 @@ class BoardViewTest(TestCase):
 
 
 class BoardPreferencesViewTest(TestCase):
-    board_preferences_changed_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        cls.board_preferences_changed_url = reverse("boards:board-preferences", kwargs={"slug": board.slug})
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board_preferences_changed_url = reverse("boards:board-preferences", kwargs={"slug": cls.board.slug})
 
     def test_board_preferences_anonymous_permissions(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{board.slug}/preferences/")
+        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{self.board.slug}/preferences/")
 
     def test_board_references_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user2, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 403)
 
     def test_board_preferences_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_board_preferences_nonexistent_preferences(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        board.preferences.delete()
-        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, board=board)
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        preferences_pk = self.board.preferences.pk
+        self.board.preferences.delete()
+        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, pk=preferences_pk)
+        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
-        preferences = BoardPreferences.objects.get(board=board)
-        self.assertEqual(preferences.board, board)
+        preferences = BoardPreferences.objects.get(board=self.board)
+        self.assertEqual(preferences.board, self.board)
 
     async def test_preferences_changed_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
         response = await sync_to_async(self.client.post)(
@@ -258,20 +252,20 @@ class BoardPreferencesViewTest(TestCase):
 class CreateBoardViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
+        cls.user = UserFactory()
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:board-create"))
         self.assertEqual(response.status_code, 302)
 
     def test_user_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:board-create"))
-        self.assertEqual(str(response.context["user"]), "testuser1")
+        self.assertEqual(str(response.context["user"]), self.user.username)
         self.assertEqual(response.status_code, 200)
 
     def test_board_create_success(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
             reverse("boards:board-create"), {"title": "Test Board", "description": "Test Board Description"}
         )
@@ -280,14 +274,14 @@ class CreateBoardViewTest(TestCase):
         self.assertEqual(board.description, "Test Board Description")
 
     def test_board_create_blank(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(reverse("boards:board-create"), {"title": "", "description": ""})
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "title", "This field is required.")
         self.assertFormError(response.context["form"], "description", "This field is required.")
 
     def test_board_create_invalid(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(reverse("boards:board-create"), {"title": "x" * 51, "description": "x" * 101})
         self.assertEqual(response.status_code, 200)
         self.assertFormError(
@@ -301,51 +295,45 @@ class CreateBoardViewTest(TestCase):
 class UpdateBoardViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
 
     def test_anonymous_permissions(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_staff_permissions(self):
-        User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
-        self.client.login(username="staff", password="83jKJ+!fdjP")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_board_update_success(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": board.slug}),
+            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
             {"title": "Test Board NEW", "description": "Test Board Description NEW"},
         )
         self.assertEqual(response.status_code, 200)
-        board = Board.objects.get(id=board.id)
-        self.assertEqual(board.title, "Test Board NEW")
-        self.assertEqual(board.description, "Test Board Description NEW")
+        self.board = Board.objects.get(pk=self.board.pk)
+        self.assertEqual(self.board.title, "Test Board NEW")
+        self.assertEqual(self.board.description, "Test Board Description NEW")
 
     def test_board_update_blank(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": board.slug}),
+            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
             {"title": "", "description": ""},
         )
         self.assertEqual(response.status_code, 200)
@@ -353,130 +341,119 @@ class UpdateBoardViewTest(TestCase):
         self.assertFormError(response.context["form"], "description", "This field is required.")
 
     def test_board_update_invalid(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": board.slug}),
+            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
             {"title": "x" * 51, "description": "x" * 101},
         )
         self.assertEqual(response.status_code, 200)
         self.assertFormError(
-            response.context["form"], "title", "Ensure this value has at most 50 characters (it has 51)."
+            response.context["form"],
+            "title",
+            "Ensure this value has at most 50 characters (it has 51).",
         )
         self.assertFormError(
-            response.context["form"], "description", "Ensure this value has at most 100 characters (it has 101)."
+            response.context["form"],
+            "description",
+            "Ensure this value has at most 100 characters (it has 101).",
         )
 
 
 class DeleteBoardViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
 
     def test_anonymous_permissions(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Board.objects.all()), 0)
 
     def test_staff_permissions(self):
-        User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
-        self.client.login(username="staff", password="83jKJ+!fdjP")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Board.objects.all()), 0)
 
     def test_delete_board_with_reactions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(content="Test Post", topic=topic)
-        Reaction.objects.create(post=post)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        topic = TopicFactory(board=self.board)
+        post = PostFactory(topic=topic)
+        ReactionFactory(post=post)
+        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Board.objects.all()), 0)
 
 
 class TopicCreateViewTest(TestCase):
-    topic_created_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        cls.topic_created_url = reverse("boards:topic-create", kwargs={"slug": board.slug})
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.topic_created_url = reverse("boards:topic-create", kwargs={"slug": cls.board.slug})
 
     def test_anonymous_permissions(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_staff_permissions(self):
-        User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
-        self.client.login(username="staff", password="83jKJ+!fdjP")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": board.slug}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:topic-create", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_topic_create_success(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-create", kwargs={"slug": board.slug}),
+            reverse("boards:topic-create", kwargs={"slug": self.board.slug}),
             data={"subject": "Test Topic"},
         )
         self.assertEqual(response.status_code, 204)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic"))
 
     def test_topic_create_blank(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-create", kwargs={"slug": board.slug}),
+            reverse("boards:topic-create", kwargs={"slug": self.board.slug}),
             data={"subject": ""},
         )
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "subject", "This field is required.")
 
     def test_topic_create_invalid(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-create", kwargs={"slug": board.slug}),
+            reverse("boards:topic-create", kwargs={"slug": self.board.slug}),
             data={"subject": "x" * 401},
         )
         self.assertEqual(response.status_code, 200)
@@ -486,11 +463,10 @@ class TopicCreateViewTest(TestCase):
 
     async def test_topic_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
         await sync_to_async(self.client.post)(self.topic_created_url, data={"subject": "Test Topic"})
@@ -501,65 +477,64 @@ class TopicCreateViewTest(TestCase):
 
 
 class TopicUpdateViewTest(TestCase):
-    topic_updated_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        cls.topic_updated_url = reverse("boards:topic-update", kwargs={"slug": board.slug, "pk": topic.pk})
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.topic = TopicFactory(board=cls.board)
+        cls.topic_updated_url = reverse("boards:topic-update", kwargs={"slug": cls.board.slug, "pk": cls.topic.pk})
 
     def test_anonymous_permissions(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        response = self.client.get(
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 302)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_staff_permissions(self):
-        User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
-        self.client.login(username="staff", password="83jKJ+!fdjP")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_topic_update_success(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}),
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk}),
             data={"subject": "Test Topic NEW"},
         )
         self.assertEqual(response.status_code, 204)
         self.assertIsNotNone(Topic.objects.get(subject="Test Topic NEW"))
 
     def test_topic_update_blank(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}),
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk}),
             data={"subject": ""},
         )
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "subject", "This field is required.")
 
     def test_topic_update_invalid(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
-            reverse("boards:topic-update", kwargs={"slug": topic.board.slug, "pk": topic.id}),
+            reverse("boards:topic-update", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk}),
             data={"subject": "x" * 401},
         )
         self.assertEqual(response.status_code, 200)
@@ -569,118 +544,116 @@ class TopicUpdateViewTest(TestCase):
 
     async def test_topic_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         await sync_to_async(self.client.post)(self.topic_updated_url, data={"subject": "Test Topic NEW"})
         message = await communicator.receive_from()
         self.assertIn("topic_updated", message)
-        self.assertIn(f'"topic_pk": {topic.id}', message)
+        self.assertIn(f'"topic_pk": {self.topic.pk}', message)
 
 
 class TopicDeleteViewTest(TestCase):
-    topic_deleted_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        cls.topic_deleted_url = reverse("boards:topic-delete", kwargs={"slug": board.slug, "pk": topic.id})
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.topic = TopicFactory(board=cls.board)
+        cls.topic_deleted_url = reverse("boards:topic-delete", kwargs={"slug": cls.board.slug, "pk": cls.topic.pk})
 
     def test_anonymous_permissions(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        response = self.client.get(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 302)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
-        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+        response = self.client.post(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
+        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, pk=self.topic.pk)
         self.assertEqual(response.status_code, 204)
 
     def test_staff_permissions(self):
-        User.objects.create_user(username="staff", password="83jKJ+!fdjP", is_staff=True)
-        self.client.login(username="staff", password="83jKJ+!fdjP")
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:topic-delete", kwargs={"slug": topic.board.slug, "pk": topic.id}))
-        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, id=topic.id)
+        response = self.client.post(
+            reverse("boards:topic-delete", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
+        self.assertRaises(Topic.DoesNotExist, Topic.objects.get, pk=self.topic.pk)
         self.assertEqual(response.status_code, 204)
 
     async def test_topic_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         await sync_to_async(self.client.post)(self.topic_deleted_url)
         message = await communicator.receive_from()
         self.assertIn("topic_deleted", message)
-        self.assertIn(f'"topic_pk": {topic.id}', message)
+        self.assertIn(f'"topic_pk": {self.topic.pk}', message)
 
 
 class DeleteTopicPostsViewTest(TestCase):
-    topic_posts_delete_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        topic = Topic.objects.create(subject="Test Topic", board=board)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.topic = TopicFactory(board=cls.board)
         cls.topic_posts_delete_url = reverse(
-            "boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.id}
+            "boards:topic-posts-delete", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk}
         )
-        for i in range(10):
-            Post.objects.create(topic=topic, content=f"Test Post {i}", user=test_user1)
+        PostFactory.create_batch(10, topic=cls.topic, user=cls.user)
 
     def test_anonymous_permissions(self):
-        topic = Topic.objects.get(subject="Test Topic")
         response = self.client.get(
-            reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+            reverse("boards:topic-posts-delete", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk})
         )
         self.assertEqual(response.status_code, 302)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        topic = Topic.objects.get(subject="Test Topic")
-        delete_url = reverse("boards:topic-posts-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        delete_url = reverse(
+            "boards:topic-posts-delete", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk}
+        )
         response = self.client.get(delete_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Post.objects.filter(topic=topic).count(), 10)
+        self.assertEqual(Post.objects.filter(topic=self.topic).count(), 10)
 
         response = self.client.post(delete_url)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(Post.objects.filter(topic=topic).count(), 0)
+        self.assertEqual(Post.objects.filter(topic=self.topic).count(), 0)
 
     async def test_topic_posts_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
         await sync_to_async(self.client.post)(self.topic_posts_delete_url)
@@ -690,46 +663,41 @@ class DeleteTopicPostsViewTest(TestCase):
 
 
 class PostCreateViewTest(TestCase):
-    post_create_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        cls.post_create_url = reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.id})
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post_create_url = reverse("boards:post-create", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk})
 
     def test_anonymous_permissions(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        post_url = reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id})
+        post_url = reverse("boards:post-create", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk})
         response = self.client.get(post_url)
         self.assertEqual(response.status_code, 200)
         response = self.client.post(post_url, data={"content": "Test Message anon"})
-        topic = Topic.objects.get(subject="Test Topic")
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(topic.posts.first().content, "Test Message anon")
+        self.assertEqual(Post.objects.first().content, "Test Message anon")
 
     def test_replies_permissions_anonymous(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        post = Post.objects.create(content="Test Message", topic=topic)
+        post = PostFactory(topic=self.topic)
         reply_url = reverse(
             "boards:post-reply",
-            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+            kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk, "post_pk": post.pk},
         )
         response = self.client.get(reply_url)
         self.assertEqual(response.status_code, 302)
 
-        topic.board.preferences.type = "r"
-        topic.board.preferences.save()
+        self.topic.board.preferences.type = "r"
+        self.topic.board.preferences.save()
         response = self.client.get(reply_url)
         self.assertEqual(response.status_code, 302)
 
-        topic.board.preferences.allow_guest_replies = True
-        topic.board.preferences.save()
+        self.topic.board.preferences.allow_guest_replies = True
+        self.topic.board.preferences.save()
         response = self.client.get(reply_url)
         self.assertEqual(response.status_code, 200)
 
@@ -739,18 +707,17 @@ class PostCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_replies_permissions_owner(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        post = Post.objects.create(content="Test Message", topic=topic)
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        post = PostFactory(topic=self.topic)
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         reply_url = reverse(
             "boards:post-reply",
-            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+            kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk, "post_pk": post.pk},
         )
         response = self.client.get(reply_url)
         self.assertEqual(response.status_code, 403)
 
-        topic.board.preferences.type = "r"
-        topic.board.preferences.save()
+        self.topic.board.preferences.type = "r"
+        self.topic.board.preferences.save()
         response = self.client.get(reply_url)
         self.assertEqual(response.status_code, 200)
 
@@ -760,246 +727,222 @@ class PostCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_reply(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        post = Post.objects.create(content="Test Message", topic=topic)
+        post = PostFactory(topic=self.topic)
         reply_url = reverse(
             "boards:post-reply",
-            kwargs={"slug": topic.board.slug, "topic_pk": topic.id, "post_pk": post.id},
+            kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk, "post_pk": post.pk},
         )
-        topic.board.preferences.type = "r"
-        topic.board.preferences.allow_guest_replies = True
-        topic.board.preferences.save()
+        self.topic.board.preferences.type = "r"
+        self.topic.board.preferences.allow_guest_replies = True
+        self.topic.board.preferences.save()
 
         self.client.post(reply_url, data={"content": "Test Message reply"})
         reply = Post.objects.get(content="Test Message reply")
-        self.assertEqual(reply.topic, topic)
+        self.assertEqual(reply.topic, self.topic)
         self.assertEqual(reply.reply_to, post)
 
     def test_post_session_key(self):
-        topic = Topic.objects.get(subject="Test Topic")
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.id}),
+            reverse("boards:post-create", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post"},
         )
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(self.client.session.session_key, post.session_key)
+        self.assertEqual(self.client.session.session_key, Post.objects.get(content="Test Post").session_key)
 
     def test_post_approval(self):
-        board = Board.objects.get(title="Test Board")
-        board.preferences.require_post_approval = True
-        board.preferences.save()
-        topic = Topic.objects.get(subject="Test Topic")
+        self.board.preferences.require_post_approval = True
+        self.board.preferences.save()
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post"},
         )
-        post = Post.objects.get(content="Test Post")
-        self.assertEqual(post.approved, False)
+        self.assertEqual(Post.objects.get(content="Test Post").approved, False)
 
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post user1"},
         )
-        post = Post.objects.get(content="Test Post user1")
-        self.assertEqual(post.approved, True)  # Board owner can post without approval
+        self.assertEqual(
+            Post.objects.get(content="Test Post user1").approved, True
+        )  # Board owner can post without approval
 
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post user2"},
         )
-        post = Post.objects.get(content="Test Post user2")
-        self.assertEqual(post.approved, False)  # Normal user needs approval
+        self.assertEqual(Post.objects.get(content="Test Post user2").approved, False)  # Normal user needs approval
 
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post user3"},
         )
-        post = Post.objects.get(content="Test Post user3")
-        self.assertEqual(post.approved, True)  # Moderator can post without approval
+        self.assertEqual(
+            Post.objects.get(content="Test Post user3").approved, True
+        )  # Moderator can post without approval
 
     async def test_post_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
         await sync_to_async(self.client.post)(self.post_create_url, data={"content": "Test Post"})
         post = await sync_to_async(Post.objects.get)(content="Test Post")
         self.assertIsNotNone(post)
-        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
         message = await communicator.receive_from()
         self.assertIn("post_created", message)
-        self.assertIn(f'"topic_pk": {topic.id}', message)
+        self.assertIn(f'"topic_pk": {self.topic.pk}', message)
 
 
 class PostUpdateViewTest(TestCase):
-    post_updated_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(
-            content="Test Post",
-            topic=topic,
-        )
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic)
         cls.post_updated_url = reverse(
-            "boards:post-update", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            "boards:post-update", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk}
         )
 
     def test_anonymous_permissions(self):
-        topic = Topic.objects.get(subject="Test Topic")
         response = self.client.post(
-            reverse("boards:post-create", kwargs={"slug": "test-board", "topic_pk": topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post anon"},
         )
         post = Post.objects.get(content="Test Post anon")
         self.assertEqual(response.status_code, 204)
         self.assertEqual(self.client.session.session_key, post.session_key)
         response = self.client.post(
-            reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            ),
+            reverse("boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post.pk}),
             data={"content": "Test Post anon NEW"},
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(Post.objects.get(id=post.id).content, "Test Post anon NEW")
+        self.assertEqual(Post.objects.get(pk=post.pk).content, "Test Post anon NEW")
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 403)
 
     def test_board_moderator_permissions(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
             reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             ),
             data={"content": "Test Post NEW"},
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(Post.objects.get(id=post.id).content, "Test Post NEW")
+        self.assertEqual(Post.objects.get(pk=self.post.pk).content, "Test Post NEW")
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 200)
         response = self.client.post(
             reverse(
-                "boards:post-update", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-update", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             ),
             data={"content": "Test Post NEW"},
         )
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(Post.objects.get(id=post.id).content, "Test Post NEW")
+        self.assertEqual(Post.objects.get(pk=self.post.pk).content, "Test Post NEW")
 
     async def test_post_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await sync_to_async(Post.objects.get)(content="Test Post")
         await sync_to_async(self.client.post)(self.post_updated_url, data={"content": "Test Post NEW"})
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
-        self.assertIn(f'"post_pk": {post.id}', message)
+        self.assertIn(f'"post_pk": {self.post.pk}', message)
 
 
 class PostDeleteViewTest(TestCase):
-    post_deleted_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(content="Test Post", topic=topic)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic)
         cls.post_deleted_url = reverse(
-            "boards:post-delete", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            "boards:post-delete", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk}
         )
 
     def test_anonymous_permissions(self):
-        post = Post.objects.get(content="Test Post")
         self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": post.topic_id, "pk": post.pk})
+            reverse(
+                "boards:post-delete", kwargs={"slug": "test-board", "topic_pk": self.topic.pk, "pk": self.post.pk}
+            )
         )
         self.assertEqual(Post.objects.count(), 1)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": "test-board", "topic_pk": post.topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": "test-board", "topic_pk": self.topic.pk}),
             data={"content": "Test Post anon"},
         )
         post2 = Post.objects.get(content="Test Post anon")
         self.assertEqual(Post.objects.count(), 2)
         self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": post.topic_id, "pk": post2.pk})
+            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": self.topic.pk, "pk": post2.pk})
         )
         self.assertEqual(Post.objects.count(), 1)
 
     def test_other_user_permissions(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
             reverse(
-                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Post.objects.count(), 1)
 
     def test_board_moderator_permissions(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
             reverse(
-                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
 
     def test_owner_permissions(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.post(
             reverse(
-                "boards:post-delete", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
+                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
             )
         )
         self.assertEqual(response.status_code, 204)
@@ -1007,118 +950,124 @@ class PostDeleteViewTest(TestCase):
 
     async def test_post_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await sync_to_async(Post.objects.get)(content="Test Post")
         await sync_to_async(self.client.post)(self.post_deleted_url)
         message = await communicator.receive_from()
         self.assertIn("post_deleted", message)
-        self.assertIn(f'"post_pk": {post.id}', message)
+        self.assertIn(f'"post_pk": {self.post.pk}', message)
 
 
 class ReactionsDeleteViewTest(TestCase):
-    reactions_delete_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(
-            title="Test Board", slug="000000", description="Test Description", owner=test_user1
-        )
-        board.preferences.moderators.add(test_user3)
-        board.preferences.reaction_type = "l"
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        for i in range(5):
-            post = Post.objects.create(content=f"Test Post {i}", topic=topic)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.reaction_type = "l"
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        PostFactory.create_batch(5, topic=cls.topic)
+        for post in Post.objects.all():
             for type in REACTION_TYPE[1:]:
-                for j in range(5):
-                    Reaction.objects.create(post=post, session_key=f"{i}{j}", type=type[0], reaction_score="1")
+                ReactionFactory.create_batch(
+                    5,
+                    post=post,
+                    type=type[0],
+                    reaction_score="1",
+                )
+        cls.post = Post.objects.first()
         cls.reactions_delete_url = reverse(
             "boards:post-reactions-delete",
-            kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": Post.objects.first().pk},
+            kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk},
         )
 
     def test_anonymous_permissions(self):
-        post = Post.objects.get(content="Test Post 0")
-        response = self.client.get(
-            reverse(
-                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
-            )
-        )
+        response = self.client.get(self.reactions_delete_url)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
-        response = self.client.post(
-            reverse(
-                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
-            )
-        )
+        response = self.client.post(self.reactions_delete_url)
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+    def test_other_user_permissions(self):
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+        response = self.client.post(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
     def test_moderator_permissions(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post 0")
-        response = self.client.get(
-            reverse(
-                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
-            )
-        )
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.reactions_delete_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
 
-        response = self.client.post(
-            reverse(
-                "boards:post-reactions-delete", kwargs={"slug": "000000", "topic_pk": post.topic_id, "pk": post.pk}
-            )
-        )
+        response = self.client.post(self.reactions_delete_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
 
+    def test_owner_permissions(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+        response = self.client.post(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1) - 5)
+
+    def test_no_reactions_preferences(self):
+        self.board.preferences.reaction_type = "n"
+        self.board.preferences.save()
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
+        response = self.client.post(self.reactions_delete_url)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Reaction.objects.count(), 25 * (len(REACTION_TYPE) - 1))
+
     async def test_post_toggle_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await sync_to_async(Post.objects.first)()
         await sync_to_async(self.client.post)(self.reactions_delete_url)
         message = await communicator.receive_from()
         self.assertIn("reaction_updated", message)
-        self.assertIn(f'"post_pk": {post.pk}', message)
+        self.assertIn(f'"post_pk": {self.post.pk}', message)
 
 
 # TODO: Implement further tests for all board_list_types
 class BoardListViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        test_user2 = User.objects.create_superuser(username="testuser2", password="2HJ1vRV0Z&3iD")
-        for i in range(3):
-            Board.objects.create(
-                title=f"Test Board {i} - {test_user1.username}", description="Test Description", owner=test_user1
-            )
-            Board.objects.create(
-                title=f"Test Board {i} - {test_user2.username}", description="Test Description", owner=test_user2
-            )
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        BoardFactory.create_batch(3, owner=cls.user)
+        BoardFactory.create_batch(3, owner=cls.user2)
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
         self.assertEqual(response.status_code, 302)
 
     def test_user_index(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse("boards:board-list", kwargs={"board_list_type": "own"}), {}, HTTP_REFERER=reverse("boards:index")
         )
@@ -1127,7 +1076,7 @@ class BoardListViewTest(TestCase):
         self.assertEqual(len(response.context["boards"]), 3)
 
     def test_user_no_perm_all_boards(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse("boards:board-list", kwargs={"board_list_type": "own"}),
             {},
@@ -1138,10 +1087,9 @@ class BoardListViewTest(TestCase):
         self.assertEqual(len(response.context["boards"]), 3)
 
     def test_user_perm_all_boards(self):
-        test_user1 = User.objects.get(username="testuser1")
-        test_user1.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
-        test_user1.save()
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.user.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
+        self.user.save()
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse("boards:board-list", kwargs={"board_list_type": "all"}),
             {},
@@ -1154,10 +1102,9 @@ class BoardListViewTest(TestCase):
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
 
     def test_user_perm_second_page(self):
-        test_user1 = User.objects.get(username="testuser1")
-        test_user1.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
-        test_user1.save()
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.user.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
+        self.user.save()
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(
             reverse("boards:board-list", kwargs={"board_list_type": "all"}),
             {"page": 2},
@@ -1173,120 +1120,123 @@ class BoardListViewTest(TestCase):
 class TopicFetchViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        Topic.objects.create(subject="Test Topic", board=board)
+        cls.topic = TopicFactory()
 
     def test_topic_fetch(self):
-        topic = Topic.objects.get(subject="Test Topic")
-        response = self.client.get(reverse("boards:topic-fetch", kwargs={"slug": topic.board.slug, "pk": topic.id}))
+        response = self.client.get(
+            reverse("boards:topic-fetch", kwargs={"slug": self.topic.board.slug, "pk": self.topic.pk})
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["topic"], topic)
+        self.assertEqual(response.context["topic"], self.topic)
 
 
 class PostFetchViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
-
-    def test_post_fetch(self):
-        post = Post.objects.get(content="Test Post")
-        post.approved = True
-        post.save()
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.require_post_approval = True
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic, approved=False)
+        cls.post_fetch_url = reverse(
+            "boards:post-fetch", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk}
         )
+
+    def test_post_fetch_require_no_approval(self):
+        self.board.preferences.require_post_approval = False
+        self.board.preferences.save()
+        response = self.client.get(self.post_fetch_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["post"], post)
-        self.assertContains(response, "Test Post", html=True)
+        self.assertEqual(response.context["post"], self.post)
+        self.assertContains(response, self.post.content, html=True)
+
+    def test_post_fetch_approved(self):
+        self.board.preferences.require_post_approval = True
+        self.board.preferences.save()
+        self.post.approved = True
+        self.post.save()
+        response = self.client.get(self.post_fetch_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["post"], self.post)
+        self.assertContains(response, self.post.content, html=True)
 
     def test_post_fetch_content_anonymous_not_approved(self):
-        board = Board.objects.get(title="Test Board")
-        board.preferences.require_post_approval = True
-        board.preferences.save()
-        self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
-        post = Post.objects.get(content="Test Post")
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
+        self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
+        response = self.client.get(self.post_fetch_url)
+        self.assertNotContains(response, self.post.content, html=True)
+
+    def test_post_fetch_content_anonymous_not_approved_own_post(self):
+        response = self.client.post(
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            data={"content": "Test Post anon"},
         )
-        self.assertNotContains(response, "Test Post", html=True)
+        post = Post.objects.get(content="Test Post anon")
+        response = self.client.get(
+            reverse("boards:post-fetch", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post.pk})
+        )
+        self.assertContains(response, post.content, html=True)
 
     def test_post_fetch_content_other_user_not_approved(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        board.preferences.require_post_approval = True
-        board.preferences.save()
-        self.client.get(reverse("boards:board", kwargs={"slug": board.slug}))
-        post = Post.objects.get(content="Test Post")
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
+
+        response = self.client.get(self.post_fetch_url)
+        self.assertNotContains(response, self.post.content, html=True)
+
+    def test_post_fetch_content_other_user_not_approved_own_post(self):
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.post(
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            data={"content": "Test Post anon"},
         )
-        self.assertNotContains(response, "Test Post", html=True)
+        post = Post.objects.get(content="Test Post anon")
+        response = self.client.get(
+            reverse("boards:post-fetch", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post.pk})
+        )
+        self.assertContains(response, post.content, html=True)
 
     def test_post_fetch_content_board_moderator_not_approved(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post")
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
-        )
-        self.assertContains(response, "Test Post", html=True)
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.post_fetch_url)
+        self.assertContains(response, self.post.content, html=True)
 
     def test_post_fetch_content_owner_not_approved(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        post = Post.objects.get(content="Test Post")
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
-        )
-        self.assertContains(response, "Test Post", html=True)
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.post_fetch_url)
+        self.assertContains(response, self.post.content, html=True)
 
     def test_post_fetch_content_can_approve_not_approved(self):
-        test_user4 = User.objects.create_user(username="testuser4", password="2HJ1vRV0Z&3iD")
-        test_user4.user_permissions.add(Permission.objects.get(codename="can_approve_posts"))
-        self.client.login(username="testuser4", password="2HJ1vRV0Z&3iD")
-        post = Post.objects.get(content="Test Post")
-        response = self.client.get(
-            reverse(
-                "boards:post-fetch", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id}
-            )
-        )
-        self.assertContains(response, "Test Post", html=True)
+        user4 = UserFactory()
+        user4.user_permissions.add(Permission.objects.get(codename="can_approve_posts"))
+        self.client.login(username=user4.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.post_fetch_url)
+        self.assertContains(response, self.post.content, html=True)
 
 
 class PostFooterFetchViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.reaction_type = "l"
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.reaction_type = "l"
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic, approved=True)
         for type in REACTION_TYPE[1:]:
-            Reaction.objects.create(post=post, type=type[0], user=test_user1)
+            ReactionFactory(post=cls.post, type=type[0], user=cls.user)
+        cls.post_footer_fetch_url = reverse(
+            "boards:post-footer-fetch",
+            kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk},
+        )
 
     def test_post_footer_fetch_anonymous(self):
-        post = Post.objects.get(content="Test Post")
         for _type in REACTION_TYPE[1:]:
             type = _type[0]
             if type == "l":
@@ -1296,36 +1246,26 @@ class PostFooterFetchViewTest(TestCase):
             elif type == "s":
                 icon = "bi-star"
 
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
-            post.approved = False
-            post.save()
+            self.post.topic.board.preferences.reaction_type = type
+            self.post.topic.board.preferences.save()
+            self.post.approved = False
+            self.post.save()
 
-            response = self.client.get(
-                reverse(
-                    "boards:post-footer-fetch",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                )
-            )
+            response = self.client.get(self.post_footer_fetch_url)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context["post"], post)
+            self.assertEqual(response.context["post"], self.post)
             self.assertNotContains(response, icon)
 
-            post.approved = True
-            post.save()
-            response = self.client.get(
-                reverse(
-                    "boards:post-footer-fetch",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                )
-            )
+            self.post.approved = True
+            self.post.save()
+            response = self.client.get(self.post_footer_fetch_url)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context["post"], post)
+            self.assertEqual(response.context["post"], self.post)
             self.assertContains(response, icon)
 
     def test_post_footer_fetch_moderator(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post")
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
+        post = Post.objects.get(pk=self.post.pk)
         for _type in REACTION_TYPE[1:]:
             type = _type[0]
             if type == "l":
@@ -1340,241 +1280,157 @@ class PostFooterFetchViewTest(TestCase):
             post.approved = False
             post.save()
 
-            response = self.client.get(
-                reverse(
-                    "boards:post-footer-fetch",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                )
-            )
+            response = self.client.get(self.post_footer_fetch_url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
             self.assertContains(response, icon)
 
             post.approved = True
             post.save()
-            response = self.client.get(
-                reverse(
-                    "boards:post-footer-fetch",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                )
-            )
+            response = self.client.get(self.post_footer_fetch_url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context["post"], post)
             self.assertContains(response, icon)
 
 
 class PostToggleApprovalViewTest(TestCase):
-    post_approval_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.require_post_approval = True
-        board.preferences.save()
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", approved=False)
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.require_post_approval = True
+        cls.board.preferences.save()
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic, approved=False)
         cls.post_approval_url = reverse(
-            "boards:post-toggle-approval", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.id}
+            "boards:post-toggle-approval",
+            kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk},
         )
 
     def test_post_toggle_approval_anonymous(self):
-        post = Post.objects.get(content="Test Post")
-        self.assertFalse(post.approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.assertFalse(self.post.approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 302)
+        self.assertFalse(Post.objects.get(pk=self.post.pk).approved)
 
     def test_post_toggle_approval_other_user(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        post = Post.objects.get(content="Test Post")
-        self.assertFalse(post.approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        self.assertFalse(self.post.approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 403)
+        self.assertFalse(Post.objects.get(pk=self.post.pk).approved)
 
     def test_post_toggle_approval_board_moderator(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        post = Post.objects.get(content="Test Post")
-        self.assertFalse(post.approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
+        self.assertFalse(self.post.approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 204)
-        self.assertTrue(Post.objects.get(content="Test Post").approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.assertTrue(Post.objects.get(pk=self.post.pk).approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(Post.objects.get(content="Test Post").approved)
+        self.assertFalse(Post.objects.get(pk=self.post.pk).approved)
 
     def test_post_toggle_approval_owner(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        post = Post.objects.get(content="Test Post")
-        self.assertFalse(post.approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        self.assertFalse(self.post.approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 204)
-        self.assertTrue(Post.objects.get(content="Test Post").approved)
-        response = self.client.post(
-            reverse(
-                "boards:post-toggle-approval",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.id},
-            )
-        )
+        self.assertTrue(Post.objects.get(pk=self.post.pk).approved)
+        response = self.client.post(self.post_approval_url)
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(Post.objects.get(content="Test Post").approved)
+        self.assertFalse(Post.objects.get(pk=self.post.pk).approved)
 
     async def test_post_toggle_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username="testuser1", password="1X<ISRUkw+tuK")
+        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await sync_to_async(Post.objects.get)(content="Test Post")
         await sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
-        self.assertIn(f'"post_pk": {post.id}', message)
+        self.assertIn(f'"post_pk": {self.post.pk}', message)
         await sync_to_async(self.client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         self.assertIn("post_updated", message)
-        self.assertIn(f'"post_pk": {post.pk}', message)
+        self.assertIn(f'"post_pk": {self.post.pk}', message)
 
 
 class PostReactionViewTest(TestCase):
-    post_reaction_url = ""
-
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        topic = Topic.objects.create(subject="Test Topic", board=board)
-        post = Post.objects.create(content="Test Post", topic=topic, session_key="testing_key", user=test_user1)
+        cls.user = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.topic = TopicFactory(board=cls.board)
+        cls.post = PostFactory(topic=cls.topic, user=cls.user)
         cls.post_reaction_url = reverse(
-            "boards:post-reaction", kwargs={"slug": board.slug, "topic_pk": post.topic_id, "pk": post.pk}
+            "boards:post-reaction", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk, "pk": cls.post.pk}
         )
 
     def test_post_reaction_repeat_anonymous(self):
-        post = Post.objects.get(content="Test Post")
         self.assertEqual(Reaction.objects.count(), 0)
 
         for _type in REACTION_TYPE[1:]:
             type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
+            self.post.topic.board.preferences.reaction_type = type
+            self.post.topic.board.preferences.save()
 
-            response = self.client.post(
-                reverse(
-                    "boards:post-reaction",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                ),
-                {"score": 1},
-            )
+            response = self.client.post(self.post_reaction_url, {"score": 1})
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 1)
 
-            response = self.client.post(
-                reverse(
-                    "boards:post-reaction",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                ),
-                {"score": 1},
-            )
+            response = self.client.post(self.post_reaction_url, {"score": 1})
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 0)
 
     def test_post_reaction_score_changed(self):
-        post = Post.objects.get(content="Test Post")
         self.assertEqual(Reaction.objects.count(), 0)
 
         for _type in REACTION_TYPE[2:]:  # like only has one score
             type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
+            self.post.topic.board.preferences.reaction_type = type
+            self.post.topic.board.preferences.save()
             if type == "v":
                 second_score = -1
             elif type == "s":
                 second_score = 2
 
-            response = self.client.post(
-                reverse(
-                    "boards:post-reaction",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                ),
-                {"score": 1},
-            )
+            response = self.client.post(self.post_reaction_url, {"score": 1})
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 1)
             self.assertEqual(Reaction.objects.first().reaction_score, 1)
 
-            response = self.client.post(
-                reverse(
-                    "boards:post-reaction",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                ),
-                {"score": second_score},
-            )
+            response = self.client.post(self.post_reaction_url, {"score": second_score})
             self.assertEqual(response.status_code, 204)
             self.assertEqual(Reaction.objects.count(), 1)
             self.assertEqual(Reaction.objects.first().reaction_score, second_score)
 
-            post.reactions.all().delete()
+            Reaction.objects.filter(post=self.post).delete()
 
     def test_post_reaction_disabled(self):
-        post = Post.objects.get(content="Test Post")
         self.assertEqual(Reaction.objects.count(), 0)
 
-        response = self.client.post(
-            reverse(
-                "boards:post-reaction",
-                kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-            ),
-            {"score": 1},
-        )
+        response = self.client.post(self.post_reaction_url, {"score": 1})
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Reaction.objects.count(), 0)
 
     def test_post_reaction_own_post(self):
-        post = Post.objects.get(content="Test Post")
         self.assertEqual(Reaction.objects.count(), 0)
 
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
 
         for _type in REACTION_TYPE[1:]:
             type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
+            self.post.topic.board.preferences.reaction_type = type
+            self.post.topic.board.preferences.save()
 
             response = self.client.post(
-                reverse(
-                    "boards:post-reaction",
-                    kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic_id, "pk": post.pk},
-                ),
+                self.post_reaction_url,
                 {"score": 1},
             )
             self.assertEqual(response.status_code, 204)
@@ -1582,16 +1438,14 @@ class PostReactionViewTest(TestCase):
 
     async def test_reaction_updated_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
-        board = await sync_to_async(Board.objects.get)(title="Test Board")
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
         connected, _ = await communicator.connect()
         self.assertTrue(connected, "Could not connect")
         message = await communicator.receive_from()
         self.assertIn("session_connected", message)
-        post = await sync_to_async(Post.objects.get)(content="Test Post")
         for _type in REACTION_TYPE[1:]:
             type = _type[0]
-            preferences = await sync_to_async(BoardPreferences.objects.get)(board=board)
+            preferences = await sync_to_async(BoardPreferences.objects.get)(board=self.board)
             preferences.reaction_type = type
             await sync_to_async(preferences.save)()
             message = await communicator.receive_from()
@@ -1599,19 +1453,17 @@ class PostReactionViewTest(TestCase):
             await sync_to_async(self.client.post)(self.post_reaction_url, data={"score": 1})
             message = await communicator.receive_from()
             self.assertIn("reaction_updated", message)
-            self.assertIn(f'"post_pk": {post.id}', message)
+            self.assertIn(f'"post_pk": {self.post.pk}', message)
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class PostImageUploadViewTest(TestCase):
-    upload_url = None
-
     @classmethod
     def setUpTestData(cls):
-        board = Board.objects.create(title="Test Board")
-        board.preferences.allow_image_uploads = True
-        board.preferences.save()
-        cls.upload_url = reverse("boards:post-image-upload", kwargs={"slug": board.slug})
+        cls.board = BoardFactory()
+        cls.board.preferences.allow_image_uploads = True
+        cls.board.preferences.save()
+        cls.upload_url = reverse("boards:post-image-upload", kwargs={"slug": cls.board.slug})
 
     @classmethod
     def tearDownClass(cls):
@@ -1619,76 +1471,61 @@ class PostImageUploadViewTest(TestCase):
         super().tearDownClass()
 
     def test_permissions(self):
-        board = Board.objects.get(title="Test Board")
-
         response = self.client.get(self.upload_url)
         self.assertEqual(response.status_code, 405)
 
-        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
         valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
         for image_type in valid_image_types:
-            with open(image_path, "rb") as image_file:
-                response = self.client.post(
-                    self.upload_url,
-                    {"image": SimpleUploadedFile("test.png", image_file.read(), content_type=image_type)},
-                )
+            response = self.client.post(
+                self.upload_url,
+                {
+                    "image": SimpleUploadedFile(
+                        "test.png",
+                        create_image(image_type.split("/")[1]),
+                        content_type=image_type,
+                    )
+                },
+            )
             self.assertEqual(response.status_code, 200)
             image = Image.objects.order_by("created_at").last()
             data = json.loads(response.content)
             self.assertEqual(data["data"]["filePath"], image.image.url)
 
-        board.preferences.allow_image_uploads = False
-        board.preferences.save()
+        self.board.preferences.allow_image_uploads = False
+        self.board.preferences.save()
 
         response = self.client.post(self.upload_url)
         self.assertEqual(response.status_code, 302)
 
     def test_upload_image_over_max_count(self):
-        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.png")
         for i in range(settings.MAX_POST_IMAGE_COUNT + 1):
-            with open(image_path, "rb") as image_file:
-                response = self.client.post(
-                    self.upload_url,
-                    {"image": SimpleUploadedFile(f"test{i}.png", image_file.read(), content_type="image/png")},
-                )
-                data = json.loads(response.content)
-                if i < settings.MAX_POST_IMAGE_COUNT:
-                    self.assertEqual(data["data"]["filePath"], Image.objects.order_by("created_at").last().image.url)
-                else:
-                    self.assertEqual(data["error"], "Board image quota exceeded")
-
-    def test_upload_invalid_image(self):
-        image_path = os.path.join(module_dir, f"{BASE_TEST_IMAGE_PATH}horizontal.gif")
-        with open(image_path, "rb") as image_file:
             response = self.client.post(
                 self.upload_url,
-                {"image": SimpleUploadedFile("test.avif", image_file.read(), content_type="image/avif")},
+                {"image": SimpleUploadedFile(f"test{i}.png", create_image("png"), content_type="image/png")},
             )
             data = json.loads(response.content)
-            self.assertEqual(data["error"], "Invalid image type (only PNG, JPEG, GIF, BMP, and WEBP are allowed)")
+            if i < settings.MAX_POST_IMAGE_COUNT:
+                self.assertEqual(data["data"]["filePath"], Image.objects.order_by("created_at").last().image.url)
+            else:
+                self.assertEqual(data["error"], "Board image quota exceeded")
+
+    def test_upload_invalid_image(self):
+        response = self.client.post(
+            self.upload_url,
+            {"image": SimpleUploadedFile("test.avif", create_image("avif"), content_type="image/avif")},
+        )
+        data = json.loads(response.content)
+        self.assertEqual(data["error"], "Invalid image type (only PNG, JPEG, GIF, BMP, and WEBP are allowed)")
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class ImageSelectViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.create(title="Test Board")
-        image_path = os.path.join(module_dir, "images/white_horizontal.png")
+        cls.user = UserFactory()
+        cls.board = BoardFactory()
         for type, text in IMAGE_TYPE:
-            for i in range(5):
-                with open(image_path, "rb") as image_file:
-                    image = Image(
-                        type=type,
-                        image=SimpleUploadedFile(
-                            name=f"{type}-{i}.png",
-                            content=image_file.read(),
-                            content_type="image/png",
-                        ),
-                        board=board if type == "p" else None,
-                        title=f"{text} {i}",
-                    )
-                    image.save()
+            ImageFactory.create_batch(5, board=cls.board if type == "p" else None, type=type)
 
     @classmethod
     def tearDownClass(cls):
@@ -1702,7 +1539,7 @@ class ImageSelectViewTest(TestCase):
             self.assertEqual(response.url, f"/accounts/login/?next=/boards/image_select/{type}/")
 
     def test_image_select_logged_in(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         for type, _ in IMAGE_TYPE:
             response = self.client.get(reverse("boards:image-select", kwargs={"type": type}))
             self.assertEqual(response.status_code, 200)
@@ -1712,42 +1549,37 @@ class ImageSelectViewTest(TestCase):
 class QrViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username="testuser1", password="1X<ISRUkw+tuK")
-        User.objects.create_user(username="testuser2", password="2HJ1vRV0Z&3iD")
-        test_user3 = User.objects.create_user(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.create(title="Test Board", description="Test Description", owner=test_user1)
-        board.preferences.moderators.add(test_user3)
-        board.preferences.save()
+        cls.user = UserFactory()
+        cls.user2 = UserFactory()
+        cls.user3 = UserFactory()
+        cls.board = BoardFactory(owner=cls.user)
+        cls.board.preferences.moderators.add(cls.user3)
+        cls.board.preferences.save()
 
     def test_qr_anonymous(self):
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{board.slug}/qr/")
+        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{self.board.slug}/qr/")
 
     def test_qr_other_user(self):
-        self.client.login(username="testuser2", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 403)
 
     def test_qr_board_moderator(self):
-        self.client.login(username="testuser3", password="3y6d0A8sB?5")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
 
     def test_qr_owner(self):
-        self.client.login(username="testuser1", password="1X<ISRUkw+tuK")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
 
     def test_qr_staff(self):
-        User.objects.create_user(username="testuser4", password="2HJ1vRV0Z&3iD", is_staff=True)
-        self.client.login(username="testuser4", password="2HJ1vRV0Z&3iD")
-        board = Board.objects.get(title="Test Board")
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        staff_user = UserFactory(is_staff=True)
+        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)

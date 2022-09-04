@@ -12,8 +12,8 @@ class BoardFactory(factory.django.DjangoModelFactory):
         model = Board
 
     owner = factory.SubFactory(UserFactory)
-    title = factory.Faker("text", max_nb_chars=50)
-    description = factory.Faker("text", max_nb_chars=100)
+    title = factory.Sequence(lambda n: f"Test Board {n}")
+    description = factory.Sequence(lambda n: f"Test Board Description {n}")
 
 
 class BoardPreferencesFactory(factory.django.DjangoModelFactory):
@@ -28,7 +28,7 @@ class TopicFactory(factory.django.DjangoModelFactory):
         model = Topic
 
     board = factory.SubFactory(BoardFactory)
-    subject = factory.Faker("text", max_nb_chars=400)
+    subject = factory.Sequence(lambda n: f"Test Topic {n}")
 
 
 class PostFactory(factory.django.DjangoModelFactory):
@@ -36,7 +36,7 @@ class PostFactory(factory.django.DjangoModelFactory):
         model = Post
 
     topic = factory.SubFactory(TopicFactory)
-    content = factory.Faker("text", max_nb_chars=1000)
+    content = factory.Sequence(lambda n: f"Test Post {n}")
 
 
 class ReactionFactory(factory.django.DjangoModelFactory):
@@ -51,7 +51,7 @@ class ImageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Image
 
-    title = factory.Faker("text", max_nb_chars=50)
+    title = factory.Sequence(lambda n: f"Test Image {n}")
     image = factory.django.ImageField(filename="example.png", format="png", width=100, height=100)
 
 

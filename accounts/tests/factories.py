@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from accounts.models import UserProfile
 
-test_user_password = "test_password"
+USER_TEST_PASSWORD = "test_password"
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -15,7 +15,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     username = factory.Faker("user_name")
     email = factory.Faker("email")
-    password = factory.LazyFunction(lambda: make_password(test_user_password))
+    password = factory.LazyFunction(lambda: make_password(USER_TEST_PASSWORD))
 
 
 class UserProfileFactory(factory.django.DjangoModelFactory):
