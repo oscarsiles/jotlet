@@ -51,17 +51,26 @@
                     {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            {% if post.reply_depth > 0 %}
-                                <button type="button"
-                                        class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
-                                        x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
-                                        title="Highlight parent post"
-                                        @click="if (!isShownParent{{ post.reply_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
-                                    {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
-                                </button>
-                            {% else %}
-                                <div "d-none"></div>
-                            {% endif %}
+                            <div class="d-flex">
+                                {% if board.preferences.enable_identicons %}
+                                    <div class="pe-2" title="{{ post.identity_hash }}">
+                                        <svg width="24"
+                                             height="24"
+                                             data-jdenticon-hash="{{ post.identity_hash }}"
+                                             x-effect="jdenticon.updateSvg($el)">
+                                        </svg>
+                                    </div>
+                                {% endif %}
+                                {% if post.reply_depth > 0 %}
+                                    <button type="button"
+                                            class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
+                                            x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
+                                            title="Highlight parent post"
+                                            @click="if (!isShownParent{{ post.reply_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
+                                        {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
                             <div class="d-flex">
                                 {% if board.preferences.type == 'r' %}
                                     {% if post.approved %}

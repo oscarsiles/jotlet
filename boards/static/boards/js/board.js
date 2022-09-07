@@ -61,7 +61,7 @@ function connectWebsocket() {
       case "post_created":
         var newCardDiv =
           data.reply_to == null
-            ? "#newCard-" + data.topic_pk + "-div"
+            ? "#newCard-topic-" + data.topic_pk + "-div"
             : "#newCard-post-" + data.reply_to + "-div";
         htmx.ajax("GET", data.fetch_url, {
           target: newCardDiv,

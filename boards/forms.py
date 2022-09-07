@@ -89,6 +89,7 @@ class BoardFilterForm(forms.Form):
 
 
 class BoardPreferencesForm(forms.ModelForm):
+    checkbox_classes = "form-check-input h-auto my-0"
     initial_moderators = []
     initial_require_post_approval = False
     initial_board = None
@@ -148,7 +149,7 @@ class BoardPreferencesForm(forms.ModelForm):
                     "allow_guest_replies",
                     "Allow Guest Replies",
                     wrapper_class="d-flex",
-                    css_class="form-check-input h-auto my-0",
+                    css_class=self.checkbox_classes,
                 ),
                 x_show="$store.boardPreferences.type == 'r'",
             ),
@@ -180,22 +181,28 @@ class BoardPreferencesForm(forms.ModelForm):
                 x_show="$store.boardPreferences.imageVisible",
             ),
             PrependedText(
+                "enable_identicons",
+                "Enable Identicons",
+                wrapper_class="d-flex",
+                css_class=self.checkbox_classes,
+            ),
+            PrependedText(
                 "enable_latex",
                 "Enable LaTeX",
                 wrapper_class="d-flex",
-                css_class="form-check-input h-auto my-0",
+                css_class=self.checkbox_classes,
             ),
             PrependedText(
                 "allow_image_uploads",
                 "Allow Image Uploads",
                 wrapper_class="d-flex",
-                css_class="form-check-input h-auto my-0",
+                css_class=self.checkbox_classes,
             ),
             PrependedText(
                 "require_post_approval",
                 "Posts Require Approval",
                 wrapper_class="d-flex",
-                css_class="form-check-input h-auto my-0",
+                css_class=self.checkbox_classes,
             ),
             PrependedText(
                 "reaction_type",

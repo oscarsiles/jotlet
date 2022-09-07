@@ -1,4 +1,5 @@
 import uuid
+from hashlib import blake2b
 
 import auto_prefetch
 from django.conf import settings
@@ -45,6 +46,7 @@ class Board(auto_prefetch.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, null=False, unique=True)  # used as salt for hashing
     owner = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -136,6 +138,7 @@ class BoardPreferences(auto_prefetch.Model):
     background_color = models.CharField(max_length=7, default="#ffffff")
     background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
+    enable_identicons = models.BooleanField(default=True)
     require_post_approval = models.BooleanField(default=False)
     allow_guest_replies = models.BooleanField(default=False)
     allow_image_uploads = models.BooleanField(default=False)
@@ -204,6 +207,7 @@ class Post(auto_prefetch.Model, MPTTModel):
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
+    identity_hash = models.CharField(max_length=64, null=True, blank=True)
     approved = models.BooleanField(default=True)
     reply_to = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
     allow_replies = models.BooleanField(default=True)
@@ -221,6 +225,10 @@ class Post(auto_prefetch.Model, MPTTModel):
         prev_post = None
         if not self._state.adding:
             prev_post = Post.objects.get(pk=self.pk)
+        else:
+            string = self.user.username if self.user is not None else self.session_key
+            salt = self.topic.board.uuid
+            self.identity_hash = blake2b(f"{string}{salt}".encode(), digest_size=32).hexdigest()
         super().save(*args, **kwargs)
 
         if self.topic.board.preferences.allow_image_uploads:
