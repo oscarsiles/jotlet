@@ -3,14 +3,19 @@
 {% else %}
     <p>
         Are you sure you wish to delete your account?
-        <h5>This action is irreversible.</h5>
-        <input id="userDeleteConfirmCheckbox"
-               class="form-check-input"
-               type="checkbox"
-               x-model="$store.userPreferences.deleteConfirm"/>
-        <label class="form-check-label" for="userDeleteConfirmCheckbox">
-            I confirm that I understand and wish to delete my account.
-        </label>
+        All of your boards and related content will be <span class="fw-bold">deleted</span>.
+        <h5 class="text-center">This action is irreversible.</h5>
+        <div class="input-group mt-3">
+            <div class="input-group-text">
+                <input id="userDeleteConfirmCheckbox"
+                       class="form-check-input"
+                       type="checkbox"
+                       x-model="$store.userPreferences.deleteConfirm"/>
+            </div>
+            <label class="form-control form-check-label" for="userDeleteConfirmCheckbox">
+                I confirm that I understand and wish to delete my account.
+            </label>
+        </div>
     </p>
     <form action="{{ request.build_absolute_uri }}"
           method="post"

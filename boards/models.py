@@ -47,7 +47,7 @@ class Board(auto_prefetch.Model):
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, null=False, unique=True)  # used as salt for hashing
-    owner = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="boards")
+    owner = auto_prefetch.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="boards")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
