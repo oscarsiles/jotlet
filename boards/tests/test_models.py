@@ -56,13 +56,11 @@ class BoardModelTest(TestCase):
     def test_slug_format(self):
         self.assertRegex(self.board.slug, r"^[a-z0-9]{8}$")  # make sure we are only generating the new type of slug
 
-    def test_board_remain_after_user_delete(self):
-        user = self.board.owner
-        board_count_before = Board.objects.count()
-        user.delete()
-        board_count_after = Board.objects.count()
-        self.assertEqual(board_count_before, board_count_after)
-        self.assertIsNone(Board.objects.get(pk=self.board.pk).owner)
+    def test_board_deleted_after_user_delete(self):
+        BoardFactory(owner=self.board.owner)
+        self.assertEqual(Board.objects.filter(owner=self.board.owner).count(), 2)
+        self.board.owner.delete()
+        self.assertEqual(Board.objects.filter(owner=self.board.owner).count(), 0)
 
     def test_get_post_count(self):
         self.assertEqual(self.board.get_post_count, 0)
