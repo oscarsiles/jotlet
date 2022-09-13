@@ -1,10 +1,8 @@
-import json
-
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.core.cache import cache
 
 
-class BoardConsumer(AsyncWebsocketConsumer):
+class BoardConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
         self.board_group_name = f"board_{self.board_slug}"
@@ -51,31 +49,31 @@ class BoardConsumer(AsyncWebsocketConsumer):
         )
 
     async def session_connected(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def session_disconnected(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def topic_created(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def topic_updated(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def topic_deleted(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def post_created(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def post_updated(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def post_deleted(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def reaction_updated(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
 
     async def board_preferences_changed(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
