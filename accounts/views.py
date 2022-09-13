@@ -26,9 +26,12 @@ class JotletDeleteView(LoginRequiredMixin, generic.DeleteView):
     def form_valid(self, form):
         if self.request.user.is_staff or self.request.user.is_superuser:
             return redirect("account_profile")
-        username = self.request.user.username
         response = super().form_valid(form)
-        messages.add_message(self.request, messages.SUCCESS, f"Your account ({username}) was successfully deleted.")
+        messages.add_message(
+            self.request,
+            messages.SUCCESS,
+            f"Your account ({self.request.user.username}) was successfully deleted.",
+        )
         return response
 
 
