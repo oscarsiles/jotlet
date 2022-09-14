@@ -333,7 +333,6 @@ if not TESTING:
                 ],
                 "prefix": "jotlet",
                 "capacity": 500,
-                "symmetric_encryption_keys": [SECRET_KEY],
             },
         },
     }
