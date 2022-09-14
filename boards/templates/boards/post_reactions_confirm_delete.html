@@ -1,6 +1,6 @@
 <p>
-Are you sure you want to delete <strong>{{ post.get_reaction_count }}</strong> reaction{{ post.get_reaction_count|pluralize }} from the following post?
-<h5>{{ post }}</h5>
+    Are you sure you want to delete <strong>{{ post.get_reaction_count }}</strong> reaction{{ post.get_reaction_count|pluralize }} from the following post?
+    <h5>{{ post }}</h5>
 </p>
 <form hx-post="{{ request.build_absolute_uri }}"
       hx-swap="none"

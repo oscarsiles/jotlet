@@ -5,9 +5,7 @@
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0 accounts-column">
                 <h2>Login Lockout</h2>
             {% endif %}
-            <p>
-                You have been locked out from further login attempts for {{ cooloff_time }}.
-            </p>
+            <p>You have been locked out from further login attempts for {{ cooloff_time }}.</p>
             {% if not show_modal %}
             </div>
         </div>

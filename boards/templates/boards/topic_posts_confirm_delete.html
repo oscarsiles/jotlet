@@ -1,6 +1,6 @@
 <p>
-Are you sure you want to delete <strong>{{ topic.get_post_count }}</strong> post{{ topic.get_post_count|pluralize }} from the following topic?
-<h5>{{ topic }}</h5>
+    Are you sure you want to delete <strong>{{ topic.get_post_count }}</strong> post{{ topic.get_post_count|pluralize }} from the following topic?
+    <h5>{{ topic }}</h5>
 </p>
 <form hx-post="{{ request.build_absolute_uri }}"
       hx-swap="none"
@@ -12,6 +12,8 @@ Are you sure you want to delete <strong>{{ topic.get_post_count }}</strong> post
     <button type="submit"
             class="btn btn-danger"
             form="topic-posts-delete-form"
-            data-bs-dismiss="modal">Delete All</button>
+            data-bs-dismiss="modal">
+        Delete All
+    </button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">Delete Topic Posts</h5>
