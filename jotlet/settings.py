@@ -314,7 +314,10 @@ if not TESTING:
                 "CONNECTION_POOL_KWARGS": {"max_connections": 100},
                 "PARSER_CLASS": "redis.connection.HiredisParser",
             },
-        }
+        },
+        "locmem": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        },
     }
 
     CACHEOPS_REDIS = REDIS_URL
