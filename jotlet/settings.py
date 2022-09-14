@@ -259,14 +259,15 @@ LOGOUT_REDIRECT_URL = "boards:index"
 USE_S3 = env("USE_S3", default=False)
 if USE_S3:
     # aws settings
+    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="eu-west-2")
     AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-    AWS_DEFAULT_ACL = "public-read"
     AWS_S3_CUSTOM_DOMAIN = env("AWS_S3_CUSTOM_DOMAIN")
-    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=2592000"}
-    AWS_IS_GZIPPED = False
     AWS_S3_SIGNATURE_VERSION = "s3v4"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=2592000"}
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_IS_GZIPPED = False
     # s3 public media settings
     THUMBNAIL_FORCE_OVERWRITE = True
     PUBLIC_MEDIA_LOCATION = "media"
