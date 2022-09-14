@@ -72,12 +72,8 @@ if USE_X_FORWARDED_HOST:
 
 SITE_ID = 1
 
-INSTALLED_APPS = []
-if DEBUG:
-    INSTALLED_APPS += ["whitenoise.runserver_nostatic"]
-
 # Application definition
-INSTALLED_APPS += [
+INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -116,7 +112,6 @@ INSTALLED_APPS += [
     "django_cleanup.apps.CleanupConfig",
 ]
 
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -134,20 +129,25 @@ MIDDLEWARE = [
     "axes.middleware.AxesMiddleware",
 ]
 
-if DEBUG_TOOLBAR_ENABLED and DEBUG:
-    import socket
+if DEBUG:
+    INSTALLED_APPS = [
+        "whitenoise.runserver_nostatic",
+    ] + INSTALLED_APPS
 
-    from debug_toolbar import settings as debug_toolbar_settings
+    if DEBUG_TOOLBAR_ENABLED:
+        import socket
 
-    RENDER_PANELS = False
-    INSTALLED_APPS += ["debug_toolbar", "template_profiler_panel"]
-    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
-    DEBUG_TOOLBAR_PANELS = debug_toolbar_settings.PANELS_DEFAULTS + [
-        "template_profiler_panel.panels.template.TemplateProfilerPanel"
-    ]
+        from debug_toolbar import settings as debug_toolbar_settings
 
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
+        RENDER_PANELS = False
+        INSTALLED_APPS += ["debug_toolbar", "template_profiler_panel"]
+        MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+        DEBUG_TOOLBAR_PANELS = debug_toolbar_settings.PANELS_DEFAULTS + [
+            "template_profiler_panel.panels.template.TemplateProfilerPanel"
+        ]
+
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
 
 ROOT_URLCONF = "jotlet.urls"
 
