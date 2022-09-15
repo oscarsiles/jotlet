@@ -52,7 +52,7 @@ def invalidate_reaction_cache(reaction):
 @receiver(post_save, sender=BoardPreferences)
 def board_preferences_send_message(sender, instance, created, **kwargs):
     channel_group_send(
-        f"board_{instance.board.slug}",
+        f"board-{instance.board.slug}",
         {
             "type": "board_preferences_changed",
         },
@@ -84,7 +84,7 @@ def topic_send_message(sender, instance, created, **kwargs):
         message_type = "topic_updated"
 
     channel_group_send(
-        f"board_{instance.board.slug}",
+        f"board-{instance.board.slug}",
         {
             "type": message_type,
             "topic_pk": instance.pk,
@@ -97,7 +97,7 @@ def topic_delete_send_message(sender, instance, **kwargs):
     try:
         if Board.objects.filter(id=instance.board_id).exists():
             channel_group_send(
-                f"board_{instance.board.slug}",
+                f"board-{instance.board.slug}",
                 {
                     "type": "topic_deleted",
                     "topic_pk": instance.pk,
@@ -141,7 +141,7 @@ def post_send_message(sender, instance, created, **kwargs):
     board_slug = instance.topic.board.slug
     if created and instance.is_root_node():
         channel_group_send(
-            f"board_{board_slug}",
+            f"board-{board_slug}",
             {
                 "type": "post_created",
                 "topic_pk": instance.topic_id,
@@ -158,7 +158,7 @@ def post_send_message(sender, instance, created, **kwargs):
         )
     else:
         channel_group_send(
-            f"board_{board_slug}",
+            f"board-{board_slug}",
             {
                 "type": "post_updated",
                 "topic_pk": instance.topic_id,
@@ -172,7 +172,7 @@ def post_delete_send_message(sender, instance, **kwargs):
     try:
         if Topic.objects.filter(id=instance.topic_id).exists():
             channel_group_send(
-                f"board_{instance.topic.board.slug}",
+                f"board-{instance.topic.board.slug}",
                 {
                     "type": "post_deleted",
                     "topic_pk": instance.topic_id,

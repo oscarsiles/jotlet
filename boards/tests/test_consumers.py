@@ -16,7 +16,7 @@ class BoardConsumerTest(TestCase):
     async def test_session_connect_disconnect_websocket_message(self):
         self.cache = caches["locmem"]
         application = URLRouter(websocket_urlpatterns)
-        board_group_name = f"board_{self.board.slug}"
+        board_group_name = f"board-{self.board.slug}"
         self.assertEqual(await self.cache.aget(board_group_name), None)
 
         communicator1 = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")

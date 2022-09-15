@@ -45,7 +45,7 @@ def get_random_string(length):
 def post_reaction_send_update_message(post):
     try:
         channel_group_send(
-            f"board_{post.topic.board.slug}",
+            f"board-{post.topic.board.slug}",
             {
                 "type": "reaction_updated",
                 "topic_pk": post.topic.pk,

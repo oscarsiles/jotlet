@@ -11,7 +11,7 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
-        self.board_group_name = f"board_{self.board_slug}"
+        self.board_group_name = f"board-{self.board_slug}"
 
         await self.cache.aget_or_set(self.board_group_name, 0)
         await self.cache.aincr(self.board_group_name)
