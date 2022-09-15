@@ -23,7 +23,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.8, 3.9, "3.10"]
+        python-version: [3.8, 3.9, "3.10", "3.11-dev"]
 
     services:
       postgres:
@@ -117,7 +117,7 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-          
+
   sentry-release:
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/')
