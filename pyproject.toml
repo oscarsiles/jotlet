@@ -78,6 +78,7 @@ pyupgrade = "^2.37.3"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^6.4.4"
+daphne = "^3.0.2"
 factory-boy = "^3.2.1"
 pytest-cov = "^3.0.0"
 pytest-django = "^4.5.2"
