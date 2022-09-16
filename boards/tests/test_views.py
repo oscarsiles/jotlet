@@ -617,36 +617,55 @@ class TopicDeleteViewTest(TestCase):
         self.assertIn(f'"topic_pk": {self.topic.pk}', message)
 
 
-class DeleteTopicPostsViewTest(TestCase):
+class DeletePostsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
         cls.user2 = UserFactory()
         cls.board = BoardFactory(owner=cls.user)
         cls.topic = TopicFactory(board=cls.board)
+        cls.topic2 = TopicFactory(board=cls.board)
         cls.topic_posts_delete_url = reverse(
             "boards:topic-posts-delete", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk}
         )
+        cls.board_posts_delete_url = reverse("boards:board-posts-delete", kwargs={"slug": cls.board.slug})
         PostFactory.create_batch(10, topic=cls.topic, user=cls.user)
+        PostFactory.create_batch(10, topic=cls.topic2, user=cls.user2)
 
     def test_anonymous_permissions(self):
-        response = self.client.get(
-            reverse("boards:topic-posts-delete", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk})
-        )
+        response = self.client.get(self.topic_posts_delete_url)
         self.assertEqual(response.status_code, 302)
+        response = self.client.get(self.board_posts_delete_url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_other_user_permissions(self):
+        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(self.topic_posts_delete_url)
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(self.board_posts_delete_url)
+        self.assertEqual(response.status_code, 403)
 
     def test_owner_permissions(self):
         self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        delete_url = reverse(
-            "boards:topic-posts-delete", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk}
-        )
-        response = self.client.get(delete_url)
+        response = self.client.get(self.topic_posts_delete_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Post.objects.filter(topic=self.topic).count(), 10)
+        response = self.client.get(self.board_posts_delete_url)
+        self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(delete_url)
+    def test_topic_posts_delete(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        self.assertEqual(Post.objects.filter(topic__board=self.board).count(), 20)
+        response = self.client.post(self.topic_posts_delete_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.filter(topic=self.topic).count(), 0)
+        self.assertEqual(Post.objects.filter(topic__board=self.board).count(), 10)
+
+    def test_board_posts_delete(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        self.assertEqual(Post.objects.filter(topic__board=self.board).count(), 20)
+        response = self.client.post(self.board_posts_delete_url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.filter(topic__board=self.board).count(), 0)
 
     async def test_topic_posts_deleted_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)

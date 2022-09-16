@@ -42,7 +42,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item"
+                                <a class="dropdown-item dropdown-item-del-bg"
                                    role="button"
                                    id="topic-{{ topic.pk }}-delete-url"
                                    hx-get="{% url 'boards:topic-posts-delete' board.slug topic.pk %}"
@@ -51,11 +51,11 @@
                                    x-show="postCount > 0"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal-1-div">
-                                    <i class="bi bi-envelope-slash pe-2"></i>Delete Posts
+                                    <i class="bi bi-envelope-slash pe-2"></i>Delete Topic Posts
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item"
+                                <a class="dropdown-item dropdown-item-del-bg"
                                    role="button"
                                    id="topic-{{ topic.pk }}-delete-url"
                                    hx-get="{% url 'boards:topic-delete' board.slug topic.pk %}"
@@ -81,7 +81,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modal-1-div"
                 title="Create Post">
-            <strong><i class="bi bi-plus-square"></i></strong>
+            <strong><i class="bi bi-file-earmark-plus"></i></strong>
         </button>
     </div>
 {% endcached_as %}

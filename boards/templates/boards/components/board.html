@@ -51,8 +51,8 @@
         {% include 'boards/components/topic.html' %}
     {% endfor %}
     {% if request.user == board.owner or user.is_staff %}
-        {% cache 86400 board-newTopic board.pk %}
-        <div class="col-md-auto px-2" id="newTopic-div">
+        <div class="col-md-auto px-2" id="boardControls-div">
+            {% cache 86400 board-newTopic board.pk %}
             <div class="d-flex bg-white rounded my-2" id="newTopic-card-div">
                 <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"
                         hx-get="{% url 'boards:topic-create' board.slug %}"
@@ -64,8 +64,21 @@
                     <strong><i class="bi bi-bookmark-plus px-2"></i></strong>
                 </button>
             </div>
-        </div>
-    {% endcache %}
+        {% endcache %}
+        {% if board.get_post_count > 0 %}
+            <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
+                <button class="btn btn-outline-danger shadow-none card-link flex-grow-1 p-3 fs-4"
+                        hx-get="{% url 'boards:board-posts-delete' board.slug %}"
+                        hx-target="#modal-1-body-div"
+                        hx-swap="innerHTML"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal-1-div"
+                        title="Delete All Posts">
+                    <strong><i class="bi bi-file-earmark-x px-2"></i></strong>
+                </button>
+            </div>
+        {% endif %}
+    </div>
 {% endif %}
 <div class="col-md" x-show="topicCount < 2 && !smallWindow"></div>
 <div id="board-scripts">

@@ -13,6 +13,7 @@ urlpatterns = [
     path("<slug:slug>/update/", views.UpdateBoardView.as_view(), name="board-update"),
     path("<slug:slug>/delete/", views.DeleteBoardView.as_view(), name="board-delete"),
     path("<slug:slug>/image/post/upload/", views.PostImageUploadView.as_view(), name="post-image-upload"),
+    path("<slug:slug>/posts/delete/", views.DeletePostsView.as_view(), name="board-posts-delete"),
     path("<slug:slug>/qr/", views.QrView.as_view(), name="board-qr"),
     path("<slug:slug>/preferences/", views.BoardPreferencesView.as_view(), name="board-preferences"),
     path("<slug:slug>/topics/create/", views.CreateTopicView.as_view(), name="topic-create"),
@@ -21,7 +22,7 @@ urlpatterns = [
     path("<slug:slug>/topics/<int:pk>/fetch/", views.TopicFetchView.as_view(), name="topic-fetch"),
     path(
         "<slug:slug>/topics/<int:topic_pk>/posts/delete/",
-        views.DeleteTopicPostsView.as_view(),
+        views.DeletePostsView.as_view(),
         name="topic-posts-delete",
     ),
     path("<slug:slug>/topics/<int:topic_pk>/posts/create/", views.CreatePostView.as_view(), name="post-create"),

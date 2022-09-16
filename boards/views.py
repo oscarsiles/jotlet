@@ -267,8 +267,8 @@ class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
 
 
-class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
-    template_name = "boards/topic_posts_confirm_delete.html"
+class DeletePostsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
+    template_name = "boards/posts_confirm_delete.html"
 
     def test_func(self):
         board = Board.objects.get(slug=self.kwargs["slug"])
@@ -276,12 +276,21 @@ class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Temp
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        if "topic_pk" in self.kwargs:
+            context["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        else:
+            context["board"] = Board.objects.get(slug=self.kwargs["slug"])
         return context
 
     def post(self, request, *args, **kwargs):
-        topic = Topic.objects.get(pk=self.kwargs["topic_pk"])
-        topic.posts.all().delete()
+        if "topic_pk" in self.kwargs:
+            Post.objects.filter(topic__pk=self.kwargs["topic_pk"]).delete()
+            message = "All posts in topic deleted"
+            event = "topicUpdated"
+        else:
+            Post.objects.filter(topic__board__slug=self.kwargs["slug"]).delete()
+            message = "All posts in board deleted"
+            event = "boardUpdated"
         response = HttpResponse(status=204)
 
         return trigger_client_event(
@@ -289,11 +298,11 @@ class DeleteTopicPostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Temp
                 response,
                 "showMessage",
                 {
-                    "message": "Topic Posts Deleted",
+                    "message": message,
                     "color": "danger",
                 },
             ),
-            "topicUpdated",
+            event,
             None,
         )
 

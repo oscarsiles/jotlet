@@ -104,6 +104,7 @@ document.addEventListener("alpine:init", () => {
 
   Alpine.store("board", {
     is_overflow: false,
+    deleteConfirm: false,
   });
 
   Alpine.store("boardPreferences", {
