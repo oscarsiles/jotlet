@@ -90,7 +90,7 @@
 <div x-ref="topicPosts_{{ topic.pk }}">
     {% for post in topic.posts.all|dictsort:"pk" %}
         {% if post.reply_depth == 0 %}
-            {% include 'boards/components/post.html' %}
+            {% include "boards/components/post.html" %}
         {% endif %}
     {% endfor %}
     <div id="newCard-topic-{{ topic.pk }}-div" hidden></div>

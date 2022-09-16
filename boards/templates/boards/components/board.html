@@ -48,7 +48,7 @@
         {% endcache %}
     </style>
     {% for topic in board.topics.all|dictsort:"pk" %}
-        {% include 'boards/components/topic.html' %}
+        {% include "boards/components/topic.html" %}
     {% endfor %}
     {% if request.user == board.owner or user.is_staff %}
         <div class="col-md-auto px-2" id="boardControls-div">

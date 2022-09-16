@@ -166,7 +166,7 @@
                     </div>
                 {% endcached_as %}
                 {% if board.preferences.reaction_type != 'n' %}
-                    {% include 'boards/components/post_footer.html' %}
+                    {% include "boards/components/post_footer.html" %}
                 {% endif %}
             {% endif %}
         </div>
@@ -181,7 +181,7 @@
              {% if post.reply_depth <= 2 %}class="ps-4"{% endif %}>
             {% with post as parent %}
                 {% for post in post.get_children|dictsort:"pk" %}
-                    {% include 'boards/components/post.html' %}
+                    {% include "boards/components/post.html" %}
                 {% endfor %}
             {% endwith %}
             <div id="newCard-post-{{ post.pk }}-div" hidden></div>

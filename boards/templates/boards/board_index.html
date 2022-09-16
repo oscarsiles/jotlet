@@ -117,8 +117,8 @@
          tagindex="0"
          x-data="{ updateOverflow() { $store.board.is_overflow = $el.offsetHeight < $el.scrollHeight } }"
          x-effect="new ResizeObserver(updateOverflow).observe(document.getElementById('board-{{ board.slug }}'))">
-        {% include 'boards/components/board.html' %}
-        {% include 'components/footer.html' %}
+        {% include "boards/components/board.html" %}
+        {% include "components/footer.html" %}
     </div>
     <div id="offcanvasPreferences"
          class="offcanvas offcanvas-end offcanvas-wide"
