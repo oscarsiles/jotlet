@@ -57,7 +57,7 @@
                                         <svg width="24"
                                              height="24"
                                              data-jdenticon-hash="{{ post.identity_hash }}"
-                                             x-effect="jdenticon.updateSvg($el)">
+                                             x-effect="if (typeof jdenticon !== 'undefined') { jdenticon.updateSvg($el) }">
                                         </svg>
                                     </div>
                                 {% endif %}
