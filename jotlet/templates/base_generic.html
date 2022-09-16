@@ -1,4 +1,4 @@
-{% load cache static %}
+{% load static cache %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -154,18 +154,18 @@
 </nav>
 <div class="d-flex flex-column overflow-auto flex-grow-1"
      id="main-content-div">
-    {% include 'components/messages.html' %}
+    {% include "components/messages.html" %}
     {% block content %}
     {% endblock content %}
     {{ request.user.is_authenticated|json_script:"is_logged_in" }}
     {% block footer %}
-        {% include 'components/footer.html' %}
+        {% include "components/footer.html" %}
     {% endblock footer %}
-    {% include 'boards/components/toast.html' %}
+    {% include "boards/components/toast.html" %}
 </div>
 </div>
-{% include 'boards/components/modal.html' with num=1 %}
-{% include 'boards/components/modal.html' with num=2 %}
+{% include "boards/components/modal.html" with num=1 %}
+{% include "boards/components/modal.html" with num=2 %}
 {% if not request.htmx %}
     <script type="module" nonce="{{ CSP_NONCE }}">
         /* beautify ignore:start */{% cache 86400 base-script-modals %}/* beautify ignore:end */
