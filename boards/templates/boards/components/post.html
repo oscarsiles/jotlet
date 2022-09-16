@@ -83,15 +83,17 @@
                                             {# djlint:on #}
                                         {% endif %}
                                         {% if board.preferences.allow_guest_replies or is_moderator %}
-                                            <button class="btn btn-link text-black shadow-none p-1"
-                                                    hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
-                                                    hx-target="#modal-1-body-div"
-                                                    hx-swap="innerHTML"
-                                                    key="{{ post.pk }}-reply-button"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modal-1-div">
-                                                <i class="bi bi-reply" title="Reply"></i>
-                                            </button>
+                                            {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
+                                                <button class="btn btn-link text-black shadow-none p-1"
+                                                        hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
+                                                        hx-target="#modal-1-body-div"
+                                                        hx-swap="innerHTML"
+                                                        key="{{ post.pk }}-reply-button"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modal-1-div">
+                                                    <i class="bi bi-reply" title="Reply"></i>
+                                                </button>
+                                            {% endif %}
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}

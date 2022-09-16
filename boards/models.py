@@ -9,6 +9,7 @@ from django.db import IntegrityError, models
 from django.db.models.functions import Upper
 from django.template.defaultfilters import date
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -108,6 +109,25 @@ class Board(auto_prefetch.Model):
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.slug})
 
+    @cached_property
+    def is_posting_allowed(self):
+        is_allowed = True
+        if self.preferences.posting_allowed_from is not None and self.preferences.posting_allowed_until is not None:
+            if self.preferences.posting_allowed_from <= self.preferences.posting_allowed_until:
+                is_allowed = (
+                    self.preferences.posting_allowed_from <= timezone.now() <= self.preferences.posting_allowed_until
+                )
+            else:  # disallowed period falls between from/until dates
+                is_allowed = (
+                    timezone.now() >= self.preferences.posting_allowed_from
+                    or timezone.now() <= self.preferences.posting_allowed_until
+                )
+        elif self.preferences.posting_allowed_from is not None:
+            is_allowed = self.preferences.posting_allowed_from <= timezone.now()
+        elif self.preferences.posting_allowed_until is not None:
+            is_allowed = timezone.now() <= self.preferences.posting_allowed_until
+        return is_allowed
+
     class Meta:
         permissions = (("can_view_all_boards", "Can view all boards"),)
         indexes = [
@@ -144,6 +164,8 @@ class BoardPreferences(auto_prefetch.Model):
     allow_image_uploads = models.BooleanField(default=False)
     moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
     reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
+    posting_allowed_from = models.DateTimeField(null=True, blank=True)
+    posting_allowed_until = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.board.title + " preferences"

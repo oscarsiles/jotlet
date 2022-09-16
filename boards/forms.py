@@ -113,6 +113,13 @@ class BoardPreferencesForm(forms.ModelForm):
         self.initial_board = kwargs.pop("board")
         super().__init__(*args, **kwargs)
 
+        self.fields["posting_allowed_from"].widget = forms.DateInput(
+            format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local"}
+        )
+        self.fields["posting_allowed_until"].widget = forms.DateInput(
+            format="%Y-%m-%dT%H:%M", attrs={"type": "datetime-local"}
+        )
+
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
         self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
         self.initial_require_post_approval = self.initial["require_post_approval"]
@@ -138,6 +145,14 @@ class BoardPreferencesForm(forms.ModelForm):
         }
 
         self.helper.layout = Layout(
+            PrependedText(
+                "posting_allowed_from",
+                "Allow Posts From",
+            ),
+            PrependedText(
+                "posting_allowed_until",
+                "Allow Posts Until",
+            ),
             PrependedText(
                 "type",
                 "Board Type",
@@ -194,13 +209,13 @@ class BoardPreferencesForm(forms.ModelForm):
             ),
             PrependedText(
                 "allow_image_uploads",
-                "Allow Image Uploads",
+                "Allow Images",
                 wrapper_class="d-flex",
                 css_class=self.checkbox_classes,
             ),
             PrependedText(
                 "require_post_approval",
-                "Posts Require Approval",
+                "Require Approval",
                 wrapper_class="d-flex",
                 css_class=self.checkbox_classes,
             ),

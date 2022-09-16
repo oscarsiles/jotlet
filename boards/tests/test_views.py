@@ -15,6 +15,8 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.timezone import timedelta
 from django_htmx.middleware import HtmxMiddleware
 
 from accounts.tests.factories import USER_TEST_PASSWORD, UserFactory
@@ -694,10 +696,9 @@ class PostCreateViewTest(TestCase):
         cls.post_create_url = reverse("boards:post-create", kwargs={"slug": cls.board.slug, "topic_pk": cls.topic.pk})
 
     def test_anonymous_permissions(self):
-        post_url = reverse("boards:post-create", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk})
-        response = self.client.get(post_url)
+        response = self.client.get(self.post_create_url)
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(post_url, data={"content": "Test Message anon"})
+        response = self.client.post(self.post_create_url, data={"content": "Test Message anon"})
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.first().content, "Test Message anon")
 
@@ -762,7 +763,7 @@ class PostCreateViewTest(TestCase):
 
     def test_post_session_key(self):
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": self.topic.board.slug, "topic_pk": self.topic.pk}),
+            self.post_create_url,
             data={"content": "Test Post"},
         )
         self.assertEqual(self.client.session.session_key, Post.objects.get(content="Test Post").session_key)
@@ -771,14 +772,14 @@ class PostCreateViewTest(TestCase):
         self.board.preferences.require_post_approval = True
         self.board.preferences.save()
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            self.post_create_url,
             data={"content": "Test Post"},
         )
         self.assertEqual(Post.objects.get(content="Test Post").approved, False)
 
         self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            self.post_create_url,
             data={"content": "Test Post user1"},
         )
         self.assertEqual(
@@ -787,19 +788,111 @@ class PostCreateViewTest(TestCase):
 
         self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            self.post_create_url,
             data={"content": "Test Post user2"},
         )
         self.assertEqual(Post.objects.get(content="Test Post user2").approved, False)  # Normal user needs approval
 
         self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
+            self.post_create_url,
             data={"content": "Test Post user3"},
         )
         self.assertEqual(
             Post.objects.get(content="Test Post user3").approved, True
         )  # Moderator can post without approval
+
+    def test_post_before_allowed(self):
+        self.board.preferences.posting_allowed_from = timezone.now() + timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, content="Test Post")
+
+    def test_post_after_allowed(self):
+        self.board.preferences.posting_allowed_until = timezone.now() - timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, content="Test Post")
+
+    def test_post_allowed_time(self):
+        self.board.preferences.posting_allowed_from = timezone.now() - timedelta(days=1)
+        self.board.preferences.posting_allowed_until = None
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 1)
+
+        self.board.preferences.posting_allowed_from = None
+        self.board.preferences.posting_allowed_until = timezone.now() + timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 2)
+
+        self.board.preferences.posting_allowed_from = timezone.now() - timedelta(days=1)
+        self.board.preferences.posting_allowed_until = timezone.now() + timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 3)
+
+        self.board.preferences.posting_allowed_from = timezone.now() - timedelta(days=1)
+        self.board.preferences.posting_allowed_until = timezone.now() - timedelta(days=2)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 4)
+
+        self.board.preferences.posting_allowed_from = timezone.now() + timedelta(days=2)
+        self.board.preferences.posting_allowed_until = timezone.now() + timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 5)
+
+    def test_post_outside_window(self):
+        self.board.preferences.posting_allowed_from = timezone.now() + timedelta(days=1)
+        self.board.preferences.posting_allowed_until = timezone.now() + timedelta(days=2)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, content="Test Post")
+
+        self.board.preferences.posting_allowed_from = timezone.now() + timedelta(days=1)
+        self.board.preferences.posting_allowed_until = timezone.now() - timedelta(days=1)
+        self.board.preferences.save()
+        response = self.client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRaises(Post.DoesNotExist, Post.objects.get, content="Test Post")
 
     async def test_post_created_websocket_message(self):
         application = URLRouter(websocket_urlpatterns)
@@ -920,50 +1013,34 @@ class PostDeleteViewTest(TestCase):
         )
 
     def test_anonymous_permissions(self):
-        self.client.post(
-            reverse(
-                "boards:post-delete", kwargs={"slug": "test-board", "topic_pk": self.topic.pk, "pk": self.post.pk}
-            )
-        )
+        self.client.post(self.post_deleted_url)
         self.assertEqual(Post.objects.count(), 1)
         self.client.post(
-            reverse("boards:post-create", kwargs={"slug": "test-board", "topic_pk": self.topic.pk}),
+            reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post anon"},
         )
         post2 = Post.objects.get(content="Test Post anon")
         self.assertEqual(Post.objects.count(), 2)
         self.client.post(
-            reverse("boards:post-delete", kwargs={"slug": "test-board", "topic_pk": self.topic.pk, "pk": post2.pk})
+            reverse("boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post2.pk})
         )
         self.assertEqual(Post.objects.count(), 1)
 
     def test_other_user_permissions(self):
         self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse(
-                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
-            )
-        )
+        response = self.client.post(self.post_deleted_url)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Post.objects.count(), 1)
 
     def test_board_moderator_permissions(self):
         self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse(
-                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
-            )
-        )
+        response = self.client.post(self.post_deleted_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
 
     def test_owner_permissions(self):
         self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse(
-                "boards:post-delete", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": self.post.pk}
-            )
-        )
+        response = self.client.post(self.post_deleted_url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Post.objects.count(), 0)
 

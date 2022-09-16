@@ -9,7 +9,7 @@
      x-data="{ postCount: 0 }"
      x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
      x-on:post-deleted.camel="postCount--">
-    {% cached_as topic None topic_posts_list topic request.session.session_key request.user is_moderator %}
+    {% cached_as topic None topic_posts_list topic board.is_posting_allowed request.session.session_key request.user is_moderator %}
     <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <div class="d-flex justify-content-between">
@@ -72,18 +72,20 @@
             </div>
         </div>
     </div>
-    <div class="d-flex bg-white rounded my-2" id="topic-{{ topic.pk }}-create">
-        <button id="topic-{{ topic.pk }}-create-url"
-                class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
-                hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
-                hx-target="#modal-1-body-div"
-                hx-swap="innerHTML"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-1-div"
-                title="Create Post">
-            <strong><i class="bi bi-file-earmark-plus"></i></strong>
-        </button>
-    </div>
+    {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
+        <div class="d-flex bg-white rounded my-2" id="topic-{{ topic.pk }}-create">
+            <button id="topic-{{ topic.pk }}-create-url"
+                    class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
+                    hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
+                    hx-target="#modal-1-body-div"
+                    hx-swap="innerHTML"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal-1-div"
+                    title="Create Post">
+                <strong><i class="bi bi-file-earmark-plus"></i></strong>
+            </button>
+        </div>
+    {% endif %}
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk }}">
     {% for post in topic.posts.all|dictsort:"pk" %}

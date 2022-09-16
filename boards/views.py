@@ -321,12 +321,12 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     reply_to = None
 
     def test_func(self):
-        is_allowed = True
-        if "post_pk" in self.kwargs:
+        board = Board.objects.get(slug=self.kwargs["slug"])
+        is_allowed = board.is_posting_allowed or self.request.user == board.owner or self.request.user.is_staff
+        if "post_pk" in self.kwargs and is_allowed:
             self.is_reply = True
             # check if the user is allowed to reply to the post
             self.reply_to = Post.objects.get(pk=self.kwargs["post_pk"])
-            board = self.reply_to.topic.board
 
             is_allowed = board.preferences.type == "r" and (
                 (self.reply_to.approved and board.preferences.allow_guest_replies)
