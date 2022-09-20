@@ -530,6 +530,7 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
         page = self.request.GET.get("page", 1)
         page_size = self.request.GET.get("paginate_by", None)
         if page_size:
+            page_size = int(page_size)
             self.request.session["paginate_by"] = page_size
         self.paginate_by = self.request.session.get("paginate_by", 10)
         context = super().get_context_data(**kwargs)

@@ -22,7 +22,7 @@ from django_htmx.middleware import HtmxMiddleware
 from accounts.tests.factories import USER_TEST_PASSWORD, UserFactory
 from boards.models import IMAGE_TYPE, REACTION_TYPE, Board, BoardPreferences, Image, Post, Reaction, Topic
 from boards.routing import websocket_urlpatterns
-from boards.views import BoardView
+from boards.views import BoardListView, BoardView
 
 from .factories import BoardFactory, ImageFactory, PostFactory, ReactionFactory, TopicFactory
 
@@ -34,8 +34,19 @@ def create_image(type):
     return factory.Faker("image", image_format=type).evaluate({}, None, {"locale": "en"})
 
 
-def dummy_request(request):
-    return HttpResponse("Hello!")
+def create_session(request):
+    session_middleware = SessionMiddleware(request)
+    session_middleware.process_request(request)
+    request.session.save()
+
+
+def create_htmx_session(request):
+    def dummy_view(request):
+        return HttpResponse("Hello!")
+
+    create_session(request)
+    htmx_middleware = HtmxMiddleware(dummy_view)
+    htmx_middleware(request)
 
 
 class IndexViewTest(TestCase):
@@ -101,7 +112,6 @@ class BoardViewTest(TestCase):
     def setUp(self):
         super().setUp()
         self.factory = RequestFactory()
-        self.htmx_middleware = HtmxMiddleware(dummy_request)
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
@@ -116,11 +126,8 @@ class BoardViewTest(TestCase):
 
         # request with no current_url
         request = self.factory.get(reverse("boards:board", kwargs=kwargs), HTTP_HX_REQUEST="true")
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
         request.user = self.user
-        self.htmx_middleware(request)
+        create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -132,11 +139,8 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:index"),
         )
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
         request.user = self.user
-        self.htmx_middleware(request)
+        create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -148,11 +152,8 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:index-all"),
         )
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
         request.user = self.user
-        self.htmx_middleware(request)
+        create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -164,11 +165,8 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs=kwargs),
         )
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
         request.user = self.user
-        self.htmx_middleware(request)
+        create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -180,11 +178,8 @@ class BoardViewTest(TestCase):
             HTTP_HX_REQUEST="true",
             HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs={"slug": "000000"}),
         )
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
         request.user = self.user
-        self.htmx_middleware(request)
+        create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
         self.assertEqual(response.status_code, 200)
@@ -1152,6 +1147,10 @@ class ReactionsDeleteViewTest(TestCase):
 # TODO: Implement further tests for all board_list_types
 class BoardListViewTest(TestCase):
     @classmethod
+    def setUp(cls):
+        cls.factory = RequestFactory()
+
+    @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
         cls.user2 = UserFactory()
@@ -1212,12 +1211,67 @@ class BoardListViewTest(TestCase):
         self.assertEqual(response.context["page_obj"].number, 2)
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
 
-    # TODO: Implement further tests for pagination dropdown and sessions
     def test_paginate_by_session(self):
-        pass
+        request = self.factory.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
+        request.user = self.user
+        create_session(request)
+        response = BoardListView.as_view()(request, board_list_type="own")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(request.session.get("paginate_by"))
+        self.assertEqual(response.context_data["paginate_by"], 10)
+        self.assertEqual(response.context_data["page_obj"].number, 1)
+        self.assertEqual(len(response.context_data["page_obj"].paginator.page_range), 1)
+
+        request = self.factory.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
+        request.user = self.user
+        create_session(request)
+        request.session["paginate_by"] = 20
+        request.session.save()
+        response = BoardListView.as_view()(request, board_list_type="own")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request.session.get("paginate_by"), 20)
+        self.assertEqual(response.context_data["paginate_by"], 20)
+        self.assertEqual(response.context_data["page_obj"].number, 1)
+        self.assertEqual(len(response.context_data["page_obj"].paginator.page_range), 1)
+
+        request = self.factory.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
+        request.user = self.user
+        create_session(request)
+        request.session["paginate_by"] = 5
+        request.session.save()
+        response = BoardListView.as_view()(request, board_list_type="own")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request.session.get("paginate_by"), 5)
+        self.assertEqual(response.context_data["paginate_by"], 5)
+        self.assertEqual(response.context_data["page_obj"].number, 1)
+        self.assertEqual(len(response.context_data["page_obj"].paginator.page_range), 2)
 
     def test_paginate_by_querystring(self):
-        pass
+        request = self.factory.get(
+            reverse("boards:board-list", kwargs={"board_list_type": "own"}),
+            {"paginate_by": 20},
+        )
+        request.user = self.user
+        create_session(request)
+        response = BoardListView.as_view()(request, board_list_type="own")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request.session.get("paginate_by"), 20)
+        self.assertEqual(response.context_data["paginate_by"], 20)
+        self.assertEqual(response.context_data["page_obj"].number, 1)
+        self.assertEqual(len(response.context_data["page_obj"].paginator.page_range), 1)
+
+        request = self.factory.get(
+            reverse("boards:board-list", kwargs={"board_list_type": "own"}),
+            {"paginate_by": 5},
+        )
+        request.user = self.user
+        create_session(request)
+        response = BoardListView.as_view()(request, board_list_type="own")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(request.session.get("paginate_by"), 5)
+        self.assertEqual(response.context_data["paginate_by"], 5)
+        self.assertEqual(response.context_data["page_obj"].number, 1)
+        self.assertEqual(len(response.context_data["page_obj"].paginator.page_range), 2)
 
 
 class TopicFetchViewTest(TestCase):

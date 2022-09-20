@@ -87,7 +87,7 @@
             <select class="form-select" name="paginate_by">
                 {% for page_size in pagination_sizes %}
                     <option value="{{ page_size }}"
-                            {% if page_size|add:"0" == paginate_by|add:"0" %} selected{% endif %}>
+                            {% if page_size == paginate_by %} selected{% endif %}>
                         {{ page_size }}
                     </option>
                 {% endfor %}
