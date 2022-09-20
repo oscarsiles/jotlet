@@ -517,25 +517,30 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViews, generic.ListView):
     model = Board
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
-    paginate_by = 5
+    paginate_by = None
     board_list_type = "own"
     filterset = None
 
     def get_queryset(self):
         self.board_list_type = self.kwargs["board_list_type"]
-
         self.filterset = BoardFilter(self.request.GET, request=self.request, board_list_type=self.board_list_type)
-
         return self.filterset.qs
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         page = self.request.GET.get("page", 1)
+        page_size = self.request.GET.get("paginate_by", None)
+        if page_size:
+            self.request.session["paginate_by"] = page_size
+        self.paginate_by = self.request.session.get("paginate_by", 10)
+        context = super().get_context_data(**kwargs)
+
         paginator = Paginator(self.object_list, self.paginate_by)
         page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
 
         context["filter"] = self.filterset
         context["page_range"] = page_range
+        context["paginate_by"] = self.paginate_by
+        context["pagination_sizes"] = [5, 10, 20, 50]
         context["board_list_type"] = self.board_list_type
         return context
 

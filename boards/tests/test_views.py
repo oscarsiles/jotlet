@@ -1155,8 +1155,8 @@ class BoardListViewTest(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory()
         cls.user2 = UserFactory()
-        BoardFactory.create_batch(3, owner=cls.user)
-        BoardFactory.create_batch(3, owner=cls.user2)
+        BoardFactory.create_batch(10, owner=cls.user)
+        BoardFactory.create_batch(10, owner=cls.user2)
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
@@ -1169,7 +1169,7 @@ class BoardListViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
-        self.assertEqual(len(response.context["boards"]), 3)
+        self.assertEqual(len(response.context["boards"]), 10)
 
     def test_user_no_perm_all_boards(self):
         self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
@@ -1180,7 +1180,7 @@ class BoardListViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
-        self.assertEqual(len(response.context["boards"]), 3)
+        self.assertEqual(len(response.context["boards"]), 10)
 
     def test_user_perm_all_boards(self):
         self.user.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
@@ -1193,7 +1193,7 @@ class BoardListViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
-        self.assertEqual(len(response.context["boards"]), 5)
+        self.assertEqual(len(response.context["boards"]), 10)
         self.assertEqual(response.context["page_obj"].number, 1)
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
 
@@ -1208,9 +1208,16 @@ class BoardListViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "boards/components/board_list.html")
-        self.assertEqual(len(response.context["boards"]), 1)
+        self.assertEqual(len(response.context["boards"]), 10)
         self.assertEqual(response.context["page_obj"].number, 2)
         self.assertEqual(len(response.context["page_obj"].paginator.page_range), 2)
+
+    # TODO: Implement further tests for pagination dropdown and sessions
+    def test_paginate_by_session(self):
+        pass
+
+    def test_paginate_by_querystring(self):
+        pass
 
 
 class TopicFetchViewTest(TestCase):

@@ -4,7 +4,7 @@
 {% endif %}
 {{ board_list_type|json_script:"board_list_type" }}
 <script defer src="{% static 'boards/js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
-<div class="py-2">
+<div class="d-flex flex-column gap-2">
     <div class="d-flex gap-2">
         <h4>
             {% if board_list_type == "all" %}
@@ -19,118 +19,140 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-</div>
-{% crispy filter.form %}
-<ul class="list-group">
-    {% for board in boards %}
-        <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
-            <div class="ms-2">
-                <div class="fw-bold">
-                    <a href="{{ board.get_absolute_url }}">{{ board }}</a>
-                    {% if board_list_type != "own" %}- ({{ board.owner }}){% endif %}
-                </div>
-                <div>{{ board.description }}</div>
-                {% cache 86400 board-list-post-count board.pk %}
-                <small class="text-muted">{{ board.created_at|date:'d/m/Y' }} -
-                    <span data-bs-toggle="tooltip"
-                          data-bs-placement="right"
-                          title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>
-            {% endcache %}
-        </div>
-        <div class="d-flex align-items-center">
-            <button class="btn btn-link text-black shadow-none p-1"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                {% if request.user == board.owner or perms.boards.change_board %}
-                    <li>
-                        <a class="dropdown-item"
-                           role="button"
-                           hx-get="{% url 'boards:board-update' board.slug %}"
-                           hx-target="#modal-1-body-div"
-                           hx-swap="innerHTML"
-                           data-bs-toggle="modal"
-                           data-bs-target="#modal-1-div">
-                            <i class="bi bi-pen pe-2"></i>Edit Board
-                        </a>
-                    </li>
-                {% endif %}
-                {% if request.user == board.owner or perms.boards.delete_board %}
-                    <li>
-                        <a class="dropdown-item dropdown-item-del-bg"
-                           role="button"
-                           hx-get="{% url 'boards:board-delete' board.slug %}"
-                           hx-target="#modal-1-body-div"
-                           hx-swap="innerHTML"
-                           data-bs-toggle="modal"
-                           data-bs-target="#modal-1-div">
-                            <i class="bi bi-trash pe-2"></i>Delete Board
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-    </li>
-{% endfor %}
+    {% crispy filter.form %}
+    <ul class="list-group">
+        {% for board in boards %}
+            <li class="list-group-item d-flex flex-row justify-content-between align-items-start text-break">
+                <div class="ms-2">
+                    <div class="fw-bold">
+                        <a href="{{ board.get_absolute_url }}">{{ board }}</a>
+                        {% if board_list_type != "own" %}- ({{ board.owner }}){% endif %}
+                    </div>
+                    <div>{{ board.description }}</div>
+                    {% cache 86400 board-list-post-count board.pk %}
+                    <small class="text-muted">{{ board.created_at|date:'d/m/Y' }} -
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="right"
+                              title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>
+                {% endcache %}
+            </div>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-link text-black shadow-none p-1"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% if request.user == board.owner or perms.boards.change_board %}
+                        <li>
+                            <a class="dropdown-item"
+                               role="button"
+                               hx-get="{% url 'boards:board-update' board.slug %}"
+                               hx-target="#modal-1-body-div"
+                               hx-swap="innerHTML"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal-1-div">
+                                <i class="bi bi-pen pe-2"></i>Edit Board
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if request.user == board.owner or perms.boards.delete_board %}
+                        <li>
+                            <a class="dropdown-item dropdown-item-del-bg"
+                               role="button"
+                               hx-get="{% url 'boards:board-delete' board.slug %}"
+                               hx-target="#modal-1-body-div"
+                               hx-swap="innerHTML"
+                               data-bs-toggle="modal"
+                               data-bs-target="#modal-1-div">
+                                <i class="bi bi-trash pe-2"></i>Delete Board
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </li>
+    {% endfor %}
 </ul>
+<div class="d-flex flex-row-reverse">
+    <form hx-get="{% url 'boards:board-list' board_list_type %}"
+          hx-trigger="change"
+          hx-target="#board-list"
+          hx-swap="innerHTML"
+          hx-indicator=".htmx-indicator">
+        {% for field in filter.form %}{{ field.as_hidden }}{% endfor %}
+        <div class="input-group">
+            <span class="input-group-text">Boards per page</span>
+            <select class="form-select" name="paginate_by">
+                {% for page_size in pagination_sizes %}
+                    <option value="{{ page_size }}"
+                            {% if page_size|add:"0" == paginate_by|add:"0" %} selected{% endif %}>
+                        {{ page_size }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
 {% cache 86400 board-list-pagination page_obj request.user.username querystring %}
-<ul class="pagination justify-content-center flex-wrap mt-2 mb-4"
-    hx-target="#board-list">
-    {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link"
-               href=""
-               hx-indicator="#spinner"
-               hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.previous_page_number }}
-               {% if querystring %}
-                   &amp;{{ querystring }}
-               {% endif %}">«</a>
-        </li>
-    {% else %}
-        <li class="disabled page-item">
-            <span class="page-link">«</span>
-        </li>
-    {% endif %}
-    {% for i in page_obj.paginator.page_range %}
-        {% if page_obj.number == i %}
-            <li class="active page-item">
-                <span class="page-link">{{ i }}</span>
+<div>
+    <ul class="pagination justify-content-center flex-wrap mb-4"
+        hx-target="#board-list">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href=""
+                   hx-indicator="#spinner"
+                   hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.previous_page_number }}
+                   {% if querystring %}
+                       &amp;{{ querystring }}
+                   {% endif %}">«</a>
             </li>
         {% else %}
-            {% if i == page_obj.paginator.ELLIPSIS %}
-                <li class="page-item">
+            <li class="disabled page-item">
+                <span class="page-link">«</span>
+            </li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+                <li class="active page-item">
                     <span class="page-link">{{ i }}</span>
                 </li>
             {% else %}
-                <li class="page-item">
-                    <a class="page-link"
-                       href=""
-                       hx-indicator="#spinner"
-                       hx-get="{% url 'boards:board-list' board_list_type %}?page={{ i }}
-                       {% if querystring %}
-                           &amp;{{ querystring }}
-                       {% endif %}">{{ i }}</a>
-                </li>
+                {% if i == page_obj.paginator.ELLIPSIS %}
+                    <li class="page-item">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href=""
+                           hx-indicator="#spinner"
+                           hx-get="{% url 'boards:board-list' board_list_type %}?page={{ i }}
+                           {% if querystring %}
+                               &amp;{{ querystring }}
+                           {% endif %}">{{ i }}</a>
+                    </li>
+                {% endif %}
             {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href=""
+                   hx-indicator="#spinner"
+                   hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.next_page_number }}
+                   {% if querystring %}
+                       &amp;{{ querystring }}
+                   {% endif %}">»</a>
+            </li>
+        {% else %}
+            <li class="disabled page-item">
+                <span class="page-link">»</span>
+            </li>
         {% endif %}
-    {% endfor %}
-    {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link"
-               href=""
-               hx-indicator="#spinner"
-               hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.next_page_number }}
-               {% if querystring %}
-                   &amp;{{ querystring }}
-               {% endif %}">»</a>
-        </li>
-    {% else %}
-        <li class="disabled page-item">
-            <span class="page-link">»</span>
-        </li>
-    {% endif %}
-</ul>
+    </ul>
+</div>
 {% endcache %}
+</div>
