@@ -46,7 +46,6 @@ if not DEBUG and SENTRY_ENABLED:
     from sentry_sdk.integrations.django import DjangoIntegration
 
     SENTRY_DSN = env("SENTRY_DSN")
-    version = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
 
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -64,7 +63,8 @@ if not DEBUG and SENTRY_ENABLED:
         # environment variable, or infer a git commit
         # SHA as release, however you may want to set
         # something more human-readable.
-        release=f"jotlet@{version}",
+        release=subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip(),
+        environment=env("SENTRY_ENVIRONMENT", default="production"),
     )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
