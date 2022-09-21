@@ -40,9 +40,13 @@ DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
 
 if not DEBUG and SENTRY_ENABLED:
-    SENTRY_DSN = env("SENTRY_DSN")
+    import subprocess
+
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
+
+    SENTRY_DSN = env("SENTRY_DSN")
+    version = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
 
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -56,6 +60,11 @@ if not DEBUG and SENTRY_ENABLED:
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
+        # By default the SDK will try to use the SENTRY_RELEASE
+        # environment variable, or infer a git commit
+        # SHA as release, however you may want to set
+        # something more human-readable.
+        release=f"jotlet@{version}",
     )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
