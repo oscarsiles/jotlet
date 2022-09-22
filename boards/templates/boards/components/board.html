@@ -1,4 +1,4 @@
-{% load cache cacheops sorl_thumbnail static %}
+{% load cacheops sorl_thumbnail static %}
 <div id="board-{{ board.slug }}"
      class="flex-grow-1"
      hx-get="{% url 'boards:board' board.slug %}"
@@ -32,7 +32,7 @@
             </a>
         </div>
         <style nonce="{{ CSP_NONCE }}">
-        {% cache 86400 board-preferences-style board.preferences.pk %}
+        {% cached_as board.preferences None board_style_cache board.preferences.pk %}
         #main-content-div{
             {% if board.preferences.background_type == 'i' %}
             background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.get_large_thumbnail.url }}");
@@ -55,14 +55,14 @@
             background-color: {{ board.preferences.background_color }};
             {% endif %}
             }
-        {% endcache %}
+        {% endcached_as %}
         </style>
         {% for topic in board.topics.all|dictsort:"pk" %}
             {% include "boards/components/topic.html" %}
         {% endfor %}
         {% if request.user == board.owner or user.is_staff %}
             <div class="col-md-auto px-2" id="boardControls-div">
-                {% cache 86400 board-newTopic board.pk %}
+                {% cached_as board None board_newTopic_cache board.pk %}
                 <div class="d-flex bg-white rounded my-2" id="newTopic-card-div">
                     <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"
                             hx-get="{% url 'boards:topic-create' board.slug %}"
@@ -74,7 +74,7 @@
                         <strong><i class="bi bi-bookmark-plus px-2"></i></strong>
                     </button>
                 </div>
-            {% endcache %}
+            {% endcached_as %}
             {% if board.get_post_count > 0 %}
                 <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
                     <button class="btn btn-outline-danger shadow-none card-link flex-grow-1 p-3 fs-4"

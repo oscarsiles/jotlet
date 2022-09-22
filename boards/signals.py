@@ -62,12 +62,9 @@ def board_preferences_send_message(sender, instance, created, **kwargs):
 @receiver(post_save, sender=BoardPreferences)
 @receiver(post_delete, sender=BoardPreferences)
 def invalidate_board_preferences_cache(sender, instance, **kwargs):
-    keyBoardPreferences1 = make_template_fragment_key("board-preferences-style", [instance.id])
     try:
-        if cache.get(keyBoardPreferences1):
-            cache.delete(keyBoardPreferences1)
-
         invalidate_obj(instance.board)
+        invalidate_obj(instance.board.preferences)
         for topic in instance.board.topics.all():
             invalidate_obj(topic)
             for post in topic.posts.all():
