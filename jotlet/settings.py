@@ -272,15 +272,15 @@ if USE_S3:
     AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="eu-west-2")
     AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-    AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default=None)
+    AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL")
     AWS_S3_CUSTOM_DOMAIN = env("AWS_S3_CUSTOM_DOMAIN")
-    AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=2592000"}
-    AWS_DEFAULT_ACL = "public-read"
-    AWS_IS_GZIPPED = False
+    AWS_S3_SIGNATURE_VERSION = env("AWS_S3_SIGNATURE_VERSION", default="s3v4")
+    AWS_S3_OBJECT_PARAMETERS = env("AWS_S3_OBJECT_PARAMETERS", default={"CacheControl": "max-age=2592000"})
+    AWS_DEFAULT_ACL = env("AWS_DEFAULT_ACL")
+    AWS_IS_GZIPPED = env("AWS_IS_GZIPPED", default=False)
     # s3 public media settings
     THUMBNAIL_FORCE_OVERWRITE = True
-    PUBLIC_MEDIA_LOCATION = "media"
+    PUBLIC_MEDIA_LOCATION = env("PUBLIC_MEDIA_LOCATION", default="media")
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
     DEFAULT_FILE_STORAGE = "jotlet.storage_backends.PublicMediaStorage"
 else:
