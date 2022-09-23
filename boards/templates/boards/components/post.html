@@ -21,7 +21,7 @@
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
      {% endif %}>
-    {% cached_as post None post_cache post.pk post.approved request.session.session_key is_owner is_moderator reactions has_reacted post.updated_at board.preferences %}
+    {% cached_as post None "post_cache" post.pk post.approved request.session.session_key is_owner is_moderator reactions has_reacted post.updated_at board.preferences %}
     <div class="card post-card mb-2
                 {% if not post.approved and is_moderator %}
                     opacity-75
@@ -48,7 +48,7 @@
             {% endif %}
             <div class="col-auto flex-fill">
                 {% if post.approved or is_owner or is_moderator %}
-                    {% cached_as post None post_body_cache post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
+                    {% cached_as post None "post_body_cache" post.pk post.approved is_owner is_moderator has_reacted post.updated_at board.preferences %}
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div class="d-flex">
