@@ -303,9 +303,14 @@ class ImageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.board = BoardFactory()
-        for ext in IMAGE_FORMATS:
-            for type, text in IMAGE_TYPE:
-                ImageFactory(board=cls.board if type == "p" else None, type=type)
+        for format in IMAGE_FORMATS:
+            for type, _ in IMAGE_TYPE:
+                ImageFactory(
+                    board=cls.board if type == "p" else None,
+                    type=type,
+                    image__format=format,
+                    image__filename=f"test.{format}",
+                )
 
     @classmethod
     def tearDownClass(cls):

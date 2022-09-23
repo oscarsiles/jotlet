@@ -505,6 +505,7 @@ class PostFetchViewTest(TestCase):
             reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post anon"},
         )
+        self.assertEqual(response.status_code, 204)
         post = Post.objects.get(content="Test Post anon")
         response = self.client.get(
             reverse("boards:post-fetch", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post.pk})
@@ -524,6 +525,7 @@ class PostFetchViewTest(TestCase):
             reverse("boards:post-create", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk}),
             data={"content": "Test Post anon"},
         )
+        self.assertEqual(response.status_code, 204)
         post = Post.objects.get(content="Test Post anon")
         response = self.client.get(
             reverse("boards:post-fetch", kwargs={"slug": self.board.slug, "topic_pk": self.topic.pk, "pk": post.pk})

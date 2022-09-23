@@ -64,19 +64,30 @@ class TestImageUtils(TestCase):
 
     def test_get_image_upload_path(self):
         board = BoardFactory()
-        for type, _ in IMAGE_TYPE:
-            img = ImageFactory(board=board if type == "p" else None, type=type)
-            if type == "p":
-                sub1 = board.slug
-                self.assertEqual(img.board, board)
-            else:
-                sub1 = "[a-z0-9]{2}"
-                self.assertIsNone(img.board)
+        for format in IMAGE_FORMATS:
+            for type, _ in IMAGE_TYPE:
+                img = ImageFactory(
+                    board=board if type == "p" else None,
+                    type=type,
+                    image__format=format,
+                    image__filename=f"test.{format}",
+                )
+                if type == "p":
+                    sub1 = board.slug
+                    self.assertEqual(img.board, board)
+                else:
+                    sub1 = "[a-z0-9]{2}"
+                    self.assertIsNone(img.board)
 
-            self.assertRegex(
-                get_image_upload_path(img, img.image.name),
-                rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.uuid}.png",
-            )
+                if format in ["gif", "bmp"]:
+                    ext = "jpg"
+                else:
+                    ext = format
+
+                self.assertRegex(
+                    get_image_upload_path(img, img.image.name),
+                    rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.uuid}.{ext}",
+                )
 
     def test_process_image(self):
         from PIL import ImageFile
