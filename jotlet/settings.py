@@ -327,10 +327,6 @@ if not TESTING:
                 "PARSER_CLASS": "redis.connection.HiredisParser",
             },
         },
-        "locmem": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "KEY_PREFIX": "jotlet-locmem",
-        },
     }
 
     CACHEOPS_REDIS = REDIS_URL
