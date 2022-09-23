@@ -178,14 +178,14 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.24.78"
+version = "1.24.80"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.78,<1.28.0"
+botocore = ">=1.27.80,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -194,7 +194,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.78"
+version = "1.27.80"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -797,7 +797,7 @@ doc = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
 
 [[package]]
 name = "Faker"
-version = "14.2.0"
+version = "14.2.1"
 description = "Faker is a Python package that generates fake data for you."
 category = "dev"
 optional = false
@@ -1570,7 +1570,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "sqlparse"
-version = "0.4.2"
+version = "0.4.3"
 description = "A non-validating SQL parser."
 category = "main"
 optional = false
@@ -1834,7 +1834,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "93bb46827583cc9a1b769790d0327da515a8ee441f26f4a33d7d9a02779a12f1"
+content-hash = "53a90ddeddfafe60b7b95cffb8fd101842f472ef429d02018172ec2be4bc5ce3"
 
 [metadata.files]
 aioredis = [
@@ -1939,12 +1939,12 @@ black = [
     {file = "black-22.8.0.tar.gz", hash = "sha256:792f7eb540ba9a17e8656538701d3eb1afcb134e3b45b71f20b25c77a8db7e6e"},
 ]
 boto3 = [
-    {file = "boto3-1.24.78-py3-none-any.whl", hash = "sha256:d141f18d0ec63bc89e0f3d24f269b4f2e18377f1c5e39c56152d4cfd8e6c6ff7"},
-    {file = "boto3-1.24.78.tar.gz", hash = "sha256:da672d9133852dbb36ce9cd156dffcb28a2dc098af1731791ab614969a34f9f5"},
+    {file = "boto3-1.24.80-py3-none-any.whl", hash = "sha256:0c5732a78f75ff3e2692e6ed1765c5c9d4960ba0e8b0694066864b86f9537350"},
+    {file = "boto3-1.24.80.tar.gz", hash = "sha256:c686295e7829cf54127f7ab9c20088cc7b2a7d24768fcf355aebffa65879e2c9"},
 ]
 botocore = [
-    {file = "botocore-1.27.78-py3-none-any.whl", hash = "sha256:fc2ffdafce66c051c69ae6ac50599d6da11e84371c704ae9b7cf9e2742a4dc77"},
-    {file = "botocore-1.27.78.tar.gz", hash = "sha256:b45ae0680699ce100386ac1478e03fd3f29ef22d6bfb5a19169ffee6e67c5293"},
+    {file = "botocore-1.27.80-py3-none-any.whl", hash = "sha256:412145ab8b9ec2ee3c9ecf43e06f9fe0fc03cc645add8314327e69e58be78cab"},
+    {file = "botocore-1.27.80.tar.gz", hash = "sha256:0f8b937c41e7ea92c5374e83d54c006d99d9f9fa203175fbfb1ded74c28e9759"},
 ]
 bx-django-utils = [
     {file = "bx_django_utils-34-py3-none-any.whl", hash = "sha256:1d0bc3fc9834e5f90242e5d1310524479f8be7b3a2af143808c1a53291263f15"},
@@ -2260,8 +2260,8 @@ factory-boy = [
     {file = "factory_boy-3.2.1.tar.gz", hash = "sha256:a98d277b0c047c75eb6e4ab8508a7f81fb03d2cb21986f627913546ef7a2a55e"},
 ]
 Faker = [
-    {file = "Faker-14.2.0-py3-none-any.whl", hash = "sha256:e02c55a5b0586caaf913cc6c254b3de178e08b031c5922e590fd033ebbdbfd02"},
-    {file = "Faker-14.2.0.tar.gz", hash = "sha256:6db56e2c43a2b74250d1c332ef25fef7dc07dcb6c5fab5329dd7b4467b8ed7b9"},
+    {file = "Faker-14.2.1-py3-none-any.whl", hash = "sha256:2e28aaea60456857d4ce95dd12aed767769537ad23d13d51a545cd40a654e9d9"},
+    {file = "Faker-14.2.1.tar.gz", hash = "sha256:daad7badb4fd916bd047b28c8459ef4689e4fe6acf61f6dfebee8cc602e4d009"},
 ]
 flake8 = [
     {file = "flake8-5.0.4-py2.py3-none-any.whl", hash = "sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248"},
@@ -2869,8 +2869,8 @@ sorl-thumbnail = [
     {file = "sorl_thumbnail-12.9.0-py3-none-any.whl", hash = "sha256:ec586724bea7dc8c53561ce18335ea641fcd0e560d6387b2353a2afdd06705a4"},
 ]
 sqlparse = [
-    {file = "sqlparse-0.4.2-py3-none-any.whl", hash = "sha256:48719e356bb8b42991bdbb1e8b83223757b93789c00910a616a071910ca4a64d"},
-    {file = "sqlparse-0.4.2.tar.gz", hash = "sha256:0c00730c74263a94e5a9919ade150dfc3b19c574389985446148402998287dae"},
+    {file = "sqlparse-0.4.3-py3-none-any.whl", hash = "sha256:0323c0ec29cd52bceabc1b4d9d579e311f3e4961b98d174201d5622a23b85e34"},
+    {file = "sqlparse-0.4.3.tar.gz", hash = "sha256:69ca804846bb114d2ec380e4360a8a340db83f0ccf3afceeb1404df028f57268"},
 ]
 tokenize-rt = [
     {file = "tokenize_rt-4.2.1-py2.py3-none-any.whl", hash = "sha256:08a27fa032a81cf45e8858d0ac706004fcd523e8463415ddf1442be38e204ea8"},
