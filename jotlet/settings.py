@@ -383,12 +383,9 @@ CACHALOT_UNCACHABLE_TABLES = frozenset(
 CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
 CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
-    "boards.board": {"ops": "all"},
-    "boards.boardpreferences": {"ops": "all"},
-    "boards.topic": {"ops": "all"},
+    "boards.image": {"ops": "all"},
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
-    "boards.image": {"ops": "all"},
     "*.*": {"ops": ()},
 }
 CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
