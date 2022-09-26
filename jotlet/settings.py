@@ -393,12 +393,13 @@ CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
 if TESTING:
     HUEY = {
         "huey_class": "huey.SqliteHuey",
+        "immediate": True,
         "filepath": os.path.join(BASE_DIR, "huey_test.db"),
     }
 else:
     HUEY = {
         "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
-        "immediate": TESTING,
+        "immediate": DEBUG,
         "consumer": {
             "workers": env("HUEY_WORKERS", default=4),
             "worker_type": "thread",
