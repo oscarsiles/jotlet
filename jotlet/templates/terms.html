@@ -5,6 +5,6 @@
 {% endblock title %}
 {% block content %}
     {% cache 43200 terms %}
-    {% include "terms_content.html" %}
+    <div class="flex-grow-1">{% include "terms_content.html" %}</div>
 {% endcache %}
 {% endblock content %}
