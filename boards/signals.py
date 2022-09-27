@@ -49,6 +49,16 @@ def invalidate_reaction_cache(reaction):
         invalidate_post_cache(reaction.post)
 
 
+def invalidate_post_tree_cache(instance):
+    tree = instance.get_root().get_descendants(include_self=True)
+    for post in tree:
+        if post != instance:
+            try:
+                invalidate_obj(post)
+            except Exception:
+                raise Exception(f"Could not delete post tree cache: post-{post.pk}")
+
+
 @receiver(post_save, sender=BoardPreferences)
 def board_preferences_send_message(sender, instance, created, **kwargs):
     channel_group_send(
@@ -63,8 +73,8 @@ def board_preferences_send_message(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=BoardPreferences)
 def invalidate_board_preferences_cache(sender, instance, **kwargs):
     try:
+        invalidate_obj(instance)
         invalidate_obj(instance.board)
-        invalidate_obj(instance.board.preferences)
         for topic in instance.board.topics.all():
             invalidate_obj(topic)
             for post in topic.posts.all():
@@ -117,20 +127,13 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
 def post_created_invalidate_cache(sender, instance, created, **kwargs):
     if created:
         invalidate_post_cache(instance)
-        tree = instance.get_root().get_descendants(include_self=True)
-        for post in tree:
-            invalidate_obj(post)
+        invalidate_post_tree_cache(instance)
 
 
 @receiver(post_delete, sender=Post)
 def post_deleted_invalidate_cache(sender, instance, **kwargs):
     invalidate_post_cache(instance)
-    try:
-        tree = instance.get_root().get_descendants(include_self=True)
-        for post in tree:
-            invalidate_obj(post)
-    except Exception:
-        pass
+    invalidate_post_tree_cache(instance)
 
 
 @receiver(post_save, sender=Post)
