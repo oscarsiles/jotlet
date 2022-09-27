@@ -1,7 +1,6 @@
 from urllib.parse import urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import Http404
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -16,13 +15,6 @@ from boards.utils import get_is_moderator
 class BoardView(generic.DetailView):
     model = Board
     template_name = "boards/board_index.html"
-
-    def get_object(self):
-        board = Board.objects.filter(slug=self.kwargs["slug"])
-        if board.exists():
-            return board.first()
-        else:
-            raise Http404("Board not found")
 
     def get_template_names(self):
         template_names = super().get_template_names()
