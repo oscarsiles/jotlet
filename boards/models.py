@@ -149,7 +149,7 @@ class BoardPreferences(auto_prefetch.Model):
     type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = auto_prefetch.ForeignKey(
-        "Image",
+        "BgImage",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

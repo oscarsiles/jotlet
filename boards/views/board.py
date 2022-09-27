@@ -35,12 +35,16 @@ class BoardView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        board = self.object
 
         if not self.request.session.session_key:  # if session is not set yet (i.e. anonymous user)
             self.request.session.create()
 
+        if board.preferences.background_type == "i":
+            context["bg_image"] = board.preferences.background_image
+
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
-        context["is_moderator"] = get_is_moderator(self.request.user, self.object)
+        context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
 

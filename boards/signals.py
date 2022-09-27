@@ -188,10 +188,11 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
 
 @receiver(post_save, sender=BgImage)
 @receiver(post_delete, sender=BgImage)
-def update_image_select(sender, instance, **kwargs):
+def invalidate_bg_image_cache(sender, instance, **kwargs):
     keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
     keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
     try:
+        invalidate_obj(instance)
         if cache.get(keyImageSelect1) is not None:
             cache.delete(keyImageSelect1)
         if cache.get(keyImageSelect2) is not None:

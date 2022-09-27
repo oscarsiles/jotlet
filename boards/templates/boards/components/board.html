@@ -33,27 +33,29 @@
         </div>
         <style nonce="{{ CSP_NONCE }}">
         {% cached_as board.preferences None "board_style_cache" board.pk %}
-        #main-content-div{
-            {% if board.preferences.background_type == 'i' %}
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.get_large_thumbnail.url }}");
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-            -webkit-image-set(
-                url("{{ board.preferences.background_image.get_large_thumbnail_webp.url }}") 1x,
-                url("{{ board.preferences.background_image.get_large_thumbnail_webp.url|resolution:"2x" }}") 2x,
-                url("{{ board.preferences.background_image.get_large_thumbnail.url }}") 1x    
-                url("{{ board.preferences.background_image.get_large_thumbnail.url|resolution:"2x" }}") 2x           
-            );
-            background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
-            image-set(
-                url("{{ board.preferences.background_image.get_large_thumbnail_webp.url }}") 1x type("image/webp"),
-                url("{{ board.preferences.background_image.get_large_thumbnail_webp.url|resolution:"2x" }}") 2x type("image/webp"),
-                url("{{ board.preferences.background_image.get_large_thumbnail.url }}") 1x type("image/jpeg")
-                url("{{ board.preferences.background_image.get_large_thumbnail.url|resolution:"2x" }}") 2x type("image/jpeg")
-            );
-            background-size: cover;
-            {% else %}
-            background-color: {{ board.preferences.background_color }};
-            {% endif %}
+            #main-content-div{
+                {% if board.preferences.background_type == 'i' %}
+                {% cached_as bg_image None "board_style_bg_image_cache" bg_image.pk %}
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.get_large_thumbnail.url }}");
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+                    -webkit-image-set(
+                        url("{{ board.preferences.background_image.get_large_thumbnail_webp.url }}") 1x,
+                        url("{{ board.preferences.background_image.get_large_thumbnail_webp.url|resolution:"2x" }}") 2x,
+                        url("{{ board.preferences.background_image.get_large_thumbnail.url }}") 1x    
+                        url("{{ board.preferences.background_image.get_large_thumbnail.url|resolution:"2x" }}") 2x           
+                    );
+                    background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
+                    image-set(
+                        url("{{ board.preferences.background_image.get_large_thumbnail_webp.url }}") 1x type("image/webp"),
+                        url("{{ board.preferences.background_image.get_large_thumbnail_webp.url|resolution:"2x" }}") 2x type("image/webp"),
+                        url("{{ board.preferences.background_image.get_large_thumbnail.url }}") 1x type("image/jpeg")
+                        url("{{ board.preferences.background_image.get_large_thumbnail.url|resolution:"2x" }}") 2x type("image/jpeg")
+                    );
+                    background-size: cover;
+                {% endcached_as %}
+                {% else %}
+                    background-color: {{ board.preferences.background_color }};
+                {% endif %}
             }
         {% endcached_as %}
         </style>
