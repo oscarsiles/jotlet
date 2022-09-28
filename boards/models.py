@@ -2,6 +2,7 @@ import uuid
 from hashlib import blake2b
 
 import auto_prefetch
+from cacheops import cached_as
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
@@ -204,11 +205,15 @@ class Topic(auto_prefetch.Model):
 
     @cached_property
     def get_post_count(self):
-        count = 0
-        for post in self.get_posts:
-            count += 1
-            count += post.get_descendant_count()
-        return count
+        @cached_as(self, timeout=60 * 60 * 24)
+        def _get_post_count():
+            count = 0
+            for post in self.get_posts:
+                count += 1
+                count += post.get_descendant_count()
+            return count
+
+        return _get_post_count()
 
     get_post_count.short_description = "Post Count"
 
@@ -268,38 +273,46 @@ class Post(auto_prefetch.Model, MPTTModel):
         )
 
     def get_reactions(self, reaction_type=None):
-        if reaction_type is None:
-            reaction_type = self.get_reaction_type
-        return self.reactions.filter(type=reaction_type).all()
+        @cached_as(self, extra=reaction_type, timeout=60 * 60 * 24)
+        def _get_reactions(reaction_type):
+            if reaction_type is None:
+                reaction_type = self.get_reaction_type
+            return Reaction.objects.filter(post=self, type=reaction_type)
+
+        return _get_reactions(reaction_type)
 
     @cached_property
     def get_reaction_type(self):
         return self.topic.board.preferences.reaction_type
 
     def get_reaction_score(self, reactions=None, reaction_type=None):
-        try:
-            if reaction_type is None:
-                reaction_type = self.get_reaction_type
-            if reactions is None:
-                reactions = self.get_reactions(reaction_type)
+        if reaction_type is None:
+            reaction_type = self.get_reaction_type
+        if reactions is None:
+            reactions = self.get_reactions(reaction_type)
 
-            if reaction_type == "l":  # cannot use match/switch before python 3.10
-                return reactions.count()
-            elif reaction_type == "v":
-                return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
-                    1 for reaction in reactions if reaction.reaction_score == -1
-                )
-            elif reaction_type == "s":
-                score = ""
-                count = reactions.count()
-                if count != 0:
-                    sumvar = sum(reaction.reaction_score for reaction in reactions)
-                    score = f"{(sumvar / count):.2g}"
-                return score
-            else:
-                return 0
-        except Exception:
-            raise Exception(f"Error calculating reaction score for: post-{self.pk}")
+        @cached_as(reactions, extra=reaction_type, timeout=60 * 60 * 24)
+        def _get_reaction_score(reactions, reaction_type):
+            try:
+                if reaction_type == "l":  # cannot use match/switch before python 3.10
+                    return reactions.count()
+                elif reaction_type == "v":
+                    return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
+                        1 for reaction in reactions if reaction.reaction_score == -1
+                    )
+                elif reaction_type == "s":
+                    score = ""
+                    count = reactions.count()
+                    if count != 0:
+                        sumvar = sum(reaction.reaction_score for reaction in reactions)
+                        score = f"{(sumvar / count):.2g}"
+                    return score
+                else:
+                    return 0
+            except Exception:
+                raise Exception(f"Error calculating reaction score for: post-{self.pk}")
+
+        return _get_reaction_score(reactions, reaction_type)
 
     def get_has_reacted(self, request, post_reactions=None):
         if post_reactions is None:
@@ -309,22 +322,26 @@ class Post(auto_prefetch.Model, MPTTModel):
         reaction_id = None
         reacted_score = 1  # default score
 
+        @cached_as(post_reactions, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _get_has_reacted_session_key():
+            for reaction in post_reactions:
+                if reaction.session_key == request.session.session_key:
+                    return True, reaction.pk, reaction.reaction_score
+            return False, None, 1
+
+        @cached_as(post_reactions, extra=request.user, timeout=60 * 60 * 24)
+        def _get_has_reacted_user():
+            for reaction in post_reactions:
+                if reaction.user == request.user:
+                    return True, reaction.pk, reaction.reaction_score
+            return False, None, 1
+
         if post_reactions:
             if request.session.session_key:
-                for reaction in post_reactions:
-                    if reaction.session_key == request.session.session_key:
-                        has_reacted = True
-                        reaction_id = reaction.id
-                        reacted_score = reaction.reaction_score
-                        break
+                has_reacted, reaction_id, reacted_score = _get_has_reacted_session_key()
 
             if request.user.is_authenticated and not has_reacted:
-                for reaction in post_reactions:
-                    if reaction.user == request.user:
-                        has_reacted = True
-                        reaction_id = reaction.id
-                        reacted_score = reaction.reaction_score
-                        break
+                has_reacted, reaction_id, reacted_score = _get_has_reacted_user()
 
         return has_reacted, reaction_id, reacted_score
 
@@ -379,7 +396,7 @@ class Image(auto_prefetch.Model):
 
     @cached_property
     def get_board_usage_count(self):
-        return BoardPreferences.objects.filter(background_type="i").filter(background_image=self).count()
+        return BoardPreferences.objects.filter(background_type="i", background_image=self).count()
 
     get_board_usage_count.short_description = "Board Usage Count"
 
@@ -397,27 +414,47 @@ class Image(auto_prefetch.Model):
 
     @cached_property
     def get_webp(self):
-        return get_thumbnail(self.image, self.get_image_dimensions, quality=70, format="WEBP")
+        @cached_as(self)
+        def _get_webp():
+            return get_thumbnail(self.image, self.get_image_dimensions, quality=70, format="WEBP")
+
+        return _get_webp()
 
     @cached_property
     def get_large_thumbnail(self):
-        return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="JPEG")
+        @cached_as(self)
+        def _get_large_thumbnail():
+            return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="JPEG")
+
+        return _get_large_thumbnail()
 
     @cached_property
     def get_large_thumbnail_webp(self):
-        return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="WEBP")
+        @cached_as(self)
+        def _get_large_thumbnail_webp():
+            return get_thumbnail(self.image, self.get_half_image_dimensions, quality=70, format="WEBP")
+
+        return _get_large_thumbnail_webp()
 
     @cached_property
     def get_small_thumbnail(self):
-        return get_thumbnail(
-            self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="JPEG"
-        )
+        @cached_as(self)
+        def _get_small_thumbnail():
+            return get_thumbnail(
+                self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="JPEG"
+            )
+
+        return _get_small_thumbnail()
 
     @cached_property
     def get_small_thumbnail_webp(self):
-        return get_thumbnail(
-            self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="WEBP"
-        )
+        @cached_as(self)
+        def _get_small_thumbnail_webp():
+            return get_thumbnail(
+                self.image, self.get_small_thumbnail_dimensions, crop="center", quality=80, format="WEBP"
+            )
+
+        return _get_small_thumbnail_webp()
 
     @cached_property
     def image_tag(self):
