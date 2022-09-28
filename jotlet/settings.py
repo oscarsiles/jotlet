@@ -240,6 +240,8 @@ AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
 AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
 AXES_LOCKOUT_URL = "/accounts/lockout/"
 AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=0)
+if TESTING:
+    SILENCED_SYSTEM_CHECKS = ["axes.W001"]
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -308,14 +310,14 @@ STATICFILES_STORAGE = (
 )
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
-if not TESTING:
-    REDIS_URL = env("REDIS_URL", default=None)
-    REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
-    if not REDIS_UNIX_SOCKET:
-        REDIS_HOST = env("REDIS_HOST", default=("localhost"))
-        REDIS_PORT = env("REDIS_PORT", default=6379)
-        REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
+REDIS_URL = env("REDIS_URL", default=None)
+REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
+if not REDIS_UNIX_SOCKET:
+    REDIS_HOST = env("REDIS_HOST", default=("localhost"))
+    REDIS_PORT = env("REDIS_PORT", default=6379)
+    REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
+if not TESTING:
     CACHES = {
         "default": {
             "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
@@ -328,8 +330,6 @@ if not TESTING:
             },
         },
     }
-
-    CACHEOPS_REDIS = REDIS_URL
 
     CHANNEL_LAYERS = {
         "default": {
@@ -345,6 +345,7 @@ if not TESTING:
             },
         },
     }
+
 else:
     CHANNEL_LAYERS = {
         "default": {
@@ -363,7 +364,7 @@ else:
         },
     }
 
-CACHALOT_ENABLED = False if TESTING else env("CACHALOT_ENABLED", default=True)
+CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
 CACHALOT_TIMEOUT = env("CACHALOT_TIMEOUT", default=31556952)
 CACHALOT_UNCACHABLE_APPS = frozenset(
     (
@@ -380,15 +381,27 @@ CACHALOT_UNCACHABLE_TABLES = frozenset(
     )
 )
 
-CACHEOPS_ENABLED = False if TESTING else env("CACHEOPS_ENABLED", default=True)
+CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
 CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
+    "axes.*": {"ops": "all", "timeout": 60 * 60 * 24},
     "boards.image": {"ops": "all"},
+    "boards.bgimage": {"ops": "all"},
+    "boards.postimage": {"ops": "all"},
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
     "*.*": {"ops": ()},
 }
 CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
+if TESTING:
+    CACHEOPS_REDIS = {
+        "host": REDIS_HOST,
+        "port": 6379,
+        "db": 13,
+        "socket_timeout": 3,
+    }
+else:
+    CACHEOPS_REDIS = REDIS_URL
 
 if TESTING:
     HUEY = {
