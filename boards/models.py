@@ -54,6 +54,20 @@ class Board(auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
 
+    class Meta:
+        permissions = (("can_view_all_boards", "Can view all boards"),)
+        indexes = [
+            GinIndex(
+                OpClass(Upper("title"), name="gin_trgm_ops"),
+                name="upper_title_idx",
+            ),
+            GinIndex(
+                OpClass(Upper("description"), name="gin_trgm_ops"),
+                name="upper_description_idx",
+            ),
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
+
     def save(self, *args, **kwargs):
         # from https://stackoverflow.com/questions/34935156/
         if self._state.adding:
@@ -128,20 +142,6 @@ class Board(auto_prefetch.Model):
         elif self.preferences.posting_allowed_until is not None:
             is_allowed = timezone.now() <= self.preferences.posting_allowed_until
         return is_allowed
-
-    class Meta:
-        permissions = (("can_view_all_boards", "Can view all boards"),)
-        indexes = [
-            GinIndex(
-                OpClass(Upper("title"), name="gin_trgm_ops"),
-                name="upper_title_idx",
-            ),
-            GinIndex(
-                OpClass(Upper("description"), name="gin_trgm_ops"),
-                name="upper_description_idx",
-            ),
-            BrinIndex(fields=["created_at"], autosummarize=True),
-        ]
 
 
 class BoardPreferences(auto_prefetch.Model):
@@ -240,6 +240,9 @@ class Post(auto_prefetch.Model, MPTTModel):
     allow_replies = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        permissions = (("can_approve_posts", "Can approve posts"),)
 
     class MPTTMeta:
         parent_attr = "reply_to"
@@ -347,9 +350,6 @@ class Post(auto_prefetch.Model, MPTTModel):
 
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
-
-    class Meta:
-        permissions = (("can_approve_posts", "Can approve posts"),)
 
 
 class Reaction(auto_prefetch.Model):
