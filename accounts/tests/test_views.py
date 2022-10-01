@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .factories import USER_TEST_PASSWORD, UserFactory
@@ -52,13 +52,29 @@ class JotletLoginViewTest(TestCase):
     def setUpTestData(cls):
         cls.user = UserFactory()
 
-    def test_successful_login(self):
+    def test_successful_hcaptcha_login(self):
         response = self.client.post(
             reverse("account_login"),
             {
                 "login": self.user.username,
                 "password": USER_TEST_PASSWORD,
                 "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["HX-Redirect"], reverse(settings.LOGIN_REDIRECT_URL))
+
+    @override_settings(
+        HCAPTCHA_ENABLED=False,
+        CF_TURNSTILE_ENABLED=True,
+    )
+    def test_successful_cf_turnstile_login(self):
+        response = self.client.post(
+            reverse("account_login"),
+            {
+                "login": self.user.username,
+                "password": USER_TEST_PASSWORD,
+                "cf-turnstile-response": "test",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -71,6 +87,26 @@ class JotletLoginViewTest(TestCase):
                 "login": self.user.username,
                 "password": USER_TEST_PASSWORD,
                 "h-captcha-response": "incorrect_captcha_response",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context_data["form"].errors.get("__all__")[0], "Captcha challenge failed. Please try again."
+        )
+
+    @override_settings(
+        HCAPTCHA_ENABLED=False,
+        CF_TURNSTILE_ENABLED=True,
+        CF_TURNSTILE_SITE_KEY="2x00000000000000000000AB",  # blocks all challenges
+        CF_TURNSTILE_SECRET_KEY="2x0000000000000000000000000000000AA",
+    )
+    def test_cf_turnstile_fail(self):
+        response = self.client.post(
+            reverse("account_login"),
+            {
+                "login": self.user.username,
+                "password": USER_TEST_PASSWORD,
+                "cf-turnstile-response": "test",
             },
         )
         self.assertEqual(response.status_code, 200)

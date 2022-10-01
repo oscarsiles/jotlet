@@ -5,4 +5,10 @@
          data-sitekey="{{ HCAPTCHA_SITE_KEY }}"
          x-init="if (typeof hcaptcha != 'undefined') { hcaptcha.render($el.id) }">
     </div>
+{% elif CF_TURNSTILE_SITE_KEY %}
+    <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+    <div class="d-flex justify-content-center mb-3 cf-turnstile"
+         id="cf-turnstile-div"
+         data-sitekey="{{ CF_TURNSTILE_SITE_KEY }}">
+    </div>
 {% endif %}

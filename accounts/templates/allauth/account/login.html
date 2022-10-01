@@ -6,7 +6,7 @@
             <div class="d-flex-column flex-grow-1 flex-sm-grow-0 accounts-column"
                  id="central-login-column">
                 <h2>Login</h2>
-            {% elif HCAPTCHA_SITE_KEY and messages %}
+            {% elif HCAPTCHA_SITE_KEY or CF_TURNSTILE_SITE_KEY and messages %}
                 <div class="pb-3" x-show="$el.querySelectorAll('.alert').length > 0">{% include "components/messages.html" %}</div>
             {% endif %}
             <form id="login-form"
@@ -19,7 +19,7 @@
                   {% endif %}
                   hx-swap="innerHTML">
                 {% crispy form %}
-                {% include "accounts/components/forms/hcaptcha.html" %}
+                {% include "accounts/components/forms/captcha.html" %}
                 <div class="d-flex-column">
                     <div class="d-flex justify-content-center">
                         <button class="btn btn-primary flex-fill" type="submit">Login</button>

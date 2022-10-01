@@ -16,6 +16,7 @@ from pathlib import Path
 
 import environ
 from django.contrib.messages import constants as messages
+from django.core.exceptions import ImproperlyConfigured
 
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-secondary",
@@ -177,7 +178,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
                 "csp.context_processors.nonce",
-                "jotlet.context_processors.hcaptcha_sitekey",
+                "jotlet.context_processors.captcha_sitekeys",
             ],
         },
     },
@@ -507,16 +508,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
-if HCAPTCHA_ENABLED:
-    HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
-    if not TESTING:
-        HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
-        HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
-    else:
-        HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
-        HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"
-
 CSP_DEFAULT_SRC = ["'none'"]
 CSP_SCRIPT_SRC = [
     "'self'",
@@ -544,8 +535,37 @@ CSP_CONNECT_SRC = [
 CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
 CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
+HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
+CF_TURNSTILE_ENABLED = env("TURNSTILE_ENABLED", default=False)
+if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
+    raise ImproperlyConfigured("HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled")
+
+HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
+if HCAPTCHA_ENABLED and not TESTING:
+    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
+    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
+
+CF_TURNSTILE_VERIFY_URL = env(
+    "CF_TURNSTILE_VERIFY_URL", default="https://challenges.cloudflare.com/turnstile/v0/siteverify"
+)
+if CF_TURNSTILE_ENABLED and not TESTING:
+    CF_TURNSTILE_SITE_KEY = env("CF_TURNSTILE_SITE_KEY")
+    CF_TURNSTILE_SECRET_KEY = env("CF_TURNSTILE_SECRET_KEY")
+
+if TESTING:
+    HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
+    HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"
+    CF_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+    CF_TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
+
 if HCAPTCHA_ENABLED:
     CSP_SCRIPT_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
     CSP_STYLE_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
     CSP_CONNECT_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
     CSP_FRAME_SRC += ["hcaptcha.com", "*.hcaptcha.com"]
+
+if CF_TURNSTILE_ENABLED:
+    CSP_SCRIPT_SRC += ["challenges.cloudflare.com"]
+    CSP_STYLE_SRC += ["challenges.cloudflare.com"]
+    CSP_CONNECT_SRC += ["challenges.cloudflare.com"]
+    CSP_FRAME_SRC += ["challenges.cloudflare.com"]

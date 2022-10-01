@@ -4,13 +4,19 @@ from crispy_bootstrap5.bootstrap5 import Field, FloatingField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
 from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 
-from accounts.utils import hcaptcha_verified
+from accounts.utils import cf_turnstile_verified, hcaptcha_verified
 
 
 def verify_hcaptcha(request):
     if not hcaptcha_verified(request):
+        raise forms.ValidationError("Captcha challenge failed. Please try again.")
+
+
+def verify_cf_turnstile(request):
+    if not cf_turnstile_verified(request):
         raise forms.ValidationError("Captcha challenge failed. Please try again.")
 
 
@@ -29,7 +35,10 @@ class CustomLoginForm(LoginForm):
         )
 
     def clean(self):
-        verify_hcaptcha(self.request)
+        if settings.HCAPTCHA_ENABLED:
+            verify_hcaptcha(self.request)
+        elif settings.CF_TURNSTILE_ENABLED:
+            verify_cf_turnstile(self.request)
         return super().clean()
 
     def user_credentials(self):
