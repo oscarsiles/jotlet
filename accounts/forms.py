@@ -111,7 +111,10 @@ class CustomSignupForm(SignupForm):
         )
 
     def clean(self):
-        verify_hcaptcha(self.request)
+        if settings.HCAPTCHA_ENABLED:
+            verify_hcaptcha(self.request)
+        elif settings.CF_TURNSTILE_ENABLED:
+            verify_cf_turnstile(self.request)
         return super().clean()
 
 
