@@ -28,7 +28,7 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.24.82"
+boto3 = "^1.24.84"
 channels = "^3.0.5"
 channels-redis = "^3.4.1"
 crispy-bootstrap5 = "^0.6"
@@ -68,7 +68,7 @@ whitenoise = "^6.2.0"
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.3.2"
 black = "^22.8.0"
-coverage = "^6.4.4"
+coverage = "^6.5.0"
 django-debug-toolbar = "^3.7.0"
 django-debug-toolbar-template-profiler = "^2.1.0"
 djlint = "^1.18.0"
