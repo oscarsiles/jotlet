@@ -31,7 +31,7 @@ license = "GPL-3.0-or-later"
 boto3 = "^1.24.84"
 channels = "^3.0.5"
 channels-redis = "^3.4.1"
-crispy-bootstrap5 = "^0.6"
+crispy-bootstrap5 = "^0.7"
 Django = { extras = ["argon2"], version = "^4.1.1" }
 django-allauth = "^0.51.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^8.6" }
