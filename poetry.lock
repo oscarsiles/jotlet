@@ -669,7 +669,7 @@ tests = ["coverage"]
 
 [[package]]
 name = "django-mptt"
-version = "0.13.4"
+version = "0.14.0"
 description = "Utilities for implementing Modified Preorder Tree Traversal with your Django Models and working with trees of Model instances."
 category = "main"
 optional = false
@@ -1834,7 +1834,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "68b38bf33c4317283c22658b489da860eef246d797e800df7dca870c84d70006"
+content-hash = "785974aa28225023380c1fbc382bdcca84e0fb646ecf00e994ca84ee554f5b4a"
 
 [metadata.files]
 aioredis = [
@@ -2226,8 +2226,8 @@ django-js-asset = [
     {file = "django_js_asset-2.0.0.tar.gz", hash = "sha256:adc1ee1efa853fad42054b540c02205344bb406c9bddf87c9e5377a41b7db90f"},
 ]
 django-mptt = [
-    {file = "django-mptt-0.13.4.tar.gz", hash = "sha256:80c9fb34df7796a4e5af0cb6b8ade3697555b1aa438bd07a01f32b3ab5202b63"},
-    {file = "django_mptt-0.13.4-py3-none-any.whl", hash = "sha256:75745b621ae31d97957ed924155a750dfa8cacd9543799ada2d713fd6bc3f5c7"},
+    {file = "django-mptt-0.14.0.tar.gz", hash = "sha256:2c92a2b1614c53086278795ccf50580cf1f9b8564f3ff03055dd62bab5987711"},
+    {file = "django_mptt-0.14.0-py3-none-any.whl", hash = "sha256:d9a87433ab0e4f35247c6f6d5a93ace6990860a4ba8796f815d185f773b9acfc"},
 ]
 django-qr-code = [
     {file = "django-qr-code-3.1.1.tar.gz", hash = "sha256:f47dee4636b5e44cb46915e14747f043be856f21e5e635a94c48939ed18c783f"},
