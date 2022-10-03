@@ -5,16 +5,10 @@ var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
 var csrf_token = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
 var easyMDE = new EasyMDE({
-  autoDownloadFontAwesome: true,
+  autoDownloadFontAwesome: false,
   autofocus: true,
   element: document.getElementsByName("content")[0],
   forceSync: true,
-  iconClassMap: {
-    bold: "bi bi-type-bold",
-    italic: "bi bi-type-italic",
-    "upload-image": "bi bi-image",
-    preview: "bi bi-eye-fill",
-  },
   imageAccept: allow_image_uploads
     ? ["image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp"]
     : [],
@@ -43,8 +37,55 @@ var easyMDE = new EasyMDE({
   spellChecker: false,
   status: allow_image_uploads ? ["upload-image"] : false,
   toolbar: allow_image_uploads
-    ? ["bold", "italic", "upload-image", "|", "preview"]
-    : ["bold", "italic", "|", "preview"],
+    ? [
+        {
+          name: "bold",
+          action: EasyMDE.toggleBold,
+          className: "bi bi-type-bold",
+          title: "Bold",
+        },
+        {
+          name: "italic",
+          action: EasyMDE.toggleItalic,
+          className: "bi bi-type-italic",
+          title: "Italic",
+        },
+        {
+          name: "upload-image",
+          action: EasyMDE.drawUploadedImage,
+          className: "bi bi-image",
+          title: "Upload Image",
+        },
+        "|",
+        {
+          name: "preview",
+          action: EasyMDE.togglePreview,
+          className: "bi bi-eye-fill no-disable",
+          title: "Preview",
+        },
+      ]
+    : [
+        {
+          name: "bold",
+          action: EasyMDE.toggleBold,
+          className: "bi bi-type-bold",
+          title: "Bold",
+        },
+        {
+          name: "italic",
+          action: EasyMDE.toggleItalic,
+          className: "bi bi-type-italic",
+          title: "Italic",
+        },
+        "|",
+        {
+          name: "preview",
+          action: EasyMDE.togglePreview,
+          className: "bi bi-eye-fill no-disable",
+          title: "Preview",
+        },
+      ],
+  toolbarButtonClassPrefix: "mde",
   uploadImage: allow_image_uploads,
 });
 
