@@ -519,7 +519,6 @@ CSP_STYLE_SRC = [
     "cdn.jsdelivr.net",
     "fonts.googleapis.com",
     "fonts.gstatic.com",
-    "maxcdn.bootstrapcdn.com",
     "'unsafe-inline'",
 ] + env.list("CSP_STYLE_SRC", default=[])
 CSP_FONT_SRC = CSP_STYLE_SRC + env.list("CSP_FONT_SRC", default=[])
