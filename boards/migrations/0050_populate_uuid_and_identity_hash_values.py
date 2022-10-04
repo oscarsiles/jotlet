@@ -4,7 +4,6 @@ import uuid
 from hashlib import blake2b
 
 from django.db import migrations
-from mptt import managers, register
 
 
 def gen_uuid(apps, schema_editor):
@@ -18,13 +17,7 @@ def gen_uuid(apps, schema_editor):
 
 
 def gen_hash(apps, schema_editor):
-    # from django-mptt github issues
     Post = apps.get_model("boards", "Post")
-    manager = managers.TreeManager()
-    manager.model = Post
-    register(Post, parent_attr="reply_to", level_attr="reply_depth")
-    manager.contribute_to_class(Post, "objects")
-    manager.rebuild()
     for row in Post.objects.all():
         string = row.user.username if row.user is not None else row.session_key
         salt = row.topic.board.uuid

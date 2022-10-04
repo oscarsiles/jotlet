@@ -50,13 +50,14 @@ def invalidate_reaction_cache(reaction):
 
 
 def invalidate_post_tree_cache(instance):
-    tree = instance.get_root().get_descendants(include_self=True)
-    for post in tree:
-        if post != instance:
-            try:
-                invalidate_obj(post)
-            except Exception:
-                raise Exception(f"Could not delete post tree cache: post-{post.pk}")
+    if instance.parent:
+        tree = instance.ancestors().first().descendants(include_self=True)
+        for post in tree:
+            if post != instance:
+                try:
+                    invalidate_obj(post)
+                except Exception:
+                    raise Exception(f"Could not delete post tree cache: post-{post.pk}")
 
 
 @receiver(post_save, sender=BoardPreferences)
@@ -139,7 +140,7 @@ def post_deleted_invalidate_cache(sender, instance, **kwargs):
 @receiver(post_save, sender=Post)
 def post_send_message(sender, instance, created, **kwargs):
     board_slug = instance.topic.board.slug
-    if created and instance.is_root_node():
+    if created and not instance.parent:
         channel_group_send(
             f"board-{board_slug}",
             {
@@ -162,7 +163,7 @@ def post_send_message(sender, instance, created, **kwargs):
             {
                 "type": "post_updated",
                 "topic_pk": instance.topic_id,
-                "post_pk": instance.get_root().pk,
+                "post_pk": instance.ancestors(include_self=True).first().pk,
             },
         )
 

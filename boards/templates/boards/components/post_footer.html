@@ -6,7 +6,7 @@
     {% if has_reacted.0 == None %}
         {% get_has_reacted post request reactions as has_reacted %}
     {% endif %}
-    {% if reaction_score == None or post.reply_depth > 0 %}
+    {% if reaction_score == None or post.tree_depth > 0 %}
         {% get_reaction_score post reactions board.preferences.reaction_type as reaction_score %}
     {% endif %}
     {% if is_owner == None %}

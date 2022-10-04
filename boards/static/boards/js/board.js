@@ -60,9 +60,9 @@ function connectWebsocket() {
         break;
       case "post_created":
         var newCardDiv =
-          data.reply_to == null
+          data.parent == null
             ? "#newCard-topic-" + data.topic_pk + "-div"
-            : "#newCard-post-" + data.reply_to + "-div";
+            : "#newCard-post-" + data.parent + "-div";
         htmx.ajax("GET", data.fetch_url, {
           target: newCardDiv,
           swap: "beforebegin",

@@ -114,7 +114,6 @@ INSTALLED_APPS = [
     "simple_history",
     "cachalot",
     "cacheops",
-    "mptt",
     "notices",
     "accounts",
     "boards",

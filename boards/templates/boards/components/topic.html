@@ -89,7 +89,7 @@
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk }}">
     {% for post in topic.posts.all|dictsort:"pk" %}
-        {% if post.reply_depth == 0 %}
+        {% if post.tree_depth == 0 %}
             {% include "boards/components/post.html" %}
         {% endif %}
     {% endfor %}
