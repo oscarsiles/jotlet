@@ -180,7 +180,7 @@
              x-collapse
              {% if post.tree_depth <= 2 %}class="ps-4"{% endif %}>
             {% with post as parent %}
-                {% for post in post.get_children|dictsort:"pk" %}
+                {% for post in post.children.all|dictsort:"pk" %}
                     {% include "boards/components/post.html" %}
                 {% endfor %}
             {% endwith %}

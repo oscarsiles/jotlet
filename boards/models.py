@@ -282,6 +282,10 @@ class Post(auto_prefetch.Model, TreeNode):
         return _get_reactions(reaction_type)
 
     @cached_property
+    def get_descendant_count(self):
+        return self.descendants().count()
+
+    @cached_property
     def get_reaction_type(self):
         return self.topic.board.preferences.reaction_type
 
