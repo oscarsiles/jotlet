@@ -535,7 +535,7 @@ CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
 CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
 HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
-CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False)
+CF_TURNSTILE_ENABLED = False if TESTING else env("CF_TURNSTILE_ENABLED", default=False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
     raise ImproperlyConfigured("HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled")
 
