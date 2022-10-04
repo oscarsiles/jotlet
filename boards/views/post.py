@@ -23,7 +23,7 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     fields = ["content"]
     template_name = "boards/post_form.html"
     is_reply = False
-    reply_to = None
+    parent = None
 
     def test_func(self):
         board = Board.objects.get(slug=self.kwargs["slug"])
@@ -31,10 +31,10 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
         if "post_pk" in self.kwargs and is_allowed:
             self.is_reply = True
             # check if the user is allowed to reply to the post
-            self.reply_to = Post.objects.get(pk=self.kwargs["post_pk"])
+            self.parent = Post.objects.get(pk=self.kwargs["post_pk"])
 
             is_allowed = board.preferences.type == "r" and (
-                (self.reply_to.approved and board.preferences.allow_guest_replies)
+                (self.parent.approved and board.preferences.allow_guest_replies)
                 or get_is_moderator(self.request.user, board)
             )
 
@@ -45,8 +45,8 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
 
     def form_valid(self, form):
         if self.is_reply:
-            form.instance.topic_id = self.reply_to.topic_id
-            form.instance.reply_to = self.reply_to
+            form.instance.topic_id = self.parent.topic_id
+            form.instance.parent = self.parent
         else:
             form.instance.topic_id = self.kwargs.get("topic_pk")
 

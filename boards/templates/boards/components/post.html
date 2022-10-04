@@ -1,13 +1,13 @@
-{% load cacheops mptt_tags post_extras %}
+{% load cacheops post_extras %}
 {% if board.preferences.reaction_type != 'n' %}
-    {% if reactions == None or post.reply_depth > 0 %}
+    {% if reactions == None or post.tree_depth > 0 %}
         {% get_reactions post board.preferences.reaction_type as reactions %}
     {% endif %}
-    {% if has_reacted.0 == None or post.reply_depth > 0 %}
+    {% if has_reacted.0 == None or post.tree_depth > 0 %}
         {% get_has_reacted post request reactions as has_reacted %}
     {% endif %}
 {% endif %}
-{% if is_owner == None or post.reply_depth > 0 %}
+{% if is_owner == None or post.tree_depth > 0 %}
     {% get_is_owner post request as is_owner %}
 {% endif %}
 <div id="container-post-{{ post.pk }}"
@@ -16,7 +16,7 @@
      hx-target="this"
      hx-ext="alpine-morph"
      hx-swap="morph"
-     x-data="{ isRepliesCollapsed: false, isShownParent{{ post.reply_depth }}: false }"
+     x-data="{ isRepliesCollapsed: false, isShownParent{{ post.tree_depth }}: false }"
      x-init="postCount++"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
@@ -27,20 +27,20 @@
                     opacity-75
                 {% endif %}"
          id="post-{{ post.pk }}"
-         x-intersect:enter.half="isShownParent{{ post.reply_depth }} = true"
-         x-intersect:leave.half="isShownParent{{ post.reply_depth }} = false"
-         :data-shown="isShownParent{{ post.reply_depth }}"
+         x-intersect:enter.half="isShownParent{{ post.tree_depth }} = true"
+         x-intersect:leave.half="isShownParent{{ post.tree_depth }} = false"
+         :data-shown="isShownParent{{ post.tree_depth }}"
          @animationend="$el.classList.remove('blink')">
         <div class="row flex-nowrap g-0">
-            {% if post.reply_depth > 0 %}
+            {% if post.tree_depth > 0 %}
                 <div class="col-auto rounded-start
-                            {% if post.reply_depth == 1 %}
+                            {% if post.tree_depth == 1 %}
                                 bg-primary
-                            {% elif post.reply_depth == 2 %}
+                            {% elif post.tree_depth == 2 %}
                                 bg-success
-                            {% elif post.reply_depth == 3 %}
+                            {% elif post.tree_depth == 3 %}
                                 bg-danger
-                            {% elif post.reply_depth > 3 %}
+                            {% elif post.tree_depth > 3 %}
                                 bg-warning
                             {% endif %}">
                     &ensp;
@@ -61,13 +61,13 @@
                                         </svg>
                                     </div>
                                 {% endif %}
-                                {% if post.reply_depth > 0 %}
+                                {% if post.tree_depth > 0 %}
                                     <button type="button"
                                             class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
                                             x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
                                             title="Highlight parent post"
-                                            @click="if (!isShownParent{{ post.reply_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
-                                        {% if post.reply_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
+                                            @click="if (!isShownParent{{ post.tree_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
+                                        {% if post.tree_depth > 0 %}<i class="bi bi-quote pe-2"></i>{% endif %}
                                     </button>
                                 {% endif %}
                             </div>
@@ -178,7 +178,7 @@
         <div x-ref="post-{{ post.pk }}-replies"
              x-show="!isRepliesCollapsed"
              x-collapse
-             {% if post.reply_depth <= 2 %}class="ps-4"{% endif %}>
+             {% if post.tree_depth <= 2 %}class="ps-4"{% endif %}>
             {% with post as parent %}
                 {% for post in post.get_children|dictsort:"pk" %}
                     {% include "boards/components/post.html" %}

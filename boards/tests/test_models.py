@@ -137,6 +137,18 @@ class TopicModelTest(TestCase):
     def test_get_board_name(self):
         self.assertEqual(self.topic.get_board_name(), self.topic.board.title)
 
+    def test_get_topic_posts(self):
+        post = PostFactory(topic=self.topic)
+        PostFactory(topic=self.topic, parent=post)
+        self.assertEqual(list(self.topic.get_posts), list(Post.objects.filter(topic=self.topic, parent=None)))
+
+    def test_get_post_count(self):
+        post1 = PostFactory(topic=self.topic)
+        post2 = PostFactory(topic=self.topic)
+        PostFactory.create_batch(3, topic=self.topic, parent=post1)
+        PostFactory.create_batch(3, topic=self.topic, parent=post2)
+        self.assertEqual(self.topic.get_post_count, 8)
+
     def test_get_last_post_date(self):
         self.assertIsNone(self.topic.get_last_post_date)
         post = PostFactory(topic=self.topic)

@@ -98,7 +98,7 @@ class PostCreateViewTest(TestCase):
         self.client.post(reply_url, data={"content": "Test Message reply"})
         reply = Post.objects.get(content="Test Message reply")
         self.assertEqual(reply.topic, self.topic)
-        self.assertEqual(reply.reply_to, post)
+        self.assertEqual(reply.parent, post)
 
     def test_post_session_key(self):
         self.client.post(

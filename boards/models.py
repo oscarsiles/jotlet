@@ -14,9 +14,10 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
+from tree_queries.models import TreeNode
+from tree_queries.query import TreeQuerySet
 
 from .tasks import create_thumbnails, post_image_cleanup
 from .utils import get_image_upload_path, get_random_string, process_image
@@ -201,7 +202,7 @@ class Topic(auto_prefetch.Model):
 
     @cached_property
     def get_posts(self):
-        return Post.objects.filter(topic=self, reply_to=None)
+        return Post.objects.filter(topic=self, parent=None)
 
     @cached_property
     def get_post_count(self):
@@ -210,7 +211,7 @@ class Topic(auto_prefetch.Model):
             count = 0
             for post in self.get_posts:
                 count += 1
-                count += post.get_descendant_count()
+                count += post.descendants().count()
             return count
 
         return _get_post_count()
@@ -229,24 +230,20 @@ class Topic(auto_prefetch.Model):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(auto_prefetch.Model, MPTTModel):
+class Post(auto_prefetch.Model, TreeNode):
+    objects = TreeQuerySet.as_manager(with_tree_fields=True)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
     session_key = models.CharField(max_length=40, null=True, blank=True)
     identity_hash = models.CharField(max_length=64, null=True, blank=True)
     approved = models.BooleanField(default=True)
-    reply_to = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
     allow_replies = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
-
-    class MPTTMeta:
-        parent_attr = "reply_to"
-        level_attr = "reply_depth"
 
     def __str__(self):
         return self.content
