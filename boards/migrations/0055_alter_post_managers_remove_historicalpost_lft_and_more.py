@@ -29,10 +29,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name="historicalpost",
-            name="reply_to",
-        ),
-        migrations.RemoveField(
-            model_name="historicalpost",
             name="rght",
         ),
         migrations.RemoveField(
@@ -49,19 +45,15 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name="post",
-            name="reply_to",
-        ),
-        migrations.RemoveField(
-            model_name="post",
             name="rght",
         ),
         migrations.RemoveField(
             model_name="post",
             name="tree_id",
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name="historicalpost",
-            name="parent",
+            name="reply_to",
             field=models.ForeignKey(
                 blank=True,
                 db_constraint=False,
@@ -72,9 +64,9 @@ class Migration(migrations.Migration):
                 verbose_name="parent",
             ),
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name="post",
-            name="parent",
+            name="reply_to",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
@@ -83,5 +75,15 @@ class Migration(migrations.Migration):
                 to="boards.post",
                 verbose_name="parent",
             ),
+        ),
+        migrations.RenameField(
+            model_name="historicalpost",
+            old_name="reply_to",
+            new_name="parent",
+        ),
+        migrations.RenameField(
+            model_name="post",
+            old_name="reply_to",
+            new_name="parent",
         ),
     ]
