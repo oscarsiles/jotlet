@@ -33,31 +33,29 @@ def invalidate_board_post_count_cache(instance):
 
 def invalidate_topic_cache(topic):
     invalidate_obj(topic)
-    if Board.objects.filter(id=topic.board_id).exists():
-        invalidate_board_cache(topic.board)
+    try:
+        if topic.board:
+            invalidate_board_cache(topic.board)
+    except Board.DoesNotExist:
+        pass
 
 
 def invalidate_post_cache(post):
     invalidate_obj(post)
-    if Topic.objects.filter(id=post.topic_id).exists():
-        invalidate_topic_cache(post.topic)
+    try:
+        if post.topic:
+            invalidate_topic_cache(post.topic)
+    except Topic.DoesNotExist:
+        pass
 
 
 def invalidate_reaction_cache(reaction):
     invalidate_obj(reaction)
-    if Post.objects.filter(id=reaction.post_id).exists():
-        invalidate_post_cache(reaction.post)
-
-
-def invalidate_post_tree_cache(instance):
-    if instance.parent:
-        tree = instance.ancestors().first().descendants(include_self=True)
-        for post in tree:
-            if post != instance:
-                try:
-                    invalidate_obj(post)
-                except Exception:
-                    raise Exception(f"Could not delete post tree cache: post-{post.pk}")
+    try:
+        if reaction.post:
+            invalidate_post_cache(reaction.post)
+    except Post.DoesNotExist:
+        pass
 
 
 @receiver(post_save, sender=BoardPreferences)
@@ -128,13 +126,11 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
 def post_created_invalidate_cache(sender, instance, created, **kwargs):
     if created:
         invalidate_post_cache(instance)
-        invalidate_post_tree_cache(instance)
 
 
 @receiver(post_delete, sender=Post)
 def post_deleted_invalidate_cache(sender, instance, **kwargs):
     invalidate_post_cache(instance)
-    invalidate_post_tree_cache(instance)
 
 
 @receiver(post_save, sender=Post)
