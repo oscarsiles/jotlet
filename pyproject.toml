@@ -28,7 +28,7 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.24.85"
+boto3 = "^1.24.86"
 channels = "^3.0.5"
 channels-redis = "^3.4.1"
 crispy-bootstrap5 = "^0.7"
