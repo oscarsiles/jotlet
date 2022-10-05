@@ -107,7 +107,6 @@ class PostReactionView(generic.View):
         }
         if is_updated:
             post_reaction_send_update_message(post)
-            to_json["reactionUpdated"] = None
 
         return HttpResponse(
             status=204,
