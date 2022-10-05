@@ -185,11 +185,13 @@ class PostModelTest(TestCase):
         self.assertEqual(str(self.post), self.post.content)
 
     def test_get_descendant_count(self):
-        post2 = PostFactory(topic=self.post.topic)
-        PostFactory.create_batch(3, topic=self.post.topic, parent=self.post)
+        PostFactory.create_batch(5, topic=self.post.topic, parent=self.post)
+        self.assertEqual(self.post.get_descendant_count, 5)
+
+        post2 = PostFactory(topic=self.post.topic, parent=self.post)
         PostFactory.create_batch(5, topic=self.post.topic, parent=post2)
-        self.assertEqual(self.post.get_descendant_count, 3)
-        self.assertEqual(post2.get_descendant_count, 5)
+        self.post = Post.objects.get(pk=self.post.pk)
+        self.assertEqual(self.post.get_descendant_count, 11)
 
     def test_get_reaction_score_like(self):
         self.assertEqual(self.post.get_reaction_score(), 0)
