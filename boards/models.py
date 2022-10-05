@@ -197,9 +197,6 @@ class Topic(auto_prefetch.Model):
     def __str__(self):
         return self.subject
 
-    def get_board_name(self):
-        return self.board.title
-
     @cached_property
     def get_posts(self):
         return Post.objects.filter(topic=self, parent=None)
@@ -268,9 +265,13 @@ class Post(auto_prefetch.Model, TreeNode):
                 post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
 
     def get_is_owner(self, request):
-        return (self.session_key == request.session.session_key and self.session_key is not None) or (
-            request.user.is_authenticated and self.user == request.user
-        )
+        @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _get_is_owner():
+            return (self.session_key == request.session.session_key and self.session_key is not None) or (
+                request.user.is_authenticated and self.user == request.user
+            )
+
+        return _get_is_owner()
 
     def get_reactions(self, reaction_type=None):
         @cached_as(self, extra=reaction_type, timeout=60 * 60 * 24)
@@ -283,7 +284,11 @@ class Post(auto_prefetch.Model, TreeNode):
 
     @cached_property
     def get_descendant_count(self):
-        return self.descendants().count()
+        @cached_as(self)
+        def _get_desdendant_count():
+            return self.descendants().count()
+
+        return _get_desdendant_count()
 
     @cached_property
     def get_reaction_type(self):
@@ -331,14 +336,14 @@ class Post(auto_prefetch.Model, TreeNode):
             for reaction in post_reactions:
                 if reaction.session_key == request.session.session_key:
                     return True, reaction.pk, reaction.reaction_score
-            return False, None, 1
+            return has_reacted, reaction_id, reacted_score
 
         @cached_as(post_reactions, extra=request.user, timeout=60 * 60 * 24)
         def _get_has_reacted_user():
             for reaction in post_reactions:
                 if reaction.user == request.user:
                     return True, reaction.pk, reaction.reaction_score
-            return False, None, 1
+            return has_reacted, reaction_id, reacted_score
 
         if post_reactions:
             if request.session.session_key:

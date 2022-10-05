@@ -134,9 +134,6 @@ class TopicModelTest(TestCase):
     def test_object_name_is_subject(self):
         self.assertEqual(str(self.topic), self.topic.subject)
 
-    def test_get_board_name(self):
-        self.assertEqual(self.topic.get_board_name(), self.topic.board.title)
-
     def test_get_topic_posts(self):
         post = PostFactory(topic=self.topic)
         PostFactory(topic=self.topic, parent=post)
@@ -312,9 +309,22 @@ class PostModelTest(TestCase):
         self.assertEqual(post_image2.post, post)
 
 
-# TODO: Reaction model tests
 class ReactionModelTest(TestCase):
-    pass
+    @classmethod
+    def setUpTestData(cls):
+        cls.reaction = ReactionFactory()
+
+    def test_post_deleted_after_topic_delete(self):
+        self.reaction.post.topic.delete()
+        self.assertRaises(Reaction.DoesNotExist, Reaction.objects.get, pk=self.reaction.pk)
+
+    def test_post_deleted_after_board_delete(self):
+        topic2 = TopicFactory(board=self.reaction.post.topic.board)
+        post2 = PostFactory(topic=topic2)
+        reaction2 = ReactionFactory(post=post2)
+        self.reaction.post.topic.board.delete()
+        self.assertRaises(Reaction.DoesNotExist, Reaction.objects.get, pk=self.reaction.pk)
+        self.assertRaises(Reaction.DoesNotExist, Reaction.objects.get, pk=reaction2.pk)
 
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)

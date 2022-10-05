@@ -1,5 +1,5 @@
 <p>
-    Are you sure you want to delete the following topic from <strong>{{ topic.get_board_name }}</strong>?
+    Are you sure you want to delete the following topic from <strong>{{ topic.board.title }}</strong>?
     <h5>{{ topic }}</h5>
     <form hx-post="{{ request.build_absolute_uri }}"
           hx-swap
