@@ -284,7 +284,7 @@ class Post(auto_prefetch.Model, TreeNode):
 
     @cached_property
     def get_descendant_count(self):
-        @cached_as(self)
+        @cached_as(self, timeout=60 * 60 * 24)
         def _get_desdendant_count():
             return self.descendants().count()
 
