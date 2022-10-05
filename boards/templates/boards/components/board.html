@@ -59,7 +59,7 @@
             }
         {% endcached_as %}
         </style>
-        {% for topic in board.topics.all|dictsort:"pk" %}
+        {% for topic in topics %}
             {% include "boards/components/topic.html" %}
         {% endfor %}
         {% if request.user == board.owner or user.is_staff %}
@@ -137,7 +137,7 @@
          data-bs-smooth-scroll="true">
         {% cached_as board None "board_topic_list_cache" board.pk %}
         <ul class="nav nav-pills flex-column">
-            {% for topic in board.topics.all|dictsort:"pk" %}
+            {% for topic in topics %}
                 <li class="nav-item">
                     <a class="nav-link"
                        href="#topic-{{ topic.pk }}"

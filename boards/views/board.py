@@ -35,6 +35,7 @@ class BoardView(generic.DetailView):
         if board.preferences.background_type == "i":
             context["bg_image"] = board.preferences.background_image
 
+        context["topics"] = board.topics.order_by("pk")
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
