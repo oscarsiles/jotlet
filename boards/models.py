@@ -169,6 +169,12 @@ class BoardPreferences(auto_prefetch.Model):
     posting_allowed_from = models.DateTimeField(null=True, blank=True)
     posting_allowed_until = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            BrinIndex(fields=["posting_allowed_from"], autosummarize=True),
+            BrinIndex(fields=["posting_allowed_until"], autosummarize=True),
+        ]
+
     def __str__(self):
         return self.board.title + " preferences"
 
@@ -193,6 +199,11 @@ class Topic(auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
+
+    class Meta:
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
     def __str__(self):
         return self.subject
@@ -241,6 +252,9 @@ class Post(auto_prefetch.Model, TreeNode):
 
     class Meta:
         permissions = (("can_approve_posts", "Can approve posts"),)
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
     def __str__(self):
         return self.content
@@ -368,7 +382,13 @@ class Reaction(auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (("post", "session_key", "type"), ("post", "user", "type"))
+        constraints = [
+            models.UniqueConstraint(fields=["post", "session_key", "type"], name="unique_anonymous_reaction"),
+            models.UniqueConstraint(fields=["post", "user", "type"], name="unique_user_reaction"),
+        ]
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
 
 class Image(auto_prefetch.Model):
@@ -386,6 +406,9 @@ class Image(auto_prefetch.Model):
 
     class Meta:
         ordering = ["title"]
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
     def __str__(self):
         return self.title if self.title else str(self.uuid)

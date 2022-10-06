@@ -11,7 +11,7 @@ class Command(BaseCommand):
         try:
             count_matched = 0
             count_orphans = 0
-            images = Image.objects.filter(type="p").order_by("board__id")
+            images = Image.objects.filter(type="p").order_by("-board__created_at")
             boards = Board.objects.filter(id__in=images.values_list("board_id", flat=True).distinct())
             for board in boards:
                 posts = Post.objects.filter(topic__board=board).order_by("-created_at")
