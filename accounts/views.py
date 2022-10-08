@@ -13,6 +13,8 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
+from boards.mixins import BoardListLinkHeaderMixin
+from jotlet.mixins import JotletLinkHeaderMixin
 from jotlet.utils import generate_link_header
 
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm
@@ -81,7 +83,7 @@ class JotletLogoutView(LogoutView):
         return HttpResponseClientRefresh()
 
 
-class JotletProfileView(LoginRequiredMixin, generic.DetailView):
+class JotletProfileView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRequiredMixin, generic.DetailView):
     context_object_name = "user"
     template_name = "accounts/profile.html"
 
@@ -101,13 +103,8 @@ class JotletProfileView(LoginRequiredMixin, generic.DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
-        files_css = [static("css/3rdparty/tagify-4.16.4.min.css")]
-        files_js = [
-            static("js/3rdparty/tagify-4.16.4.min.js"),
-            static("js/3rdparty/tagify-4.16.4.polyfills.min.js"),
-            static("boards/js/index.js"),
-            static("accounts/js/profile.js"),
-        ]
+        files_css = []
+        files_js = [static("accounts/js/profile.js")]
 
         response = generate_link_header(response, files_css, files_js)
         return response

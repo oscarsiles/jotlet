@@ -1,4 +1,6 @@
-def generate_link_header(response, files_css=None, files_scripts=None, files_font=None, domain_preconnect=None):
+def generate_link_header(
+    response, files_css=None, files_scripts=None, files_font=None, domain_preconnect=None, prefetch_url=None
+):
     link_header = response.get("Link", "")
 
     if files_css:
@@ -13,6 +15,9 @@ def generate_link_header(response, files_css=None, files_scripts=None, files_fon
     if domain_preconnect:
         for domain in domain_preconnect:
             link_header += f"<{domain}>; rel=preconnect, "
+    if prefetch_url:
+        for url in prefetch_url:
+            link_header += f"<{url}>; rel=prefetch; crossorigin=anonymous, "
 
     if link_header != "":
         response["Link"] = link_header
