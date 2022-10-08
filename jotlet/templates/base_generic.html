@@ -14,10 +14,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta name="htmx-config" content='{"includeIndicatorStyles": false}'/>
         <link href="{% static 'css/3rdparty/bootstrap-5.2.2.min.css' %}"
-              rel="stylesheet"/>
+              rel="preload stylesheet"
+              as="style"/>
         <link href="{% static 'css/3rdparty/bootstrap-icons-1.9.1.min.css' %}"
-              rel="stylesheet"/>
-        <link href="{% static 'css/styles.css' %}" rel="stylesheet"/>
+              rel="preload stylesheet"
+              as="style"/>
+        <link href="{% static 'css/styles.css' %}"
+              rel="preload stylesheet"
+              as="style"/>
         <link href="{% static 'images/favicon.svg' %}"
               rel="icon"
               sizes="any"
