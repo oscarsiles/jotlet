@@ -13,23 +13,33 @@
         <meta name="keywords" content="audience response"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta name="htmx-config" content='{"includeIndicatorStyles": false}'/>
-        <link href="{% static 'css/3rdparty/bootstrap-5.2.2.min.css' %}"
-              rel="preload stylesheet"
-              as="style"/>
-        <link href="{% static 'css/3rdparty/fonts/bootstrap-icons.woff2?8d200481aa7f02a2d63a331fc782cfaf' %}"
-              rel="preload"
-              as="font"
-              crossorigin="anonymous"/>
-        <link href="{% static 'css/3rdparty/bootstrap-icons-1.9.1.min.css' %}"
-              rel="preload stylesheet"
-              as="style"/>
-        <link href="{% static 'css/styles.css' %}"
-              rel="preload stylesheet"
-              as="style"/>
-        <link href="{% static 'images/favicon.svg' %}"
+        {% comment %} favicon {% endcomment %}
+        <link href="{% static 'favicon/apple-touch-icon.png' %}"
+              rel="apple-touch-icon"
+              sizes="180x180"/>
+        <link href="{% static 'favicon/favicon-32x32.png' %}"
               rel="icon"
-              sizes="any"
-              type="image/svg+xml"/>
+              type="image/png"
+              sizes="32x32"/>
+        <link href="{% static 'favicon/favicon-16x16.png' %}"
+              rel="icon"
+              type="image/png"
+              sizes="16x16"/>
+        <link href="{% static 'favicon/site.webmanifest' %}" rel="manifest" />
+        <link href="{% static 'favicon/safari-pinned-tab.svg' %}"
+              rel="mask-icon"
+              color="#5bbad5"/>
+        <link href="{% static 'favicon/favicon.ico' %}" rel="shortcut icon"/>
+        <meta name="msapplication-TileColor" content="#da532c"/>
+        <meta name="msapplication-config" content="{% static 'favicon/browserconfig.xml' %}"/>
+        <meta name="theme-color" content="#ffffff"/>
+        {% comment %} CSS {% endcomment %}
+        <link href="{% static 'css/3rdparty/bootstrap-5.2.2.min.css' %}"
+              rel="stylesheet"/>
+        <link href="{% static 'css/3rdparty/bootstrap-icons-1.9.1.min.css' %}"
+              rel="stylesheet"/>
+        <link href="{% static 'css/styles.css' %}" rel="stylesheet"/>
+        {% comment %} JS {% endcomment %}
         <script defer src="{% static 'js/3rdparty/bootstrap-5.2.2.bundle.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/htmx-1.8.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>

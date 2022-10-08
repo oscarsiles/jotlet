@@ -139,6 +139,7 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware",
     "notices.middleware.NoticesMiddleware",
     "axes.middleware.AxesMiddleware",
+    "jotlet.middleware.HeadersMiddleware",
 ]
 
 if DEBUG:
@@ -534,6 +535,7 @@ CSP_CONNECT_SRC = [
     "maxcdn.bootstrapcdn.com",
 ] + env.list("CSP_CONNECT_SRC", default=[])
 CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
+CSP_MANIFEST_SRC = ["'self'"] + env.list("CSP_MANIFEST_SRC", default=[])
 CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
 HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
