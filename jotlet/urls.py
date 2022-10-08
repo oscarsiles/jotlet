@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import include, path
 from django.views.decorators.cache import cache_page
 from django.views.generic import RedirectView
@@ -35,6 +36,7 @@ urlpatterns = [
         "robots.txt",
         cache_page(60 * 60 * 24)(TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     ),
+    path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon/favicon.ico"))),
     path("", RedirectView.as_view(url="boards/")),
 ]
 
