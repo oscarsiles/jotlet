@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -47,6 +48,7 @@ class JotletDeleteViewTest(TestCase):
         self.assertTrue(User.objects.filter(username=self.user3.username).exists())
 
 
+# TODO: add cf-turnstile tests
 class JotletLoginViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -125,3 +127,27 @@ class JotletLoginViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.context_data["form"].errors)
+
+
+class JotletProfileViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+
+    def test_profile_anonymous(self):
+        response = self.client.get(reverse("account_profile"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_profile_user(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("account_profile"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_link_header(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("account_profile"))
+        link_header = response.get("Link")
+        self.assertIsNotNone(link_header)
+
+        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
+        self.assertIn(f"<{static('accounts/js/profile.js')}>; rel=preload; as=script", link_header)

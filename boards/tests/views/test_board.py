@@ -4,6 +4,7 @@ import tempfile
 from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
@@ -35,6 +36,25 @@ class BoardViewTest(TestCase):
     def test_board_not_exist(self):
         response = self.client.get(reverse("boards:board", kwargs={"slug": "000000"}))
         self.assertEqual(response.status_code, 404)
+
+    def test_link_headers(self):
+        url = reverse("boards:board", kwargs={"slug": self.board.slug})
+        response = self.client.get(url)
+        link_header = response.get("Link")
+        self.assertIsNotNone(link_header)
+        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
+        self.assertIn(f"<{static('css/3rdparty/easymde-2.18.0.min.css')}>; rel=preload; as=style", link_header)
+
+        self.assertIn(f"<{static('js/3rdparty/jdenticon-3.2.0.min.js')}>; rel=preload; as=script", link_header)
+        self.assertNotIn("boards/js/components/board_mathjax.js", link_header)
+        self.board.preferences.enable_latex = True
+        self.board.preferences.enable_identicons = False
+        self.board.preferences.save()
+        response = self.client.get(url)
+        response = self.client.get(url)
+        link_header = response.get("Link")
+        self.assertIn(f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script", link_header)
+        self.assertNotIn("js/3rdparty/jdenticon-3.2.0.min.js", link_header)
 
     def test_htmx_requests(self):
         kwargs = {"slug": self.board.slug}

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from django.templatetags.static import static
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.urls import reverse
@@ -12,8 +13,8 @@ from boards.views.index import BoardListView
 class IndexViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        test_user1 = UserFactory()
-        cls.board = BoardFactory(owner=test_user1)
+        cls.user = UserFactory(is_staff=True)
+        cls.board = BoardFactory(owner=cls.user)
 
     def test_anonymous_permissions(self):
         response = self.client.get(reverse("boards:index"))
@@ -41,26 +42,54 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response.context["form"], "board_slug", "This field is required.")
 
+    def test_link_headers(self):
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:index"))
+        link_header = response.get("Link")
+        self.assertIsNotNone(link_header)
+        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
+        self.assertIn(f"<{static('boards/js/index.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script", link_header)
+        self.assertNotIn("css/3rdparty/tagify-4.16.4.min.css", link_header)
+
+    def test_link_headers_anonymous(self):
+        response = self.client.get(reverse("boards:index"))
+        link_header = response.get("Link")
+        self.assertIsNotNone(link_header)
+        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
+        self.assertIn(f"<{static('boards/js/index.js')}>; rel=preload; as=script", link_header)
+        self.assertNotIn("boards/js/components/board_list.js", link_header)
+
 
 class IndexAllBoardsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user1 = UserFactory()
-        cls.user2 = UserFactory(is_staff=True)
+        cls.user = UserFactory()
+        cls.user_staff = UserFactory(is_staff=True)
 
     def test_anonymous_all_boards(self):
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 302)
 
     def test_board_non_staff_all_boards(self):
-        self.client.login(username=self.user1.username, password=USER_TEST_PASSWORD)
+        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 403)
 
     def test_board_staff_all_boards(self):
-        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
+        self.client.login(username=self.user_staff.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:index-all"))
         self.assertEqual(response.status_code, 200)
+
+    def test_link_headers(self):
+        self.client.login(username=self.user_staff.username, password=USER_TEST_PASSWORD)
+        response = self.client.get(reverse("boards:index-all"))
+        link_header = response.get("Link")
+        self.assertIsNotNone(link_header)
+        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
+        self.assertIn(f"<{static('boards/js/index.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('css/3rdparty/tagify-4.16.4.min.css')}>; rel=preload; as=style", link_header)
 
 
 # TODO: Implement further tests for all board_list_types
