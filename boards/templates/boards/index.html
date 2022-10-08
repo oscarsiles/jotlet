@@ -3,8 +3,7 @@
 {% block head %}
     {% if board_list_type != "own" %}
         <link href="{% static 'css/3rdparty/tagify-4.16.4.min.css' %}"
-              rel="preload stylesheet"
-              as="style"/>
+              rel="stylesheet"/>
         <script defer src="{% static 'js/3rdparty/tagify-4.16.4.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/3rdparty/tagify-4.16.4.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     {% endif %}

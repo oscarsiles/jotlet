@@ -1,15 +1,41 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
+from django.templatetags.static import static
 from django.urls import reverse
 from django.views import generic
 
 from boards.filters import BoardFilter
 from boards.forms import SearchBoardsForm
 from boards.models import Board
+from jotlet.utils import generate_link_header
 
 
-class IndexView(generic.FormView):
+class IndexViewLinkHeaderMixin(generic.View):
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        if not request.htmx:
+            is_all_boards = response.context_data.get("board_list_type", "own") == "all"
+            files_css = []
+            files_js = [
+                static("boards/js/index.js"),
+            ]
+
+            if is_all_boards:
+                files_css += [
+                    static("css/3rdparty/tagify-4.16.4.min.css"),
+                ]
+                files_js += [
+                    static("js/3rdparty/tagify-4.16.4.min.js"),
+                    static("js/3rdparty/tagify-4.16.4.polyfills.min.js"),
+                ]
+
+            response = generate_link_header(response, files_css, files_js)
+
+        return response
+
+
+class IndexView(IndexViewLinkHeaderMixin, generic.FormView):
     model = Board
     template_name = "boards/index.html"
     form_class = SearchBoardsForm
@@ -26,7 +52,7 @@ class IndexView(generic.FormView):
         return HttpResponseRedirect(reverse("boards:board", kwargs={"slug": form.cleaned_data["board_slug"]}))
 
 
-class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
+class IndexAllBoardsView(IndexViewLinkHeaderMixin, LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
     model = Board
     template_name = "boards/index.html"
     permission_required = "boards.can_view_all_boards"
@@ -82,3 +108,14 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViewsMixin, generic.ListV
         context["pagination_sizes"] = [5, 10, 20, 50]
         context["board_list_type"] = self.board_list_type
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        files_css = []
+        files_js = [
+            static("boards/js/components/board_list.js"),
+        ]
+
+        response = generate_link_header(response, files_css, files_js)
+
+        return response

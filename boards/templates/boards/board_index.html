@@ -1,26 +1,9 @@
 {% extends "base_generic.html" %}
 {% load static cache board_extras %}
 {% block head %}
-    {% if board.preferences.enable_latex %}
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff"
-              as="font"
-              crossorigin="anonymous"/>
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff"
-              as="font"
-              crossorigin="anonymous"/>
-        <link rel="preload"
-              href="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff"
-              as="font"
-              crossorigin="anonymous"/>
-    {% endif %}
     <link href="{% static 'css/3rdparty/easymde-2.18.0.min.css' %}"
-          rel="preload stylesheet"
-          as="style"/>
-    <link href="{% static 'boards/css/board.css' %}"
-          rel="preload stylesheet"
-          as="style"/>
+          rel="stylesheet"/>
+    <link href="{% static 'boards/css/board.css' %}" rel="stylesheet" />
     <script defer src="{% static 'js/3rdparty/alpinejs-intersect-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/3rdparty/marked-4.1.1.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'js/3rdparty/purify-2.4.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>

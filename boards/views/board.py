@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -10,6 +11,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from boards.forms import BoardPreferencesForm
 from boards.models import Board, BoardPreferences, Image
 from boards.utils import get_is_moderator
+from jotlet.utils import generate_link_header
 
 
 class BoardView(generic.DetailView):
@@ -39,6 +41,46 @@ class BoardView(generic.DetailView):
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        if not request.htmx:
+            preferences = self.object.preferences
+            files_css = [
+                static("css/3rdparty/easymde-2.18.0.min.css"),
+                static("boards/css/board.css"),
+            ]
+            files_js = [
+                static("js/3rdparty/alpinejs-intersect-3.10.3.min.js"),
+                static("js/3rdparty/marked-4.1.1.min.js"),
+                static("js/3rdparty/purify-2.4.0.min.js"),
+                static("js/3rdparty/easymde-2.18.0.min.js"),
+                static("boards/js/3rdparty/robust-websocket.js"),
+                static("boards/js/board.js"),
+            ]
+            files_fonts = []
+            domain_preconnect = []
+
+            if preferences.enable_latex:
+                files_js += [
+                    static("boards/js/components/board_mathjax.js"),
+                    "https://polyfill.io/v3/polyfill.min.js?features=es6",
+                ]
+                files_fonts += [
+                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff",
+                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff",  # noqa: E501
+                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff",  # noqa: E501
+                ]
+                domain_preconnect += ["https://cdn.jsdelivr.net"]
+
+            if preferences.enable_identicons:
+                files_js += [
+                    static("js/3rdparty/jdenticon-3.2.0.min.js"),
+                ]
+
+            response = generate_link_header(response, files_css, files_js, files_fonts, domain_preconnect)
+
+        return response
 
 
 @method_decorator(cache_control(public=True), name="dispatch")

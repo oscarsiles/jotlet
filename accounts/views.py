@@ -7,10 +7,13 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
+from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
+
+from jotlet.utils import generate_link_header
 
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm
 
@@ -95,6 +98,19 @@ class JotletProfileView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context["is_email_verified"] = has_verified_email(self.request.user, email=None)
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        files_css = [static("css/3rdparty/tagify-4.16.4.min.css")]
+        files_js = [
+            static("js/3rdparty/tagify-4.16.4.min.js"),
+            static("js/3rdparty/tagify-4.16.4.polyfills.min.js"),
+            static("boards/js/index.js"),
+            static("accounts/js/profile.js"),
+        ]
+
+        response = generate_link_header(response, files_css, files_js)
+        return response
 
 
 class JotletProfileEditView(LoginRequiredMixin, generic.UpdateView):
