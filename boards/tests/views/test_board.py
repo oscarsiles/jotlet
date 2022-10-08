@@ -120,6 +120,15 @@ class BoardViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name[0], "boards/board_index.html")
 
+    def test_topic_ordering(self):
+        topic1 = TopicFactory(board=self.board)
+        topic2 = TopicFactory(board=self.board)
+        topic3 = TopicFactory(board=self.board)
+
+        response = self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context["topics"]), [topic1, topic2, topic3])
+
 
 class BoardPreferencesViewTest(TestCase):
     @classmethod
