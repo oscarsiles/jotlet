@@ -51,7 +51,6 @@ class BoardViewTest(TestCase):
         self.board.preferences.enable_identicons = False
         self.board.preferences.save()
         response = self.client.get(url)
-        response = self.client.get(url)
         link_header = response.get("Link")
         self.assertIn(f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script", link_header)
         self.assertNotIn("js/3rdparty/jdenticon-3.2.0.min.js", link_header)
