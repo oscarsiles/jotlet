@@ -20,10 +20,10 @@ class JotletLinkHeaderMixin(generic.View):
                 static("js/3rdparty/bootstrap-5.2.2.bundle.min.js"),
                 static("js/3rdparty/htmx-1.8.0.min.js"),
                 static("js/base.js"),
-                static("js/3rdparty/alpinejs-collapse-3.10.3.min.js"),
-                static("js/3rdparty/alpinejs-mask-3.10.3.min.js"),
-                static("js/3rdparty/alpinejs-morph-3.10.3.min.js"),
-                static("js/3rdparty/alpinejs-3.10.3.min.js"),
+                static("js/3rdparty/alpinejs-collapse-3.10.4.min.js"),
+                static("js/3rdparty/alpinejs-mask-3.10.4.min.js"),
+                static("js/3rdparty/alpinejs-morph-3.10.4.min.js"),
+                static("js/3rdparty/alpinejs-3.10.4.min.js"),
             ]
             response = generate_link_header(response, files_css, files_scripts, files_fonts)
         return response

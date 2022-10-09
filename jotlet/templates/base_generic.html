@@ -46,10 +46,10 @@
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
-        <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/alpinejs-mask-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/alpinejs-morph-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-        <script defer src="{% static 'js/3rdparty/alpinejs-3.10.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-collapse-3.10.4.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-mask-3.10.4.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-morph-3.10.4.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+        <script defer src="{% static 'js/3rdparty/alpinejs-3.10.4.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
           x-data="{ smallWindow: false }"

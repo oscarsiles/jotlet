@@ -21,8 +21,8 @@ class JotletLinkHeaderMixinTest(TestCase):
         self.assertIn(f"<{static('js/3rdparty/htmx-1.8.0.min.js')}>; rel=preload; as=script", link_header)
         self.assertIn(f"<{static('js/base.js')}>; rel=preload; as=script", link_header)
         self.assertIn(
-            f"<{static('js/3rdparty/alpinejs-collapse-3.10.3.min.js')}>; rel=preload; as=script", link_header
+            f"<{static('js/3rdparty/alpinejs-collapse-3.10.4.min.js')}>; rel=preload; as=script", link_header
         )
-        self.assertIn(f"<{static('js/3rdparty/alpinejs-mask-3.10.3.min.js')}>; rel=preload; as=script", link_header)
-        self.assertIn(f"<{static('js/3rdparty/alpinejs-morph-3.10.3.min.js')}>; rel=preload; as=script", link_header)
-        self.assertIn(f"<{static('js/3rdparty/alpinejs-3.10.3.min.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('js/3rdparty/alpinejs-mask-3.10.4.min.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('js/3rdparty/alpinejs-morph-3.10.4.min.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('js/3rdparty/alpinejs-3.10.4.min.js')}>; rel=preload; as=script", link_header)
