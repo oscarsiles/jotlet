@@ -1,5 +1,29 @@
+{% load cache board_extras %}
+{% settings_value "FEEDBACK_EMAIL" as feedback_email %}
+{% settings_value "VERSION" as version %}
+{% cache 86400 footer_cache feedback_email version %}
 <div class="page-footer container-fluid d-flex flex-shrink-1 justify-content-start px-0 bg-light bg-opacity-10">
-    <div class="d-flex px-3 py-1">
-        <span class="text-secondary"><small><a class="text-reset" href="https://github.com/oscarsiles/jotlet">Jotlet</a> © 2022 Oscar Siles Brügge. <a class="text-reset" href="{% url 'privacy-policy' %}">Privacy</a> and <a class="text-reset" href="{% url 'terms-of-use' %}">terms</a>.</small></span>
+    <div class="d-flex flex-fill px-3 py-1">
+        <div class="text-secondary flex-fill">
+            <small>
+                <div class="d-sm-flex justify-content-between">
+                    <div>
+                        <a class="text-reset" href="https://github.com/oscarsiles/jotlet">Jotlet</a> © 2022 Oscar Siles Brügge.
+                        <a class="text-reset" href="{% url 'privacy-policy' %}">Privacy</a> and
+                        <a class="text-reset" href="{% url 'terms-of-use' %}">terms</a>.
+                    </div>
+                    {% if feedback_email %}
+                        <div>
+                            <i class="bi bi-envelope"></i>
+                            <a class="text-reset"
+                               href="mailto:{{ feedback_email }}?subject=Jotlet%20Feedback%20(v{{ version }})"
+                               target="_blank"
+                               rel="noopener noreferrer">Leave feedback</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </small>
+        </div>
     </div>
 </div>
+{% endcache %}
