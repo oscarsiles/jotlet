@@ -361,10 +361,6 @@ else:
             "LOCATION": "default",
             "KEY_PREFIX": "jotlet",
         },
-        "locmem": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "locmem",
-        },
     }
 
 CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
