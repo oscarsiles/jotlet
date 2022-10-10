@@ -359,7 +359,7 @@ else:
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "default",
-            "KEY_PREFIX": "jotlet",
+            "KEY_PREFIX": "jotlet_test",
         },
     }
 
@@ -469,7 +469,7 @@ EMAIL_USE_SSL = env("EMAIL_USE_SSL", default=False)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
-FEEDBACK_EMAIL = env("FEEDBACK_EMAIL", default=None)
+FEEDBACK_EMAIL = None if TESTING else env("FEEDBACK_EMAIL", default=None)
 
 ANYMAIL = {
     "MAILGUN_API_KEY": env("MAILGUN_API_KEY", default=""),
