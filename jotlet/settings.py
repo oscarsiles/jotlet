@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import mimetypes
 import os
+import subprocess
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -35,6 +36,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
+VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
 
 TESTING = (sys.argv[1:2] == ["test"]) or ("pytest" in sys.modules)
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
@@ -42,8 +44,6 @@ DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
 
 if not DEBUG and SENTRY_ENABLED:
-    import subprocess
-
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -65,7 +65,7 @@ if not DEBUG and SENTRY_ENABLED:
         # environment variable, or infer a git commit
         # SHA as release, however you may want to set
         # something more human-readable.
-        release=subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip(),
+        release=VERSION,
         environment=env("SENTRY_ENVIRONMENT", default="production"),
     )
 
