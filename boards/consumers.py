@@ -1,5 +1,6 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.core.cache import cache
+from websockets.legacy.protocol import ConnectionClosedError, ConnectionClosedOK
 
 
 class BoardConsumer(AsyncJsonWebsocketConsumer):
@@ -49,31 +50,61 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
             )
 
     async def session_connected(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def session_disconnected(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def topic_created(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def topic_updated(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def topic_deleted(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def post_created(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def post_updated(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def post_deleted(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def reaction_updated(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
 
     async def board_preferences_changed(self, event):
-        await self.send_json(event)
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
