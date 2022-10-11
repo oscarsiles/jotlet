@@ -3,8 +3,7 @@ ARG USERNAME=jotlet
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    REDIS_HOST="redis"
+    PYTHONUNBUFFERED=1
 RUN mkdir /app
 WORKDIR /app
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
