@@ -316,7 +316,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 REDIS_URL = env("REDIS_URL", default=None)
 REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
 if not REDIS_UNIX_SOCKET:
-    REDIS_HOST = env("REDIS_HOST", default=("redis"))
+    REDIS_HOST = env("REDIS_HOST", default="localhost")
     REDIS_PORT = env("REDIS_PORT", default=6379)
     REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
