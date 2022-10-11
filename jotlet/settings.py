@@ -338,7 +338,7 @@ if not TESTING:
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [(REDIS_HOST, REDIS_PORT) if not REDIS_UNIX_SOCKET else REDIS_URL],
+                "hosts": [REDIS_URL if REDIS_UNIX_SOCKET else (REDIS_HOST, REDIS_PORT)],
                 "prefix": "jotlet",
                 "capacity": 500,
             },
