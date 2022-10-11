@@ -237,7 +237,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AXES_ENABLED = not TESTING
-AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.cache.AxesCacheHandler")
+AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
 AXES_USERNAME_FORM_FIELD = "login"
 AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
 AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
