@@ -11,7 +11,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     gcc \
     libwebp-dev
 RUN python -m pip install --upgrade pip \
-    && pip install "poetry==1.2.1"
+    && pip install "poetry==1.2.2"
 COPY poetry.lock pyproject.toml /app/
 RUN poetry config virtualenvs.create false \
     && poetry install --without dev,test --no-interaction --no-ansi
