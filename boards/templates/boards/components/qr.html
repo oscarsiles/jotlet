@@ -1,7 +1,7 @@
-{% load cache qr_code board_extras %}
-{% cache 86400 qr slug %}
+{% load board_extras cacheops qr_code %}
+{% cached_as board None "board_qr" board.pk %}
 <div class="flex-column justify-content-center">
-    {% get_split_string slug as split_slug %}
+    {% get_split_string board.slug as split_slug %}
     <div class="d-flex justify-content-center">
         <img src="{% qr_url_from_text url size=8 image_format="png" error_correction="H" border=3 %}"
              alt="QR Code"
@@ -21,4 +21,4 @@
             data-bs-dismiss="modal">Close</button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">QR Code</h5>
-{% endcache %}
+{% endcached_as %}

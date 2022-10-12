@@ -194,14 +194,15 @@ class ImageSelectView(LoginRequiredMixin, generic.TemplateView):
 
 class QrView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/components/qr.html"
+    board = None
 
     def test_func(self):
-        board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
-        return get_is_moderator(self.request.user, board)
+        self.board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
+        return get_is_moderator(self.request.user, self.board)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["slug"] = self.kwargs["slug"]
+        context["board"] = self.board
         context["url"] = self.request.build_absolute_uri(
             reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
         )

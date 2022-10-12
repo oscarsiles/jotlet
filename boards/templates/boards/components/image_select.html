@@ -1,11 +1,11 @@
-{% load board_extras cache sorl_thumbnail static %}
-{% cache 86400 image-select type %}
+{% load board_extras cacheops sorl_thumbnail static %}
+{% cached_as images None "image_select" type %}
 {% settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select"
      x-data>
     {% for image in images %}
-        {% cache 86400 image-select-image image.pk res_list %}
+        {% cached_as image None "image_select_image" image.pk res_list %}
         <div class="col-sm">
             <div class="card">
                 <div class="card-img-top">
@@ -34,7 +34,7 @@
                         <div class="card-footer">{{ image }}</div>
                     </div>
                 </div>
-            {% endcache %}
+            {% endcached_as %}
         {% endfor %}
     </div>
     <style nonce="{{ CSP_NONCE }}">
@@ -67,7 +67,7 @@
         {% endif %}
         Select
     </h5>
-{% endcache %}
+{% endcached_as %}
 <div id="modal-2-scripts" hidden hx-swap-oob="true">
     <script defer src="{% static 'boards/js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
 </div>

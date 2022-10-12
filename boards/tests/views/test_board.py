@@ -409,3 +409,4 @@ class QrViewTest(TestCase):
         self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
         response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
         self.assertEqual(response.status_code, 200)
+        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
