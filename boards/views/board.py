@@ -63,16 +63,11 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
             domain_preconnect = []
 
             if preferences.enable_latex:
-                files_js += [
-                    static("boards/js/components/board_mathjax.js"),
-                    "https://polyfill.io/v3/polyfill.min.js?features=es6",
+                files_js += [static("boards/js/components/board_mathjax.js")]
+                domain_preconnect += [
+                    "https://cdn.jsdelivr.net",
+                    "https://polyfill.io",
                 ]
-                files_fonts += [
-                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff",
-                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff",  # noqa: E501
-                    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff",  # noqa: E501
-                ]
-                domain_preconnect += ["https://cdn.jsdelivr.net"]
 
             if preferences.enable_identicons:
                 files_js += [
