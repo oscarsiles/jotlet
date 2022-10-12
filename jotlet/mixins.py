@@ -18,7 +18,7 @@ class JotletLinkHeaderMixin(generic.View):
             ]
             files_scripts = [
                 static("js/3rdparty/bootstrap-5.2.2.bundle.min.js"),
-                static("js/3rdparty/htmx-1.8.0.min.js"),
+                static("js/3rdparty/htmx-1.8.1.min.js"),
                 static("js/base.js"),
                 static("js/3rdparty/alpinejs-collapse-3.10.4.min.js"),
                 static("js/3rdparty/alpinejs-mask-3.10.4.min.js"),
