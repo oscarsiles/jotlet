@@ -1,5 +1,7 @@
 {% load crispy_forms_tags static %}
-<form id="post-form" hx-post="{{ request.build_absolute_uri }}">
+<form id="post-form"
+      hx-post="{{ request.build_absolute_uri }}"
+      @submit.prevent="$nextTick(() => { bootstrap.Modal.getInstance('#modal-1-div').hide() })">
     {% csrf_token %}
     <table>
         {% crispy form %}
@@ -11,11 +13,7 @@
             class="btn btn-default"
             data-bs-dismiss="modal"
             tabindex="-1">Close</button>
-    <button type="submit"
-            class="btn btn-success"
-            form="post-form"
-            data-bs-dismiss="modal"
-            tabindex="0">
+    <button type="submit" class="btn btn-success" form="post-form" tabindex="0">
         {% if form.instance.pk != None %}
             Save changes
         {% else %}

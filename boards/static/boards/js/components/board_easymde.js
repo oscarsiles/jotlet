@@ -19,9 +19,8 @@ var easyMDE = new EasyMDE({
   imageUploadEndpoint: allow_image_uploads
     ? `/boards/${board_slug}/image/post/upload/`
     : "",
-  inputStyle: "textarea",
   maxHeight: "100%",
-  nativeSpellChecker: false,
+  nativeSpellChecker: true,
   previewImagesInEditor: allow_image_uploads,
   renderingConfig: {
     sanitizerFunction: (renderedHTML) => {
