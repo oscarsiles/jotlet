@@ -43,7 +43,7 @@ DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
 
-if not DEBUG and SENTRY_ENABLED:
+if SENTRY_ENABLED and not DEBUG:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -188,7 +188,18 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "jotlet.asgi.application"
 
-if not TESTING:
+if TESTING:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "jotlet",
+            "USER": env("DB_USER", default="vscode"),
+            "PASSWORD": env("DB_PASSWORD", default="notsecure"),
+            "HOST": env("DB_HOST", default="postgres"),
+            "PORT": env("DB_PORT", default="5432"),
+        }
+    }
+else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -199,17 +210,7 @@ if not TESTING:
             "PORT": env("DB_PORT", default=""),
         }
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "jotlet",
-            "USER": os.environ.get("DB_USER", "vscode"),
-            "PASSWORD": os.environ.get("DB_PASSWORD", "notsecure"),
-            "HOST": os.environ.get("DB_HOST", "postgres"),
-            "PORT": os.environ.get("DB_PORT", "5432"),
-        }
-    }
+
 
 CONN_MAX_AGE = env("CONN_MAX_AGE", default=60)
 
@@ -320,7 +321,20 @@ if not REDIS_UNIX_SOCKET:
     REDIS_PORT = env("REDIS_PORT", default=6379)
     REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
-if not TESTING:
+if TESTING:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "default",
+            "KEY_PREFIX": "jotlet_test",
+        },
+    }
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
+else:
     CACHES = {
         "default": {
             "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
@@ -333,7 +347,6 @@ if not TESTING:
             },
         },
     }
-
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -342,20 +355,6 @@ if not TESTING:
                 "prefix": "jotlet",
                 "capacity": 500,
             },
-        },
-    }
-
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
-    }
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "default",
-            "KEY_PREFIX": "jotlet_test",
         },
     }
 
@@ -388,6 +387,7 @@ CACHEOPS = {
     "*.*": {"ops": ()},
 }
 CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
+
 if TESTING:
     CACHEOPS_REDIS = {
         "host": REDIS_HOST,
@@ -451,13 +451,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")
+
 if TESTING:
     HUEY_EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-elif env("DJANGO_Q_EMAIL_BACKEND", default=None) is not None:
-    # backwards compatibility with previous django-q settings
-    HUEY_EMAIL_BACKEND = env("DJANGO_Q_EMAIL_BACKEND")
 else:
     HUEY_EMAIL_BACKEND = env("HUEY_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env("EMAIL_PORT", default=25)
 EMAIL_USE_TLS = env("EMAIL_USE_TLS", default=False)
@@ -542,7 +541,8 @@ if HCAPTCHA_ENABLED and not TESTING:
     HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
 
 CF_TURNSTILE_VERIFY_URL = env(
-    "CF_TURNSTILE_VERIFY_URL", default="https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    "CF_TURNSTILE_VERIFY_URL",
+    default="https://challenges.cloudflare.com/turnstile/v0/siteverify",
 )
 if CF_TURNSTILE_ENABLED and not TESTING:
     CF_TURNSTILE_SITE_KEY = env("CF_TURNSTILE_SITE_KEY")
