@@ -1,5 +1,5 @@
 {% load board_extras cacheops sorl_thumbnail static %}
-{% cached_as images None "image_select" type %}
+{% cached_as images 604800 "image_select" type %}
 {% settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select"
