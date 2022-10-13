@@ -18,10 +18,10 @@ class JotletLinkHeaderMixinTest(TestCase):
             link_header,
         )
         self.assertIn(f"<{static('js/3rdparty/bootstrap-5.2.2.bundle.min.js')}>; rel=preload; as=script", link_header)
-        self.assertIn(f"<{static('js/3rdparty/htmx-1.8.1.min.js')}>; rel=preload; as=script", link_header)
+        self.assertIn(f"<{static('js/3rdparty/htmx-1.8.2.min.js')}>; rel=preload; as=script", link_header)
         self.assertIn(f"<{static('js/base.js')}>; rel=preload; as=script", link_header)
         self.assertIn(
-            f"<{static('js/3rdparty/htmx-alpine-morph-1.8.1.min.js')}>; rel=preload; as=script", link_header
+            f"<{static('js/3rdparty/htmx-alpine-morph-1.8.2.min.js')}>; rel=preload; as=script", link_header
         )
         self.assertIn(
             f"<{static('js/3rdparty/alpinejs-collapse-3.10.4.min.js')}>; rel=preload; as=script", link_header
