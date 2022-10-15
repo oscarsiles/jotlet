@@ -256,12 +256,10 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.ScryptPasswordHasher",
 ]
 
-
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = env("TIME_ZONE", default="Europe/London")
-USE_I18N = True
+USE_I18N = False
 USE_TZ = True
-
+LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
+TIME_ZONE = env("TIME_ZONE", default="UTC")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
