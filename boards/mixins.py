@@ -27,6 +27,8 @@ class BoardListLinkHeaderMixin(generic.View):
                     ]
 
                 response = generate_link_header(response, files_css, files_js)
+        except Exception as e:
+            raise e
         finally:
             return response
 
