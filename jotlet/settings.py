@@ -212,7 +212,7 @@ else:
     }
 
 
-CONN_MAX_AGE = env("CONN_MAX_AGE", default=None)
+CONN_MAX_AGE = env("CONN_MAX_AGE", default=None, cast=int)
 CONN_HEALTH_CHECKS = CONN_MAX_AGE is None or CONN_MAX_AGE > 0  # only check if we're using persistent connections
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
@@ -257,8 +257,9 @@ PASSWORD_HASHERS = [
 ]
 
 USE_I18N = False
-USE_TZ = True
 LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
+
+USE_TZ = True
 TIME_ZONE = env("TIME_ZONE", default="UTC")
 
 # Default primary key field type
