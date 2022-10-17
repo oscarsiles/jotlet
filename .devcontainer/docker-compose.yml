@@ -13,11 +13,11 @@ services:
     ports:
       - "6379:6379"
 
-  postgres:
-    image: postgres:14-alpine
+  postgres15:
+    image: postgres:15-alpine
     restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres15_data:/var/lib/postgresql/data
     environment:
       <<: *default-environment
     ports:
@@ -42,8 +42,8 @@ services:
       - 8000:8000
       - 8089:8089
     depends_on:
-      - postgres
+      - postgres15
       - redis
 
 volumes:
-  postgres_data:
+  postgres15_data:
