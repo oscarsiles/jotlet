@@ -1,8 +1,12 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.templatetags.static import static
 from django.test import TestCase, override_settings
+from django.test.client import RequestFactory
 from django.urls import reverse
+
+from accounts.views import JotletLoginView
+from boards.tests.utils import create_session
 
 from .factories import USER_TEST_PASSWORD, UserFactory
 
@@ -48,8 +52,11 @@ class JotletDeleteViewTest(TestCase):
         self.assertTrue(User.objects.filter(username=self.user3.username).exists())
 
 
-# TODO: add cf-turnstile tests
 class JotletLoginViewTest(TestCase):
+    @classmethod
+    def setUp(cls):
+        cls.factory = RequestFactory()
+
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
@@ -127,6 +134,52 @@ class JotletLoginViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.context_data["form"].errors)
+
+    @override_settings(
+        HCAPTCHA_ENABLED=False,
+        MESSAGE_STORAGE="django.contrib.messages.storage.cookie.CookieStorage",
+    )
+    def test_remember_me(self):
+        from django.contrib import messages
+
+        request = self.factory.post(
+            reverse("account_login"),
+            {
+                "login": self.user.username,
+                "password": USER_TEST_PASSWORD,
+                "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
+                "remember_me": True,
+            },
+        )
+        request.user = AnonymousUser()
+        request._messages = messages.storage.default_storage(request)
+        create_session(request)
+        response = JotletLoginView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(request.session.get_expire_at_browser_close())
+
+    @override_settings(
+        HCAPTCHA_ENABLED=False,
+        MESSAGE_STORAGE="django.contrib.messages.storage.cookie.CookieStorage",
+    )
+    def test_not_remember_me(self):
+        from django.contrib import messages
+
+        request = self.factory.post(
+            reverse("account_login"),
+            {
+                "login": self.user.username,
+                "password": USER_TEST_PASSWORD,
+                "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
+                "remember_me": False,
+            },
+        )
+        request.user = AnonymousUser()
+        request._messages = messages.storage.default_storage(request)
+        create_session(request)
+        response = JotletLoginView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(request.session.get_expire_at_browser_close())
 
 
 class JotletProfileViewTest(TestCase):
