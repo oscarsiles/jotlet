@@ -25,6 +25,9 @@ class CustomLoginForm(LoginForm):
         super().__init__(*args, **kwargs)
 
         self.fields["login"].label = "Username or e-mail"
+        self.fields["remember_me"] = forms.BooleanField(
+            required=False, label="Remember me"
+        )
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -32,6 +35,7 @@ class CustomLoginForm(LoginForm):
         self.helper.layout = Layout(
             FloatingField("login"),
             FloatingField("password"),
+            Field('remember_me'),
         )
 
     def clean(self):
