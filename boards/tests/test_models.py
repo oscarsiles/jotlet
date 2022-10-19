@@ -5,7 +5,6 @@ from datetime import timedelta
 
 import factory
 from django.conf import settings
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.template.defaultfilters import date
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
@@ -16,6 +15,7 @@ from PIL import Image as PILImage
 
 from accounts.tests.factories import UserFactory
 from boards.models import IMAGE_TYPE, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
+from boards.tests.utils import create_session
 
 from .factories import (
     BgImageFactory,
@@ -260,9 +260,7 @@ class PostModelTest(TestCase):
                 kwargs={"slug": self.post.topic.board.slug, "topic_pk": self.post.topic_id, "pk": self.post.pk},
             )
         )
-        session_middleware = SessionMiddleware(request)
-        session_middleware.process_request(request)
-        request.session.save()
+        create_session(request)
         request.user = self.user
 
         ReactionFactory(post=self.post, reaction_score=1, session_key=request.session.session_key, user=self.user)
