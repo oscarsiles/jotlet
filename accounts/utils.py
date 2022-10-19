@@ -14,7 +14,7 @@ def get_client_ip(request):
     return ip
 
 
-def cf_turnstile_verified(request):
+async def cf_turnstile_verified(request):
     if settings.CF_TURNSTILE_ENABLED:
         if request.method == "POST":
             if request.POST.get("cf-turnstile-response"):
@@ -26,7 +26,8 @@ def cf_turnstile_verified(request):
                     "response": cf_turnstile_response,
                     "remoteip": ip,
                 }
-                r = httpx.post(settings.CF_TURNSTILE_VERIFY_URL, data=data)
+                async with httpx.AsyncClient() as client:
+                    r = await client.post(settings.CF_TURNSTILE_VERIFY_URL, data=data)
                 result = r.json()
                 if result["success"]:
                     return True
@@ -40,7 +41,7 @@ def cf_turnstile_verified(request):
         return True
 
 
-def hcaptcha_verified(request):
+async def hcaptcha_verified(request):
     if settings.HCAPTCHA_ENABLED:
         if request.method == "POST":
             if request.POST.get("h-captcha-response"):
@@ -50,7 +51,8 @@ def hcaptcha_verified(request):
                     "secret": settings.HCAPTCHA_SECRET_KEY,
                     "response": h_captcha_response,
                 }
-                r = httpx.post(settings.HCAPTCHA_VERIFY_URL, data=data)
+                async with httpx.AsyncClient() as client:
+                    r = await client.post(settings.HCAPTCHA_VERIFY_URL, data=data)
                 result = r.json()
                 if result["success"]:
                     return True

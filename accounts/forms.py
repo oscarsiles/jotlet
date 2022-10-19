@@ -1,5 +1,6 @@
 from allauth.account.forms import LoginForm, SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from asgiref.sync import async_to_sync
 from crispy_bootstrap5.bootstrap5 import Field, FloatingField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
@@ -11,12 +12,12 @@ from accounts.utils import cf_turnstile_verified, hcaptcha_verified
 
 
 def verify_hcaptcha(request):
-    if not hcaptcha_verified(request):
+    if not async_to_sync(hcaptcha_verified)(request):
         raise forms.ValidationError("Captcha challenge failed. Please try again.")
 
 
 def verify_cf_turnstile(request):
-    if not cf_turnstile_verified(request):
+    if not async_to_sync(cf_turnstile_verified)(request):
         raise forms.ValidationError("Captcha challenge failed. Please try again.")
 
 
@@ -25,9 +26,7 @@ class CustomLoginForm(LoginForm):
         super().__init__(*args, **kwargs)
 
         self.fields["login"].label = "Username or e-mail"
-        self.fields["remember_me"] = forms.BooleanField(
-            required=False, label="Remember me"
-        )
+        self.fields["remember_me"] = forms.BooleanField(required=False, label="Remember me")
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -35,7 +34,7 @@ class CustomLoginForm(LoginForm):
         self.helper.layout = Layout(
             FloatingField("login"),
             FloatingField("password"),
-            Field('remember_me'),
+            Field("remember_me"),
         )
 
     def clean(self):
