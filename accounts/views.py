@@ -61,6 +61,10 @@ class JotletLoginView(LoginView):
 
     def form_valid(self, form):
         super().form_valid(form)
+        if not form.cleaned_data["remember_me"]:
+            self.request.session.set_expiry(0)
+            self.request.session.modified = True
+
         return HttpResponseClientRedirect(self.get_success_url())
 
 
