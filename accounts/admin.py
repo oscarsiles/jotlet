@@ -6,8 +6,6 @@ from jotlet.admin import DisableDeleteInlineFormSet
 
 from .models import UserProfile
 
-admin.site.unregister(get_user_model())
-
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -17,4 +15,12 @@ class UserProfileInline(admin.StackedInline):
 
 @admin.register(get_user_model())
 class CustomUserAdmin(UserAdmin):
+    fieldsets = UserAdmin.fieldsets + (
+        (
+            "Additional info",
+            {
+                "fields": ("optin_newsletter",),
+            },
+        ),
+    )
     inlines = [UserProfileInline]
