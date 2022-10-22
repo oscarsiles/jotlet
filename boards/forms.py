@@ -4,7 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Div, Layout, Submit
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
@@ -249,13 +249,15 @@ class BoardPreferencesForm(forms.ModelForm):
     def clean_moderators(self):
         moderators = self.cleaned_data["moderators"].split(",")
         value = []
-        for moderator in moderators:
-            if User.objects.filter(username=moderator).exists():
-                user = User.objects.get(username=moderator)
-                value.append(user)
+        if len(moderators) > 0:
+            user_model = get_user_model()
+            for moderator in moderators:
+                user = user_model.objects.filter(username=moderator).first()
+                if user is not None:
+                    value.append(user)
 
-        if value != self.initial_moderators and settings.CACHALOT_ENABLED:
-            invalidate(User)
+            if value != self.initial_moderators and settings.CACHALOT_ENABLED:
+                invalidate(user_model)
 
         return value
 

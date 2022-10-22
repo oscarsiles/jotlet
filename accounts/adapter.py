@@ -2,7 +2,7 @@ from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.utils import perform_login
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 class CustomAccountAdapter(DefaultAccountAdapter):
@@ -36,10 +36,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         if user.id:
             return
         try:
-            user = User.objects.get(email__iexact=user.email)
+            user = get_user_model().objects.get(email__iexact=user.email)
             sociallogin.state["process"] = "connect"
             perform_login(request, user, "none")
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             pass
 
     def populate_user(self, request, sociallogin, data):

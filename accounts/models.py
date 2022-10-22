@@ -1,7 +1,7 @@
 from functools import cached_property
 
 import auto_prefetch
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -9,7 +9,7 @@ from boards.models import Board
 
 
 class UserProfile(auto_prefetch.Model):
-    user = auto_prefetch.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = auto_prefetch.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")

@@ -6,7 +6,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 from accounts.utils import cf_turnstile_verified, hcaptcha_verified
 
@@ -53,7 +53,7 @@ class CustomLoginForm(LoginForm):
 
 class CustomProfileEditForm(forms.ModelForm):
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ("email", "first_name", "last_name")
 
     def __init__(self, *args, **kwargs):

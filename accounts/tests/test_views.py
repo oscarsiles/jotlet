@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
@@ -31,7 +32,7 @@ class JotletDeleteViewTest(TestCase):
         response = self.client.post(reverse("account_delete"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("boards:index"))
-        self.assertFalse(User.objects.filter(username=self.user.username).exists())
+        self.assertFalse(get_user_model().objects.filter(username=self.user.username).exists())
 
     def test_delete_staff(self):
         self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
@@ -40,7 +41,7 @@ class JotletDeleteViewTest(TestCase):
         response = self.client.post(reverse("account_delete"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("account_profile"))
-        self.assertTrue(User.objects.filter(username=self.user2.username).exists())
+        self.assertTrue(get_user_model().objects.filter(username=self.user2.username).exists())
 
     def test_delete_superuser(self):
         self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
@@ -49,7 +50,7 @@ class JotletDeleteViewTest(TestCase):
         response = self.client.post(reverse("account_delete"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("account_profile"))
-        self.assertTrue(User.objects.filter(username=self.user3.username).exists())
+        self.assertTrue(get_user_model().objects.filter(username=self.user3.username).exists())
 
 
 class JotletLoginViewTest(TestCase):

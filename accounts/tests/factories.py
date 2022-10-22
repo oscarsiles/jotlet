@@ -1,6 +1,6 @@
 import factory
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
 
 from accounts.models import UserProfile
 
@@ -9,7 +9,7 @@ USER_TEST_PASSWORD = "test_password"
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = User
+        model = settings.AUTH_USER_MODEL
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")

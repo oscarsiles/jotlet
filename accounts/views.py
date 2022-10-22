@@ -4,8 +4,8 @@ from allauth.socialaccount.views import SignupView as SocialSignupView
 from axes.decorators import axes_dispatch, axes_form_invalid
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.templatetags.static import static
 from django.urls import reverse_lazy
@@ -21,7 +21,7 @@ from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, Cus
 
 
 class JotletDeleteView(LoginRequiredMixin, generic.DeleteView):
-    model = User
+    model = get_user_model()
     success_url = reverse_lazy("boards:index")
     template_name = "accounts/user_delete.html"
 
@@ -115,7 +115,7 @@ class JotletProfileView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRe
 
 
 class JotletProfileEditView(LoginRequiredMixin, generic.UpdateView):
-    model = User
+    model = get_user_model()
     form_class = CustomProfileEditForm
     template_name = "accounts/components/forms/profile_edit.html"
 

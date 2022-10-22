@@ -4,7 +4,6 @@ from hashlib import blake2b
 import auto_prefetch
 from cacheops import cached_as
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.db import IntegrityError, models
 from django.db.models.functions import Upper
@@ -50,7 +49,9 @@ class Board(auto_prefetch.Model):
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, null=False, unique=True)  # used as salt for hashing
-    owner = auto_prefetch.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="boards")
+    owner = auto_prefetch.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="boards"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
@@ -164,7 +165,7 @@ class BoardPreferences(auto_prefetch.Model):
     require_post_approval = models.BooleanField(default=False)
     allow_guest_replies = models.BooleanField(default=False)
     allow_image_uploads = models.BooleanField(default=False)
-    moderators = models.ManyToManyField(User, blank=True, related_name="moderated_boards")
+    moderators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="moderated_boards")
     reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
     posting_allowed_from = models.DateTimeField(null=True, blank=True)
     posting_allowed_until = models.DateTimeField(null=True, blank=True)
@@ -242,7 +243,9 @@ class Post(auto_prefetch.Model, TreeNode):
     objects = TreeQuerySet.as_manager(with_tree_fields=True)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
-    user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="posts")
+    user = auto_prefetch.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="posts"
+    )
     session_key = models.CharField(max_length=40, null=True, blank=True)
     identity_hash = models.CharField(max_length=64, null=True, blank=True)
     approved = models.BooleanField(default=True)
@@ -374,7 +377,9 @@ class Post(auto_prefetch.Model, TreeNode):
 
 class Reaction(auto_prefetch.Model):
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
-    user = auto_prefetch.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions")
+    user = auto_prefetch.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions"
+    )
     session_key = models.CharField(max_length=40, null=False, blank=False)
     type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
     reaction_score = models.IntegerField(default=1)

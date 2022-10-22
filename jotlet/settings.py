@@ -238,6 +238,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+AUTH_USER_MODEL = "auth.User"
+
 AXES_ENABLED = not TESTING
 AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
 AXES_USERNAME_FORM_FIELD = "login"
