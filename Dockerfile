@@ -7,9 +7,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN mkdir /app
 WORKDIR /app
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
-    libpq-dev \
     gcc \
-    libwebp-dev
+    libpq-dev \
+    libwebp-dev \
+    python3-dev
 RUN python -m pip install --upgrade pip \
     && pip install "poetry==1.2.2"
 COPY poetry.lock pyproject.toml /app/
