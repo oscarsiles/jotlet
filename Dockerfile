@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.11-slim-bullseye
 ARG USERNAME=jotlet
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
