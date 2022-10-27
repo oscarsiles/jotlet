@@ -7,6 +7,7 @@ from jotlet.utils import generate_link_header
 class BoardListLinkHeaderMixin(generic.View):
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
+        original_response = response
         try:
             if not request.htmx:
                 board_list_type = response.context_data.get("board_list_type", "")
@@ -27,10 +28,10 @@ class BoardListLinkHeaderMixin(generic.View):
                     ]
 
                 response = generate_link_header(response, files_css, files_js)
-        except Exception as e:
-            raise e
-        finally:
-            return response
+        except Exception:
+            response = original_response
+
+        return response
 
 
 class PaginatedFilterViewsMixin(generic.View):
