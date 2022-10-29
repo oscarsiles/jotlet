@@ -8,8 +8,9 @@ class BoardListLinkHeaderMixin(generic.View):
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
         original_response = response
-        try:
-            if not request.htmx:
+
+        if not request.htmx:
+            try:
                 board_list_type = response.context_data.get("board_list_type", "")
                 files_css = []
                 files_js = [
@@ -28,8 +29,8 @@ class BoardListLinkHeaderMixin(generic.View):
                     ]
 
                 response = generate_link_header(response, files_css, files_js)
-        except Exception:
-            response = original_response
+            except Exception:
+                response = original_response
 
         return response
 
