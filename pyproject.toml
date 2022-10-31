@@ -56,7 +56,7 @@ django-tree-queries = "^0.11.0"
 gunicorn = "^20.1.0"
 httpx = "^0.23.0"
 huey = "^2.4.4"
-Pillow = "^9.2.0"
+Pillow = "^9.3.0"
 psycopg2 = "^2.9.5"
 python = "^3.8"
 redis = { extras = ["hiredis"], version = "^4.3.4" }
