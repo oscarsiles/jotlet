@@ -18,6 +18,8 @@ from sorl.thumbnail import get_thumbnail
 from tree_queries.models import TreeNode
 from tree_queries.query import TreeQuerySet
 
+from jotlet.models import InvalidatingAutoPrefetchModel
+
 from .tasks import create_thumbnails, post_image_cleanup
 from .utils import get_image_upload_path, get_random_string, process_image
 
@@ -44,7 +46,7 @@ IMAGE_TYPE = (
 )
 
 
-class Board(auto_prefetch.Model):
+class Board(InvalidatingAutoPrefetchModel):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100)
@@ -146,7 +148,7 @@ class Board(auto_prefetch.Model):
         return is_allowed
 
 
-class BoardPreferences(auto_prefetch.Model):
+class BoardPreferences(InvalidatingAutoPrefetchModel):
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     history = HistoricalRecords(cascade_delete_history=True)
     type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
@@ -194,7 +196,7 @@ class BoardPreferences(auto_prefetch.Model):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
 
-class Topic(auto_prefetch.Model):
+class Topic(InvalidatingAutoPrefetchModel):
     subject = models.TextField(max_length=400)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -239,7 +241,7 @@ class Topic(auto_prefetch.Model):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(auto_prefetch.Model, TreeNode):
+class Post(InvalidatingAutoPrefetchModel, TreeNode):
     objects = TreeQuerySet.as_manager(with_tree_fields=True)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
@@ -375,7 +377,7 @@ class Post(auto_prefetch.Model, TreeNode):
         return reverse("boards:board", kwargs={"slug": self.topic.board.slug})
 
 
-class Reaction(auto_prefetch.Model):
+class Reaction(InvalidatingAutoPrefetchModel):
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
     user = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions"
@@ -396,7 +398,7 @@ class Reaction(auto_prefetch.Model):
         ]
 
 
-class Image(auto_prefetch.Model):
+class Image(InvalidatingAutoPrefetchModel):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50)
     attribution = models.CharField(max_length=100, null=True, blank=True)

@@ -11,7 +11,7 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from boards.forms import BoardPreferencesForm
 from boards.models import Board, BoardPreferences, Image
 from boards.utils import get_is_moderator
-from jotlet.mixins import JotletLinkHeaderMixin
+from jotlet.mixins.headers import JotletLinkHeaderMixin
 from jotlet.utils import generate_link_header
 
 

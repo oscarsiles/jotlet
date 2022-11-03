@@ -35,6 +35,7 @@ class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
 
+    user = None
     topic = factory.SubFactory(TopicFactory)
     content = factory.Sequence(lambda n: f"Test Post {n}")
 

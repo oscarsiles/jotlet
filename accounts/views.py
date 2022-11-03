@@ -14,7 +14,7 @@ from django.views import generic
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
 from boards.mixins import BoardListLinkHeaderMixin
-from jotlet.mixins import JotletLinkHeaderMixin
+from jotlet.mixins.headers import JotletLinkHeaderMixin
 from jotlet.utils import generate_link_header
 
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm

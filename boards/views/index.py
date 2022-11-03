@@ -8,7 +8,7 @@ from boards.filters import BoardFilter
 from boards.forms import SearchBoardsForm
 from boards.mixins import BoardListLinkHeaderMixin, PaginatedFilterViewsMixin
 from boards.models import Board
-from jotlet.mixins import JotletLinkHeaderMixin
+from jotlet.mixins.headers import JotletLinkHeaderMixin
 
 
 class IndexView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, generic.FormView):

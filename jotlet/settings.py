@@ -38,7 +38,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
 
-TESTING = (sys.argv[1:2] == ["test"]) or ("pytest" in sys.modules)
+TESTING = "pytest" in sys.modules
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
@@ -233,10 +233,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+if not TESTING:
+    AUTHENTICATION_BACKENDS = ["axes.backends.AxesBackend"] + AUTHENTICATION_BACKENDS
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -294,7 +295,12 @@ if USE_S3:
     DEFAULT_FILE_STORAGE = "jotlet.storage_backends.PublicMediaStorage"
 else:
     MEDIA_URL = "media/"
-    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    if TESTING:
+        import tempfile
+
+        MEDIA_ROOT = tempfile.mkdtemp()
+    else:
+        MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=3840)
 MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=2160)

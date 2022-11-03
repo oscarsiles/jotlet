@@ -1,177 +1,129 @@
 import shutil
-import tempfile
 
+import pytest
 from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.templatetags.static import static
-from django.test import TestCase, override_settings
-from django.test.client import RequestFactory
 from django.urls import reverse
+from pytest_django.asserts import assertFormError
 
-from accounts.tests.factories import USER_TEST_PASSWORD, UserFactory
 from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image
 from boards.routing import websocket_urlpatterns
-from boards.tests.factories import BoardFactory, ImageFactory, PostFactory, ReactionFactory, TopicFactory
-from boards.tests.utils import create_htmx_session
 from boards.views.board import BoardView
+from jotlet.tests.utils import create_htmx_session
 
-MEDIA_ROOT = tempfile.mkdtemp()
 
+class TestBoardView:
+    def test_anonymous_permissions(self, client, board):
+        response = client.get(reverse("boards:board", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
 
-class BoardViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.board = BoardFactory(owner=cls.user, slug="000001")
+    def test_board_not_exist(self, client, board):
+        board.slug = "000001"
+        board.save()
+        response = client.get(reverse("boards:board", kwargs={"slug": "000000"}))
+        assert response.status_code == 404
 
-    def setUp(self):
-        super().setUp()
-        self.factory = RequestFactory()
-
-    def test_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_board_not_exist(self):
-        response = self.client.get(reverse("boards:board", kwargs={"slug": "000000"}))
-        self.assertEqual(response.status_code, 404)
-
-    def test_link_headers(self):
-        url = reverse("boards:board", kwargs={"slug": self.board.slug})
-        response = self.client.get(url)
+    def test_link_headers(self, client, board):
+        url = reverse("boards:board", kwargs={"slug": board.slug})
+        response = client.get(url)
         link_header = response.get("Link")
-        self.assertIsNotNone(link_header)
-        self.assertIn(f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style", link_header)
-        self.assertIn(f"<{static('css/3rdparty/easymde-2.18.0.min.css')}>; rel=preload; as=style", link_header)
+        assert link_header is not None
+        assert f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/3rdparty/easymde-2.18.0.min.css')}>; rel=preload; as=style" in link_header
 
-        self.assertIn(f"<{static('js/3rdparty/jdenticon-3.2.0.min.js')}>; rel=preload; as=script", link_header)
-        self.assertNotIn("boards/js/components/board_mathjax.js", link_header)
-        self.board.preferences.enable_latex = True
-        self.board.preferences.enable_identicons = False
-        self.board.preferences.save()
-        response = self.client.get(url)
+        assert f"<{static('js/3rdparty/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
+        assert "boards/js/components/board_mathjax.js" not in link_header
+        board.preferences.enable_latex = True
+        board.preferences.enable_identicons = False
+        board.preferences.save()
+        response = client.get(url)
         link_header = response.get("Link")
-        self.assertIn(f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script", link_header)
-        self.assertNotIn("js/3rdparty/jdenticon-3.2.0.min.js", link_header)
+        assert f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script" in link_header
+        assert "js/3rdparty/jdenticon-3.2.0.min.js" not in link_header
 
-    def test_htmx_requests(self):
-        kwargs = {"slug": self.board.slug}
+    @pytest.mark.parametrize(
+        "current_url,response_template",
+        [
+            ("", "boards/board_index.html"),  # request with no current_url
+            (reverse("boards:index"), "boards/board_index.html"),  # request from index
+            (reverse("boards:index-all"), "boards/board_index.html"),  # request from index-all
+            (
+                reverse("boards:board", kwargs={"slug": "00000001"}),
+                "boards/components/board.html",
+            ),  # request from board URL
+            (
+                reverse("boards:board", kwargs={"slug": "00000000"}),
+                "boards/board_index.html",
+            ),  # request from another board
+        ],
+    )
+    def test_htmx_requests(self, rf, board, user, current_url, response_template):
+        board.slug = "00000001"
+        board.save()
+        kwargs = {"slug": board.slug}
 
-        # request with no current_url
-        request = self.factory.get(reverse("boards:board", kwargs=kwargs), HTTP_HX_REQUEST="true")
-        request.user = self.user
-        create_htmx_session(request)
-
-        response = BoardView.as_view()(request, **kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], "boards/board_index.html")
-
-        # request from index
-        request = self.factory.get(
+        request = rf.get(
             reverse("boards:board", kwargs=kwargs),
             HTTP_HX_REQUEST="true",
-            HTTP_HX_CURRENT_URL=reverse("boards:index"),
+            HTTP_HX_CURRENT_URL=current_url,
         )
-        request.user = self.user
+        request.user = user
         create_htmx_session(request)
 
         response = BoardView.as_view()(request, **kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], "boards/board_index.html")
+        assert response.status_code == 200
+        assert response.template_name[0] == response_template
 
-        # request from index-all
-        request = self.factory.get(
-            reverse("boards:board", kwargs=kwargs),
-            HTTP_HX_REQUEST="true",
-            HTTP_HX_CURRENT_URL=reverse("boards:index-all"),
-        )
-        request.user = self.user
-        create_htmx_session(request)
+    def test_topic_ordering(self, client, board, topic_factory):
+        topic1 = topic_factory(board=board)
+        topic2 = topic_factory(board=board)
+        topic3 = topic_factory(board=board)
 
-        response = BoardView.as_view()(request, **kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], "boards/board_index.html")
-
-        # request from board URL
-        request = self.factory.get(
-            reverse("boards:board", kwargs=kwargs),
-            HTTP_HX_REQUEST="true",
-            HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs=kwargs),
-        )
-        request.user = self.user
-        create_htmx_session(request)
-
-        response = BoardView.as_view()(request, **kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], "boards/components/board.html")
-
-        # request from another board URL
-        request = self.factory.get(
-            reverse("boards:board", kwargs=kwargs),
-            HTTP_HX_REQUEST="true",
-            HTTP_HX_CURRENT_URL=reverse("boards:board", kwargs={"slug": "000000"}),
-        )
-        request.user = self.user
-        create_htmx_session(request)
-
-        response = BoardView.as_view()(request, **kwargs)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], "boards/board_index.html")
-
-    def test_topic_ordering(self):
-        topic1 = TopicFactory(board=self.board)
-        topic2 = TopicFactory(board=self.board)
-        topic3 = TopicFactory(board=self.board)
-
-        response = self.client.get(reverse("boards:board", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(list(response.context["topics"]), [topic1, topic2, topic3])
+        response = client.get(reverse("boards:board", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        assert list(response.context["topics"]) == [topic1, topic2, topic3]
 
 
-class BoardPreferencesViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.user2 = UserFactory()
-        cls.board = BoardFactory(owner=cls.user)
-        cls.board_preferences_changed_url = reverse("boards:board-preferences", kwargs={"slug": cls.board.slug})
+class TestBoardPreferencesView:
+    def test_board_preferences_anonymous_permissions(self, client, board):
+        response = client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
+        assert response.url == f"/accounts/login/?next=/boards/{board.slug}/preferences/"
 
-    def test_board_preferences_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{self.board.slug}/preferences/")
+    def test_board_references_other_user_permissions(self, client, board, user2):
+        client.force_login(user2)
+        response = client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        assert response.status_code == 403
 
-    def test_board_references_other_user_permissions(self):
-        self.client.login(username=self.user2, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 403)
+    def test_board_preferences_owner_permissions(self, client, board, user):
+        client.force_login(user)
+        response = client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
 
-    def test_board_preferences_owner_permissions(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
+    def test_board_preferences_nonexistent_preferences(self, client, board, user):
+        client.force_login(user)
+        preferences_pk = board.preferences.pk
+        board.preferences.delete()
+        pytest.raises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, pk=preferences_pk)
+        response = client.get(reverse("boards:board-preferences", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        preferences = BoardPreferences.objects.get(board=board)
+        assert preferences.board == board
 
-    def test_board_preferences_nonexistent_preferences(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        preferences_pk = self.board.preferences.pk
-        self.board.preferences.delete()
-        self.assertRaises(BoardPreferences.DoesNotExist, BoardPreferences.objects.get, pk=preferences_pk)
-        response = self.client.get(reverse("boards:board-preferences", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        preferences = BoardPreferences.objects.get(board=self.board)
-        self.assertEqual(preferences.board, self.board)
-
-    async def test_preferences_changed_websocket_message(self):
+    @pytest.mark.asyncio
+    @pytest.mark.django_db(transaction=True)
+    async def test_preferences_changed_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
-        communicator = WebsocketCommunicator(application, f"/ws/boards/{self.board.slug}/")
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, _ = await communicator.connect()
-        self.assertTrue(connected, "Could not connect")
-        await sync_to_async(self.client.login)(username=self.user.username, password=USER_TEST_PASSWORD)
+        assert connected
+        await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
-        self.assertIn("session_connected", message)
-        response = await sync_to_async(self.client.post)(
-            self.board_preferences_changed_url,
+        assert "session_connected" in message
+        response = await sync_to_async(client.post)(
+            reverse("boards:board-preferences", kwargs={"slug": board.slug}),
             data={
                 "type": "d",
                 "background_type": "c",
@@ -185,228 +137,217 @@ class BoardPreferencesViewTest(TestCase):
             },
         )
         message = await communicator.receive_from()
-        self.assertIn("board_preferences_changed", message)
-        self.assertEqual(response.status_code, 204)
+        assert "board_preferences_changed" in message
+        assert response.status_code == 204
 
 
-class CreateBoardViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
+class TestCreateBoardView:
+    def test_anonymous_permissions(self, client):
+        response = client.get(reverse("boards:board-create"))
+        assert response.status_code == 302
 
-    def test_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board-create"))
-        self.assertEqual(response.status_code, 302)
+    def test_user_permissions(self, client, user):
+        client.force_login(user)
+        response = client.get(reverse("boards:board-create"))
+        assert str(response.context["user"]) == user.username
+        assert response.status_code == 200
 
-    def test_user_permissions(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-create"))
-        self.assertEqual(str(response.context["user"]), self.user.username)
-        self.assertEqual(response.status_code, 200)
-
-    def test_board_create_success(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse("boards:board-create"), {"title": "Test Board", "description": "Test Board Description"}
+    def test_board_create_success(self, client, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-create"),
+            {
+                "title": "Test Board",
+                "description": "Test Board Description",
+            },
         )
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         board = Board.objects.get(title="Test Board")
-        self.assertEqual(board.description, "Test Board Description")
+        assert board.description == "Test Board Description"
 
-    def test_board_create_blank(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(reverse("boards:board-create"), {"title": "", "description": ""})
-        self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context["form"], "title", "This field is required.")
-        self.assertFormError(response.context["form"], "description", "This field is required.")
-
-    def test_board_create_invalid(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(reverse("boards:board-create"), {"title": "x" * 51, "description": "x" * 101})
-        self.assertEqual(response.status_code, 200)
-        self.assertFormError(
-            response.context["form"], "title", "Ensure this value has at most 50 characters (it has 51)."
+    def test_board_create_blank(self, client, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-create"),
+            {
+                "title": "",
+                "description": "",
+            },
         )
-        self.assertFormError(
+        assert response.status_code == 200
+        assertFormError(response.context["form"], "title", "This field is required.")
+        assertFormError(response.context["form"], "description", "This field is required.")
+
+    def test_board_create_invalid(self, client, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-create"),
+            {
+                "title": "x" * 51,
+                "description": "x" * 101,
+            },
+        )
+        assert response.status_code == 200
+        assertFormError(response.context["form"], "title", "Ensure this value has at most 50 characters (it has 51).")
+        assertFormError(
             response.context["form"], "description", "Ensure this value has at most 100 characters (it has 101)."
         )
 
 
-class UpdateBoardViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.user2 = UserFactory()
-        cls.board = BoardFactory(owner=cls.user)
+class TestUpdateBoardView:
+    def test_anonymous_permissions(self, client, board):
+        response = client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
 
-    def test_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
+    def test_other_user_permissions(self, client, user2, board):
+        client.force_login(user2)
+        response = client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        assert response.status_code == 403
 
-    def test_other_user_permissions(self):
-        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 403)
+    def test_owner_permissions(self, client, board, user):
+        client.force_login(user)
+        response = client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
 
-    def test_owner_permissions(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
+    def test_staff_permissions(self, client, board, user_staff):
+        client.force_login(user_staff)
+        response = client.get(reverse("boards:board-update", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
 
-    def test_staff_permissions(self):
-        staff_user = UserFactory(is_staff=True)
-        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-update", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_board_update_success(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
+    def test_board_update_success(self, client, board, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-update", kwargs={"slug": board.slug}),
             {"title": "Test Board NEW", "description": "Test Board Description NEW"},
         )
-        self.assertEqual(response.status_code, 200)
-        self.board = Board.objects.get(pk=self.board.pk)
-        self.assertEqual(self.board.title, "Test Board NEW")
-        self.assertEqual(self.board.description, "Test Board Description NEW")
+        assert response.status_code == 200
+        board.refresh_from_db()
+        assert board.title == "Test Board NEW"
+        assert board.description == "Test Board Description NEW"
 
-    def test_board_update_blank(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
+    def test_board_update_blank(self, client, board, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-update", kwargs={"slug": board.slug}),
             {"title": "", "description": ""},
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertFormError(response.context["form"], "title", "This field is required.")
-        self.assertFormError(response.context["form"], "description", "This field is required.")
+        assert response.status_code == 200
+        assertFormError(response.context["form"], "title", "This field is required.")
+        assertFormError(response.context["form"], "description", "This field is required.")
 
-    def test_board_update_invalid(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.post(
-            reverse("boards:board-update", kwargs={"slug": self.board.slug}),
+    def test_board_update_invalid(self, client, board, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-update", kwargs={"slug": board.slug}),
             {"title": "x" * 51, "description": "x" * 101},
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertFormError(
+        assert response.status_code == 200
+        assertFormError(
             response.context["form"],
             "title",
             "Ensure this value has at most 50 characters (it has 51).",
         )
-        self.assertFormError(
+        assertFormError(
             response.context["form"],
             "description",
             "Ensure this value has at most 100 characters (it has 101).",
         )
 
 
-class DeleteBoardViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.user2 = UserFactory()
-        cls.board = BoardFactory(owner=cls.user)
+class TestDeleteBoardView:
+    def test_anonymous_permissions(self, client, board):
+        response = client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
 
-    def test_anonymous_permissions(self):
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
+    def test_other_user_permissions(self, client, board, user2):
+        client.force_login(user2)
+        response = client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 403
 
-    def test_other_user_permissions(self):
-        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 403)
+    def test_owner_permissions(self, client, board, user):
+        client.force_login(user)
+        response = client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        response = client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
+        assert len(Board.objects.all()) == 0
 
-    def test_owner_permissions(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(Board.objects.all()), 0)
+    def test_staff_permissions(self, client, board, user_staff):
+        client.force_login(user_staff)
+        response = client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        response = client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
+        assert len(Board.objects.all()) == 0
 
-    def test_staff_permissions(self):
-        staff_user = UserFactory(is_staff=True)
-        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(Board.objects.all()), 0)
-
-    def test_delete_board_with_reactions(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        topic = TopicFactory(board=self.board)
-        post = PostFactory(topic=topic)
-        ReactionFactory(post=post)
-        response = self.client.get(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse("boards:board-delete", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(Board.objects.all()), 0)
+    def test_delete_board_with_reactions(self, client, board, user, topic_factory, post_factory, reaction_factory):
+        client.force_login(user)
+        topic = topic_factory(board=board)
+        post = post_factory(topic=topic)
+        reaction_factory(post=post)
+        response = client.get(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        response = client.post(reverse("boards:board-delete", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
+        assert len(Board.objects.all()) == 0
 
 
-@override_settings(MEDIA_ROOT=MEDIA_ROOT)
-class ImageSelectViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.board = BoardFactory()
-        for type, text in IMAGE_TYPE:
-            ImageFactory.create_batch(5, board=cls.board if type == "p" else None, type=type)
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
-        super().tearDownClass()
-
-    def test_image_select_anonymous(self):
+class TestImageSelectView:
+    @pytest.fixture(autouse=True)
+    def setup_method_fixture(self, board, image_factory):
         for type, _ in IMAGE_TYPE:
-            response = self.client.get(reverse("boards:image-select", kwargs={"type": type}))
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, f"/accounts/login/?next=/boards/image_select/{type}/")
+            image_factory.create_batch(5, board=board if type == "p" else None, type=type)
 
-    def test_image_select_logged_in(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        for type, _ in IMAGE_TYPE:
-            response = self.client.get(reverse("boards:image-select", kwargs={"type": type}))
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context["images"].count(), Image.objects.filter(type=type).count())
-
-
-class QrViewTest(TestCase):
     @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-        cls.user2 = UserFactory()
-        cls.user3 = UserFactory()
-        cls.board = BoardFactory(owner=cls.user)
-        cls.board.preferences.moderators.add(cls.user3)
-        cls.board.preferences.save()
+    def teardown_class(cls):
+        from django.conf import settings
 
-    def test_qr_anonymous(self):
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, f"/accounts/login/?next=/boards/{self.board.slug}/qr/")
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    def test_qr_other_user(self):
-        self.client.login(username=self.user2.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 403)
+    def test_image_select_anonymous(self, client):
+        for type, _ in IMAGE_TYPE:
+            response = client.get(reverse("boards:image-select", kwargs={"type": type}))
+            assert response.status_code == 302
+            assert response.url == f"/accounts/login/?next=/boards/image_select/{type}/"
 
-    def test_qr_board_moderator(self):
-        self.client.login(username=self.user3.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
+    def test_image_select_logged_in(self, client, user):
+        client.force_login(user)
+        for type, _ in IMAGE_TYPE:
+            response = client.get(reverse("boards:image-select", kwargs={"type": type}))
+            assert response.status_code == 200
+            assert response.context["images"].count() == Image.objects.filter(type=type).count()
 
-    def test_qr_owner(self):
-        self.client.login(username=self.user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
 
-    def test_qr_staff(self):
-        staff_user = UserFactory(is_staff=True)
-        self.client.login(username=staff_user.username, password=USER_TEST_PASSWORD)
-        response = self.client.get(reverse("boards:board-qr", kwargs={"slug": self.board.slug}))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("/qr_code/images/serve-qr-code-image/", response.content.decode("utf-8"))
+class TestQrView:
+    @pytest.fixture(autouse=True)
+    def setup_method_fixture(self, board, user3):
+        board.preferences.moderators.add(user3)
+        board.preferences.save()
+
+    def test_qr_anonymous(self, client, board):
+        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        assert response.status_code == 302
+        assert response.url == f"/accounts/login/?next=/boards/{board.slug}/qr/"
+
+    def test_qr_other_user(self, client, board, user2):
+        client.force_login(user2)
+        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        assert response.status_code == 403
+
+    def test_qr_board_moderator(self, client, board, user3):
+        client.force_login(user3)
+        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")
+
+    def test_qr_owner(self, client, board, user):
+        client.force_login(user)
+        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")
+
+    def test_qr_staff(self, client, board, user_staff):
+        client.force_login(user_staff)
+        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
+        assert response.status_code == 200
+        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")

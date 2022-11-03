@@ -1,19 +1,17 @@
 from http import HTTPStatus
 
-from django.test import TestCase
 
-
-class TestRobots(TestCase):
+class TestRobots:
     # from Adam Johnson's blog
-    def test_get(self):
-        response = self.client.get("/robots.txt")
+    def test_get(self, client):
+        response = client.get("/robots.txt")
 
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(response["content-type"], "text/plain")
+        assert response.status_code == HTTPStatus.OK
+        assert response["content-type"] == "text/plain"
         lines = response.content.decode().splitlines()
-        self.assertEqual(lines[0], "User-Agent: *")
+        assert lines[0] == "User-Agent: *"
 
-    def test_post_disallowed(self):
-        response = self.client.post("/robots.txt")
+    def test_post_disallowed(self, client):
+        response = client.post("/robots.txt")
 
-        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+        assert HTTPStatus.METHOD_NOT_ALLOWED == response.status_code

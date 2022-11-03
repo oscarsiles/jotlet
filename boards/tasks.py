@@ -22,17 +22,19 @@ def delete_thumbnails(file):
 @db_task()
 @lock_task("post_image_cleanup-lock")
 def post_image_cleanup(post, imgs=None):
+    matched = 0
+    deleted = 0
     if imgs is None:
         raise ValueError("Post images must be provided")
     for img in imgs:
         if img.image.url in post.content and not img.post == post:
             img.post = post
             img.save()
-            return "matched"
+            matched += 1
         elif img.image.url not in post.content and img.post == post:
             img.delete()
-            return "deleted"
-    return "no match"
+            deleted += 1
+    return f"{matched} matched, {deleted} deleted"
 
 
 @db_periodic_task(crontab(minute="30"))
