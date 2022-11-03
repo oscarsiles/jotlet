@@ -203,6 +203,7 @@ class TestPostCreateView:
         post = await sync_to_async(Post.objects.get)(content="Test Post")
         assert post is not None
         message = await communicator.receive_from()
+        await communicator.disconnect()
         assert "post_created" in message
         assert f'"topic_pk": {topic.pk}' in message
 
@@ -268,6 +269,7 @@ class TestPostUpdateView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.post_updated_url, data={"content": "Test Post NEW"})
         message = await communicator.receive_from()
+        await communicator.disconnect()
         assert "post_updated" in message
         assert f'"post_pk": {post.pk}' in message
 
@@ -324,6 +326,7 @@ class TestPostDeleteView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.post_deleted_url)
         message = await communicator.receive_from()
+        await communicator.disconnect()
         assert "post_deleted" in message
         assert f'"post_pk": {post.pk}' in message
 
@@ -388,6 +391,7 @@ class TestDeletePostsView:
         for _ in range(10):
             message = await communicator.receive_from()
             assert "post_deleted" in message
+        await communicator.disconnect()
 
 
 class TestPostFetchView:
@@ -605,6 +609,7 @@ class TestPostToggleApprovalView:
         assert f'"post_pk": {post.pk}' in message
         await sync_to_async(client.post)(self.post_approval_url)
         message = await communicator.receive_from()
+        await communicator.disconnect()
         assert "post_updated" in message
         assert f'"post_pk": {post.pk}' in message
 

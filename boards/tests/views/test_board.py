@@ -137,6 +137,7 @@ class TestBoardPreferencesView:
             },
         )
         message = await communicator.receive_from()
+        await communicator.disconnect()
         assert "board_preferences_changed" in message
         assert response.status_code == 204
 
