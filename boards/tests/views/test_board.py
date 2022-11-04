@@ -172,7 +172,7 @@ class TestCreateBoardView:
             reverse("boards:board-create"),
             {
                 "title": "",
-                "description": "",
+                "description": "Test Board Description",
             },
         )
         assert response.status_code == 200
@@ -190,6 +190,7 @@ class TestCreateBoardView:
         assert response.status_code == 200
         board = Board.objects.get(title="Test Board")
         assert board.title == "Test Board"
+        assert board.description == ""
 
     def test_board_create_invalid(self, client, user):
         client.force_login(user)
