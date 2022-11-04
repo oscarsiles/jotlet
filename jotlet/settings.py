@@ -299,11 +299,12 @@ else:
         import tempfile
 
         MEDIA_ROOT = tempfile.mkdtemp()
+        WHITENOISE_AUTOREFRESH = True
     else:
         MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=3840)
-MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=2160)
+MAX_IMAGE_WIDTH = 500 if TESTING else env("MAX_IMAGE_WIDTH", default=3840)
+MAX_IMAGE_HEIGHT = 500 if TESTING else env("MAX_IMAGE_HEIGHT", default=2160)
 SMALL_THUMBNAIL_WIDTH = env("SMALL_THUMBNAIL_WIDTH", default=300)
 SMALL_THUMBNAIL_HEIGHT = env("SMALL_THUMBNAIL_HEIGHT", default=200)
 MAX_POST_IMAGE_FILE_SIZE = env("MAX_IMAGE_FILE_SIZE", default=1024 * 1024 * 2)

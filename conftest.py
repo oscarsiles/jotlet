@@ -30,13 +30,6 @@ def event_loop(request):
     loop.close()
 
 
-@pytest.fixture(autouse=True)
-def override_test_settings(settings):
-    settings.MAX_IMAGE_HEIGHT = 500
-    settings.MAX_IMAGE_WIDTH = 500
-    settings.WHITENOISE_AUTOREFRESH = True  # fixes whitenoise error
-
-
 # Other Fixtures
 @pytest.fixture
 def blank_response():
