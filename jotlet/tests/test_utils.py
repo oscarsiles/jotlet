@@ -1,6 +1,12 @@
+import pytest
 from django.http import HttpResponse
 
 from jotlet.utils import generate_link_header
+
+
+@pytest.fixture
+def blank_response():
+    return HttpResponse("")
 
 
 class TestGetLinkHeader:

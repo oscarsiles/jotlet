@@ -1,7 +1,6 @@
 import asyncio
 
 import pytest
-from django.http import HttpResponse
 from pytest_factoryboy import register
 
 from accounts.tests.factories import UserFactory
@@ -31,9 +30,6 @@ def event_loop(request):
 
 
 # Other Fixtures
-@pytest.fixture
-def blank_response():
-    return HttpResponse("")
 
 
 # Factoryboy Fixtures
