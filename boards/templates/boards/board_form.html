@@ -4,10 +4,7 @@
 </form>
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-    <button type="submit"
-            class="btn btn-success"
-            form="board-form"
-            data-bs-dismiss="modal">
+    <button type="submit" class="btn btn-success" form="board-form">
         {% if form.instance.pk != None %}
             Save changes
         {% else %}
