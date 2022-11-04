@@ -7,14 +7,14 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from boards.models import Board
-from jotlet.models import InvalidatingAutoPrefetchModel
+from jotlet.mixins.refresh_from_db_invalidates_cached_properties import InvalidateCachedPropertiesMixin
 
 
 class User(AbstractUser):
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
 
 
-class UserProfile(InvalidatingAutoPrefetchModel):
+class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     user = auto_prefetch.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

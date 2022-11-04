@@ -8,7 +8,7 @@ from django.views import generic
 from django.views.decorators.cache import cache_control
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh, trigger_client_event
 
-from boards.forms import BoardPreferencesForm
+from boards.forms import BoardCreateForm, BoardPreferencesForm
 from boards.models import Board, BoardPreferences, Image
 from boards.utils import get_is_moderator
 from jotlet.mixins.headers import JotletLinkHeaderMixin
@@ -122,9 +122,9 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
 class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Board
-    fields = ["title", "description"]
     template_name = "boards/board_form.html"
     permission_required = "boards.add_board"
+    form_class = BoardCreateForm
 
     def test_func(self):
         return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff
@@ -140,8 +140,8 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Board
     board = None
-    fields = ["title", "description"]
     template_name = "boards/board_form.html"
+    form_class = BoardCreateForm
 
     def test_func(self):
         board = self.get_object()

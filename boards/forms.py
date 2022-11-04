@@ -1,4 +1,5 @@
 from cachalot.api import invalidate
+from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.bootstrap import Field, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Div, Layout, Submit
@@ -24,6 +25,21 @@ def validate_board_exists(board_slug):
 def validate_percentage(percentage):
     if percentage < 0.0 or percentage > 1.0:
         raise forms.ValidationError("Value needs to be between 0.0 and 1.0.")
+
+
+class BoardCreateForm(forms.ModelForm):
+    class Meta:
+        model = Board
+        fields = ["title", "description"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            FloatingField("title", placeholder="Title", autofocus=True),
+            FloatingField("description", placeholder="Description"),
+        )
 
 
 class BoardFilterForm(forms.Form):

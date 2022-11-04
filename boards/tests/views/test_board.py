@@ -166,7 +166,7 @@ class TestCreateBoardView:
         board = Board.objects.get(title="Test Board")
         assert board.description == "Test Board Description"
 
-    def test_board_create_blank(self, client, user):
+    def test_board_create_blank_title(self, client, user):
         client.force_login(user)
         response = client.post(
             reverse("boards:board-create"),
@@ -177,7 +177,19 @@ class TestCreateBoardView:
         )
         assert response.status_code == 200
         assertFormError(response.context["form"], "title", "This field is required.")
-        assertFormError(response.context["form"], "description", "This field is required.")
+
+    def test_board_create_blank_description(self, client, user):
+        client.force_login(user)
+        response = client.post(
+            reverse("boards:board-create"),
+            {
+                "title": "Test Board",
+                "description": "",
+            },
+        )
+        assert response.status_code == 200
+        board = Board.objects.get(title="Test Board")
+        assert board.title == "Test Board"
 
     def test_board_create_invalid(self, client, user):
         client.force_login(user)
@@ -219,7 +231,10 @@ class TestUpdateBoardView:
         client.force_login(user)
         response = client.post(
             reverse("boards:board-update", kwargs={"slug": board.slug}),
-            {"title": "Test Board NEW", "description": "Test Board Description NEW"},
+            {
+                "title": "Test Board NEW",
+                "description": "Test Board Description NEW",
+            },
         )
         assert response.status_code == 200
         board.refresh_from_db()
@@ -230,11 +245,13 @@ class TestUpdateBoardView:
         client.force_login(user)
         response = client.post(
             reverse("boards:board-update", kwargs={"slug": board.slug}),
-            {"title": "", "description": ""},
+            {
+                "title": "",
+                "description": "",
+            },
         )
         assert response.status_code == 200
         assertFormError(response.context["form"], "title", "This field is required.")
-        assertFormError(response.context["form"], "description", "This field is required.")
 
     def test_board_update_invalid(self, client, board, user):
         client.force_login(user)
