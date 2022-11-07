@@ -24,6 +24,8 @@ from django.views.generic.base import TemplateView
 
 from . import views
 
+handler500 = "jotlet.views.handler500"
+
 urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("admin/", admin.site.urls),
