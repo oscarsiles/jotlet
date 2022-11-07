@@ -17,9 +17,9 @@ class TestJotletLinkHeaderMixin:
             in link_header
         )
         assert f"<{static('js/3rdparty/bootstrap-5.2.2.bundle.min.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/3rdparty/htmx-1.8.2.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/3rdparty/htmx-1.8.4.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/base.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/3rdparty/htmx-alpine-morph-1.8.2.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/3rdparty/htmx-alpine-morph-1.8.4.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/3rdparty/alpinejs-collapse-3.10.4.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/3rdparty/alpinejs-mask-3.10.4.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/3rdparty/alpinejs-morph-3.10.4.min.js')}>; rel=preload; as=script" in link_header
