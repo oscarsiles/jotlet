@@ -277,13 +277,15 @@ class BoardPreferencesForm(forms.ModelForm):
 
         return value
 
-    def clean_require_post_approval(self):
-        value = self.cleaned_data["require_post_approval"]
-        if "require_post_approval" in self.changed_data and not value:
+    def save(self):
+        preferences = super().save()
+
+        # approve all posts if post approval is disabled
+        if "require_post_approval" in self.changed_data and not self.cleaned_data["require_post_approval"]:
             posts = Post.objects.filter(topic__board=self.initial_board)
             posts.invalidated_update(approved=True)
 
-        return value
+        return preferences
 
 
 class SearchBoardsForm(forms.Form):
