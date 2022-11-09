@@ -88,10 +88,9 @@ class TestSearchBoardsForm:
         assert not form.is_valid()
         assert form.errors["board_slug"] == ["ID should be 6 or 8 lowercase letters and/or digits."]
 
-    def test_search_boards_form_not_exist(self):
-        form_data = {
-            "board_slug": "000000ab",
-        }
+    def test_search_boards_form_not_exist(self, board):
+        test_slug = "123456ab" if board.slug != "123456ab" else "123456cd"
+        form_data = {"board_slug": test_slug}
         form = SearchBoardsForm(data=form_data)
         assert not form.is_valid()
         assert form.errors["board_slug"] == ["Board does not exist."]

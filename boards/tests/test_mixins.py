@@ -1,8 +1,6 @@
 from django.templatetags.static import static
 from django.urls import reverse
 
-from accounts.tests.factories import USER_TEST_PASSWORD
-
 
 class TestBoardListLinkHeaderMixin:
     def test_dispatch_anonymous(self, client):

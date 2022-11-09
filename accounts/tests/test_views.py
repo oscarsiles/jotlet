@@ -13,7 +13,7 @@ from .factories import USER_TEST_PASSWORD
 HCAPTCHA_TEST_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001"
 
 
-class TestJotletDeleteView:
+class TestJotletAccountDeleteView:
     def test_delete_anonymous(self, client):
         response = client.get(reverse("account_delete"))
         assert response.status_code == 302

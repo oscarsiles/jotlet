@@ -5,40 +5,27 @@ import factory
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from PIL import Image as PILImage
+from PIL import ImageFile
 
-from accounts.tests.factories import UserFactory
 from boards.models import IMAGE_TYPE
-from boards.utils import get_image_upload_path, get_is_moderator, get_random_string
+from boards.utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
 
-from .factories import BoardFactory, ImageFactory
 from .test_models import IMAGE_FORMATS
 
 
 class TestUtils:
-    def test_get_is_moderator(self):
-        normal_user = UserFactory()
-        owner_user = UserFactory()
-        mod_user = UserFactory()
-        perms_user = UserFactory()
-        perms_user.user_permissions.add(
+    def test_get_is_moderator(self, board, user, user2, user3, user_staff):
+        user3.user_permissions.add(
             Permission.objects.get(content_type__app_label="boards", codename="can_approve_posts")
         )
-        staff_user = UserFactory(is_staff=True)
 
-        board = BoardFactory(owner=owner_user)
-        assert not get_is_moderator(normal_user, board)
-        assert not get_is_moderator(mod_user, board)
-        assert get_is_moderator(perms_user, board)
-        assert get_is_moderator(owner_user, board)
-        assert get_is_moderator(staff_user, board)
+        assert not get_is_moderator(user2, board)  # not a moderator
+        assert get_is_moderator(user, board)  # owner
+        assert get_is_moderator(user3, board)  # has permission
+        assert get_is_moderator(user_staff, board)  # staff
 
-        board_mod = BoardFactory(owner=owner_user)
-        board_mod.preferences.moderators.add(mod_user)
-        assert not get_is_moderator(normal_user, board_mod)
-        assert get_is_moderator(mod_user, board_mod)
-        assert get_is_moderator(perms_user, board_mod)
-        assert get_is_moderator(owner_user, board_mod)
-        assert get_is_moderator(staff_user, board_mod)
+        board.preferences.moderators.add(user2)
+        assert get_is_moderator(user2, board)
 
     def test_get_random_string(self):
         for i in range(20):  # arbitrary range
@@ -52,11 +39,10 @@ class TestImageUtils:
     def teardown_class(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    def test_get_image_upload_path(self):
-        board = BoardFactory()
+    def test_get_image_upload_path(self, board, image_factory):
         for format in IMAGE_FORMATS:
             for type, _ in IMAGE_TYPE:
-                img = ImageFactory(
+                img = image_factory(
                     board=board if type == "p" else None,
                     type=type,
                     image__format=format,
@@ -78,11 +64,7 @@ class TestImageUtils:
                     get_image_upload_path(img, img.image.name)
                 )
 
-    def test_process_image(self):
-        from PIL import ImageFile
-
-        from boards.utils import process_image
-
+    def test_process_image(self, image_factory):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
 
         resolutions = [
@@ -93,7 +75,7 @@ class TestImageUtils:
         for height, width in resolutions:
             for format in IMAGE_FORMATS:
                 for type, _ in IMAGE_TYPE:
-                    img = ImageFactory(
+                    img = image_factory(
                         image=factory.django.ImageField(
                             board=None,
                             filename=f"{height}x{width}.{format}",
