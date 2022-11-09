@@ -112,6 +112,10 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     get_post_count.short_description = "Post Count"
 
     @cached_property
+    def get_unapproved_post_count(self):
+        return self.get_posts.filter(approved=False).count()
+
+    @cached_property
     def get_last_post_date(self):
         if self.get_post_count > 0:
             return date(self.get_posts.first().created_at, "d/m/Y")
@@ -228,6 +232,10 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         return _get_post_count()
 
     get_post_count.short_description = "Post Count"
+
+    @cached_property
+    def get_unapproved_post_count(self):
+        return self.get_posts.filter(approved=False).count()
 
     @cached_property
     def get_last_post_date(self):

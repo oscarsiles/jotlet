@@ -42,6 +42,19 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item"
+                                   role="button"
+                                   id="topic-{{ topic.pk }}-approve-url"
+                                   hx-get="{% url 'boards:topic-posts-approve' board.slug topic.pk %}"
+                                   hx-target="#modal-1-body-div"
+                                   hx-swap="innerHTML"
+                                   x-show="postCount > 0"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#modal-1-div">
+                                    <i class="bi bi-file-earmark-check pe-2"></i>Approve Topic Posts
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item dropdown-item-del-bg"
                                    role="button"
                                    id="topic-{{ topic.pk }}-delete-url"
@@ -51,7 +64,7 @@
                                    x-show="postCount > 0"
                                    data-bs-toggle="modal"
                                    data-bs-target="#modal-1-div">
-                                    <i class="bi bi-envelope-slash pe-2"></i>Delete Topic Posts
+                                    <i class="bi bi-file-earmark-x pe-2"></i>Delete Topic Posts
                                 </a>
                             </li>
                             <li>

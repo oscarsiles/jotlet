@@ -515,6 +515,7 @@ CSP_DEFAULT_SRC = ["'none'"]
 CSP_SCRIPT_SRC = [
     "'self'",
     "polyfill.io",
+    "cdn.jsdelivr.net",
     "'unsafe-eval'",
 ] + env.list("CSP_SCRIPT_SRC", default=[])
 CSP_STYLE_SRC = [

@@ -61,6 +61,18 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
         except (ConnectionClosedError, ConnectionClosedOK):
             pass
 
+    async def board_preferences_changed(self, event):
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
+
+    async def board_updated(self, event):
+        try:
+            await self.send_json(event)
+        except (ConnectionClosedError, ConnectionClosedOK):
+            pass
+
     async def topic_created(self, event):
         try:
             await self.send_json(event)
@@ -98,12 +110,6 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
             pass
 
     async def reaction_updated(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
-
-    async def board_preferences_changed(self, event):
         try:
             await self.send_json(event)
         except (ConnectionClosedError, ConnectionClosedOK):

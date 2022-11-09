@@ -331,38 +331,112 @@ class TestPostDeleteView:
         assert f'"post_pk": {post.pk}' in message
 
 
+#  TODO: test post approvals by topic/board
+class TestApprovePostsView:
+    @pytest.fixture(autouse=True)
+    def setup_method_fixture(self, board, topic, topic_factory, post_factory):
+        board.preferences.require_post_approval = True
+        board.preferences.save()
+        self.topic_posts_approve_url = reverse(
+            "boards:topic-posts-approve", kwargs={"slug": board.slug, "topic_pk": topic.pk}
+        )
+        self.board_posts_approve_url = reverse("boards:board-posts-approve", kwargs={"slug": board.slug})
+        topic2 = topic_factory(board=board)
+        post_factory.create_batch(10, topic=topic, approved=False)
+        post_factory.create_batch(10, topic=topic2, approved=False)
+
+    @pytest.mark.parametrize(
+        "test_user,expected_response",
+        [
+            (None, 302),
+            (pytest.lazy_fixture("user2"), 403),
+            (pytest.lazy_fixture("user"), 200),
+            (pytest.lazy_fixture("user_staff"), 200),
+        ],
+    )
+    def test_approve_permissions(self, client, test_user, expected_response):
+        if test_user:
+            client.force_login(test_user)
+        response = client.get(self.topic_posts_approve_url)
+        assert response.status_code == expected_response
+        response = client.get(self.board_posts_approve_url)
+        assert response.status_code == expected_response
+
+    def test_topic_posts_approve(self, client, board, topic, user):
+        client.force_login(user)
+        assert Post.objects.filter(topic__board=board, approved=False).count() == 20
+        response = client.post(self.topic_posts_approve_url)
+        assert response.status_code == 204
+        assert Post.objects.filter(topic=topic, approved=True).count() == 10
+        assert Post.objects.filter(topic__board=board, approved=False).count() == 10
+
+    def test_board_posts_approve(self, client, board, user):
+        client.force_login(user)
+        assert Post.objects.filter(topic__board=board, approved=False).count() == 20
+        response = client.post(self.board_posts_approve_url)
+        assert response.status_code == 204
+        assert Post.objects.filter(topic__board=board, approved=True).count() == 20
+
+    @pytest.mark.asyncio
+    @pytest.mark.django_db(transaction=True)
+    async def test_topic_posts_approved_websocket_message(self, client, board, user):
+        application = URLRouter(websocket_urlpatterns)
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        assert connected, "Could not connect"
+        await sync_to_async(client.force_login)(user)
+        message = await communicator.receive_from()
+        assert "session_connected" in message
+        await sync_to_async(client.post)(self.topic_posts_approve_url)
+        message = await communicator.receive_from()
+        assert "topic_updated" in message
+        await communicator.disconnect()
+
+    @pytest.mark.asyncio
+    @pytest.mark.django_db(transaction=True)
+    async def test_board_posts_approved_websocket_message(self, client, board, user):
+        application = URLRouter(websocket_urlpatterns)
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        assert connected, "Could not connect"
+        await sync_to_async(client.force_login)(user)
+        message = await communicator.receive_from()
+        assert "session_connected" in message
+        await sync_to_async(client.post)(self.board_posts_approve_url)
+        message = await communicator.receive_from()
+        assert "board_updated" in message
+        await communicator.disconnect()
+
+
 class TestDeletePostsView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, user, user2, topic_factory, post_factory):
+    def setup_method_fixture(self, board, topic, topic_factory, post_factory):
         self.topic_posts_delete_url = reverse(
             "boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.pk}
         )
         self.board_posts_delete_url = reverse("boards:board-posts-delete", kwargs={"slug": board.slug})
         topic2 = topic_factory(board=board)
-        post_factory.create_batch(10, topic=topic, user=user)
-        post_factory.create_batch(10, topic=topic2, user=user2)
+        post_factory.create_batch(10, topic=topic)
+        post_factory.create_batch(10, topic=topic2)
 
-    def test_anonymous_permissions(self, client):
+    @pytest.mark.parametrize(
+        "test_user,expected_response",
+        [
+            (None, 302),
+            (pytest.lazy_fixture("user2"), 403),
+            (pytest.lazy_fixture("user"), 200),
+            (pytest.lazy_fixture("user_staff"), 200),
+        ],
+    )
+    def test_delete_permissions(self, client, test_user, expected_response):
+        if test_user:
+            client.force_login(test_user)
         response = client.get(self.topic_posts_delete_url)
-        assert response.status_code == 302
+        assert response.status_code == expected_response
         response = client.get(self.board_posts_delete_url)
-        assert response.status_code == 302
+        assert response.status_code == expected_response
 
-    def test_other_user_permissions(self, client, user2):
-        client.force_login(user2)
-        response = client.get(self.topic_posts_delete_url)
-        assert response.status_code == 403
-        response = client.get(self.board_posts_delete_url)
-        assert response.status_code == 403
-
-    def test_owner_permissions(self, client, user):
-        client.force_login(user)
-        response = client.get(self.topic_posts_delete_url)
-        assert response.status_code == 200
-        response = client.get(self.board_posts_delete_url)
-        assert response.status_code == 200
-
-    def test_topic_posts_delete(self, client, board, user, topic):
+    def test_topic_posts_delete(self, client, board, topic, user):
         client.force_login(user)
         assert Post.objects.filter(topic__board=board).count() == 20
         response = client.post(self.topic_posts_delete_url)
@@ -389,6 +463,22 @@ class TestDeletePostsView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.topic_posts_delete_url)
         for _ in range(10):
+            message = await communicator.receive_from()
+            assert "post_deleted" in message
+        await communicator.disconnect()
+
+    @pytest.mark.asyncio
+    @pytest.mark.django_db(transaction=True)
+    async def test_board_posts_deleted_websocket_message(self, client, board, user):
+        application = URLRouter(websocket_urlpatterns)
+        communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        connected, _ = await communicator.connect()
+        assert connected, "Could not connect"
+        await sync_to_async(client.force_login)(user)
+        message = await communicator.receive_from()
+        assert "session_connected" in message
+        await sync_to_async(client.post)(self.board_posts_delete_url)
+        for _ in range(20):
             message = await communicator.receive_from()
             assert "post_deleted" in message
         await communicator.disconnect()

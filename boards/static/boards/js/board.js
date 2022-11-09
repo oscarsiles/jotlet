@@ -47,6 +47,9 @@ function connectWebsocket() {
           break;
         }
       case "board_preferences_changed":
+      case "board_updated":
+        htmx.trigger(htmx.find(boardDiv), "boardUpdated");
+        break;
       case "topic_created":
         htmx.trigger(htmx.find(boardDiv), "topicCreated");
         break;

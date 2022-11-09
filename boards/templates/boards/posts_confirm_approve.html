@@ -1,0 +1,33 @@
+{% if topic %}
+    <p>
+        Are you sure you want to approve <strong>{{ topic.get_unapproved_post_count }}</strong> post{{ topic.get_unapproved_post_count|pluralize }} from the following topic?
+        <h5>{{ topic }}</h5>
+    </p>
+{% elif board %}
+    <p>
+        Are you sure you want to approve <strong>{{ board.get_unapproved_post_count }}</strong> post{{ board.get_unapproved_post_count|pluralize }} from the following board?
+        <h5>{{ board }}</h5>
+        <h6>{{ board.description }}</h6>
+    </p>
+{% endif %}
+<form hx-post="{{ request.build_absolute_uri }}"
+      hx-swap="none"
+      id="posts-approve-form">
+    {% csrf_token %}
+</form>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+    <button type="submit"
+            class="btn btn-success"
+            form="posts-approve-form"
+            data-bs-dismiss="modal">Approve All</button>
+</div>
+<h5 id="modal-1-title-div" hx-swap-oob="true">
+    Approve
+    {% if topic %}
+        Topic
+    {% elif board %}
+        Board
+    {% endif %}
+    Posts
+</h5>

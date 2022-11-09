@@ -9,7 +9,7 @@ from django.views import generic
 from django_htmx.http import trigger_client_event
 
 from boards.models import Board, Post, PostImage, Topic
-from boards.utils import get_is_moderator
+from boards.utils import channel_group_send, get_is_moderator
 
 
 def get_post_form(form):
@@ -158,6 +158,62 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("boards:board", kwargs={"slug": self.kwargs["slug"]})
+
+
+class ApprovePostsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
+    template_name = "boards/posts_confirm_approve.html"
+    board = None
+
+    def test_func(self):
+        board = Board.objects.get(slug=self.kwargs["slug"])
+        return self.request.user == board.owner or self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if "topic_pk" in self.kwargs:
+            context["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        else:
+            context["board"] = Board.objects.get(slug=self.kwargs["slug"])
+        return context
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs["slug"]
+        if "topic_pk" in self.kwargs:
+            Post.objects.filter(topic__pk=self.kwargs["topic_pk"]).invalidated_update(approved=True)
+            message = "All posts in topic approved"
+            event = "topicUpdated"
+            channel_group_send(
+                f"board-{slug}",
+                {
+                    "type": "topic_updated",
+                    "topic_pk": self.kwargs["topic_pk"],
+                },
+            )
+        else:
+            Post.objects.filter(topic__board__slug=slug).invalidated_update(approved=True)
+            message = "All posts in board approved"
+            event = "boardUpdated"
+            channel_group_send(
+                f"board-{slug}",
+                {
+                    "type": "board_updated",
+                },
+            )
+
+        response = HttpResponse(status=204)
+
+        return trigger_client_event(
+            trigger_client_event(
+                response,
+                "showMessage",
+                {
+                    "message": message,
+                    "color": "success",
+                },
+            ),
+            event,
+            None,
+        )
 
 
 class DeletePostsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):

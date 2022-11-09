@@ -2,7 +2,7 @@
 <div id="board-{{ board.slug }}"
      class="flex-grow-1"
      hx-get="{% url 'boards:board' board.slug %}"
-     hx-trigger="topicCreated"
+     hx-trigger="topicCreated, boardUpdated"
      hx-ext="alpine-morph"
      hx-swap="morph">
     <div class="d-md-flex justify-content-between px-3">
@@ -77,6 +77,19 @@
                     </button>
                 </div>
             {% endcached_as %}
+            {% if board.preferences.require_post_approval %}
+                <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
+                    <button class="btn btn-outline-success shadow-none card-link flex-grow-1 p-3 fs-4"
+                            hx-get="{% url 'boards:board-posts-approve' board.slug %}"
+                            hx-target="#modal-1-body-div"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-1-div"
+                            title="Approve All Posts">
+                        <strong><i class="bi bi-file-earmark-check px-2"></i></strong>
+                    </button>
+                </div>
+            {% endif %}
             {% if board.get_post_count > 0 %}
                 <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
                     <button class="btn btn-outline-danger shadow-none card-link flex-grow-1 p-3 fs-4"
