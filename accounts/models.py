@@ -20,6 +20,9 @@ class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
 
+    # user preferences
+    boards_paginate_by = models.PositiveSmallIntegerField(default=10)
+
     class Meta:
         verbose_name = "profile"
 

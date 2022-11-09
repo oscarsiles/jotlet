@@ -5,7 +5,6 @@ from django.urls import reverse
 from pytest_django.asserts import assertFormError, assertTemplateUsed
 
 from boards.views.index import BoardListView
-from jotlet.tests.utils import create_session
 
 
 class TestIndexView:
@@ -143,16 +142,15 @@ class TestBoardListView:
             (5, 2),
         ],
     )
-    def test_paginate_by_session(self, rf, user, paginate_by, page_range):
+    def test_paginate_by_userprofile(self, rf, user, paginate_by, page_range):
+        if paginate_by is not None:
+            user.profile.boards_paginate_by = paginate_by
+            user.profile.save()
         request = rf.get(reverse("boards:board-list", kwargs={"board_list_type": "own"}))
         request.user = user
-        create_session(request)
-        if paginate_by is not None:
-            request.session["paginate_by"] = paginate_by
-            request.session.save()
         response = BoardListView.as_view()(request, board_list_type="own")
         assert response.status_code == 200
-        assert request.session.get("paginate_by") is paginate_by
+        assert request.user.profile.boards_paginate_by == paginate_by if paginate_by is not None else 10
         assert response.context_data["paginate_by"] == paginate_by if paginate_by is not None else 10
         assert response.context_data["page_obj"].number == 1
         assert len(response.context_data["page_obj"].paginator.page_range) == page_range
@@ -171,10 +169,9 @@ class TestBoardListView:
             {"paginate_by": paginate_by},
         )
         request.user = user
-        create_session(request)
         response = BoardListView.as_view()(request, board_list_type="own")
         assert response.status_code == 200
-        assert request.session.get("paginate_by") == paginate_by
+        assert request.user.profile.boards_paginate_by == paginate_by
         assert response.context_data["paginate_by"] == paginate_by
         assert response.context_data["page_obj"].number == 1
         assert len(response.context_data["page_obj"].paginator.page_range) == page_range

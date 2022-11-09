@@ -61,9 +61,9 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViewsMixin, generic.ListV
         page = self.request.GET.get("page", 1)
         page_size = self.request.GET.get("paginate_by", None)
         if page_size:
-            page_size = int(page_size)
-            self.request.session["paginate_by"] = page_size
-        self.paginate_by = self.request.session.get("paginate_by", 10)
+            self.request.user.profile.boards_paginate_by = int(page_size)
+            self.request.user.profile.save()
+        self.paginate_by = self.request.user.profile.boards_paginate_by
         context = super().get_context_data(**kwargs)
 
         paginator = Paginator(self.object_list, self.paginate_by)
