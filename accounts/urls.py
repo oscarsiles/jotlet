@@ -3,7 +3,7 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path("delete/", views.JotletDeleteView.as_view(), name="account_delete"),
+    path("delete/", views.JotletAccountDeleteView.as_view(), name="account_delete"),
     path("lockout/", views.JotletLockoutView.as_view(), name="account_lockout"),
     path("login/", views.JotletLoginView.as_view(), name="account_login"),
     path("logout/", views.JotletLogoutView.as_view(), name="account_logout"),

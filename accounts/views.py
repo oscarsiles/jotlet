@@ -20,7 +20,7 @@ from jotlet.utils import generate_link_header
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm
 
 
-class JotletDeleteView(LoginRequiredMixin, generic.DeleteView):
+class JotletAccountDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = get_user_model()
     success_url = reverse_lazy("boards:index")
     template_name = "accounts/user_delete.html"
