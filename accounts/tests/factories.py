@@ -16,7 +16,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Faker("user_name")
     email = factory.Faker("email")
     password = factory.LazyFunction(lambda: make_password(USER_TEST_PASSWORD))
-    optin_newsletter = False
     is_staff = False
     is_superuser = False
 
@@ -26,3 +25,4 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
         model = UserProfile
 
     user = factory.SubFactory(UserFactory)
+    optin_newsletter = False

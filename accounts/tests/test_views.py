@@ -187,7 +187,7 @@ class TestJotletProfileView:
 class TestJotletProfileEditView:
     def test_toggle_optin_newsletter(self, client, user):
         client.login(username=user.username, password=USER_TEST_PASSWORD)
-        assert user.optin_newsletter is False
+        assert user.profile.optin_newsletter is False
 
         response = client.post(
             reverse("account_profile_edit"),
@@ -196,7 +196,7 @@ class TestJotletProfileEditView:
         assert response.status_code == 302
         assert response.url == reverse("account_profile")
         user.refresh_from_db()
-        assert user.optin_newsletter is True
+        assert user.profile.optin_newsletter is True
 
         response = client.post(
             reverse("account_profile_edit"),
@@ -205,4 +205,4 @@ class TestJotletProfileEditView:
         assert response.status_code == 302
         assert response.url == reverse("account_profile")
         user.refresh_from_db()
-        assert user.optin_newsletter is False
+        assert user.profile.optin_newsletter is False

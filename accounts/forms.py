@@ -54,12 +54,18 @@ class CustomLoginForm(LoginForm):
 class CustomProfileEditForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
-        fields = ("email", "first_name", "last_name", "optin_newsletter")
+        fields = ("email", "first_name", "last_name")
 
     def __init__(self, *args, **kwargs):
+        optin_newsletter = kwargs.pop("optin_newsletter", False)
         super().__init__(*args, **kwargs)
 
         self.fields["email"].disabled = True
+        self.fields["optin_newsletter"] = forms.BooleanField(
+            required=False,
+            initial=optin_newsletter,
+            label="Opt-in to newsletter",
+        )
 
         self.helper = FormHelper()
         self.helper.form_tag = False

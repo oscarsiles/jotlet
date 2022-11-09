@@ -11,7 +11,7 @@ from jotlet.mixins.refresh_from_db_invalidates_cached_properties import Invalida
 
 
 class User(AbstractUser):
-    optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
+    pass
 
 
 class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
@@ -21,6 +21,7 @@ class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     history = HistoricalRecords(cascade_delete_history=True)
 
     # user preferences
+    optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
     boards_paginate_by = models.PositiveSmallIntegerField(default=10)
 
     class Meta:

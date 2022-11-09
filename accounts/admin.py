@@ -15,12 +15,4 @@ class UserProfileInline(admin.StackedInline):
 
 @admin.register(get_user_model())
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (
-        (
-            "Additional info",
-            {
-                "fields": ("optin_newsletter",),
-            },
-        ),
-    )
     inlines = [UserProfileInline]

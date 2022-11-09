@@ -122,6 +122,17 @@ class JotletProfileEditView(LoginRequiredMixin, generic.UpdateView):
     def get_object(self):
         return self.request.user
 
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super().get_form_kwargs(**kwargs)
+        kwargs["optin_newsletter"] = self.request.user.profile.optin_newsletter
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.request.user.profile.optin_newsletter = form.cleaned_data["optin_newsletter"]
+        self.request.user.profile.save(update_fields=["optin_newsletter"])
+        return response
+
     def get_success_url(self):
         return reverse_lazy("account_profile")
 

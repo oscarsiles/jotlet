@@ -16,8 +16,8 @@ class CustomAccountAdapter(DefaultAccountAdapter):
 
     def save_user(self, request, user, form, commit=True):
         user = super().save_user(request, user, form, commit)
-        user.optin_newsletter = form.cleaned_data["optin_newsletter"]
-        user.save(update_fields=["optin_newsletter"])
+        user.profile.optin_newsletter = form.cleaned_data["optin_newsletter"]
+        user.profile.save(update_fields=["optin_newsletter"])
         return user
 
 
