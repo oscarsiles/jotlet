@@ -10,7 +10,7 @@ class JotletLinkHeaderMixin(generic.View):
         if not request.htmx:
             files_css = [
                 static("css/3rdparty/bootstrap-5.2.2.min.css"),
-                static("css/3rdparty/bootstrap-icons-1.9.1.min.css"),
+                static("css/3rdparty/bootstrap-icons-1.10.1.min.css"),
                 static("css/styles.css"),
             ]
             files_fonts = [
