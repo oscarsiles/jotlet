@@ -166,14 +166,14 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.5"
+version = "1.26.8"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.29.5,<1.30.0"
+botocore = ">=1.29.8,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -182,7 +182,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.5"
+version = "1.29.8"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -211,7 +211,7 @@ python-stdnum = "*"
 
 [[package]]
 name = "bx-py-utils"
-version = "70"
+version = "71"
 description = "Various Python utility functions"
 category = "main"
 optional = false
@@ -460,7 +460,7 @@ postal = ["cryptography"]
 
 [[package]]
 name = "django-auto-prefetch"
-version = "1.3.0"
+version = "1.4.0"
 description = "Automatically prefetch foreign key values as needed."
 category = "main"
 optional = false
@@ -599,7 +599,7 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-htmx"
-version = "1.12.2"
+version = "1.13.0"
 description = "Extensions for using Django with htmx."
 category = "main"
 optional = false
@@ -723,7 +723,7 @@ tests = ["coverage"]
 
 [[package]]
 name = "djlint"
-version = "1.19.6"
+version = "1.19.7"
 description = "HTML Template Linter and Formatter"
 category = "dev"
 optional = false
@@ -753,7 +753,7 @@ python-versions = "*"
 
 [[package]]
 name = "exceptiongroup"
-version = "1.0.1"
+version = "1.0.2"
 description = "Backport of PEP 654 (exception groups)"
 category = "dev"
 optional = false
@@ -1077,7 +1077,7 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "pathspec"
-version = "0.10.1"
+version = "0.10.2"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
 optional = false
@@ -1097,7 +1097,7 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "platformdirs"
-version = "2.5.3"
+version = "2.5.4"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -1263,7 +1263,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.20.1"
+version = "0.20.2"
 description = "Pytest support for asyncio"
 category = "dev"
 optional = false
@@ -1383,7 +1383,7 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-stdnum"
-version = "1.17"
+version = "1.18"
 description = "Python module to handle standardized numbers and codes"
 category = "main"
 optional = false
@@ -1419,7 +1419,7 @@ python-versions = "*"
 
 [[package]]
 name = "pyupgrade"
-version = "3.2.0"
+version = "3.2.2"
 description = "A tool to automatically upgrade syntax for newer versions."
 category = "dev"
 optional = false
@@ -1599,7 +1599,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 
 [[package]]
 name = "shortuuid"
-version = "1.0.9"
+version = "1.0.11"
 description = "A generator library for concise, unambiguous and URL-safe UUIDs."
 category = "main"
 optional = false
@@ -1887,7 +1887,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "4cb7d1d2f89199efabf872e9896417ae83088d2bd3ac1a9dbccef52c9a30e0db"
+content-hash = "f4089ae90d348d26c566b2662306ec5e65a587838dcac8c6fac81300c67df2ff"
 
 [metadata.files]
 anyio = [
@@ -1986,20 +1986,20 @@ black = [
     {file = "black-22.10.0.tar.gz", hash = "sha256:f513588da599943e0cde4e32cc9879e825d58720d6557062d1098c5ad80080e1"},
 ]
 boto3 = [
-    {file = "boto3-1.26.5-py3-none-any.whl", hash = "sha256:7b6fb7b0346c239b53ad5e5fdf5eeef3c6452186d91239beeb66f106531cb2c3"},
-    {file = "boto3-1.26.5.tar.gz", hash = "sha256:cb4eca34b6e13e4ead46a68f66759feaae6bf5e97362b2c979b7b9f1d203715e"},
+    {file = "boto3-1.26.8-py3-none-any.whl", hash = "sha256:c02fc93a926944b4b426a170d2dae274b4c8c09ec5259450b94269a8ce990dd7"},
+    {file = "boto3-1.26.8.tar.gz", hash = "sha256:b39303fdda9b5d77a152e3ec9f264ae318ccdaa853eaf694626dc335464ded98"},
 ]
 botocore = [
-    {file = "botocore-1.29.5-py3-none-any.whl", hash = "sha256:94e820994e731568d191373d622507fee6067c9e68b5a121aed46322fd6d3d45"},
-    {file = "botocore-1.29.5.tar.gz", hash = "sha256:8a1a074bce7567576947869d41026c45d507e00885f3890c1719180a9400ec40"},
+    {file = "botocore-1.29.8-py3-none-any.whl", hash = "sha256:9c6adcf4e080be63b92f50d01e176ef2d1d2a3da7d8387a964abb9eb65fc8aad"},
+    {file = "botocore-1.29.8.tar.gz", hash = "sha256:48cf33d7c513320711321c3b303b0c9810b23e15fa03424f7323883e4ce6cef8"},
 ]
 bx-django-utils = [
     {file = "bx_django_utils-36-py3-none-any.whl", hash = "sha256:98f900da91e3cdb22d2f386863fe05e58cfc18ff2d7c0ee656e7d551a135f529"},
     {file = "bx_django_utils-36.tar.gz", hash = "sha256:badb8d7fb04ce449cac7896ee435e69d2786eebc3e8c756e99e9379be816cd5f"},
 ]
 bx-py-utils = [
-    {file = "bx_py_utils-70-py3-none-any.whl", hash = "sha256:d81a7c30e990f7a43ef82bf262f27accb430808cdf8ed2cbaba2f0ca9b96642a"},
-    {file = "bx_py_utils-70.tar.gz", hash = "sha256:5e4133b40bcf44a3ab737454381763e5ed1c0ff44823f693dd607219a0ace8a0"},
+    {file = "bx_py_utils-71-py3-none-any.whl", hash = "sha256:02150263d58fa280caf5e0afbe99c10470f9b25f0cd69e4a2cc525c875e5ad70"},
+    {file = "bx_py_utils-71.tar.gz", hash = "sha256:ceff6b29b41b6a797b87b3006f94d5394b067a551b004567d4ada7e1a6544806"},
 ]
 certifi = [
     {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
@@ -2206,8 +2206,8 @@ django-anymail = [
     {file = "django_anymail-8.6-py3-none-any.whl", hash = "sha256:49d83d7c16316ca86a624097496881d59b7d71b16bf1c5211cffa5b19ef98d0c"},
 ]
 django-auto-prefetch = [
-    {file = "django-auto-prefetch-1.3.0.tar.gz", hash = "sha256:d9b7a12d563f487e2d6426330aabe033999d45ac36182bbc65066b0a58ef303b"},
-    {file = "django_auto_prefetch-1.3.0-py3-none-any.whl", hash = "sha256:f8d14d0e803924d1f9bbc1872106786146ce58eeefaf46f707b2527ace2b0562"},
+    {file = "django-auto-prefetch-1.4.0.tar.gz", hash = "sha256:5135539bb141679898dfd7019e1d04e9b4bf97d347ff313fca7b79ca27a73c98"},
+    {file = "django_auto_prefetch-1.4.0-py3-none-any.whl", hash = "sha256:d6f60f0ad08ca200fe62dbce73a5580cc9f838f5fb3408810b6a4fb92507b96d"},
 ]
 django-axes = [
     {file = "django-axes-5.39.0.tar.gz", hash = "sha256:97702552f7939c81db5bba2ef855ae43f20df92fa261cb79fd4c8633ba3b3955"},
@@ -2253,8 +2253,8 @@ django-filter = [
     {file = "django_filter-22.1-py3-none-any.whl", hash = "sha256:ed429e34760127e3520a67f415bec4c905d4649fbe45d0d6da37e6ff5e0287eb"},
 ]
 django-htmx = [
-    {file = "django-htmx-1.12.2.tar.gz", hash = "sha256:93a356ec0a983a33cc11d927bfe4ab3eca847dc89786d6293e80bc12dc9da03c"},
-    {file = "django_htmx-1.12.2-py3-none-any.whl", hash = "sha256:fe2d31eb8eeae1f531248c0b7cc441dc68b77158892514ed2fcf5f6119b89bd5"},
+    {file = "django-htmx-1.13.0.tar.gz", hash = "sha256:848c3e195b8757656626c8a099f9be59c6d30f468f1d54e69f0f2a48f0a14928"},
+    {file = "django_htmx-1.13.0-py3-none-any.whl", hash = "sha256:781a59376d769aa28302619e73d37d481a125ab155d9fdd7fb17f10e7d25f352"},
 ]
 django-huey-email-backend = [
     {file = "django-huey-email-backend-0.1.1.tar.gz", hash = "sha256:9bb07e05d9526132247083b3ec6b778533181f80cc3be5d1386b741b700c4f3f"},
@@ -2292,16 +2292,16 @@ django-tree-queries = [
     {file = "django_tree_queries-0.11.0.tar.gz", hash = "sha256:768bc75fd5ab617e19bec5c7e207964d7f2f6155f5f3d8c3332b41d9d0e6b436"},
 ]
 djlint = [
-    {file = "djlint-1.19.6-py3-none-any.whl", hash = "sha256:e7fd305f93057cd205a29999b840210db70789e4cf277625f148447ad7de62b1"},
-    {file = "djlint-1.19.6.tar.gz", hash = "sha256:a28133317eccc3924b157c947f98f0bdc300f754f51097b5467c73e112aa9fec"},
+    {file = "djlint-1.19.7-py3-none-any.whl", hash = "sha256:517b1a2dfb943854abaf8b1ad2117d5c2e699d5916cd2621e24f8669eb564af2"},
+    {file = "djlint-1.19.7.tar.gz", hash = "sha256:7339b0e2b228655000e6bc5e85adb146e1cdad11a1a29c52c3f1e68707d02d86"},
 ]
 editorconfig = [
     {file = "EditorConfig-0.12.3-py3-none-any.whl", hash = "sha256:6b0851425aa875b08b16789ee0eeadbd4ab59666e9ebe728e526314c4a2e52c1"},
     {file = "EditorConfig-0.12.3.tar.gz", hash = "sha256:57f8ce78afcba15c8b18d46b5170848c88d56fd38f05c2ec60dbbfcb8996e89e"},
 ]
 exceptiongroup = [
-    {file = "exceptiongroup-1.0.1-py3-none-any.whl", hash = "sha256:4d6c0aa6dd825810941c792f53d7b8d71da26f5e5f84f20f9508e8f2d33b140a"},
-    {file = "exceptiongroup-1.0.1.tar.gz", hash = "sha256:73866f7f842ede6cb1daa42c4af078e2035e5f7607f0e2c762cc51bb31bbe7b2"},
+    {file = "exceptiongroup-1.0.2-py3-none-any.whl", hash = "sha256:c22f11ec6a10d2b453871c5c5fe887436c4d1961324ce9090f2ca6ddc4180c27"},
+    {file = "exceptiongroup-1.0.2.tar.gz", hash = "sha256:a31cd183c3dea02e617aab5153588d5f7258a77b51f0ef41b3815ae8a0d0f695"},
 ]
 execnet = [
     {file = "execnet-1.9.0-py2.py3-none-any.whl", hash = "sha256:a295f7cc774947aac58dde7fdc85f4aa00c42adf5d8f5468fc630c1acf30a142"},
@@ -2542,8 +2542,8 @@ packaging = [
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
 pathspec = [
-    {file = "pathspec-0.10.1-py3-none-any.whl", hash = "sha256:46846318467efc4556ccfd27816e004270a9eeeeb4d062ce5e6fc7a87c573f93"},
-    {file = "pathspec-0.10.1.tar.gz", hash = "sha256:7ace6161b621d31e7902eb6b5ae148d12cfd23f4a249b9ffb6b9fee12084323d"},
+    {file = "pathspec-0.10.2-py3-none-any.whl", hash = "sha256:88c2606f2c1e818b978540f73ecc908e13999c6c3a383daf3705652ae79807a5"},
+    {file = "pathspec-0.10.2.tar.gz", hash = "sha256:8f6bf73e5758fd365ef5d58ce09ac7c27d2833a8d7da51712eac6e27e35141b0"},
 ]
 pillow = [
     {file = "Pillow-9.3.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:0b7257127d646ff8676ec8a15520013a698d1fdc48bc2a79ba4e53df792526f2"},
@@ -2607,8 +2607,8 @@ pillow = [
     {file = "Pillow-9.3.0.tar.gz", hash = "sha256:c935a22a557a560108d780f9a0fc426dd7459940dc54faa49d83249c8d3e760f"},
 ]
 platformdirs = [
-    {file = "platformdirs-2.5.3-py3-none-any.whl", hash = "sha256:0cb405749187a194f444c25c82ef7225232f11564721eabffc6ec70df83b11cb"},
-    {file = "platformdirs-2.5.3.tar.gz", hash = "sha256:6e52c21afff35cb659c6e52d8b4d61b9bd544557180440538f255d9382c8cbe0"},
+    {file = "platformdirs-2.5.4-py3-none-any.whl", hash = "sha256:af0276409f9a02373d540bf8480021a048711d572745aef4b7842dad245eba10"},
+    {file = "platformdirs-2.5.4.tar.gz", hash = "sha256:1006647646d80f16130f052404c6b901e80ee4ed6bef6792e1f238a8969106f7"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
@@ -2706,8 +2706,8 @@ pytest = [
     {file = "pytest-7.2.0.tar.gz", hash = "sha256:c4014eb40e10f11f355ad4e3c2fb2c6c6d1919c73f3b5a433de4708202cade59"},
 ]
 pytest-asyncio = [
-    {file = "pytest-asyncio-0.20.1.tar.gz", hash = "sha256:626699de2a747611f3eeb64168b3575f70439b06c3d0206e6ceaeeb956e65519"},
-    {file = "pytest_asyncio-0.20.1-py3-none-any.whl", hash = "sha256:2c85a835df33fda40fe3973b451e0c194ca11bc2c007eabff90bb3d156fc172b"},
+    {file = "pytest-asyncio-0.20.2.tar.gz", hash = "sha256:32a87a9836298a881c0ec637ebcc952cfe23a56436bdc0d09d1511941dd8a812"},
+    {file = "pytest_asyncio-0.20.2-py3-none-any.whl", hash = "sha256:07e0abf9e6e6b95894a39f688a4a875d63c2128f76c02d03d16ccbc35bcc0f8a"},
 ]
 pytest-cov = [
     {file = "pytest-cov-4.0.0.tar.gz", hash = "sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470"},
@@ -2742,8 +2742,8 @@ python-dotenv = [
     {file = "python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
 ]
 python-stdnum = [
-    {file = "python-stdnum-1.17.tar.gz", hash = "sha256:374e2b5e13912ccdbf50b0b23fca2c3e0531174805c32d74e145f37756328340"},
-    {file = "python_stdnum-1.17-py2.py3-none-any.whl", hash = "sha256:a46e6cf9652807314d369b654b255c86a59f93d18be2834f3d567ed1a346c547"},
+    {file = "python-stdnum-1.18.tar.gz", hash = "sha256:bcc763d9c49ae23da5d2b7a686d5fd1deec9d9051341160a10d1ac723a26bec0"},
+    {file = "python_stdnum-1.18-py2.py3-none-any.whl", hash = "sha256:d7f2a3c7ef4635c957b9cbdd9b1993d1f6ee3a2959f03e172c45440d99f296eb"},
 ]
 python3-openid = [
     {file = "python3-openid-3.2.0.tar.gz", hash = "sha256:33fbf6928f401e0b790151ed2b5290b02545e8775f982485205a066f874aaeaf"},
@@ -2754,8 +2754,8 @@ pytz = [
     {file = "pytz-2022.6.tar.gz", hash = "sha256:e89512406b793ca39f5971bc999cc538ce125c0e51c27941bef4568b460095e2"},
 ]
 pyupgrade = [
-    {file = "pyupgrade-3.2.0-py2.py3-none-any.whl", hash = "sha256:2aa6c40e49ea5a350e6e45b8c7847b1741aef274a35d4f0b2bf91731ec8ab796"},
-    {file = "pyupgrade-3.2.0.tar.gz", hash = "sha256:70e1ac1e6b34a90fb21f5cada1907ef035b12dfc1d9f13cefd367acf3b530310"},
+    {file = "pyupgrade-3.2.2-py2.py3-none-any.whl", hash = "sha256:16c0e3a6ac2d83cd0fd30c138af5504918c59d584344f60a15d5f8009b11a0ed"},
+    {file = "pyupgrade-3.2.2.tar.gz", hash = "sha256:6bfa246fb9d94e490fad37980bcfc05b9494183ff29d9100ef4f7f22a952ce67"},
 ]
 pyyaml = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},
@@ -2926,8 +2926,8 @@ setuptools = [
     {file = "setuptools-65.5.1.tar.gz", hash = "sha256:e197a19aa8ec9722928f2206f8de752def0e4c9fc6953527360d1c36d94ddb2f"},
 ]
 shortuuid = [
-    {file = "shortuuid-1.0.9-py3-none-any.whl", hash = "sha256:b2bb9eb7773170e253bb7ba25971023acb473517a8b76803d9618668cb1dd46f"},
-    {file = "shortuuid-1.0.9.tar.gz", hash = "sha256:459f12fa1acc34ff213b1371467c0325169645a31ed989e268872339af7563d5"},
+    {file = "shortuuid-1.0.11-py3-none-any.whl", hash = "sha256:27ea8f28b1bd0bf8f15057a3ece57275d2059d2b0bb02854f02189962c13b6aa"},
+    {file = "shortuuid-1.0.11.tar.gz", hash = "sha256:fc75f2615914815a8e4cb1501b3a513745cb66ef0fd5fc6fb9f8c3fa3481f789"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
