@@ -24,7 +24,7 @@ class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
     boards_paginate_by = models.PositiveSmallIntegerField(default=10)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name = "profile"
 
     def __str__(self):

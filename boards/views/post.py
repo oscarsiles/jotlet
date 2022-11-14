@@ -26,7 +26,7 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     parent = None
 
     def test_func(self):
-        board = Board.objects.get(slug=self.kwargs["slug"])
+        board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
         is_allowed = board.is_posting_allowed or self.request.user == board.owner or self.request.user.is_staff
         if "post_pk" in self.kwargs and is_allowed:
             self.is_reply = True
@@ -262,13 +262,15 @@ class PostFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
+        context["board"] = board = Board.objects.prefetch_related("preferences__moderators").get(
+            slug=self.kwargs["slug"]
+        )
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         if not board.preferences.require_post_approval and not post.approved:
             context["post"].approved = True
         context["is_owner"] = post.get_is_owner(self.request)
-        context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
+        context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
 
@@ -278,11 +280,13 @@ class PostFooterFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.get(slug=self.kwargs["slug"])
+        context["board"] = board = Board.objects.prefetch_related("preferences__moderators").get(
+            slug=self.kwargs["slug"]
+        )
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
         context["is_owner"] = post.get_is_owner(self.request)
-        context["is_moderator"] = get_is_moderator(self.request.user, post.topic.board)
+        context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
 

@@ -28,6 +28,9 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
 
         return template_names
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("preferences__moderators")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         board = self.object

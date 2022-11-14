@@ -58,7 +58,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         permissions = (("can_view_all_boards", "Can view all boards"),)
         indexes = [
             GinIndex(
@@ -176,7 +176,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     posting_allowed_from = models.DateTimeField(null=True, blank=True)
     posting_allowed_until = models.DateTimeField(null=True, blank=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         indexes = [
             BrinIndex(fields=["posting_allowed_from"], autosummarize=True),
             BrinIndex(fields=["posting_allowed_until"], autosummarize=True),
@@ -207,7 +207,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
         ]
@@ -263,7 +263,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         permissions = (("can_approve_posts", "Can approve posts"),)
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
@@ -396,7 +396,7 @@ class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         constraints = [
             models.UniqueConstraint(fields=["post", "session_key", "type"], name="unique_anonymous_reaction"),
             models.UniqueConstraint(fields=["post", "user", "type"], name="unique_user_reaction"),
@@ -419,7 +419,7 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         ordering = ["title"]
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
@@ -510,12 +510,12 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     image_tag.allow_tags = True
 
 
-class BackgroundImageManager(models.Manager):
+class BackgroundImageManager(auto_prefetch.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(type="b")
 
 
-class PostImageManager(models.Manager):
+class PostImageManager(auto_prefetch.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(type="p")
 
@@ -527,7 +527,7 @@ class PostImageManager(models.Manager):
 class BgImage(Image):
     objects = BackgroundImageManager()
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name = "background image"
         proxy = True
 
@@ -535,6 +535,6 @@ class BgImage(Image):
 class PostImage(Image):
     objects = PostImageManager()
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name = "post image"
         proxy = True
