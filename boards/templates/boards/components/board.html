@@ -20,7 +20,7 @@
          x-cloak
          @topic-created.camel="topicCount = $el.querySelectorAll('.topic-list').length"
          @topic-deleted.camel="topicCount = $el.querySelectorAll('.topic-list').length">
-        <div class="position-absolute bottom-0 end-0 sticky-bottom d-md-none m-4"
+        <div class="position-absolute bottom-0 end-0 sticky-bottom d-md-none d-print-none m-4"
              x-show="$store.board.is_overflow">
             <a class="btn btn-light shadow-none rounded-circle border-secondary"
                role="button"
@@ -63,7 +63,7 @@
             {% include "boards/components/topic.html" %}
         {% endfor %}
         {% if request.user == board.owner or user.is_staff %}
-            <div class="col-md-auto px-2" id="boardControls-div">
+            <div class="col-md-auto d-print-none px-2" id="boardControls-div">
                 {% cached_as board None "board_newTopic_cache" board.pk %}
                 <div class="d-flex bg-white rounded my-2" id="newTopic-card-div">
                     <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"

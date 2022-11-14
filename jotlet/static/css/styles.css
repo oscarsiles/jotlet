@@ -66,4 +66,7 @@
   #main-content-div {
     overflow: unset !important;
   }
+  .avoid-pagebreak {
+    break-inside: avoid;
+  }
 }

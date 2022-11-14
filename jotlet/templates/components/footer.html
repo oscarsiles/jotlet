@@ -13,7 +13,7 @@
                         <a class="text-reset" href="{% url 'terms-of-use' %}">terms</a>.
                     </div>
                     {% if feedback_email %}
-                        <div>
+                        <div class="d-print-none">
                             <i class="bi bi-envelope"></i>
                             <a class="text-reset"
                                href="mailto:{{ feedback_email }}?subject=Jotlet%20Feedback%20(v{{ version }})"
