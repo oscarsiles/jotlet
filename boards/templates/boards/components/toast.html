@@ -4,7 +4,7 @@
      x-data="toastNotification()">
     <div id="toast"
          class="toast align-items-center border-0"
-         x-bind:class="bg_color"
+         :class="bg_color"
          @show-message.camel.window="openToast($event); new bootstrap.Toast($el).show();"
          role="alert"
          data-bs-delay="3000"
@@ -15,7 +15,7 @@
             <button id="toast-close"
                     type="button"
                     class="btn-close shadow-none me-2 m-auto"
-                    x-bind:class="btn_color"
+                    :class="btn_color"
                     data-bs-dismiss="toast"
                     aria-label="Close">
             </button>

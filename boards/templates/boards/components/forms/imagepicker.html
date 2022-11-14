@@ -23,7 +23,8 @@
                     has-danger
                 {% endif %}">
         {% if field.label and not field|is_checkbox and form_show_labels %}
-            <label {% if field.id_for_label and not field|is_radioselect %}for="{{ field.id_for_label }}"
+            <label {% if field.id_for_label and not field|is_radioselect %}
+                       for="{{ field.id_for_label }}"
                    {% endif %}
                    class="{% if 'form-horizontal' in form_class %}
                               col-form-label
@@ -54,7 +55,7 @@
                             hx-target="#modal-2-body-div"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-2-div"
-                            x-show="$store.boardPreferences.img_uuid == 'None' || $store.boardPreferences.img_uuid == ''"
+                            x-show="$store.boardPreferences.img_uuid == 'None' || $store.boardPreferences.img_uuid =="
                             id="button-{{ field.auto_id }}">
                         Select image...
                     </button>
@@ -65,8 +66,8 @@
                     {# djlint:off #}x-effect="if ($store.boardPreferences.img_srcset_webp) { srcset_webp = $store.boardPreferences.img_srcset_webp + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_webp_res({{ res }}) + ' {{ res }}x'{% endfor %}};
                     if ($store.boardPreferences.img_srcset_jpeg) { srcset_jpeg = $store.boardPreferences.img_srcset_jpeg + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_jpeg_res({{ res }}) + ' {{ res }}x'{% endfor %}};"{# djlint:on #}
                     x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
-                    <source id="src-webp" x-bind:srcset="srcset_webp" type="image/webp"/>
-                    <source id="src-jpeg" x-bind:srcset="srcset_jpeg" type="image/jpeg"/>
+                    <source id="src-webp" :srcset="srcset_webp" type="image/webp"/>
+                    <source id="src-jpeg" :srcset="srcset_jpeg" type="image/jpeg"/>
                     <img class="p-0 img-fluid w-100 rounded-end
                                 {% if field.errors %}
                                     is-invalid

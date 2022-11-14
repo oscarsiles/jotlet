@@ -29,7 +29,7 @@
                       hx-post="{% url 'boards:post-reaction' board.slug topic.pk post.pk %}"
                       hx-trigger="postReaction"
                       hx-swap="none"
-                      x-on:submit.prevent="$dispatch('postReaction'); isDisabled = true;">
+                      @submit.prevent="$dispatch('postReaction'); isDisabled = true;">
                     {% csrf_token %}
                     <div class="d-flex align-items-center gap-2">
                         {% cached_as post None "post_footer_form_cache" post.pk reaction_score board.preferences.reaction_type has_reacted %}
@@ -38,7 +38,7 @@
                                     id="post-{{ post.pk }}-reaction-form-like"
                                     type="submit"
                                     key="{{ post.pk }}-like-button"
-                                    :title="isOwner ? 'You cannot react to your own post' : 'Like this post'"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Like this post"
                                     :disabled="isOwner || isDisabled">
                                 {% if has_reacted.0 %}
                                     <i class="bi bi-heart-fill"></i>
@@ -53,9 +53,9 @@
                                     type="submit"
                                     value="1"
                                     key="{{ post.pk }}-up-button"
-                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up'"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs up"
                                     :disabled="isOwner || isDisabled"
-                                    x-on:click="$el.focus()">
+                                    @click="$el.focus()">
                                 {% if has_reacted.0 and has_reacted.2 == 1 %}
                                     <i class="bi bi-hand-thumbs-up-fill"></i>
                                 {% else %}
@@ -69,9 +69,9 @@
                                     type="submit"
                                     value="-1"
                                     key="{{ post.pk }}-down-button"
-                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down'"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Thumbs down"
                                     :disabled="isOwner || isDisabled"
-                                    x-on:click="$el.focus()">
+                                    @click="$el.focus()">
                                 {% if has_reacted.0 and has_reacted.2 == -1 %}
                                     <i class="bi bi-hand-thumbs-down-fill"></i>
                                 {% else %}
@@ -85,16 +85,16 @@
                                  x-data="starRating()">
                                 <template x-for="star in ratings">
                                     <button class="d-flex align-items-center btn btn-link shadow-none p-0"
-                                            :id="'post-{{ post.pk }}-star-' + star"
+                                            :id="post-{{ post.pk }}-star-' + star"
                                             name="score"
                                             type="submit"
                                             :value="star"
-                                            :class="isHover ? 'text-black' : 'text-black-50'"
+                                            :class="isHover ? 'text-black' : 'text-black-50"
                                             :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
                                             :disabled="isOwner || isDisabled"
-                                            x-on:click="rate(star); $el.focus();"
-                                            x-on:mouseover="hoverRating = star; isHover = true;"
-                                            x-on:mouseleave="hoverRating = 0; isHover = false;">
+                                            @click="rate(star); $el.focus();"
+                                            @mouseover="hoverRating = star; isHover = true;"
+                                            @mouseleave="hoverRating = 0; isHover = false;">
                                         <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
                                     </button>
                                 </template>

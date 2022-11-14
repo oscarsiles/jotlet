@@ -76,7 +76,7 @@
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
                                             {# djlint:off #}
-                                            <button class="btn btn-link text-black shadow-none p-1" key="{{ post.pk }}-collapse-replies" x-on:click="isRepliesCollapsed = !isRepliesCollapsed">
+                                            <button class="btn btn-link text-black shadow-none p-1" key="{{ post.pk }}-collapse-replies" @click="isRepliesCollapsed = !isRepliesCollapsed">
                                                 <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
                                                 <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
                                             </button>
@@ -107,8 +107,8 @@
                                                     key="{{ post.pk }}-approve-button"
                                                     x-data="{ isDisabled: false }"
                                                     x-effect="isDisabled = false"
-                                                    x-bind:disabled="isDisabled"
-                                                    x-on:click="isDisabled = true">
+                                                    :disabled="isDisabled"
+                                                    @click="isDisabled = true">
                                                 {% if not post.approved %}
                                                     <i class="bi bi-check-circle-fill" title="Approve"></i>
                                                 {% else %}

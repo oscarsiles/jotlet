@@ -112,11 +112,11 @@
          data-bs-backdrop="static"
          data-bs-keyboard="false"
          x-data="{isOpen: false, img_select_open: false}"
-         keyup.escape.window="if (isOpen && !img_select_open) { bootstrap.Offcanvas.getInstance($el).hide(); }"
-         shown-bs-offcanvas.dot="isOpen = true"
-         hidden-bs-offcanvas.dot="isOpen = false"
-         show-bs-modal.dot.window="img_select_open = true"
-         hidden-bs-modal.dot.window="img_select_open = false">
+         @keyup.escape.window="if (isOpen && !img_select_open) { bootstrap.Offcanvas.getInstance($el).hide(); }"
+         @shown-bs-offcanvas.dot="isOpen = true"
+         @hidden-bs-offcanvas.dot="isOpen = false"
+         @show-bs-modal.dot.window="img_select_open = true"
+         @hidden-bs-modal.dot.window="img_select_open = false">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Board Preferences</h5>
             <button type="button"
