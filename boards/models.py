@@ -514,6 +514,10 @@ class BackgroundImageManager(auto_prefetch.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(type="b")
 
+    def create(self, *args, **kwargs):
+        kwargs.update({"type": "b"})  # type "b" by default, but adding it here for parity with the other manager(s)
+        return super().create(*args, **kwargs)
+
 
 class PostImageManager(auto_prefetch.Manager):
     def get_queryset(self):
