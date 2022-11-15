@@ -216,6 +216,7 @@ CONN_MAX_AGE = env("CONN_MAX_AGE", default=None, cast=int)
 CONN_HEALTH_CHECKS = CONN_MAX_AGE is None or CONN_MAX_AGE > 0  # only check if we're using persistent connections
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", default=60 * 60 * 24 * 30)  # 30 days
 
 AUTH_PASSWORD_VALIDATORS = [
     {
