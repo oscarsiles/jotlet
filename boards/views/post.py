@@ -26,7 +26,12 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     parent = None
 
     def test_func(self):
-        board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
+        board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
+        )
         is_allowed = board.is_posting_allowed or self.request.user == board.owner or self.request.user.is_staff
         if "post_pk" in self.kwargs and is_allowed:
             self.is_reply = True
@@ -95,8 +100,11 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
     def get_object(self):
         if not self.board_post:
-            self.board_post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
-                pk=self.kwargs["pk"]
+            self.board_post = (
+                Post.objects.select_related("topic__board__owner")
+                .select_related("topic__board__preferences")
+                .prefetch_related("topic__board__preferences__moderators")
+                .get(pk=self.kwargs["pk"])
             )
         return self.board_post
 
@@ -134,8 +142,11 @@ class DeletePostView(UserPassesTestMixin, generic.DeleteView):
 
     def get_object(self):
         if not self.board_post:
-            self.board_post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
-                pk=self.kwargs["pk"]
+            self.board_post = (
+                Post.objects.select_related("topic__board__owner")
+                .select_related("topic__board__preferences")
+                .prefetch_related("topic__board__preferences__moderators")
+                .get(pk=self.kwargs["pk"])
             )
         return self.board_post
 
@@ -262,8 +273,11 @@ class PostFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.prefetch_related("preferences__moderators").get(
-            slug=self.kwargs["slug"]
+        context["board"] = board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
         )
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
@@ -280,8 +294,11 @@ class PostFooterFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.prefetch_related("preferences__moderators").get(
-            slug=self.kwargs["slug"]
+        context["board"] = board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
         )
         context["topic"] = topic = board.topics.get(pk=self.kwargs["topic_pk"])
         context["post"] = post = topic.posts.get(pk=self.kwargs["pk"])
@@ -294,8 +311,11 @@ class PostToggleApprovalView(LoginRequiredMixin, UserPassesTestMixin, generic.Vi
     board_post = None
 
     def test_func(self):
-        self.board_post = post = Post.objects.prefetch_related("topic__board__preferences__moderators").get(
-            pk=self.kwargs["pk"]
+        self.board_post = post = (
+            Post.objects.select_related("topic__board__owner")
+            .select_related("topic__board__preferences")
+            .prefetch_related("topic__board__preferences__moderators")
+            .get(pk=self.kwargs["pk"])
         )
         return (
             get_is_moderator(self.request.user, post.topic.board)

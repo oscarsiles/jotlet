@@ -97,8 +97,11 @@ class TopicFetchView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["board"] = board = Board.objects.prefetch_related("preferences__moderators").get(
-            slug=self.kwargs["slug"]
+        context["board"] = board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
         )
         context["topic"] = board.topics.get(pk=self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, board)

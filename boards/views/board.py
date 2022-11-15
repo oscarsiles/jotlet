@@ -29,7 +29,13 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
         return template_names
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("preferences__moderators")
+        return (
+            super()
+            .get_queryset()
+            .select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -90,7 +96,12 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
     form_class = BoardPreferencesForm
 
     def test_func(self):
-        self.board = board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
+        self.board = board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
+        )
         return self.request.user == board.owner or self.request.user.is_staff
 
     def get_object(self):  # needed to prevent 'slug' FieldError
@@ -200,7 +211,12 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
     board = None
 
     def test_func(self):
-        self.board = Board.objects.prefetch_related("preferences__moderators").get(slug=self.kwargs["slug"])
+        self.board = (
+            Board.objects.select_related("owner")
+            .select_related("preferences")
+            .prefetch_related("preferences__moderators")
+            .get(slug=self.kwargs["slug"])
+        )
         return get_is_moderator(self.request.user, self.board)
 
     def get_context_data(self, **kwargs):
