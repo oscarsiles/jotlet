@@ -188,28 +188,16 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "jotlet.asgi.application"
 
-if TESTING:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "jotlet",
-            "USER": env("DB_USER", default="vscode"),
-            "PASSWORD": env("DB_PASSWORD", default="notsecure"),
-            "HOST": env("DB_HOST", default="postgres"),
-            "PORT": env("DB_PORT", default="5432"),
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("DB_NAME", default="jotlet"),
+        "USER": env("DB_USER", default="vscode" if TESTING else None),
+        "PASSWORD": env("DB_PASSWORD", default="notsecure" if TESTING else None),
+        "HOST": env("DB_HOST", default="postgres"),
+        "PORT": env("DB_PORT", default="5432"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_NAME", default="jotlet"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST", default=""),
-            "PORT": env("DB_PORT", default=""),
-        }
-    }
+}
 
 
 CONN_MAX_AGE = env("CONN_MAX_AGE", default=None, cast=int)
