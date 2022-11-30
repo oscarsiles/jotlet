@@ -347,7 +347,7 @@ else:
     }
     CHANNEL_LAYERS = {
         "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "BACKEND": "channels_redis.core.RedisPubSubChannelLayer",
             "CONFIG": {
                 "hosts": [REDIS_URL if REDIS_UNIX_SOCKET else (REDIS_HOST, REDIS_PORT)],
                 "prefix": "jotlet",
