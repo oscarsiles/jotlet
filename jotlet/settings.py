@@ -312,12 +312,9 @@ STATICFILES_STORAGE = (
 )
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
-REDIS_URL = env("REDIS_URL", default=None)
-REDIS_UNIX_SOCKET = env("REDIS_UNIX_SOCKET", default=False)
-if not REDIS_UNIX_SOCKET:
-    REDIS_HOST = env("REDIS_HOST", default="localhost")
-    REDIS_PORT = env("REDIS_PORT", default=6379)
-    REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
+REDIS_HOST = env("REDIS_HOST", default="localhost")
+REDIS_PORT = env("REDIS_PORT", default=6379)
+REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
 if TESTING:
     CACHES = {
@@ -347,9 +344,9 @@ else:
     }
     CHANNEL_LAYERS = {
         "default": {
-            "BACKEND": "channels_redis.core.RedisPubSubChannelLayer",
+            "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
             "CONFIG": {
-                "hosts": [REDIS_URL if REDIS_UNIX_SOCKET else (REDIS_HOST, REDIS_PORT)],
+                "hosts": [REDIS_URL],
                 "prefix": "jotlet",
                 "capacity": 500,
             },
