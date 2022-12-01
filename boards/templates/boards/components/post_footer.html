@@ -38,7 +38,7 @@
                                     id="post-{{ post.pk }}-reaction-form-like"
                                     type="submit"
                                     key="{{ post.pk }}-like-button"
-                                    :title="isOwner ? 'You cannot react to your own post' : 'Like this post"
+                                    :title="isOwner ? 'You cannot react to your own post' : 'Like this post';"
                                     :disabled="isOwner || isDisabled">
                                 {% if has_reacted.0 %}
                                     <i class="bi bi-heart-fill"></i>
@@ -85,17 +85,17 @@
                                  x-data="starRating()">
                                 <template x-for="star in ratings">
                                     <button class="d-flex align-items-center btn btn-link shadow-none p-0"
-                                            :id="post-{{ post.pk }}-star-' + star"
+                                            :id="'post-{{ post.pk }}-star-' + star"
                                             name="score"
                                             type="submit"
                                             :value="star"
-                                            :class="isHover ? 'text-black' : 'text-black-50"
-                                            :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star"
+                                            :class="isHover ? 'text-black' : 'text-black-50';"
+                                            :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star;"
                                             :disabled="isOwner || isDisabled"
                                             @click="rate(star); $el.focus();"
                                             @mouseover="hoverRating = star; isHover = true;"
                                             @mouseleave="hoverRating = 0; isHover = false;">
-                                        <i class="bi" :class="isOwner ? 'bi-star' : starClass(star)"></i>
+                                        <i class="bi" :class="isOwner ? 'bi-star' : starClass(star);"></i>
                                     </button>
                                 </template>
                             </div>
