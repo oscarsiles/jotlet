@@ -166,14 +166,14 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.19"
+version = "1.26.23"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.29.19,<1.30.0"
+botocore = ">=1.29.23,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -182,7 +182,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.19"
+version = "1.29.23"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -1873,7 +1873,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8.1"
-content-hash = "00f07264a081cf53aa5a88aadbc3f603b24105843e3b45dcda81e5e0fb8f8fce"
+content-hash = "e06e78e60a163215ac2c31d7e25737fdbf5bc035768a725700c5eb015e949f5f"
 
 [metadata.files]
 anyio = [
@@ -1972,12 +1972,12 @@ black = [
     {file = "black-22.10.0.tar.gz", hash = "sha256:f513588da599943e0cde4e32cc9879e825d58720d6557062d1098c5ad80080e1"},
 ]
 boto3 = [
-    {file = "boto3-1.26.19-py3-none-any.whl", hash = "sha256:4b4edf893b01c651007d61534c1d248cd2350d311a4e295039bd23fd60bf899a"},
-    {file = "boto3-1.26.19.tar.gz", hash = "sha256:59aa6c7810a815fb52671f834d10ac4cd80b9c7c01a3cbde670cb41330059464"},
+    {file = "boto3-1.26.23-py3-none-any.whl", hash = "sha256:b466dd6e7b71babf145ae8c55b541bbcf5828df49ca022edb24657ae0b861e87"},
+    {file = "boto3-1.26.23.tar.gz", hash = "sha256:f478dde5a7e600e222c406bbf6cd2927371822d2b95a931c3ccb69eed18af83a"},
 ]
 botocore = [
-    {file = "botocore-1.29.19-py3-none-any.whl", hash = "sha256:917807ee4ccca34a2f2848eb4fcf878d9e97a44a911a6965ff556d0830c471fd"},
-    {file = "botocore-1.29.19.tar.gz", hash = "sha256:a54561e591f5d8e653657ce04dcad09c10ebca9dbefba73471976e522abf038a"},
+    {file = "botocore-1.29.23-py3-none-any.whl", hash = "sha256:5ad03b4bedb5587fc75c7ecd29bf3477929791748cb533c8c57ab5289da84ac3"},
+    {file = "botocore-1.29.23.tar.gz", hash = "sha256:216400fa6736a335f5b5c643655cc7d69d0bf996eb4d21069373aa5aa84b5c10"},
 ]
 bx-django-utils = [
     {file = "bx_django_utils-37-py3-none-any.whl", hash = "sha256:ce3f954c5684194a1725d1678790a4ca1e6b34f0ac6cec2e191ffba6350526fe"},
