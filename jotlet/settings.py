@@ -182,6 +182,7 @@ TEMPLATES = [
                 "csp.context_processors.nonce",
                 "jotlet.context_processors.captcha_sitekeys",
             ],
+            "debug": DEBUG,
         },
     },
 ]
@@ -337,7 +338,7 @@ else:
             "KEY_PREFIX": "jotlet",
             "OPTIONS": {
                 # this connection pool is also used for Huey
-                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+                "CONNECTION_POOL_KWARGS": {"max_connections": "100"},
                 "PARSER_CLASS": "redis.connection.HiredisParser",
             },
         },
