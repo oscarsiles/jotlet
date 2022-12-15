@@ -338,7 +338,7 @@ else:
             "KEY_PREFIX": "jotlet",
             "OPTIONS": {
                 # this connection pool is also used for Huey
-                "CONNECTION_POOL_KWARGS": {"max_connections": "100"},
+                "CONNECTION_POOL_KWARGS": {"max_connections": 100},  # type: ignore
                 "PARSER_CLASS": "redis.connection.HiredisParser",
             },
         },
