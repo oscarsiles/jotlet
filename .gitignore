@@ -162,8 +162,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-.vscode/
-/static/
+.vscode/*
+!.vscode/settings.json
+static/
 test.db.sqlite3
 .dockervolumes/
 jotlet/templates/privacy_policy_content.html

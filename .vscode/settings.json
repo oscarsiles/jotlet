@@ -1,0 +1,21 @@
+{
+    "python.defaultInterpreterPath": "~/.poetry/venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        ".",
+        "--reuse-db",
+        "-n",
+        "auto",
+    ],
+    "python.linting.enabled": true,
+    "isort.check": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--disable=C0111", // missing docstring
+        "--load-plugins=pylint_django",
+        "--django-settings-module=jotlet.settings",
+    ],
+}
