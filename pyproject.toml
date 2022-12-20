@@ -37,14 +37,14 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.26.30"
+boto3 = "^1.26.33"
 channels = "^4.0.0"
 channels-redis = "^4.0.0"
 crispy-bootstrap5 = "^0.7"
 Django = { extras = ["argon2"], version = "^4.1.4" }
 django = { extras = ["argon2"], version = "^4.1.4" }
 django-allauth = "^0.51.0"
-django-anymail = { extras = ["mailgun", "sendgrid"], version = "^8.6" }
+django-anymail = { extras = ["mailgun", "sendgrid"], version = "^9.0" }
 django-auto-prefetch = "^1.4.0"
 django-axes = "^5.40.1"
 django-cachalot = "^2.5.2"
@@ -67,11 +67,10 @@ gunicorn = "^20.1.0"
 httpx = "^0.23.1"
 huey = "^2.4.4"
 Pillow = "^9.3.0"
-pillow = "^9.3.0"
 psycopg2 = "^2.9.5"
 python = "^3.8.1"
 redis = { extras = ["hiredis"], version = "^4.4.0" }
-sentry-sdk = "^1.12.0"
+sentry-sdk = "^1.12.1"
 sorl-thumbnail = "^12.9.0"
 uvicorn = { extras = ["standard"], version = "^0.20.0" }
 whitenoise = "^6.2.0"
@@ -79,19 +78,18 @@ whitenoise = "^6.2.0"
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.4.0"
 black = "^22.12.0"
-coverage = { extras = ["toml"], version = "^6.5.0" }
+coverage = { extras = ["toml"], version = "^7.0.0" }
+django-coverage-plugin = "^3.0.0"
 django-debug-toolbar = "^3.8.1"
 django-debug-toolbar-template-profiler = "^2.1.0"
 django-stubs = "^1.13.1"
-djlint = "^1.19.8"
+djlint = "^1.19.9"
 flake8 = "^6.0.0"
-isort = "^5.11.2"
+isort = "^5.11.3"
 mypy = "^0.991"
-poetryup = "^0.12.5"
 pylint-django = "^2.5.3"
 pytest-cov = "^4.0.0"
 pyupgrade = "^3.3.1"
-django-coverage-plugin = "^3.0.0"
 
 [tool.poetry.group.test.dependencies]
 daphne = "^4.0.0"

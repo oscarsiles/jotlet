@@ -6,6 +6,7 @@
 		"adrianwilczynski.alpine-js-intellisense",
 		"batisteo.vscode-django",
 		"esbenp.prettier-vscode",
+		"matangover.mypy",
 		"monosans.djlint",
 		"ms-python.flake8",
 		"ms-python.isort",
