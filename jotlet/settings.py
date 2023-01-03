@@ -36,7 +36,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
-VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
+VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True, check=True).stdout.rstrip()
 
 TESTING = "pytest" in sys.modules
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
@@ -495,7 +495,11 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {
             "access_type": "offline",
         },
-    }
+        "OAUTH_PKCE_ENABLED": True,
+    },
+    "microsoft": {
+        "OAUTH_PKCE_ENABLED": True,
+    },
 }
 
 CSP_DEFAULT_SRC = ["'none'"]
