@@ -166,6 +166,7 @@ cython_debug/
 !.vscode/extensions.json
 !.vscode/settings.json
 static/
+!*/static/
 test.db.sqlite3
 .dockervolumes/
 jotlet/templates/privacy_policy_content.html
