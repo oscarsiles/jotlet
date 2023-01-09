@@ -1,6 +1,6 @@
 {% load static cache %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
     <head>
         <title hx-disable x-ignore>
             {% block title %}
@@ -71,7 +71,7 @@
           x-init="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;"
           @resize.window="smallWindow = ((window.innerWidth > 0) ? window.innerWidth : screen.width) < 992;">
         <div class="container-fluid vh-100 d-flex flex-column p-0">
-            <nav class="navbar navbar-expand-xxl bg-light py-0">
+            <nav class="navbar navbar-expand-xxl bg-body-tertiary py-0">
                 <div class="container-fluid">
                     <div class="d-flex flex-grow-1 justify-content-between">
                         <ul class="navbar-nav">
