@@ -14,7 +14,7 @@
     {% endif %}
     {% cached_as post None "post_footer_cache" post.pk post.approved request.session.session_key is_owner reactions has_reacted reaction_score is_moderator board.preferences.reaction_type %}
     {% if post.approved or is_owner or is_moderator %}
-        <div class="card-footer post-card-footer text-muted d-flex justify-content-between"
+        <div class="card-footer post-card-footer text-body-secondary d-flex justify-content-between"
              id="post-{{ post.pk }}-footer"
              x-data="{ isApproved: {{ post.approved|yesno:'true,false' }}, isDisabled: !false, isOwner: {{ is_owner|lower }} }"
              x-effect="isApproved = {{ post.approved|yesno:'true,false' }}; isDisabled = !isApproved;">
@@ -34,7 +34,7 @@
                     <div class="d-flex align-items-center gap-2">
                         {% cached_as post None "post_footer_form_cache" post.pk reaction_score board.preferences.reaction_type has_reacted %}
                         {% if board.preferences.reaction_type == 'l' %}
-                            <button class="btn btn-link text-muted shadow-none p-0"
+                            <button class="btn btn-link text-body-secondary shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-like"
                                     type="submit"
                                     key="{{ post.pk }}-like-button"
@@ -47,7 +47,7 @@
                                 {% endif %}
                             </button>
                         {% elif board.preferences.reaction_type == 'v' %}
-                            <button class="btn btn-link text-muted shadow-none p-0"
+                            <button class="btn btn-link text-body-secondary shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-thumbs-up"
                                     name="score"
                                     type="submit"
@@ -63,7 +63,7 @@
                                 {% endif %}
                             </button>
                             <div>{{ reaction_score.0 }}</div>
-                            <button class="btn btn-link text-muted shadow-none p-0"
+                            <button class="btn btn-link text-body-secondary shadow-none p-0"
                                     id="post-{{ post.pk }}-reaction-form-thumbs-down"
                                     name="score"
                                     type="submit"

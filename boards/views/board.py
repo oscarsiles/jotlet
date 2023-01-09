@@ -57,15 +57,15 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
         if not request.htmx:
             preferences = self.object.preferences
             files_css = [
-                static("css/3rdparty/easymde-2.18.0.min.css"),
+                static("css/vendor/easymde-2.18.0.min.css"),
                 static("boards/css/board.css"),
             ]
             files_js = [
-                static("js/3rdparty/alpinejs-intersect-3.10.4.min.js"),
-                static("js/3rdparty/marked-4.1.1.min.js"),
-                static("js/3rdparty/purify-2.4.0.min.js"),
-                static("js/3rdparty/easymde-2.18.0.min.js"),
-                static("boards/js/3rdparty/robust-websocket.js"),
+                static("js/vendor/alpinejs-intersect-3.10.4.min.js"),
+                static("js/vendor/marked-4.1.1.min.js"),
+                static("js/vendor/purify-2.4.0.min.js"),
+                static("js/vendor/easymde-2.18.0.min.js"),
+                static("boards/js/vendor/robust-websocket.js"),
                 static("boards/js/board.js"),
             ]
             files_fonts = []
@@ -80,7 +80,7 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
 
             if preferences.enable_identicons:
                 files_js += [
-                    static("js/3rdparty/jdenticon-3.2.0.min.js"),
+                    static("js/vendor/jdenticon-3.2.0.min.js"),
                 ]
 
             response = generate_link_header(response, files_css, files_js, files_fonts, domain_preconnect)

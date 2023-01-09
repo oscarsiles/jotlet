@@ -30,7 +30,7 @@
                     </div>
                     <div>{{ board.description }}</div>
                     {% cached_as board None "board_list_post_count" board.pk %}
-                    <small class="text-muted">{{ board.created_at|date:'d/m/Y' }} -
+                    <small class="text-body-secondary">{{ board.created_at|date:'d/m/Y' }} -
                         <span data-bs-toggle="tooltip"
                               data-bs-placement="right"
                               title="Last post: {{ board.get_last_post_date }}">Posts: {{ board.get_post_count }}</span></small>

@@ -36,7 +36,7 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
-VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True).stdout.rstrip()
+VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True, check=True).stdout.rstrip()
 
 TESTING = "pytest" in sys.modules
 DEBUG = TESTING if TESTING else env("DEBUG", default=False)
@@ -182,6 +182,7 @@ TEMPLATES = [
                 "csp.context_processors.nonce",
                 "jotlet.context_processors.captcha_sitekeys",
             ],
+            "debug": DEBUG,
         },
     },
 ]
@@ -335,7 +336,7 @@ else:
             "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
             "LOCATION": REDIS_URL,
             "KEY_PREFIX": "jotlet",
-            "OPTIONS": {
+            "OPTIONS": {  # type: ignore
                 # this connection pool is also used for Huey
                 "CONNECTION_POOL_KWARGS": {"max_connections": 100},
                 "PARSER_CLASS": "redis.connection.HiredisParser",
@@ -345,7 +346,7 @@ else:
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-            "CONFIG": {
+            "CONFIG": {  # type: ignore
                 "hosts": [REDIS_URL],
                 "prefix": "jotlet",
                 "capacity": 500,
@@ -494,7 +495,11 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {
             "access_type": "offline",
         },
-    }
+        "OAUTH_PKCE_ENABLED": True,
+    },
+    "microsoft": {
+        "OAUTH_PKCE_ENABLED": True,
+    },
 }
 
 CSP_DEFAULT_SRC = ["'none'"]
