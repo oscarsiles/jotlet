@@ -21,11 +21,11 @@ class BoardListLinkHeaderMixin(generic.View):
 
                 if board_list_type in ["all", "mod"]:
                     files_css += [
-                        static("css/3rdparty/tagify-4.16.4.min.css"),
+                        static("css/vendor/tagify-4.16.4.min.css"),
                     ]
                     files_js += [
-                        static("js/3rdparty/tagify-4.16.4.min.js"),
-                        static("js/3rdparty/tagify-4.16.4.polyfills.min.js"),
+                        static("js/vendor/tagify-4.16.4.min.js"),
+                        static("js/vendor/tagify-4.16.4.polyfills.min.js"),
                     ]
 
                 response = generate_link_header(response, files_css, files_js)

@@ -180,7 +180,7 @@ class TestJotletProfileView:
         link_header = response.get("Link")
         assert link_header is not None
 
-        assert f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha1.min.css')}>; rel=preload; as=style" in link_header
         assert f"<{static('accounts/js/profile.js')}>; rel=preload; as=script" in link_header
 
 

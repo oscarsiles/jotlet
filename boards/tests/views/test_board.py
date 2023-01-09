@@ -30,10 +30,10 @@ class TestBoardView:
         response = client.get(url)
         link_header = response.get("Link")
         assert link_header is not None
-        assert f"<{static('css/3rdparty/bootstrap-5.2.2.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('css/3rdparty/easymde-2.18.0.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha1.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/vendor/easymde-2.18.0.min.css')}>; rel=preload; as=style" in link_header
 
-        assert f"<{static('js/3rdparty/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
         assert "boards/js/components/board_mathjax.js" not in link_header
         board.preferences.enable_latex = True
         board.preferences.enable_identicons = False
@@ -41,7 +41,7 @@ class TestBoardView:
         response = client.get(url)
         link_header = response.get("Link")
         assert f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script" in link_header
-        assert "js/3rdparty/jdenticon-3.2.0.min.js" not in link_header
+        assert "js/vendor/jdenticon-3.2.0.min.js" not in link_header
 
     @pytest.mark.parametrize(
         "current_url,response_template",
