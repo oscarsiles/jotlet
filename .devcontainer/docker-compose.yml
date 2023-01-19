@@ -36,7 +36,7 @@ services:
       - /workspace/.dockervolumes/
       - ../static/:/workspace/static/
       - ../media/:/workspace/media/
-      - ../.dockervolumes/vscode/extensions:/home/vscode/.vscode-server/extensions
+      - vscode-extensions:/home/vscode/.vscode-server/extensions
     user: vscode
     ports:
       - 8000:8000
@@ -47,3 +47,4 @@ services:
 
 volumes:
   postgres15_data:
+  vscode-extensions:
