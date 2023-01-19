@@ -45,25 +45,25 @@
                 src="{% static 'js/vendor/bootstrap-5.3.0-alpha1.bundle.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/htmx-1.8.4.min.js' %}"
+                src="{% static 'js/vendor/htmx-1.8.5.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/htmx-alpine-morph-1.8.4.min.js' %}"
+                src="{% static 'js/vendor/htmx-alpine-morph-1.8.5.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
         <script defer
-                src="{% static 'js/vendor/alpinejs-collapse-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-collapse-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-mask-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-mask-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-morph-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-morph-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'

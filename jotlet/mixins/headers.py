@@ -18,13 +18,13 @@ class JotletLinkHeaderMixin(generic.View):
             ]
             files_scripts = [
                 static("js/vendor/bootstrap-5.3.0-alpha1.bundle.min.js"),
-                static("js/vendor/htmx-1.8.4.min.js"),
+                static("js/vendor/htmx-1.8.5.min.js"),
                 static("js/base.js"),
-                static("js/vendor/htmx-alpine-morph-1.8.4.min.js"),
-                static("js/vendor/alpinejs-collapse-3.10.4.min.js"),
-                static("js/vendor/alpinejs-mask-3.10.4.min.js"),
-                static("js/vendor/alpinejs-morph-3.10.4.min.js"),
-                static("js/vendor/alpinejs-3.10.4.min.js"),
+                static("js/vendor/htmx-alpine-morph-1.8.5.min.js"),
+                static("js/vendor/alpinejs-collapse-3.11.1.min.js"),
+                static("js/vendor/alpinejs-mask-3.11.1.min.js"),
+                static("js/vendor/alpinejs-morph-3.11.1.min.js"),
+                static("js/vendor/alpinejs-3.11.1.min.js"),
             ]
             response = generate_link_header(response, files_css, files_scripts, files_fonts)
         return response
