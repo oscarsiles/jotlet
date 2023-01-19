@@ -32,7 +32,8 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
 ENV PATH="$VIRTUAL_ENV/bin:$POETRY_HOME/bin:$PATH" \
     POETRY_VIRTUALENVS_PATH="$VIRTUAL_ENV"
 COPY poetry.lock pyproject.toml /workspace/
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi \
+    && poetry self add poetry-plugin-up
 ENV DEBIAN_FRONTEND=dialog
 RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
     && chown -R $USERNAME /home/$USERNAME/.vscode-server
