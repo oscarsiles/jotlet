@@ -22,7 +22,7 @@
          hidden
      {% endif %}>
     {% cached_as post None "post_cache" post.pk post.approved request.session.session_key is_owner is_moderator reactions has_reacted post.updated_at board.preferences %}
-    <div class="card post-card avoid-pagebreak mb-2
+    <div class="card post-card border-secondary-subtle avoid-pagebreak mb-2
                 {% if not post.approved and is_moderator %}
                     opacity-75
                 {% endif %}"
@@ -63,7 +63,7 @@
                                 {% endif %}
                                 {% if post.tree_depth > 0 %}
                                     <button type="button"
-                                            class="btn btn-link text-black shadow-none px-0 py-1 opacity-25"
+                                            class="btn btn-link shadow-none px-0 py-1 opacity-25"
                                             x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
                                             title="Highlight parent post"
                                             @click="if (!isShownParent{{ post.tree_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
@@ -76,7 +76,7 @@
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
                                             {# djlint:off #}
-                                            <button class="btn btn-link text-black shadow-none p-1" key="{{ post.pk }}-collapse-replies" @click="isRepliesCollapsed = !isRepliesCollapsed">
+                                            <button class="btn btn-link shadow-none p-1" key="{{ post.pk }}-collapse-replies" @click="isRepliesCollapsed = !isRepliesCollapsed">
                                                 <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
                                                 <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
                                             </button>
@@ -84,7 +84,7 @@
                                         {% endif %}
                                         {% if board.preferences.allow_guest_replies or is_moderator %}
                                             {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
-                                                <button class="btn btn-link text-black shadow-none p-1"
+                                                <button class="btn btn-link shadow-none p-1"
                                                         hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
                                                         hx-target="#modal-1-body-div"
                                                         hx-swap="innerHTML"
@@ -100,7 +100,7 @@
                                 {% if is_owner or is_moderator %}
                                     {% if board.preferences.require_post_approval %}
                                         {% if perms.boards.can_approve_posts or is_moderator %}
-                                            <button class="btn btn-link text-black shadow-none p-1"
+                                            <button class="btn btn-link shadow-none p-1"
                                                     hx-post="{% url 'boards:post-toggle-approval' board.slug topic.pk post.pk %}"
                                                     hx-trigger="click"
                                                     hx-swap="none"
@@ -118,7 +118,7 @@
                                         {% endif %}
                                     {% endif %}
                                     <div>
-                                        <button class="btn btn-link text-black shadow-none p-1"
+                                        <button class="btn btn-link shadow-none p-1"
                                                 type="button"
                                                 data-bs-toggle="dropdown"
                                                 aria-expanded="false">
@@ -144,7 +144,7 @@
                                                    hx-swap="innerHTML"
                                                    data-bs-toggle="modal"
                                                    data-bs-target="#modal-1-div"
-                                                   class="btn btn-link text-black shadow-none p-1">
+                                                   class="btn btn-link shadow-none p-1">
                                                     <i class="bi bi-trash pe-2"></i>Delete Post
                                                 </a>
                                             </li>
