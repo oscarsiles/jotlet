@@ -24,51 +24,12 @@
   --bs-btn-active-color: var(--bs-btn-color);
 }
 
-.btn-new-post, .btn-new-topic {
-  --bs-border-opacity: 1;
-  --bs-btn-font-weight: 600;
-  --bs-btn-color: var(--bs-body-color);
-  --bs-btn-bg: var(--bs-body-bg);
-  --bs-btn-border-color: rgba(var(--bs-secondary-rgb),var(--bs-border-opacity));
-  --bs-btn-hover-color: var(--bs-secondary-bg);
-  --bs-btn-hover-bg: var(--bs-secondary-color);
-  --bs-btn-hover-border-color: --bs-btn-border-color;
-  --bs-btn-active-color: var(--bs-btn-hover-color);
-  --bs-btn-active-bg: var(--bs-body-color);
-  --bs-btn-active-border-color: --bs-btn-border-color;
+.dropdown-color-mode {
+  --bs-dropdown-min-width: 8rem;
 }
 
-.btn-approve-all-posts {
-  --bs-border-opacity: 1;
-  --bs-btn-font-weight: 600;
-  --bs-btn-color: var(--bs-success-text);
-  --bs-btn-bg: var(--bs-success-bg-subtle);
-  --bs-btn-border-color: rgba(var(--bs-success-rgb),var(--bs-border-opacity));
-  --bs-btn-hover-color: var(--bs-success-text);
-  --bs-btn-hover-bg: var(--bs-success-border-subtle);
-  --bs-btn-hover-border-color: --bs-btn-border-color;
-  --bs-btn-active-color: var(--bs-success-bg-subtle);
-  --bs-btn-active-bg: var(--bs-success);
-  --bs-btn-active-border-color: --bs-btn-border-color;
-}
-
-.btn-delete-all-posts {
-  --bs-border-opacity: 1;
-  --bs-btn-font-weight: 600;
-  --bs-btn-color: var(--bs-danger-text);
-  --bs-btn-bg: var(--bs-danger-bg-subtle);
-  --bs-btn-border-color: rgba(var(--bs-danger-rgb),var(--bs-border-opacity));
-  --bs-btn-hover-color: var(--bs-danger-text);
-  --bs-btn-hover-bg: var(--bs-danger-border-subtle);
-  --bs-btn-hover-border-color: --bs-btn-border-color;
-  --bs-btn-active-color: var(--bs-danger-bg-subtle);
-  --bs-btn-active-bg: var(--bs-danger);
-  --bs-btn-active-border-color: --bs-btn-border-color;
-}
-
-.dropdown-item-del-bg {
-  --bs-dropdown-link-hover-bg: rgba(var(--bs-danger-rgb), 0.2);
-  --bs-dropdown-link-active-bg: var(--bs-danger);
+.navbar .dropdown-menu .active .bi {
+  display: block !important;
 }
 
 .faded-75 {

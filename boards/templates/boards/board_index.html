@@ -23,7 +23,7 @@
         {% if request.user == board.owner or user.is_staff %}
             <div class="d-flex align-items-center">
                 <small class="d-flex align-items-center">
-                    <span class="badge bg-secondary align-middle">
+                    <span class="badge text-bg-info align-middle">
                         {% get_split_string board.slug as board_split_slug %}
                         ID: {{ board_split_slug }} -
                         <span id="board-online-sessions">0</span>

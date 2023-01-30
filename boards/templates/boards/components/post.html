@@ -63,7 +63,7 @@
                                 {% endif %}
                                 {% if post.tree_depth > 0 %}
                                     <button type="button"
-                                            class="btn btn-link shadow-none px-0 py-1 opacity-25"
+                                            class="btn btn-link shadow-none px-0 py-1 opacity-50"
                                             x-data="{ parentElement: document.getElementById('post-{{ parent.pk }}') }"
                                             title="Highlight parent post"
                                             @click="if (!isShownParent{{ post.tree_depth|add:"-1" }}) { parentElement.scrollIntoView({behavior: 'smooth'}); }; parentElement.classList.toggle('blink');">
