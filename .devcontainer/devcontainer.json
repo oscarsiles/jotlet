@@ -4,5 +4,8 @@
     "service": "jotlet",
     "workspaceFolder": "/workspace",
     "settings": {},
-    "extensions": []
+    "extensions": [],
+    "mounts": [
+        "source=vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
+    ]
 }

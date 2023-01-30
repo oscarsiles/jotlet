@@ -10,7 +10,8 @@
      x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
      @post-deleted.camel="postCount--">
     {% cached_as topic None "topic_posts_list" topic board.is_posting_allowed request.session.session_key request.user is_moderator %}
-    <div class="card border-dark my-2" id="topic-{{ topic.pk }}-title">
+    <div class="card border border-secondary my-2"
+         id="topic-{{ topic.pk }}-title">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <div class="card-title text-break my-0 fs-5 fw-semibold"
@@ -21,7 +22,7 @@
                 </div>
                 {% if request.user == board.owner or request.user.is_staff %}
                     <div>
-                        <button class="btn btn-link text-black shadow-none p-1"
+                        <button class="btn btn-link shadow-none p-1"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -86,10 +87,10 @@
         </div>
     </div>
     {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
-        <div class="d-flex bg-white rounded d-print-none my-2"
+        <div class="d-flex bg-body rounded d-print-none my-2"
              id="topic-{{ topic.pk }}-create">
             <button id="topic-{{ topic.pk }}-create-url"
-                    class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-1 fs-4"
+                    class="btn btn-new-post shadow-none flex-grow-1 p-1 fs-4"
                     hx-get="{% url 'boards:post-create' board.slug topic.pk %}"
                     hx-target="#modal-1-body-div"
                     hx-swap="innerHTML"

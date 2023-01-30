@@ -53,8 +53,8 @@
                     );
                     background-size: cover;
                 {% endcached_as %}
-                {% else %}
-                    background-color: {{ board.preferences.background_color }};
+                {% elif board.preferences.background_color != "#ffffff" %}
+                    background-color: {{ board.preferences.background_color }}!important;
                 {% endif %}
             }
         {% endcached_as %}
@@ -65,8 +65,8 @@
         {% if request.user == board.owner or user.is_staff %}
             <div class="col-md-auto d-print-none px-2" id="boardControls-div">
                 {% cached_as board None "board_newTopic_cache" board.pk %}
-                <div class="d-flex bg-white rounded my-2" id="newTopic-card-div">
-                    <button class="btn btn-outline-dark shadow-none card-link flex-grow-1 p-3 fs-4"
+                <div class="d-flex bg-body rounded my-2" id="newTopic-card-div">
+                    <button class="btn btn-new-topic shadow-none card-link flex-grow-1 p-3 fs-4"
                             hx-get="{% url 'boards:topic-create' board.slug %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
@@ -78,8 +78,8 @@
                 </div>
             {% endcached_as %}
             {% if board.preferences.require_post_approval %}
-                <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
-                    <button class="btn btn-outline-success shadow-none card-link flex-grow-1 p-3 fs-4"
+                <div class="d-flex bg-body rounded my-2" id="deletePosts-card-div">
+                    <button class="btn btn-approve-all-posts shadow-none card-link flex-grow-1 p-3 fs-4"
                             hx-get="{% url 'boards:board-posts-approve' board.slug %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"
@@ -91,8 +91,8 @@
                 </div>
             {% endif %}
             {% if board.get_post_count > 0 %}
-                <div class="d-flex bg-white rounded my-2" id="deletePosts-card-div">
-                    <button class="btn btn-outline-danger shadow-none card-link flex-grow-1 p-3 fs-4"
+                <div class="d-flex bg-body rounded my-2" id="deletePosts-card-div">
+                    <button class="btn btn-delete-all-posts shadow-none card-link flex-grow-1 p-3 fs-4"
                             hx-get="{% url 'boards:board-posts-delete' board.slug %}"
                             hx-target="#modal-1-body-div"
                             hx-swap="innerHTML"

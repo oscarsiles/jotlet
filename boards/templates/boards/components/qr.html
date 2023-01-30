@@ -10,14 +10,14 @@
              height="350"/>
     </div>
     <div class="d-flex justify-content-center">
-        <span class="badge bg-secondary fs-5">{{ request.get_host }}
+        <span class="badge text-bg-info mt-2 fs-5">{{ request.get_host }}
             <i class="bi bi-arrow-right-square mx-2"></i>
         {{ split_slug }}</span>
     </div>
 </div>
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button"
-            class="btn btn-secondary btn-default"
+            class="btn btn-outline-secondary"
             data-bs-dismiss="modal">Close</button>
 </div>
 <h5 id="modal-1-title-div" hx-swap-oob="true">QR Code</h5>

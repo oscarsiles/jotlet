@@ -7,10 +7,12 @@
         {% crispy form %}
     </table>
 </form>
-<script defer src="{% static 'boards/js/components/board_easymde.js' %}" nonce="{{ CSP_NONCE }}"></script>
+<script defer
+        src="{% static 'boards/js/components/board_easymde.js' %}"
+        nonce="{{ CSP_NONCE }}"></script>
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
     <button type="button"
-            class="btn btn-default"
+            class="btn btn-outline-secondary"
             data-bs-dismiss="modal"
             tabindex="-1">Close</button>
     <button type="submit" class="btn btn-success" form="post-form" tabindex="0">

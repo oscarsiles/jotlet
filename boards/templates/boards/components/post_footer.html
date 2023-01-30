@@ -89,7 +89,7 @@
                                             name="score"
                                             type="submit"
                                             :value="star"
-                                            :class="isHover ? 'text-black' : 'text-black-50';"
+                                            :class="isHover ? '' : 'btn-link-50';"
                                             :title="isOwner ? 'You cannot react to your own post' : star == rating ? 'Delete rating' : star;"
                                             :disabled="isOwner || isDisabled"
                                             @click="rate(star); $el.focus();"
@@ -116,7 +116,7 @@
         </div>
         {% if is_moderator and reactions.count > 0 %}
             <div class="d-flex align-items-center">
-                <button class="btn btn-link text-black shadow-none p-0"
+                <button class="btn btn-link shadow-none p-0"
                         hx-get="{% url 'boards:post-reactions-delete' board.slug topic.pk post.pk %}"
                         hx-target="#modal-1-body-div"
                         hx-swap="innerHTML"

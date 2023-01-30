@@ -1,6 +1,6 @@
 {% load static cache %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="auto">
     <head>
         <title hx-disable x-ignore>
             {% block title %}
@@ -13,6 +13,7 @@
         <meta name="keywords" content="audience response"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta name="htmx-config" content='{"includeIndicatorStyles": false}'/>
+        <script src="{% static 'js/color-mode-toggler.js' %}" nonce="{{ CSP_NONCE }}"></script>
         {% comment %} favicon {% endcomment %}
         <link href="{% static 'favicon/apple-touch-icon.png' %}"
               rel="apple-touch-icon"
@@ -45,25 +46,25 @@
                 src="{% static 'js/vendor/bootstrap-5.3.0-alpha1.bundle.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/htmx-1.8.4.min.js' %}"
+                src="{% static 'js/vendor/htmx-1.8.5.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer src="{% static 'js/base.js' %}" nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/htmx-alpine-morph-1.8.4.min.js' %}"
+                src="{% static 'js/vendor/htmx-alpine-morph-1.8.5.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         {% block head %}
         {% endblock head %}
         <script defer
-                src="{% static 'js/vendor/alpinejs-collapse-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-collapse-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-mask-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-mask-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-morph-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-morph-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
         <script defer
-                src="{% static 'js/vendor/alpinejs-3.10.4.min.js' %}"
+                src="{% static 'js/vendor/alpinejs-3.11.1.min.js' %}"
                 nonce="{{ CSP_NONCE }}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
@@ -132,6 +133,10 @@
                                         </li>
                                     {% endcache %}
                                 {% endif %}
+                                <li class="nav-item py-2 py-xxl-1">
+                                    <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
+                                    <hr class="d-xxl-none my-2 opacity-50"/>
+                                </li>
                                 {% if request.user.is_authenticated %}
                                     {% cache 86400 navbar-user-menu request.path request.user %}
                                     <li class="nav-item dropdown">
@@ -180,13 +185,60 @@
                                 </li>
                             {% endcache %}
                         {% endif %}
+                        <li class="nav-item py-2 py-xxl-1">
+                            <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
+                            <hr class="d-xxl-none my-2 opacity-50"/>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+                                    id="bd-theme"
+                                    type="button"
+                                    aria-expanded="false"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-display="static">
+                                <span class="theme-icon-active">
+                                    <i class="bi bi-sun-fill"></i>
+                                </span>
+                                <span class="d-lg-none ms-2">Toggle theme</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-color-mode"
+                                aria-labelledby="bd-theme">
+                                <li>
+                                    <button type="button"
+                                            class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="light">
+                                        <i class="bi bi-sun-fill pe-1"></i>
+                                        <span>Light</span>
+                                        <i class="bi bi-check2 ms-auto d-none"></i>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button"
+                                            class="dropdown-item d-flex align-items-center active"
+                                            data-bs-theme-value="dark">
+                                        <i class="bi bi-moon-stars-fill pe-1"></i>
+                                        <span>Dark</span>
+                                        <i class="bi bi-check2 ms-auto d-none"></i>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button"
+                                            class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="auto">
+                                        <i class="bi bi-circle-half pe-1"></i>
+                                        <span>Auto</span>
+                                        <i class="bi bi-check2 ms-auto d-none"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>
         </span>
     </div>
 </nav>
-<div class="d-flex flex-column overflow-auto flex-grow-1 gap-2 pt-2"
+<div class="d-flex flex-column flex-grow-1 overflow-auto bg-body gap-2 pt-2"
      id="main-content-div">
     {% include "components/messages.html" %}
     {% block content %}
