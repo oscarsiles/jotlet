@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views import generic
 
 from boards.filters import BoardFilter
-from boards.forms import SearchBoardsForm
+from boards.forms import BoardSearchForm
 from boards.mixins import BoardListLinkHeaderMixin, PaginatedFilterViewsMixin
 from boards.models import Board
 from jotlet.mixins.headers import JotletLinkHeaderMixin
@@ -14,7 +14,7 @@ from jotlet.mixins.headers import JotletLinkHeaderMixin
 class IndexView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, generic.FormView):
     model = Board
     template_name = "boards/index.html"
-    form_class = SearchBoardsForm
+    form_class = BoardSearchForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
