@@ -1,3 +1,5 @@
+from typing import List
+
 from cachalot.api import invalidate
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.bootstrap import Field, PrependedText
@@ -6,20 +8,21 @@ from crispy_forms.layout import ButtonHolder, Div, Layout, Submit
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
 from .models import Board, BoardPreferences, Post
 
 # make sure to support legacy 6-digit slugs
-slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 lowercase letters and/or digits.")
+slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 letters and/or digits.")
 
 
 def validate_board_exists(board_slug):
     try:
         Board.objects.get(slug=board_slug)
-    except Board.DoesNotExist:
-        raise forms.ValidationError("Board does not exist.")
+    except Board.DoesNotExist as ex:
+        raise forms.ValidationError("Board does not exist.") from ex
 
 
 def validate_percentage(percentage):
@@ -106,7 +109,7 @@ class BoardFilterForm(forms.Form):
 
 class BoardPreferencesForm(forms.ModelForm):
     checkbox_classes = "form-check-input h-auto my-0"
-    initial_moderators = []
+    initial_moderators: List[AbstractBaseUser] = []
     initial_require_post_approval = False
     initial_board = None
     moderators = forms.CharField(
@@ -116,7 +119,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
     class Meta:
         model = BoardPreferences
-        exclude = ["board"]
+        exclude = ["board"]  # pylint: disable=modelform-uses-exclude
         labels = {
             "type": "Board Type",
             "enable_latex": "Enable LaTeX",
@@ -277,7 +280,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
         return value
 
-    def save(self):
+    def save(self, commit=True):
         preferences = super().save()
 
         # approve all posts if post approval is disabled
@@ -288,10 +291,10 @@ class BoardPreferencesForm(forms.ModelForm):
         return preferences
 
 
-class SearchBoardsForm(forms.Form):
+class BoardSearchForm(forms.Form):
     board_slug = forms.CharField(
         label="Board ID",
-        help_text="Enter the board ID given as #### #### (lowercase letters and/or digits only)",
+        help_text="Enter the board ID given as #### #### (letters and/or digits only, case insensitive)",
     )
 
     def __init__(self, *args, **kwargs):
@@ -305,7 +308,7 @@ class SearchBoardsForm(forms.Form):
         )
 
     def clean_board_slug(self):
-        board_slug = self.cleaned_data["board_slug"].replace(" ", "").replace("-", "")
+        board_slug = self.cleaned_data["board_slug"].replace(" ", "").replace("-", "").lower()
         slug_validator(board_slug)
         validate_board_exists(board_slug)
         return board_slug.replace(" ", "")

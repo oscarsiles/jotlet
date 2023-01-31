@@ -1,4 +1,4 @@
-from boards.forms import BoardPreferencesForm, SearchBoardsForm
+from boards.forms import BoardPreferencesForm, BoardSearchForm
 from boards.models import Post
 
 TEST_FORM_DATA = {
@@ -62,12 +62,12 @@ class TestBoardPreferencesForm:
         assert form.errors["background_opacity"] == ["Value needs to be between 0.0 and 1.0."]
 
 
-class TestSearchBoardsForm:
+class TestBoardSearchForm:
     def test_search_boards_form_valid(self, board):
         form_data = {
             "board_slug": f"{board.slug}",
         }
-        form = SearchBoardsForm(data=form_data)
+        form = BoardSearchForm(data=form_data)
         assert form.is_valid()
 
     def test_search_clean_board_slug(self, board):
@@ -76,7 +76,17 @@ class TestSearchBoardsForm:
         form_data = {
             "board_slug": " 12 34-56-ab",
         }
-        form = SearchBoardsForm(data=form_data)
+        form = BoardSearchForm(data=form_data)
+        assert form.is_valid()
+        assert form.cleaned_data["board_slug"] == "123456ab"
+
+    def test_search_clean_board_slug_uppercase(self, board):
+        board.slug = "123456ab"
+        board.save()
+        form_data = {
+            "board_slug": " 12 34-56-AB",
+        }
+        form = BoardSearchForm(data=form_data)
         assert form.is_valid()
         assert form.cleaned_data["board_slug"] == "123456ab"
 
@@ -84,13 +94,13 @@ class TestSearchBoardsForm:
         form_data = {
             "board_slug": "x",
         }
-        form = SearchBoardsForm(data=form_data)
+        form = BoardSearchForm(data=form_data)
         assert not form.is_valid()
-        assert form.errors["board_slug"] == ["ID should be 6 or 8 lowercase letters and/or digits."]
+        assert form.errors["board_slug"] == ["ID should be 6 or 8 letters and/or digits."]
 
     def test_search_boards_form_not_exist(self, board):
         test_slug = "123456ab" if board.slug != "123456ab" else "123456cd"
         form_data = {"board_slug": test_slug}
-        form = SearchBoardsForm(data=form_data)
+        form = BoardSearchForm(data=form_data)
         assert not form.is_valid()
         assert form.errors["board_slug"] == ["Board does not exist."]
