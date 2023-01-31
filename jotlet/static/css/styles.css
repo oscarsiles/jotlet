@@ -32,6 +32,10 @@
   color-scheme: dark;
 }
 
+[data-bs-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0.7);
+}
+
 .navbar .dropdown-menu .active .bi {
   display: block !important;
 }
