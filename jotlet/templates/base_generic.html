@@ -133,11 +133,11 @@
                                         </li>
                                     {% endcache %}
                                 {% endif %}
-                                <li class="nav-item py-2 py-xxl-1">
-                                    <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
-                                    <hr class="d-xxl-none my-2 opacity-50"/>
-                                </li>
                                 {% if request.user.is_authenticated %}
+                                    <li class="nav-item py-2 py-xxl-1">
+                                        <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
+                                        <hr class="d-xxl-none my-2 opacity-50"/>
+                                    </li>
                                     {% cache 86400 navbar-user-menu request.path request.user %}
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle"
