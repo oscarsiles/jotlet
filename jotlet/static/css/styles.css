@@ -28,6 +28,10 @@
   --bs-dropdown-min-width: 8rem;
 }
 
+[data-bs-theme="dark"] input {
+  color-scheme: dark;
+}
+
 .navbar .dropdown-menu .active .bi {
   display: block !important;
 }
