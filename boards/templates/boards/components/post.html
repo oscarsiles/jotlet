@@ -16,7 +16,7 @@
      hx-target="this"
      hx-ext="alpine-morph"
      hx-swap="morph"
-     x-data="{ isRepliesCollapsed: false, isShownParent{{ post.tree_depth }}: false }"
+     x-data="{ isCollapsedReplies: $persist(false).as('isCollapsedReplies-{{ post.pk }}').using(sessionStorage), isShownParent{{ post.tree_depth }}: false }"
      x-init="postCount++"
      {% if not post.approved and not is_owner and not is_moderator %}
          hidden
@@ -76,9 +76,9 @@
                                     {% if post.approved %}
                                         {% if post.get_descendant_count > 0 %}
                                             {# djlint:off #}
-                                            <button class="btn btn-link shadow-none p-1" key="{{ post.pk }}-collapse-replies" @click="isRepliesCollapsed = !isRepliesCollapsed">
-                                                <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isRepliesCollapsed"></i>
-                                                <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isRepliesCollapsed"></i>
+                                            <button class="btn btn-link shadow-none p-1" key="{{ post.pk }}-collapse-replies" @click="isCollapsedReplies = !isCollapsedReplies">
+                                                <i class="bi bi-arrows-collapse" title="Collapse {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="!isCollapsedReplies"></i>
+                                                <i class="bi bi-arrows-expand" title="Expand {{ post.get_descendant_count }} repl{{ post.get_descendant_count|pluralize:"y,ies" }}" x-show="isCollapsedReplies"></i>
                                             </button>
                                             {# djlint:on #}
                                         {% endif %}
@@ -176,7 +176,7 @@
 {% if board.preferences.type == 'r' %}
     {% if post.approved or is_owner or is_moderator %}
         <div x-ref="post-{{ post.pk }}-replies"
-             x-show="!isRepliesCollapsed"
+             x-show="!isCollapsedReplies"
              x-collapse
              {% if post.tree_depth <= 2 %}
                  class="ps-4"
