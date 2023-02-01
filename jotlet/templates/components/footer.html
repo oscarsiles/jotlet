@@ -2,9 +2,9 @@
 {% settings_value "FEEDBACK_EMAIL" as feedback_email %}
 {% settings_value "VERSION" as version %}
 {% cache 86400 footer_cache feedback_email version %}
-<div class="page-footer container-fluid d-flex flex-shrink-1 justify-content-start px-0 bg-body-tertiary bg-opacity-10">
+<div class="page-footer container-fluid d-flex flex-shrink-1 justify-content-start px-0 bg-body-tertiary bg-opacity-75">
     <div class="d-flex flex-fill px-3 py-1">
-        <div class="text-secondary flex-fill">
+        <div class="text-body-tertiary flex-fill">
             <small>
                 <div class="d-sm-flex justify-content-between">
                     <div>
@@ -13,7 +13,7 @@
                         <a class="text-reset" href="{% url 'terms-of-use' %}">terms</a>.
                     </div>
                     {% if feedback_email %}
-                        <div class="d-print-none">
+                        <div class="d-print-none text-body-secondary">
                             <i class="bi bi-envelope"></i>
                             <a class="text-reset"
                                href="mailto:{{ feedback_email }}?subject=Jotlet%20Feedback%20(v{{ version }})"
