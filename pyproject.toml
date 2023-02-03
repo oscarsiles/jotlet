@@ -44,8 +44,8 @@ boto3 = "^1.26.59"
 channels = "^4.0.0"
 channels-redis = "^4.0.0"
 crispy-bootstrap5 = "^0.7"
-Django = { extras = ["argon2"], version = "^4.1.5" }
-django = { extras = ["argon2"], version = "^4.1.5" }
+Django = { extras = ["argon2"], version = "^4.1.6" }
+django = { extras = ["argon2"], version = "^4.1.6" }
 django-allauth = "^0.52.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^9.0" }
 django-auto-prefetch = "^1.4.0"
