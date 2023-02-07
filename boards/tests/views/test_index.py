@@ -19,9 +19,7 @@ class TestIndexView:
     def test_board_search_invalid(self, client):
         response = client.post(reverse("boards:index"), {"board_slug": "invalid"})
         assert response.status_code == 200
-        assertFormError(
-            response.context["form"], "board_slug", "ID should be 6 or 8 lowercase letters and/or digits."
-        )
+        assertFormError(response.context["form"], "board_slug", "ID should be 6 or 8 letters and/or digits.")
 
     def test_board_search_not_found(self, client, board):
         board.slug = "00000001"
