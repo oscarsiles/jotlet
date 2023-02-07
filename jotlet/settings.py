@@ -222,16 +222,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
-]
-if not TESTING:
-    AUTHENTICATION_BACKENDS = ["axes.backends.AxesBackend"] + AUTHENTICATION_BACKENDS
 
-AUTH_USER_MODEL = "accounts.User"
-
-AXES_ENABLED = not TESTING
+AXES_ENABLED = env("AXES_ENABLED", default=not TESTING)
 AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
 AXES_USERNAME_FORM_FIELD = "login"
 AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
@@ -240,6 +232,15 @@ AXES_LOCKOUT_URL = "/accounts/lockout/"
 AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=0)
 if TESTING:
     SILENCED_SYSTEM_CHECKS = ["axes.W001"]
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+if AXES_ENABLED:
+    AUTHENTICATION_BACKENDS = ["axes.backends.AxesBackend"] + AUTHENTICATION_BACKENDS
+
+AUTH_USER_MODEL = "accounts.User"
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
