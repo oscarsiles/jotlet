@@ -26,5 +26,16 @@ function toastNotification() {
 }
 
 function hcaptchaReady() {
-  hcaptcha.render("hcaptcha-div", {});
+  if (typeof hcaptcha != "undefined") {
+    hcaptcha.render("hcaptcha-div", {});
+  }
+}
+
+function turnstileReady() {
+  if (typeof turnstile != "undefined") {
+    if (document.getElementsByTagName("iframe").length > 0) {
+      turnstile.remove("#cf-turnstile-div");
+    }
+    turnstile.render("#cf-turnstile-div", {});
+  }
 }

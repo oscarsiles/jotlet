@@ -1,15 +1,24 @@
 {% if HCAPTCHA_SITE_KEY %}
-    <script async src="https://hcaptcha.com/1/api.js?onload=hcaptchaReady&render=explicit"></script>
+    {% if request.htmx.trigger != 'login-form' %}
+        <script async
+                src="https://hcaptcha.com/1/api.js?onload=hcaptchaReady&render=explicit"></script>
+    {% endif %}
     <div class="d-flex justify-content-center mb-3 h-captcha"
          id="hcaptcha-div"
          data-sitekey="{{ HCAPTCHA_SITE_KEY }}"
-         x-init="if (typeof hcaptcha != 'undefined') { hcaptcha.render($el.id) }">
+         x-init="hcaptchaReady();"
+         :data-theme="localStorage.getItem('theme')">
     </div>
 {% elif CF_TURNSTILE_SITE_KEY %}
-    <script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+    {% if request.htmx.trigger != 'login-form' %}
+        <script async
+                defer
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=turnstileReady&render=explicit"></script>
+    {% endif %}
     <div class="d-flex justify-content-center mb-3 cf-turnstile"
          id="cf-turnstile-div"
          data-sitekey="{{ CF_TURNSTILE_SITE_KEY }}"
-         data-theme="light">
+         :data-theme="localStorage.getItem('theme')"
+         x-init="turnstileReady();">
     </div>
 {% endif %}
