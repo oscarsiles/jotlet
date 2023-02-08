@@ -147,13 +147,13 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 
 [[package]]
 name = "autobahn"
-version = "23.1.1"
+version = "23.1.2"
 description = "WebSocket client & server library, WAMP real-time framework"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "autobahn-23.1.1.tar.gz", hash = "sha256:a88882ab4700ee9eee46c69c38e2b625f6fda48ab1ce61cf7b58b23cf2fadcb8"},
+    {file = "autobahn-23.1.2.tar.gz", hash = "sha256:c5ef8ca7422015a1af774a883b8aef73d4954c9fcd182c9b5244e08e973f7c3a"},
 ]
 
 [package.dependencies]
@@ -163,7 +163,7 @@ setuptools = "*"
 txaio = ">=21.2.1"
 
 [package.extras]
-all = ["PyGObject (>=3.40.0)", "argon2_cffi (>=20.1.0)", "attrs (>=20.3.0)", "base58 (>=2.1.0)", "cbor2 (>=5.2.0)", "cffi (>=1.14.5)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi (>=2.1.1)", "flatbuffers (>=22.12.6)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "msgpack (>=1.0.2)", "passlib (>=1.7.4)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "py-ubjson (>=0.16.1)", "pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "python-snappy (>=0.6.0)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "rlp (>=2.0.1)", "service_identity (>=18.1.0)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "ujson (>=4.0.2)", "web3 (>=5.31.3)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)", "zope.interface (>=5.2.0)"]
+all = ["PyGObject (>=3.40.0)", "argon2_cffi (>=20.1.0)", "attrs (>=20.3.0)", "base58 (>=2.1.0)", "cbor2 (>=5.2.0)", "cffi (>=1.14.5)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi @ git+https://github.com/ethereum/eth-abi.git@v4.0.0-beta.2", "flatbuffers (>=22.12.6)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "msgpack (>=1.0.2)", "passlib (>=1.7.4)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "py-ubjson (>=0.16.1)", "pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "python-snappy (>=0.6.0)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "rlp (>=2.0.1)", "service_identity (>=18.1.0)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "ujson (>=4.0.2)", "web3[ipfs] @ git+https://github.com/ethereum/web3.py.git@v6.0.0-beta.9", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)", "zope.interface (>=5.2.0)"]
 compress = ["python-snappy (>=0.6.0)"]
 dev = ["backports.tempfile (>=1.0)", "bumpversion (>=0.5.3)", "codecov (>=2.0.15)", "flake8 (<5)", "humanize (>=0.5.1)", "mypy (>=0.610)", "passlib", "pep8-naming (>=0.3.3)", "pip (>=9.0.1)", "pyenchant (>=1.6.6)", "pyflakes (>=1.0.0)", "pyinstaller (>=4.2)", "pylint (>=1.9.2)", "pytest (>=3.4.2)", "pytest-aiohttp", "pytest-asyncio (>=0.14.0)", "pytest-runner (>=2.11.1)", "pyyaml (>=4.2b4)", "qualname", "sphinx (>=1.7.1)", "sphinx-autoapi (>=1.7.0)", "sphinx_rtd_theme (>=0.1.9)", "sphinxcontrib-images (>=0.9.1)", "tox (>=4.2.8)", "tox-gh-actions (>=2.2.0)", "twine (>=3.3.0)", "twisted (>=22.10.0)", "txaio (>=20.4.1)", "watchdog (>=0.8.3)", "wheel (>=0.36.2)", "yapf (==0.29.0)"]
 encryption = ["pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "service_identity (>=18.1.0)"]
@@ -172,7 +172,7 @@ scram = ["argon2_cffi (>=20.1.0)", "cffi (>=1.14.5)", "passlib (>=1.7.4)"]
 serialization = ["cbor2 (>=5.2.0)", "flatbuffers (>=22.12.6)", "msgpack (>=1.0.2)", "py-ubjson (>=0.16.1)", "ujson (>=4.0.2)"]
 twisted = ["attrs (>=20.3.0)", "twisted (>=20.3.0)", "zope.interface (>=5.2.0)"]
 ui = ["PyGObject (>=3.40.0)"]
-xbr = ["base58 (>=2.1.0)", "cbor2 (>=5.2.0)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi (>=2.1.1)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "rlp (>=2.0.1)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "web3 (>=5.31.3)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)"]
+xbr = ["base58 (>=2.1.0)", "cbor2 (>=5.2.0)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi @ git+https://github.com/ethereum/eth-abi.git@v4.0.0-beta.2", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "rlp (>=2.0.1)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "web3[ipfs] @ git+https://github.com/ethereum/web3.py.git@v6.0.0-beta.9", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)"]
 
 [[package]]
 name = "autoflake8"
@@ -289,18 +289,18 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.65"
+version = "1.26.66"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.65-py3-none-any.whl", hash = "sha256:9e23ec51e1fe162ecb5efee41bd9346d90ebbb8ff094ef8088223305d48ffaec"},
-    {file = "boto3-1.26.65.tar.gz", hash = "sha256:9fc94b3078f5047c1fc40529fa12eb82a2432bb1dca0ee37b1c54f902f46191f"},
+    {file = "boto3-1.26.66-py3-none-any.whl", hash = "sha256:3a1ffeecfe6e61d414617294b822b008e604ccfd83434c483f429a2922db314d"},
+    {file = "boto3-1.26.66.tar.gz", hash = "sha256:ebea98f3054b467caf6c8aead9f0ef78395a78bce78b04db12fde452c02b3734"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.65,<1.30.0"
+botocore = ">=1.29.66,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -309,14 +309,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.65"
+version = "1.29.66"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.65-py3-none-any.whl", hash = "sha256:f566a9aa1b477cd1bdedb8f694f99fc257240eacdd7a73cc7d19d43cb20870b9"},
-    {file = "botocore-1.29.65.tar.gz", hash = "sha256:6b7ae2dee621cb863935461ba4b8aa32420e945f5b7d94bb2852b79f90b9f8de"},
+    {file = "botocore-1.29.66-py3-none-any.whl", hash = "sha256:772da07d2a49a9d2dc8d23e060e88eb72881e58074be7c813aa946ecdbd0e5b5"},
+    {file = "botocore-1.29.66.tar.gz", hash = "sha256:4d1ac019e677cc39e615f9d473fa658ea22a8d906c1c562f9406b5d0cd854cbd"},
 ]
 
 [package.dependencies]
@@ -1285,14 +1285,14 @@ tests = ["coverage"]
 
 [[package]]
 name = "djlint"
-version = "1.19.13"
+version = "1.19.14"
 description = "HTML Template Linter and Formatter"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2,<4.0.0"
 files = [
-    {file = "djlint-1.19.13-py3-none-any.whl", hash = "sha256:172e1185ddd3bcce9bba68f6fe72d6a606c2ef528143447007b0c9e5a8472f60"},
-    {file = "djlint-1.19.13.tar.gz", hash = "sha256:314aa2d9183d3ec9f79e9cde1988272cf127766a529730e4a6d8245cf4dd4d1f"},
+    {file = "djlint-1.19.14-py3-none-any.whl", hash = "sha256:c640873e4d6e62344c587502e985b38e2cff650f86fdb9f340c5b5eeff55976f"},
+    {file = "djlint-1.19.14.tar.gz", hash = "sha256:222ebd45443d20a6bd3f90e4500ffcdb460bc0a17b0f2cdd092ba7c9fe83961e"},
 ]
 
 [package.dependencies]
@@ -1302,7 +1302,7 @@ cssbeautifier = ">=1.14.4,<2.0.0"
 html-tag-names = ">=0.1.2,<0.2.0"
 html-void-elements = ">=0.1.0,<0.2.0"
 jsbeautifier = ">=1.14.4,<2.0.0"
-pathspec = ">=0.10.0,<0.11.0"
+pathspec = ">=0.11.0,<0.12.0"
 PyYAML = ">=6.0,<7.0"
 regex = ">=2022.1.18,<2023.0.0"
 tomli = {version = ">=2.0.1,<3.0.0", markers = "python_version < \"3.11\""}
@@ -1371,14 +1371,14 @@ doc = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
 
 [[package]]
 name = "faker"
-version = "16.6.1"
+version = "16.7.0"
 description = "Faker is a Python package that generates fake data for you."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Faker-16.6.1-py3-none-any.whl", hash = "sha256:2375d0bbaf405dc4f1cbc771485a78ad952c776798e5c228eef3e7b337f78868"},
-    {file = "Faker-16.6.1.tar.gz", hash = "sha256:b76e5d2405470e3d38d37d1bfaa9d9bbf171bdf41c814f5bbd8117b121f6bccb"},
+    {file = "Faker-16.7.0-py3-none-any.whl", hash = "sha256:c522c78f2d7572724bde05de8571205e9a594f95b57e08e388e0677976ebd400"},
+    {file = "Faker-16.7.0.tar.gz", hash = "sha256:4b98c197169e083304afd12c1ee1e5101f5c817161c3d690eb318a15b805108d"},
 ]
 
 [package.dependencies]
@@ -2026,14 +2026,14 @@ files = [
 
 [[package]]
 name = "pathspec"
-version = "0.10.3"
+version = "0.11.0"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pathspec-0.10.3-py3-none-any.whl", hash = "sha256:3c95343af8b756205e2aba76e843ba9520a24dd84f68c22b9f93251507509dd6"},
-    {file = "pathspec-0.10.3.tar.gz", hash = "sha256:56200de4077d9d0791465aa9095a01d421861e405b5096955051deefd697d6f6"},
+    {file = "pathspec-0.11.0-py3-none-any.whl", hash = "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229"},
+    {file = "pathspec-0.11.0.tar.gz", hash = "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc"},
 ]
 
 [[package]]
@@ -2535,14 +2535,14 @@ pytest = "*"
 
 [[package]]
 name = "pytest-xdist"
-version = "3.1.0"
+version = "3.2.0"
 description = "pytest xdist plugin for distributed testing, most importantly across multiple CPUs"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-xdist-3.1.0.tar.gz", hash = "sha256:40fdb8f3544921c5dfcd486ac080ce22870e71d82ced6d2e78fa97c2addd480c"},
-    {file = "pytest_xdist-3.1.0-py3-none-any.whl", hash = "sha256:70a76f191d8a1d2d6be69fc440cdf85f3e4c03c08b520fd5dc5d338d6cf07d89"},
+    {file = "pytest-xdist-3.2.0.tar.gz", hash = "sha256:fa10f95a2564cd91652f2d132725183c3b590d9fdcdec09d3677386ecf4c1ce9"},
+    {file = "pytest_xdist-3.2.0-py3-none-any.whl", hash = "sha256:336098e3bbd8193276867cc87db8b22903c3927665dff9d1ac8684c02f597b68"},
 ]
 
 [package.dependencies]
@@ -2699,14 +2699,14 @@ files = [
 
 [[package]]
 name = "redis"
-version = "4.4.2"
+version = "4.5.1"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.4.2-py3-none-any.whl", hash = "sha256:e6206448e2f8a432871d07d432c13ed6c2abcf6b74edb436c99752b1371be387"},
-    {file = "redis-4.4.2.tar.gz", hash = "sha256:a010f6cb7378065040a02839c3f75c7e0fb37a87116fb4a95be82a95552776c7"},
+    {file = "redis-4.5.1-py3-none-any.whl", hash = "sha256:5deb072d26e67d2be1712603bfb7947ec3431fb0eec9c578994052e33035af6d"},
+    {file = "redis-4.5.1.tar.gz", hash = "sha256:1eec3741cda408d3a5f84b78d089c8b8d895f21b3b050988351e925faf202864"},
 ]
 
 [package.dependencies]
@@ -2906,14 +2906,14 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "1.14.0"
+version = "1.15.0"
 description = "Python client for Sentry (https://sentry.io)"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "sentry-sdk-1.14.0.tar.gz", hash = "sha256:273fe05adf052b40fd19f6d4b9a5556316807246bd817e5e3482930730726bb0"},
-    {file = "sentry_sdk-1.14.0-py2.py3-none-any.whl", hash = "sha256:72c00322217d813cf493fe76590b23a757e063ff62fec59299f4af7201dd4448"},
+    {file = "sentry-sdk-1.15.0.tar.gz", hash = "sha256:69ecbb2e1ff4db02a06c4f20f6f69cb5dfe3ebfbc06d023e40d77cf78e9c37e7"},
+    {file = "sentry_sdk-1.15.0-py2.py3-none-any.whl", hash = "sha256:7ad4d37dd093f4a7cb5ad804c6efe9e8fab8873f7ffc06042dc3f3fd700a93ec"},
 ]
 
 [package.dependencies]
@@ -2931,6 +2931,7 @@ falcon = ["falcon (>=1.4)"]
 fastapi = ["fastapi (>=0.79.0)"]
 flask = ["blinker (>=1.1)", "flask (>=0.11)"]
 httpx = ["httpx (>=0.16.0)"]
+huey = ["huey (>=2)"]
 opentelemetry = ["opentelemetry-distro (>=0.35b0)"]
 pure-eval = ["asttokens", "executing", "pure-eval"]
 pymongo = ["pymongo (>=3.1)"]
@@ -3591,4 +3592,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "287bbc9cd27bd8687881726dcad3e2b5ae7968be967ba546fc9fa03afd248487"
+content-hash = "d2d0f60ed5ad993b9e237621db2456ffd58b9f133d73bdef913f339485ad8ec1"
