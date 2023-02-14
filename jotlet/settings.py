@@ -445,6 +445,11 @@ LOGGING = {
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+CRISPY_CLASS_CONVERTERS = {
+    "textinput": "inputtext textinput textInput",
+    "fileinput": "fileinput fileUpload",
+    "passwordinput": "textinput textInput",
+}
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")

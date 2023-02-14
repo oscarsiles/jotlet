@@ -40,19 +40,19 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.26.66"
+boto3 = "^1.26.70"
 channels = "^4.0.0"
 channels-redis = "^4.0.0"
 crispy-bootstrap5 = "^0.7"
-Django = { extras = ["argon2"], version = "^4.1.6" }
-django = { extras = ["argon2"], version = "^4.1.6" }
+Django = { extras = ["argon2"], version = "^4.1.7" }
+django = { extras = ["argon2"], version = "^4.1.7" }
 django-allauth = "^0.52.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^9.0" }
 django-auto-prefetch = "^1.4.0"
 django-axes = "^5.40.1"
 django-cachalot = "^2.5.2"
 django-cacheops = "^6.1"
-django-cleanup = "^6.0.0"
+django-cleanup = "^7.0.0"
 django-cors-headers = "^3.13.0"
 django-csp = "^3.7"
 django-environ = "^0.9.0"
@@ -68,7 +68,7 @@ django-storages = "^1.13.2"
 django-tree-queries = "^0.14.0"
 gunicorn = "^20.1.0"
 httpx = "^0.23.3"
-huey = "^2.4.4"
+huey = "^2.4.5"
 Pillow = "^9.4.0"
 psycopg2 = "^2.9.5"
 python = "^3.8.1"
