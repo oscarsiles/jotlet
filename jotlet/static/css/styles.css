@@ -36,6 +36,12 @@
   filter: brightness(0.7);
 }
 
+[data-bs-theme="dark"] .tagify {
+  --tags-border-color: var(--bs-border-color);
+  --placeholder-color: rgba(255, 255, 255, 0.4);
+  --placeholder-color-focus: rgba(255, 255, 255, 0.25);
+}
+
 .navbar .dropdown-menu .active .bi {
   display: block !important;
 }
