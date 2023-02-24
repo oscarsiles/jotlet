@@ -163,6 +163,13 @@ if DEBUG:
 
 ROOT_URLCONF = "jotlet.urls"
 
+default_loaders = [
+    "django.template.loaders.filesystem.Loader",
+    "django.template.loaders.app_directories.Loader",
+]
+
+cached_loaders = [("django.template.loaders.cached.Loader", default_loaders)]
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -183,6 +190,7 @@ TEMPLATES = [
                 "jotlet.context_processors.captcha_sitekeys",
             ],
             "debug": DEBUG,
+            "loaders": default_loaders if DEBUG else cached_loaders,
         },
     },
 ]
