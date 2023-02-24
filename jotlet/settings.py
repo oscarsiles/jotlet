@@ -245,7 +245,7 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 if AXES_ENABLED:
-    AUTHENTICATION_BACKENDS = ["axes.backends.AxesBackend"] + AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend"] + AUTHENTICATION_BACKENDS
 
 AUTH_USER_MODEL = "accounts.User"
 
