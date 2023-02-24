@@ -173,7 +173,6 @@ cached_loaders = [("django.template.loaders.cached.Loader", default_loaders)]
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "APP_DIRS": True,
         "DIRS": [
             os.path.join(BASE_DIR / "templates"),
             os.path.join(BASE_DIR / "jotlet" / "templates"),
