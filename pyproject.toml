@@ -81,7 +81,7 @@ whitenoise = "^6.4.0"
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.4.0"
 black = "^23.1.0"
-coverage = { extras = ["toml"], version = "^7.2.1" }
+coverage = { extras = ["toml"], version = "^7.2.2" }
 django-coverage-plugin = "^3.0.0"
 django-debug-toolbar = "^3.8.1"
 django-debug-toolbar-template-profiler = "^2.1.0"
