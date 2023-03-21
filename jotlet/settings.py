@@ -388,7 +388,7 @@ CACHEOPS = {
     "boards.reaction": {"ops": "all"},
     "*.*": {"ops": ()},
 }
-CACHEOPS_LRU = env("CACHEOPS_LRU", default=True)
+CACHEOPS_INSIDEOUT = env("CACHEOPS_INSIDEOUT", default=True)
 
 if TESTING:
     CACHEOPS_REDIS = {

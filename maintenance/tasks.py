@@ -12,11 +12,6 @@ def clear_sessions_command():
     return management.call_command("clearsessions")
 
 
-@db_periodic_task(crontab(minute="15", hour="0"), retries=2)
-def clear_conj_keys_command():
-    return management.call_command("reapconjs")
-
-
 @db_periodic_task(crontab(minute="30", hour="0"), retries=2)
 def clear_old_tasks():
     delete_older_than = timezone.now() - datetime.timedelta(days=7)
