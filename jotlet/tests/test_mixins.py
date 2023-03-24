@@ -9,7 +9,7 @@ class TestJotletLinkHeaderMixin:
         assert response.status_code == 200
         assert link_header is not None
 
-        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha1.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha2.min.css')}>; rel=preload; as=style" in link_header
         assert f"<{static('css/vendor/bootstrap-icons-1.10.3.min.css')}>; rel=preload; as=style" in link_header
         assert f"<{static('css/styles.css')}>; rel=preload; as=style" in link_header
         assert (
@@ -17,7 +17,7 @@ class TestJotletLinkHeaderMixin:
             in link_header
         )
         assert f"<{static('js/color-mode-toggler.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/bootstrap-5.3.0-alpha1.bundle.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/bootstrap-5.3.0-alpha2.bundle.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/vendor/htmx-1.8.5.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/base.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/vendor/htmx-alpine-morph-1.8.5.min.js')}>; rel=preload; as=script" in link_header
