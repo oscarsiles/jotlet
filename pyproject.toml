@@ -49,7 +49,7 @@ django = { extras = ["argon2"], version = "^4.1.7" }
 django-allauth = "^0.53.1"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^9.1" }
 django-auto-prefetch = "^1.5.0"
-django-axes = "^5.40.1"
+django-axes = "^5.41.0"
 django-cachalot = "^2.5.3"
 django-cacheops = "^7.0"
 django-cleanup = "^7.0.0"
