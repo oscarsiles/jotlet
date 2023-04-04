@@ -30,7 +30,7 @@ class TestBoardView:
         response = client.get(url)
         link_header = response.get("Link")
         assert link_header is not None
-        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha2.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('css/vendor/bootstrap-5.3.0-alpha3.min.css')}>; rel=preload; as=style" in link_header
         assert f"<{static('css/vendor/easymde-2.18.0.min.css')}>; rel=preload; as=style" in link_header
 
         assert f"<{static('js/vendor/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
