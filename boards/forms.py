@@ -33,15 +33,22 @@ def validate_percentage(percentage):
 class BoardCreateForm(forms.ModelForm):
     class Meta:
         model = Board
-        fields = ["title", "description"]
+        fields = ["title", "description", "locked"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_show_labels = False
         self.helper.form_tag = False
         self.helper.layout = Layout(
             FloatingField("title", placeholder="Title", autofocus=True),
             FloatingField("description", placeholder="Description"),
+            PrependedText(
+                "locked",
+                "Lock Board (only moderators can post)",
+                wrapper_class="d-flex",
+                css_class="form-check-input h-auto my-0",
+            ),
         )
 
 
@@ -126,6 +133,7 @@ class BoardPreferencesForm(forms.ModelForm):
             "require_post_approval": "Posts Require Approval",
             "allow_guest_replies": "Allow Guest Replies",
             "allow_image_uploads": "Allow Image Uploads",
+            "allow_post_editing": "Allow Post Editing",
         }
 
     def __init__(self, *args, **kwargs):
@@ -171,6 +179,12 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "posting_allowed_until",
                 "Allow Posts Until",
+            ),
+            PrependedText(
+                "allow_post_editing",
+                "Allow Post Editing",
+                wrapper_class="d-flex",
+                css_class=self.checkbox_classes,
             ),
             PrependedText(
                 "type",

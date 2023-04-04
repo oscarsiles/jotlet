@@ -21,7 +21,7 @@ from tree_queries.query import TreeQuerySet
 from jotlet.mixins.refresh_from_db_invalidates_cached_properties import InvalidateCachedPropertiesMixin
 
 from .tasks import create_thumbnails, post_image_cleanup
-from .utils import get_image_upload_path, get_random_string, process_image
+from .utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
 
 BOARD_TYPE = (
     ("d", "Default"),
@@ -56,10 +56,14 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    locked = models.BooleanField(default=False)
     history = HistoricalRecords(cascade_delete_history=True)
 
     class Meta(auto_prefetch.Model.Meta):
-        permissions = (("can_view_all_boards", "Can view all boards"),)
+        permissions = (
+            ("can_view_all_boards", "Can view all boards"),
+            ("lock_board", "Can (un)lock all boards"),
+        )
         indexes = [
             GinIndex(
                 OpClass(Upper("title"), name="gin_trgm_ops"),
@@ -99,7 +103,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"{self.title}"
 
     @cached_property
     def get_posts(self):
@@ -149,7 +153,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             is_allowed = self.preferences.posting_allowed_from <= timezone.now()
         elif self.preferences.posting_allowed_until is not None:
             is_allowed = timezone.now() <= self.preferences.posting_allowed_until
-        return is_allowed
+        return is_allowed and not self.locked
 
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
@@ -169,6 +173,8 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     enable_latex = models.BooleanField(default=False)
     enable_identicons = models.BooleanField(default=True)
     require_post_approval = models.BooleanField(default=False)
+    allow_post_editing = models.BooleanField(default=True)
+    require_post_reapproval_on_edit = models.BooleanField(default=False)
     allow_guest_replies = models.BooleanField(default=False)
     allow_image_uploads = models.BooleanField(default=False)
     moderators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="moderated_boards")
@@ -183,7 +189,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ]
 
     def __str__(self):
-        return self.board.title + " preferences"
+        return f"{self.board.title} preferences"
 
     def save(self, *args, **kwargs):
         if self.background_type == "c" or (
@@ -205,6 +211,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    locked = models.BooleanField(default=False)
     history = HistoricalRecords(cascade_delete_history=True)
 
     class Meta(auto_prefetch.Model.Meta):
@@ -213,7 +220,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ]
 
     def __str__(self):
-        return self.subject
+        return f"{self.subject}"
 
     @cached_property
     def get_posts(self):
@@ -245,6 +252,26 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     get_last_post_date.short_description = "Last Post Date"
 
+    @cached_property
+    def is_locked(self):
+        return self.locked or self.board.locked
+
+    @cached_property
+    def is_posting_allowed(self):
+        return not self.is_locked and self.board.is_posting_allowed
+
+    def post_create_allowed(self, request):
+        @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _post_create_allowed(self, request):
+            is_locked = self.is_locked
+            is_allowed = ((self.board.is_posting_allowed or request.user == self.board.owner) and not is_locked) or (
+                request.user.is_staff or get_is_moderator(request.user, self.board)
+            )
+
+            return is_allowed
+
+        return _post_create_allowed(self, request)
+
     def get_absolute_url(self):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
@@ -270,7 +297,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
         ]
 
     def __str__(self):
-        return self.content
+        return f"{self.content}"
 
     def save(self, *args, **kwargs):
         prev_post = None
@@ -290,6 +317,37 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
                 cleanup_task = True
             if cleanup_task:
                 post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
+
+    def update_allowed(self, request):
+        @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _update_allowed(self, request):
+            is_locked = (
+                self.topic.locked or self.topic.board.locked or not self.topic.board.preferences.allow_post_editing
+            )
+            is_allowed = (
+                (
+                    request.session.session_key == self.session_key
+                    or request.user == self.user
+                    or request.user.has_perm("boards.change_post")
+                )
+                and not is_locked
+            ) or get_is_moderator(request.user, self.topic.board)
+
+            return is_allowed
+
+        return _update_allowed(self, request)
+
+    def reply_create_allowed(self, request):
+        @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _reply_create_allowed(self, request):
+            is_allowed = self.topic.board.preferences.type == "r" and (
+                (self.approved and self.topic.board.preferences.allow_guest_replies)
+                or get_is_moderator(request.user, self.topic.board)
+            )
+
+            return is_allowed
+
+        return _reply_create_allowed(self, request)
 
     def get_is_owner(self, request):
         @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
@@ -426,7 +484,7 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ]
 
     def __str__(self):
-        return self.title if self.title else str(self.uuid)
+        return f"{self.title if self.title else str(self.uuid)}"
 
     def save(self, *args, **kwargs):
         created = self._state.adding

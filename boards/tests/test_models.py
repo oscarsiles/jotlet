@@ -1,7 +1,6 @@
+import datetime
 import os
 import re
-import shutil
-from datetime import timedelta
 
 import factory
 import pytest
@@ -19,10 +18,6 @@ IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
 
 
 class TestBoardModel:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_title_max_length(self, board):
         max_length = board._meta.get_field("title").max_length
         assert max_length == 50
@@ -62,8 +57,8 @@ class TestBoardModel:
     def test_get_last_post_date(self, board, board_factory, topic_factory, post_factory):
         assert board.get_last_post_date is None
         topic = topic_factory(board=board)
-        post_factory(topic=topic, created_at=timezone.now() - timedelta(days=2))
-        post2 = post_factory(topic=topic, created_at=timezone.now() - timedelta(days=1))
+        post_factory(topic=topic, created_at=timezone.now() - datetime.timedelta(days=2))
+        post2 = post_factory(topic=topic, created_at=timezone.now() - datetime.timedelta(days=1))
         # make sure another board's posts are not counted
         board2 = board_factory()
         topic2 = topic_factory(board=board2)
@@ -83,6 +78,27 @@ class TestBoardModel:
 
     def test_get_absolute_url(self, board):
         assert board.get_absolute_url() == f"/boards/{board.slug}/"
+
+    @pytest.mark.parametrize("locked", [True, False])
+    @pytest.mark.parametrize(
+        "allowed_from,allowed_until,time_allowed",
+        [
+            (timezone.now() - datetime.timedelta(days=1), None, True),
+            (None, timezone.now() + datetime.timedelta(days=1), True),
+            (timezone.now() - datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=1), True),
+            (timezone.now() - datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=2), True),
+            (timezone.now() + datetime.timedelta(days=2), timezone.now() + datetime.timedelta(days=1), True),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=2), False),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=1), False),
+        ],
+    )
+    def test_is_posting_allowed(self, board, locked, allowed_from, allowed_until, time_allowed):
+        board.locked = locked
+        board.save()
+        board.preferences.posting_allowed_from = allowed_from
+        board.preferences.posting_allowed_until = allowed_until
+        board.preferences.save()
+        assert board.is_posting_allowed == (time_allowed and not locked)
 
 
 class TestBoardPreferencesModel:
@@ -128,7 +144,7 @@ class TestTopicModel:
         post = post_factory(topic=topic)
         topic.refresh_from_db()
         assert topic.get_last_post_date == date(post.created_at, "d/m/Y")
-        post_factory(topic=topic, created_at=timezone.now() - timedelta(days=1))
+        post_factory(topic=topic, created_at=timezone.now() - datetime.timedelta(days=1))
         topic.refresh_from_db()
         assert topic.get_last_post_date == date(post.created_at, "d/m/Y")
 
@@ -141,10 +157,6 @@ class TestTopicModel:
 
 
 class TestPostModel:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_content_max_length(self, post):
         assert post._meta.get_field("content").max_length == 1000
 
@@ -301,10 +313,6 @@ class TestImageModel:
                     image__format=format,
                     image__filename=f"test.{format}",
                 )
-
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def test_image_name_is_title(self):
         for type, _ in IMAGE_TYPE:

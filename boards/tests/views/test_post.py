@@ -1,5 +1,5 @@
+import datetime
 import json
-import shutil
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -10,8 +10,8 @@ from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import timedelta
 from pytest_django.asserts import assertContains, assertNotContains
+from pytest_lazyfixture import lazy_fixture
 
 from boards.models import REACTION_TYPE, Image, Post
 from boards.routing import websocket_urlpatterns
@@ -129,37 +129,51 @@ class TestPostCreateView:
         )
         assert Post.objects.get(content="Test Post user3").approved is True  # Moderator can post without approval
 
-    def test_post_before_allowed(self, client, board):
-        board.preferences.posting_allowed_from = timezone.now() + timedelta(days=1)
-        board.preferences.save()
-        response = client.post(
-            self.post_create_url,
-            data={"content": "Test Post"},
-        )
-        assert response.status_code == 302
-        pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
-
-    def test_post_after_allowed(self, client, board):
-        board.preferences.posting_allowed_until = timezone.now() - timedelta(days=1)
-        board.preferences.save()
-        response = client.post(
-            self.post_create_url,
-            data={"content": "Test Post"},
-        )
-        assert response.status_code == 302
-        pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
-
+    @pytest.mark.parametrize("locked_object", ["board", "topic"])
     @pytest.mark.parametrize(
-        "allowed_from,allowed_until",
+        "test_user,expected_response_get,expected_response_post",
         [
-            (timezone.now() - timedelta(days=1), None),
-            (None, timezone.now() + timedelta(days=1)),
-            (timezone.now() - timedelta(days=1), timezone.now() + timedelta(days=1)),
-            (timezone.now() - timedelta(days=1), timezone.now() - timedelta(days=2)),
-            (timezone.now() + timedelta(days=2), timezone.now() + timedelta(days=1)),
+            (None, 302, 302),
+            (lazy_fixture("user2"), 403, 403),
+            (lazy_fixture("user"), 200, 204),
+            (lazy_fixture("user_staff"), 200, 204),
         ],
     )
-    def test_post_allowed_time(self, client, board, allowed_from, allowed_until):
+    def test_locked(self, client, topic, locked_object, test_user, expected_response_get, expected_response_post):
+        if locked_object == "board":
+            topic.board.locked = True
+            topic.board.save()
+        elif locked_object == "topic":
+            topic.locked = True
+            topic.save()
+        if test_user is not None:
+            client.force_login(test_user)
+        response = client.get(self.post_create_url)
+        assert response.status_code == expected_response_get
+        response = client.post(
+            self.post_create_url,
+            data={"content": "Test Post"},
+        )
+        assert response.status_code == expected_response_post
+        if expected_response_post == 204:
+            assert Post.objects.count() == 1
+        else:
+            pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
+            assert Post.objects.count() == 0
+
+    @pytest.mark.parametrize(
+        "allowed_from,allowed_until,expected_response",
+        [
+            (timezone.now() - datetime.timedelta(days=1), None, 204),
+            (None, timezone.now() + datetime.timedelta(days=1), 204),
+            (timezone.now() - datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=1), 204),
+            (timezone.now() - datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=2), 204),
+            (timezone.now() + datetime.timedelta(days=2), timezone.now() + datetime.timedelta(days=1), 204),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=2), 302),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=1), 302),
+        ],
+    )
+    def test_post_allowed_time(self, client, board, allowed_from, allowed_until, expected_response):
         board.preferences.posting_allowed_from = allowed_from
         board.preferences.posting_allowed_until = allowed_until
         board.preferences.save()
@@ -168,14 +182,17 @@ class TestPostCreateView:
             self.post_create_url,
             data={"content": "Test Post"},
         )
-        assert response.status_code == 204
-        assert Post.objects.count() == 1
+        assert response.status_code == expected_response
+        if expected_response == 204:
+            assert Post.objects.count() == 1
+        else:
+            assert Post.objects.count() == 0
 
     @pytest.mark.parametrize(
         "allowed_from,allowed_until",
         [
-            (timezone.now() + timedelta(days=1), timezone.now() + timedelta(days=2)),
-            (timezone.now() + timedelta(days=1), timezone.now() - timedelta(days=1)),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=2)),
+            (timezone.now() + datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=1)),
         ],
     )
     def test_post_outside_window(self, client, board, allowed_from, allowed_until):
@@ -256,6 +273,92 @@ class TestPostUpdateView:
         )
         assert response.status_code == 204
         assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
+
+    @pytest.mark.parametrize(
+        "test_user,expected_response_get,expected_response_post",
+        [
+            (None, 302, 302),
+            (lazy_fixture("user"), 200, 204),  # board owner
+            (lazy_fixture("user2"), 403, 403),  # other user
+            (lazy_fixture("user3"), 200, 204),  # board moderator
+            (lazy_fixture("user_staff"), 200, 204),
+        ],
+    )
+    def test_editing_forbidden(self, client, post, topic, test_user, expected_response_get, expected_response_post):
+        post_updated_url = self.post_updated_url
+        if test_user is not None:
+            client.force_login(test_user)
+            post.user = test_user
+            post.save()
+        else:
+            client.post(
+                reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.pk}),
+                data={"content": "Test Post anon"},
+            )
+            post = Post.objects.get(content="Test Post anon")
+            post_updated_url = reverse(
+                "boards:post-update", kwargs={"slug": topic.board.slug, "topic_pk": topic.pk, "pk": post.pk}
+            )
+
+        post.topic.board.preferences.allow_post_editing = False
+        post.topic.board.preferences.save()
+        original_content = post.content
+
+        response = client.get(post_updated_url)
+        assert response.status_code == expected_response_get
+
+        response = client.post(
+            post_updated_url,
+            data={"content": "Test Post NEW"},
+        )
+        if expected_response_post == 204:
+            assert response.status_code == 204
+            assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
+        else:
+            assert Post.objects.get(pk=post.pk).content == original_content
+
+    @pytest.mark.parametrize(
+        "locked_object",
+        [
+            lazy_fixture("board"),
+            lazy_fixture("topic"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "test_user,expected_response_get,expected_response_post",
+        [
+            (None, 302, 302),
+            (lazy_fixture("user2"), 403, 403),
+            (lazy_fixture("user"), 200, 204),  # owner
+            (lazy_fixture("user3"), 200, 204),  # moderator
+            (lazy_fixture("user_staff"), 200, 204),
+        ],
+    )
+    def test_locked(self, client, post, locked_object, test_user, expected_response_get, expected_response_post):
+        if test_user is not None:
+            client.force_login(test_user)
+            post.user = test_user
+        else:
+            response = client.post(
+                reverse("boards:post-create", kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic.pk}),
+                data={"content": "Test Post anon"},
+            )
+            post = Post.objects.get(content="Test Post anon")
+        original_content = post.content
+        locked_object.locked = True
+        locked_object.save()
+
+        response = client.get(self.post_updated_url)
+        assert response.status_code == expected_response_get
+        response = client.post(
+            self.post_updated_url,
+            data={"content": "Test Post NEW"},
+        )
+        assert response.status_code == expected_response_post
+        if expected_response_post == 204:
+            assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
+        else:
+            assert Post.objects.get(pk=post.pk).content == original_content
 
     @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
@@ -349,9 +452,9 @@ class TestApprovePostsView:
         "test_user,expected_response",
         [
             (None, 302),
-            (pytest.lazy_fixture("user2"), 403),
-            (pytest.lazy_fixture("user"), 200),
-            (pytest.lazy_fixture("user_staff"), 200),
+            (lazy_fixture("user2"), 403),
+            (lazy_fixture("user"), 200),
+            (lazy_fixture("user_staff"), 200),
         ],
     )
     def test_approve_permissions(self, client, test_user, expected_response):
@@ -423,9 +526,9 @@ class TestDeletePostsView:
         "test_user,expected_response",
         [
             (None, 302),
-            (pytest.lazy_fixture("user2"), 403),
-            (pytest.lazy_fixture("user"), 200),
-            (pytest.lazy_fixture("user_staff"), 200),
+            (lazy_fixture("user2"), 403),
+            (lazy_fixture("user"), 200),
+            (lazy_fixture("user_staff"), 200),
         ],
     )
     def test_delete_permissions(self, client, test_user, expected_response):
@@ -666,9 +769,9 @@ class TestPostToggleApprovalView:
     @pytest.mark.parametrize(
         "test_user",
         [
-            pytest.lazy_fixture("user"),
-            pytest.lazy_fixture("user3"),
-            pytest.lazy_fixture("user_staff"),
+            lazy_fixture("user"),
+            lazy_fixture("user3"),
+            lazy_fixture("user_staff"),
         ],
     )
     def test_post_toggle_approval_authorized_user(self, client, post, test_user):
@@ -710,10 +813,6 @@ class TestPostImageUploadView:
         board.preferences.allow_image_uploads = True
         board.preferences.save()
         self.upload_url = reverse("boards:post-image-upload", kwargs={"slug": board.slug})
-
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def test_permissions(self, client, board):
         response = client.get(self.upload_url)

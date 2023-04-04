@@ -9,7 +9,7 @@ from boards.utils import get_is_moderator
 
 class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Topic
-    fields = ["subject"]
+    fields = ["subject", "locked"]
     template_name = "boards/topic_form.html"
 
     def test_func(self):
@@ -37,7 +37,7 @@ class CreateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
 class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Topic
-    fields = ["subject"]
+    fields = ["subject", "locked"]
     template_name = "boards/topic_form.html"
 
     def test_func(self):
@@ -106,3 +106,11 @@ class TopicFetchView(generic.TemplateView):
         context["topic"] = board.topics.get(pk=self.kwargs["pk"])
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
+
+
+class TopicLockView(UserPassesTestMixin, generic.View):
+    http_method_names = ["post"]
+    permission_required = "boards.lock_board"
+
+    def test_func(self):
+        return self.request.user.has_perm(self.permission_required) or self.request.user.is_staff

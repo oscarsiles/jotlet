@@ -26,22 +26,22 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     parent = None
 
     def test_func(self):
-        board = (
-            Board.objects.select_related("owner")
-            .select_related("preferences")
-            .prefetch_related("preferences__moderators")
-            .get(slug=self.kwargs["slug"])
+        topic = (
+            Topic.objects.select_related("board")
+            .select_related("board__owner")
+            .select_related("board__preferences")
+            .prefetch_related("board__preferences__moderators")
+            .get(pk=self.kwargs["topic_pk"])
         )
-        is_allowed = board.is_posting_allowed or self.request.user == board.owner or self.request.user.is_staff
+
+        is_allowed = topic.post_create_allowed(self.request)
+
         if "post_pk" in self.kwargs and is_allowed:
             self.is_reply = True
             # check if the user is allowed to reply to the post
             self.parent = Post.objects.get(pk=self.kwargs["post_pk"])
 
-            is_allowed = board.preferences.type == "r" and (
-                (self.parent.approved and board.preferences.allow_guest_replies)
-                or get_is_moderator(self.request.user, board)
-            )
+            is_allowed = self.parent.reply_create_allowed(self.request)
 
         return is_allowed
 
@@ -89,11 +89,8 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
     def test_func(self):
         post = self.get_object()
-        return (
-            self.request.session.session_key == post.session_key
-            or self.request.user.has_perm("boards.change_post")
-            or get_is_moderator(self.request.user, post.topic.board)
-        )
+
+        return post.update_allowed(self.request)
 
     def get_form(self):
         return get_post_form(super().get_form())
@@ -126,6 +123,7 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
+    object: Post  # fix mypy error
     model = Post
     board_post = None
     template_name = "boards/post_confirm_delete.html"

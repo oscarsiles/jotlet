@@ -4,18 +4,31 @@
     <link href="{% static 'css/vendor/easymde-2.18.0.min.css' %}"
           rel="stylesheet"/>
     <link href="{% static 'boards/css/board.css' %}" rel="stylesheet" />
-    <script defer src="{% static 'js/vendor/alpinejs-intersect-3.11.1.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/vendor/marked-4.2.12.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/vendor/purify-2.4.3.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/vendor/easymde-2.18.0.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'boards/js/vendor/robust-websocket.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'js/vendor/alpinejs-intersect-3.11.1.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'js/vendor/marked-4.2.12.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'js/vendor/purify-2.4.3.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'js/vendor/easymde-2.18.0.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'boards/js/vendor/robust-websocket.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'boards/js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}
     Board: {{ board }}
 {% endblock title %}
 {% block navbar_title %}
-    <div class="me-2">{{ board }}</div>
+    <div class="me-2">
+        {{ board }}
+        {% if board.locked %}<i class="bi bi-lock"></i>{% endif %}
+    </div>
 {% endblock navbar_title %}
 {% block navbar_subtitle %}
     <div class="d-flex flex-wrap">

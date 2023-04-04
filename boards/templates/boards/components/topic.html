@@ -9,7 +9,7 @@
      x-data="{ postCount: 0 }"
      x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
      @post-deleted.camel="postCount--">
-    {% cached_as topic None "topic_posts_list" topic board.is_posting_allowed request.session.session_key request.user is_moderator %}
+    {% cached_as topic None "topic_posts_list" topic topic.is_locked board.is_posting_allowed request.session.session_key request.user is_moderator %}
     <div class="card border border-secondary my-2"
          id="topic-{{ topic.pk }}-title">
         <div class="card-body">
@@ -19,6 +19,7 @@
                      hx-disable
                      x-ignore>
                     {{ topic }}
+                    {% if topic.locked %}<i class="bi bi-lock"></i>{% endif %}
                 </div>
                 {% if request.user == board.owner or request.user.is_staff %}
                     <div>
@@ -86,7 +87,7 @@
             </div>
         </div>
     </div>
-    {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
+    {% if topic.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
         <div class="d-flex bg-body rounded d-print-none my-2"
              id="topic-{{ topic.pk }}-create">
             <button id="topic-{{ topic.pk }}-create-url"
