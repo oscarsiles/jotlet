@@ -1,6 +1,6 @@
 from typing import List
 
-from cachalot.api import invalidate
+from cacheops import invalidate_obj
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.bootstrap import Field, PrependedText
 from crispy_forms.helper import FormHelper
@@ -275,8 +275,8 @@ class BoardPreferencesForm(forms.ModelForm):
                 if user is not None:
                     value.append(user)
 
-            if value != self.initial_moderators and settings.CACHALOT_ENABLED:
-                invalidate(user_model)
+            if value != self.initial_moderators and settings.CACHEOPS_ENABLED:
+                invalidate_obj(self.initial_board.preferences)
 
         return value
 

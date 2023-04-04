@@ -56,18 +56,18 @@ def post_reaction_send_update_message(post):
         raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
 
 
-def process_image(image, type="b", width=settings.MAX_IMAGE_WIDTH, height=settings.MAX_IMAGE_HEIGHT):
+def process_image(image, image_type="b", width=settings.MAX_IMAGE_WIDTH, height=settings.MAX_IMAGE_HEIGHT):
     process = False
     # Open the image using Pillow
     img = PILImage.open(image)
-    if type == "p":
+    if image_type == "p":
         width = settings.MAX_POST_IMAGE_WIDTH
         height = settings.MAX_POST_IMAGE_HEIGHT
 
     if img.format not in ["JPEG", "PNG"]:
         output_format = "JPEG"
-        name, _ = os.path.splitext(image.file.name)
-        image.file.name = name + ".jpg"
+        name, _ = os.path.splitext(image.name)
+        image.name = name + ".jpg"
         if img.mode != "RGB":
             img = img.convert("RGB")
         process = True
@@ -86,7 +86,7 @@ def process_image(image, type="b", width=settings.MAX_IMAGE_WIDTH, height=settin
         # Create a new resized “thumbnail” version of the image with Pillow
         img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
         # Find the file name of the image
-        img_filename = os.path.basename(image.file.name)
+        img_filename = os.path.basename(image.name)
         # Save the resized image into the buffer, noting the correct file type
         buffer = BytesIO()
         img.save(buffer, format=output_format, quality=80, optimize=True)

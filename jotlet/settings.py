@@ -115,7 +115,6 @@ INSTALLED_APPS = [
     "qr_code",
     "sorl.thumbnail",
     "simple_history",
-    "cachalot",
     "cacheops",
     "notices",
     "accounts",
@@ -288,7 +287,6 @@ if USE_S3:
     THUMBNAIL_FORCE_OVERWRITE = True
     PUBLIC_MEDIA_LOCATION = env("PUBLIC_MEDIA_LOCATION", default="media")
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
-    DEFAULT_FILE_STORAGE = "jotlet.storage_backends.PublicMediaStorage"
 else:
     MEDIA_URL = "media/"
     if TESTING:
@@ -312,12 +310,22 @@ THUMBNAIL_ALTERNATIVE_RESOLUTIONS = env("THUMBNAIL_ALTERNATIVE_RESOLUTIONS", def
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_STORAGE = (
-    "django.contrib.staticfiles.storage.StaticFilesStorage"
-    if TESTING
-    else "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.InMemoryStorage"
+        if TESTING
+        else "jotlet.storage_backends.PublicMediaStorage"
+        if USE_S3
+        else "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        if TESTING
+        else "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 REDIS_HOST = env("REDIS_HOST", default="localhost")
 REDIS_PORT = env("REDIS_PORT", default=6379)
@@ -360,30 +368,18 @@ else:
         },
     }
 
-CACHALOT_ENABLED = env("CACHALOT_ENABLED", default=True)
-CACHALOT_TIMEOUT = env("CACHALOT_TIMEOUT", default=31556952)
-CACHALOT_UNCACHABLE_APPS = frozenset(
-    (
-        "axes",
-        "simple_history",
-    )
-)
-CACHALOT_UNCACHABLE_TABLES = frozenset(
-    (
-        "django_migrations",
-        "boards_image",
-        "boards_post",
-        "boards_reaction",
-    )
-)
-
 CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
 CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
+    "accounts.*": {"ops": "all", "timeout": 60 * 60 * 24},
+    "auth.*": {"ops": "all", "timeout": 60 * 60 * 24},
     "axes.*": {"ops": "all", "timeout": 60 * 60 * 24},
     "boards.image": {"ops": "all"},
     "boards.bgimage": {"ops": "all"},
     "boards.postimage": {"ops": "all"},
+    "boards.board": {"ops": "all"},
+    "boards.boardpreferences": {"ops": "all"},
+    "boards.topic": {"ops": "all"},
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
     "*.*": {"ops": ()},

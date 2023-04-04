@@ -1,9 +1,9 @@
 import re
-import shutil
 
-import factory
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
+from faker import Faker
 from PIL import Image as PILImage
 from PIL import ImageFile
 
@@ -35,10 +35,6 @@ class TestUtils:
 
 
 class TestImageUtils:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_get_image_upload_path(self, board, image_factory):
         for format in IMAGE_FORMATS:
             for type, _ in IMAGE_TYPE:
@@ -64,8 +60,9 @@ class TestImageUtils:
                     get_image_upload_path(img, img.image.name)
                 )
 
-    def test_process_image(self, image_factory):
+    def test_process_image(self):
         ImageFile.LOAD_TRUNCATED_IMAGES = True
+        fake = Faker()
 
         resolutions = [
             (settings.MAX_IMAGE_HEIGHT + 100, settings.MAX_IMAGE_WIDTH),
@@ -75,20 +72,15 @@ class TestImageUtils:
         for height, width in resolutions:
             for format in IMAGE_FORMATS:
                 for type, _ in IMAGE_TYPE:
-                    img = image_factory(
-                        image=factory.django.ImageField(
-                            board=None,
-                            filename=f"{height}x{width}.{format}",
-                            height=height,
-                            width=width,
-                            format=format,
-                            palette="P" if format == "bmp" else "RGB",
-                        ),
+                    image = SimpleUploadedFile(
+                        name=f"{height}x{width}.{format}",
+                        content=fake.image(size=(height, width), image_format=format),
+                        # palette="P" if format == "bmp" else "RGB",
                     )
-                    img.image.open()  # fixes "ValueError: seek of closed file"
-                    img.image = process_image(
-                        img.image,
-                        type=type,
+
+                    image = process_image(
+                        image,
+                        image_type=type,
                         height=settings.MAX_IMAGE_HEIGHT,
                         width=settings.MAX_IMAGE_WIDTH,
                     )
@@ -100,10 +92,10 @@ class TestImageUtils:
                         max_width = settings.MAX_IMAGE_WIDTH
                         max_height = settings.MAX_IMAGE_HEIGHT
 
-                    assert img.image.width <= max_width
-                    assert img.image.height <= max_height
+                    pilimage = PILImage.open(image)
+                    assert pilimage.width <= max_width
+                    assert pilimage.height <= max_height
 
-                    pilimage = PILImage.open(img.image)
                     assert pilimage.mode == "RGB"
                     if format not in ["jpeg", "png"]:
                         assert pilimage.format == "JPEG"
