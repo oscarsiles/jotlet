@@ -1,8 +1,9 @@
 from functools import cached_property
 
 import auto_prefetch
+from cacheops import invalidate_model
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -11,7 +12,18 @@ from jotlet.mixins.refresh_from_db_invalidates_cached_properties import Invalida
 
 
 class User(AbstractUser):
-    pass
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+        if is_new:
+            perm_list = ["add_board"]
+            if settings.TESTING:
+                invalidate_model(Permission)
+            for perm in perm_list:
+                perm = Permission.objects.get(content_type__app_label="boards", codename=perm)
+                self.user_permissions.add(perm)
+        if not hasattr(self, "profile"):
+            UserProfile.objects.create(user=self)
 
 
 class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
