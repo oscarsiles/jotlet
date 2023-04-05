@@ -35,7 +35,7 @@ disable = "no-member"
 
 [tool.poetry]
 name = "jotlet"
-version = "1.8.2"
+version = "1.8.3"
 description = ""
 authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
