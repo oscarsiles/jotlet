@@ -32,8 +32,8 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
         return (
             super()
             .get_queryset()
-            .select_related("owner")
-            .select_related("preferences")
+            .prefetch_related("owner")
+            .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
         )
 
@@ -97,8 +97,8 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
 
     def test_func(self):
         self.board = board = (
-            Board.objects.select_related("owner")
-            .select_related("preferences")
+            Board.objects.prefetch_related("owner")
+            .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
             .get(slug=self.kwargs["slug"])
         )
@@ -212,8 +212,8 @@ class QrView(UserPassesTestMixin, generic.TemplateView):
 
     def test_func(self):
         self.board = (
-            Board.objects.select_related("owner")
-            .select_related("preferences")
+            Board.objects.prefetch_related("owner")
+            .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
             .get(slug=self.kwargs["slug"])
         )

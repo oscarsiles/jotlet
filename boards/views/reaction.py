@@ -30,8 +30,8 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
     def get_object(self):
         if not self.board_post:
             self.board_post = (
-                Post.objects.select_related("topic__board__owner")
-                .select_related("topic__board__preferences")
+                Post.objects.prefetch_related("topic__board__owner")
+                .prefetch_related("topic__board__preferences")
                 .prefetch_related("topic__board__preferences__moderators")
                 .get(pk=self.kwargs["pk"])
             )

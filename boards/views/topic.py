@@ -98,8 +98,8 @@ class TopicFetchView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         context["board"] = board = (
-            Board.objects.select_related("owner")
-            .select_related("preferences")
+            Board.objects.prefetch_related("owner")
+            .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
             .get(slug=self.kwargs["slug"])
         )

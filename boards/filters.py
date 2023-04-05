@@ -42,7 +42,7 @@ class BoardFilter(django_filters.FilterSet):
 
     @property
     def qs(self):
-        qs = super().qs.select_related("owner").distinct()
+        qs = super().qs.prefetch_related("owner").distinct()
         if self.board_list_type == "all":
             qs = qs.order_by("-created_at", "id")
         elif self.board_list_type == "mod":
