@@ -247,7 +247,7 @@ class TestPostModel:
         assert reaction_id == Reaction.objects.get(post=post, user=user).pk
         assert reacted_score == 1
 
-        Reaction.objects.filter(post=post, user=user).update(session_key="test")
+        Reaction.objects.filter(post=post, user=user).invalidated_update(session_key="test")
         post.refresh_from_db()
         has_reacted, reaction_id, reacted_score = post.get_has_reacted(request)
         assert has_reacted
