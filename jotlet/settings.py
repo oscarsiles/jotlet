@@ -270,7 +270,6 @@ LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "boards:index"
 LOGOUT_REDIRECT_URL = "boards:index"
 
-STORAGE_CLASS = "django.core.files.storage.FileSystemStorage"
 USE_S3 = env("USE_S3", default=False)
 if USE_S3:
     # aws settings
@@ -288,7 +287,6 @@ if USE_S3:
     THUMBNAIL_FORCE_OVERWRITE = True
     PUBLIC_MEDIA_LOCATION = env("PUBLIC_MEDIA_LOCATION", default="media")
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
-    STORAGE_CLASS = "jotlet.storage_backends.PublicMediaStorage"
 else:
     MEDIA_URL = "media/"
     if TESTING:
@@ -315,13 +313,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
 STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.InMemoryStorage" if TESTING else STORAGE_CLASS},
+    "default": {
+        "BACKEND": "django.core.files.storage.InMemoryStorage"
+        if TESTING
+        else "jotlet.storage_backends.PublicMediaStorage"
+        if USE_S3
+        else "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
         if TESTING
         else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+THUMBNAIL_STORAGE = STORAGES["default"]["BACKEND"]
 
 REDIS_HOST = env("REDIS_HOST", default="localhost")
 REDIS_PORT = env("REDIS_PORT", default=6379)
