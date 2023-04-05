@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from pytest_factoryboy import register
 
@@ -19,14 +17,6 @@ from boards.tests.factories import (
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):  # pylint: disable=W0613, C0103
     pass
-
-
-@pytest.fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 # Other Fixtures
