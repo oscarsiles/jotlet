@@ -1,5 +1,6 @@
 import datetime
 import json
+import shutil
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -813,6 +814,10 @@ class TestPostImageUploadView:
         board.preferences.allow_image_uploads = True
         board.preferences.save()
         self.upload_url = reverse("boards:post-image-upload", kwargs={"slug": board.slug})
+
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def test_permissions(self, client, board):
         response = client.get(self.upload_url)

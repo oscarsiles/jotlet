@@ -1,10 +1,12 @@
 import datetime
 import os
 import re
+import shutil
 
 import factory
 import pytest
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
@@ -18,6 +20,10 @@ IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
 
 
 class TestBoardModel:
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
     def test_title_max_length(self, board):
         max_length = board._meta.get_field("title").max_length
         assert max_length == 50
@@ -157,6 +163,10 @@ class TestTopicModel:
 
 
 class TestPostModel:
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
     def test_content_max_length(self, post):
         assert post._meta.get_field("content").max_length == 1000
 
@@ -314,6 +324,10 @@ class TestImageModel:
                     image__filename=f"test.{format}",
                 )
 
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
     def test_image_name_is_title(self):
         for type, _ in IMAGE_TYPE:
             imgs = Image.objects.filter(type=type)
@@ -384,10 +398,10 @@ class TestImageModel:
                 for thumb in thumbs:
                     assert thumb is not None
                     assert f"{settings.MEDIA_URL}cache/" in thumb.url
-                    assert os.path.exists(f"{settings.MEDIA_ROOT}/{thumb.name}")
+                    assert default_storage.exists(f"{settings.MEDIA_ROOT}{thumb.name}")
                     for res in settings.THUMBNAIL_ALTERNATIVE_RESOLUTIONS:
                         name, ext = os.path.splitext(thumb.name)
-                        assert os.path.exists(f"{settings.MEDIA_ROOT}/{name}@{res}x{ext}")
+                        assert default_storage.exists(f"{settings.MEDIA_ROOT}/{name}@{res}x{ext}")
 
                 assert small_thumb.width <= settings.SMALL_THUMBNAIL_WIDTH
                 assert small_thumb.height <= settings.SMALL_THUMBNAIL_HEIGHT

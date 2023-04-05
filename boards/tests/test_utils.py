@@ -1,4 +1,5 @@
 import re
+import shutil
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -35,6 +36,10 @@ class TestUtils:
 
 
 class TestImageUtils:
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
     def test_get_image_upload_path(self, board, image_factory):
         for format in IMAGE_FORMATS:
             for type, _ in IMAGE_TYPE:

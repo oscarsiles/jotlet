@@ -292,7 +292,7 @@ else:
     if TESTING:
         import tempfile
 
-        MEDIA_ROOT = tempfile.mkdtemp()
+        MEDIA_ROOT = tempfile.mkdtemp() + "/"
         WHITENOISE_AUTOREFRESH = True
     else:
         MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -314,14 +314,12 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.InMemoryStorage"
-        if TESTING
-        else "jotlet.storage_backends.PublicMediaStorage"
+        "BACKEND": "jotlet.storage_backends.PublicMediaStorage"
         if USE_S3
         else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        "BACKEND": "django.core.files.storage.InMemoryStorage"
         if TESTING
         else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
