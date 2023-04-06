@@ -28,10 +28,15 @@ line_length = 118
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
+disable_error_code = ["attr-defined"]
+exclude = ["migrations"]
 
 [tool.pylint]
-max-line-length = 118
 disable = "no-member"
+django-settings-module = "jotlet.settings"
+ignore-paths = ".*/migrations"
+load-plugins = "pylint_django"
+max-line-length = 118
 
 [tool.poetry]
 name = "jotlet"

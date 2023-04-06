@@ -206,7 +206,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
 
-class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: ignore
     subject = models.TextField(max_length=400)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -276,8 +276,8 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
-    objects = TreeQuerySet.as_manager(with_tree_fields=True)
+class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # type: ignore
+    objects = TreeQuerySet.as_manager(with_tree_fields=True)  # type: ignore
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = auto_prefetch.ForeignKey(
@@ -568,7 +568,7 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     image_tag.allow_tags = True
 
 
-class BackgroundImageManager(auto_prefetch.Manager):
+class BackgroundImageManager(auto_prefetch.Manager):  # type: ignore
     def get_queryset(self):
         return super().get_queryset().filter(type="b")
 
@@ -577,7 +577,7 @@ class BackgroundImageManager(auto_prefetch.Manager):
         return super().create(*args, **kwargs)
 
 
-class PostImageManager(auto_prefetch.Manager):
+class PostImageManager(auto_prefetch.Manager):  # type: ignore
     def get_queryset(self):
         return super().get_queryset().filter(type="p")
 
