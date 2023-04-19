@@ -18,14 +18,10 @@
      hx-swap="morph"
      x-data="{ isCollapsedReplies: $persist(false).as('isCollapsedReplies-{{ post.pk }}').using(sessionStorage), isShownParent{{ post.tree_depth }}: false }"
      x-init="postCount++"
-     {% if not post.approved and not is_owner and not is_moderator %}
-         hidden
-     {% endif %}>
+     {% if not post.approved and not is_owner and not is_moderator %}hidden{% endif %}>
     {% cached_as post None "post_cache" post.pk post.approved request.session.session_key is_owner is_moderator reactions has_reacted post.updated_at board.preferences %}
     <div class="card post-card border-secondary-subtle avoid-pagebreak mb-2
-                {% if not post.approved and is_moderator %}
-                    opacity-75
-                {% endif %}"
+                {% if not post.approved and is_moderator %}opacity-75{% endif %}"
          id="post-{{ post.pk }}"
          x-intersect:enter.half="isShownParent{{ post.tree_depth }} = true"
          x-intersect:leave.half="isShownParent{{ post.tree_depth }} = false"
@@ -42,9 +38,7 @@
                                 bg-danger
                             {% elif post.tree_depth > 3 %}
                                 bg-warning
-                            {% endif %}">
-                    &ensp;
-                </div>
+                            {% endif %}">&ensp;</div>
             {% endif %}
             <div class="col-auto flex-fill">
                 {% if post.approved or is_owner or is_moderator %}
@@ -83,7 +77,7 @@
                                             {# djlint:on #}
                                         {% endif %}
                                         {% if board.preferences.allow_guest_replies or is_moderator %}
-                                            {% if board.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
+                                            {% if topic.is_posting_allowed or request.user == board.owner or request.user.is_staff %}
                                                 <button class="btn btn-link shadow-none p-1"
                                                         hx-get="{% url 'boards:post-reply' board.slug topic.pk post.pk %}"
                                                         hx-target="#modal-1-body-div"
@@ -157,9 +151,7 @@
                         </div>
                         <div hx-disable>
                             <p class="card-text text-break my-0
-                                      {% if not post.approved and is_moderator %}
-                                          opacity-75
-                                      {% endif %}"
+                                      {% if not post.approved and is_moderator %}opacity-75{% endif %}"
                                id="post-{{ post.pk }}-text"
                                x-markdown>
                                 <span x-ignore>{{ post|linebreaksbr }}</span>
@@ -180,9 +172,7 @@
         <div x-ref="post-{{ post.pk }}-replies"
              x-show="!isCollapsedReplies"
              x-collapse
-             {% if post.tree_depth <= 2 %}
-                 class="ps-4"
-             {% endif %}>
+             {% if post.tree_depth <= 2 %}class="ps-4"{% endif %}>
             {% with post as parent %}
                 {% for post in post.children.all|dictsort:"pk" %}
                     {% include "boards/components/post.html" %}
