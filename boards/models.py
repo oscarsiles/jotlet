@@ -171,6 +171,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     background_color = models.CharField(max_length=7, default="#ffffff")
     background_opacity = models.FloatField(default=1.0)
     enable_latex = models.BooleanField(default=False)
+    enable_chemdoodle = models.BooleanField(default=False)
     enable_identicons = models.BooleanField(default=True)
     require_post_approval = models.BooleanField(default=False)
     allow_post_editing = models.BooleanField(default=True)

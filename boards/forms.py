@@ -130,6 +130,7 @@ class BoardPreferencesForm(forms.ModelForm):
         labels = {
             "type": "Board Type",
             "enable_latex": "Enable LaTeX",
+            "enable_chemdoodle": "Enable ChemDoodle",
             "require_post_approval": "Posts Require Approval",
             "allow_guest_replies": "Allow Guest Replies",
             "allow_image_uploads": "Allow Image Uploads",
@@ -237,6 +238,12 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "enable_latex",
                 "Enable LaTeX",
+                wrapper_class="d-flex",
+                css_class=self.checkbox_classes,
+            ),
+            PrependedText(
+                "enable_chemdoodle",
+                "Enable ChemDoodleWeb",
                 wrapper_class="d-flex",
                 css_class=self.checkbox_classes,
             ),
