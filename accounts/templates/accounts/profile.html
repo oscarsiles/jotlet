@@ -1,12 +1,18 @@
 {% extends "base_generic.html" %}
 {% load static %}
 {% block head %}
-    <link href="{% static 'css/vendor/tagify-4.17.7.min.css' %}"
-          rel="stylesheet"/>
-    <script defer src="{% static 'js/vendor/tagify-4.17.7.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'js/vendor/tagify-4.17.7.polyfills.min.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <link href="{% static 'css/vendor/tagify-4.17.8.min.css' %}"
+          rel="stylesheet" />
+    <script defer
+            src="{% static 'js/vendor/tagify-4.17.8.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'js/vendor/tagify-4.17.8.polyfills.min.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'boards/js/index.js' %}" nonce="{{ CSP_NONCE }}"></script>
-    <script defer src="{% static 'accounts/js/profile.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'accounts/js/profile.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block content %}
     <div class="flex-column flex-fill">
@@ -17,7 +23,7 @@
             </div>
             <div class="col-md-1 d-none d-md-block vr text-secondary"></div>
             <div class="col col-md-0 d-block d-md-none text-secondary">
-                <hr/>
+                <hr />
             </div>
             <div class="col-md">
                 <div id="board-list"

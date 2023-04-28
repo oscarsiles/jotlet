@@ -11,8 +11,8 @@ class TestBoardListLinkHeaderMixin:
 
         assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
         assert static("boards/js/components/board_list.js") not in link_header
-        assert static("css/vendor/tagify-4.17.7.min.css") not in link_header
-        assert static("js/vendor/tagify-4.17.7.min.js") not in link_header
+        assert static("css/vendor/tagify-4.17.8.min.css") not in link_header
+        assert static("js/vendor/tagify-4.17.8.min.js") not in link_header
 
     def test_dispatch_authenticated(self, client, user):
         client.force_login(user)
@@ -24,8 +24,8 @@ class TestBoardListLinkHeaderMixin:
 
         assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script" in link_header
-        assert static("css/vendor/tagify-4.17.7.min.css") not in link_header
-        assert static("js/vendor/tagify-4.17.7.min.js") not in link_header
+        assert static("css/vendor/tagify-4.17.8.min.css") not in link_header
+        assert static("js/vendor/tagify-4.17.8.min.js") not in link_header
 
         user.is_staff = True
         user.save()
@@ -36,6 +36,6 @@ class TestBoardListLinkHeaderMixin:
 
         assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('css/vendor/tagify-4.17.7.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('js/vendor/tagify-4.17.7.min.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/tagify-4.17.7.polyfills.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('css/vendor/tagify-4.17.8.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('js/vendor/tagify-4.17.8.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/tagify-4.17.8.polyfills.min.js')}>; rel=preload; as=script" in link_header

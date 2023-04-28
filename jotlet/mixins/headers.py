@@ -10,7 +10,7 @@ class JotletLinkHeaderMixin(generic.View):
         if not request.htmx:
             files_css = [
                 static("css/vendor/bootstrap-5.3.0-alpha3.min.css"),
-                static("css/vendor/bootstrap-icons-1.10.4.min.css"),
+                static("css/vendor/bootstrap-icons-1.10.5.min.css"),
                 static("css/styles.css"),
             ]
             files_fonts = [
@@ -19,14 +19,14 @@ class JotletLinkHeaderMixin(generic.View):
             files_scripts = [
                 static("js/color-mode-toggler.js"),
                 static("js/vendor/bootstrap-5.3.0-alpha3.bundle.min.js"),
-                static("js/vendor/htmx-1.8.5.min.js"),
+                static("js/vendor/htmx-1.9.1/htmx.min.js"),
                 static("js/base.js"),
-                static("js/vendor/htmx-alpine-morph-1.8.5.min.js"),
-                static("js/vendor/alpinejs-collapse-3.11.1.min.js"),
-                static("js/vendor/alpinejs-mask-3.11.1.min.js"),
-                static("js/vendor/alpinejs-morph-3.11.1.min.js"),
-                static("js/vendor/alpinejs-persist-3.11.1.min.js"),
-                static("js/vendor/alpinejs-3.11.1.min.js"),
+                static("js/vendor/htmx-1.9.1/htmx-alpine-morph.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs-collapse.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs-mask.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs-morph.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs-persist.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs.min.js"),
             ]
             response = generate_link_header(response, files_css, files_scripts, files_fonts)
         return response
