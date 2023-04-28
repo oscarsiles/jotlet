@@ -93,7 +93,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
                             # tried 5 times, no dice. raise the integrity error and handle elsewhere
                             raise
                         else:
-                            self.code = get_random_string(max_length)
+                            self.slug = get_random_string(max_length)
                     else:
                         success = True
             else:
