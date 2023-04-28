@@ -46,7 +46,7 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.26.118"
+boto3 = "^1.26.122"
 channels = "^4.0.0"
 channels-redis = "^4.1.0"
 crispy-bootstrap5 = "^0.7"
@@ -77,25 +77,25 @@ Pillow = "^9.5.0"
 psycopg = { extras = ["binary"], version = "^3.1.8" }
 python = "^3.8.1"
 redis = { extras = ["hiredis"], version = "^4.5.4" }
-sentry-sdk = "^1.20.0"
+sentry-sdk = "^1.21.0"
 sorl-thumbnail = "^12.9.0"
-uvicorn = { extras = ["standard"], version = "^0.21.1" }
+uvicorn = { extras = ["standard"], version = "^0.22.0" }
 whitenoise = "^6.4.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.4.0"
 black = "^23.3.0"
-coverage = { extras = ["toml"], version = "^7.2.3" }
+coverage = { extras = ["toml"], version = "^7.2.4" }
 django-coverage-plugin = "^3.0.0"
 django-debug-toolbar = "^4.0.0"
 django-debug-toolbar-template-profiler = "^2.1.0"
-django-stubs = { extras = ["compatible-mypy"], version = "^1.16.0" }
-djlint = "^1.23.3"
+django-stubs = { extras = ["compatible-mypy"], version = "^4.2.0" }
+djlint = "^1.25.0"
 flake8 = "^6.0.0"
 isort = "^5.12.0"
 pylint-django = "^2.5.3"
 pytest-cov = "^4.0.0"
-pyupgrade = "^3.3.1"
+pyupgrade = "^3.3.2"
 
 [tool.poetry.group.test.dependencies]
 daphne = "^4.0.0"
