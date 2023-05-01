@@ -89,7 +89,7 @@ coverage = { extras = ["toml"], version = "^7.2.3" }
 django-coverage-plugin = "^3.0.0"
 django-debug-toolbar = "^4.0.0"
 django-debug-toolbar-template-profiler = "^2.1.0"
-django-stubs = { extras = ["compatible-mypy"], version = "^1.16.0" }
+django-stubs = { extras = ["compatible-mypy"], version = "^4.2.0" }
 djlint = "^1.23.1"
 flake8 = "^6.0.0"
 isort = "^5.12.0"
