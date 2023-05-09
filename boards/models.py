@@ -57,7 +57,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     locked = models.BooleanField(default=False)
-    history = HistoricalRecords(cascade_delete_history=True)
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["slug", "locked"])
 
     class Meta(auto_prefetch.Model.Meta):
         permissions = (
@@ -158,7 +158,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
-    history = HistoricalRecords(cascade_delete_history=True)
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board"])
     type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = auto_prefetch.ForeignKey(
@@ -213,7 +213,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     locked = models.BooleanField(default=False)
-    history = HistoricalRecords(cascade_delete_history=True)
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "locked"])
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
@@ -287,9 +287,18 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     session_key = models.CharField(max_length=40, null=True, blank=True)
     identity_hash = models.CharField(max_length=64, null=True, blank=True)
     approved = models.BooleanField(default=True)
-    allow_replies = models.BooleanField(default=True)
+    allow_replies = models.BooleanField(default=True)  # TODO: use to override single post reply permission
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords(
+        cascade_delete_history=True,
+        excluded_fields=[
+            "topic",
+            "approved",
+            "allow_replies",
+            "identity_hash",
+        ],
+    )
 
     class Meta(auto_prefetch.Model.Meta):
         permissions = (("can_approve_posts", "Can approve posts"),)
@@ -465,13 +474,34 @@ class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ]
 
 
+ADDITIONAL_DATA_TYPE = (
+    ("m", "misc"),
+    ("c", "chemdoodle"),
+)
+
+
+class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="additional_data")
+    type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, default="m", editable=False)
+    json = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["post", "type"])
+
+    class Meta(auto_prefetch.Model.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["post", "type"], name="unique_post_additional_data_type"),
+        ]
+
+
 class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50)
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True)
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "image", "post", "type"])
     image = models.ImageField(upload_to=get_image_upload_path)
 
     type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")

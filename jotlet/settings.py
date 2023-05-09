@@ -213,6 +213,8 @@ CONN_HEALTH_CHECKS = CONN_MAX_AGE is None or CONN_MAX_AGE > 0  # only check if w
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", default=60 * 60 * 24 * 30)  # 30 days
 
+SIMPLE_HISTORY_HISTORY_ID_USE_UUID = True
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -531,10 +533,10 @@ CSP_BASE_URI = ["'none'"] + env.list("CSP_BASE_URI", default=[])
 CSP_CONNECT_SRC = [
     "'self'",
     "maxcdn.bootstrapcdn.com",
+    "ichemlabs.cloud.chemdoodle.com",
 ] + env.list("CSP_CONNECT_SRC", default=[])
 CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
 CSP_MANIFEST_SRC = ["'self'"] + env.list("CSP_MANIFEST_SRC", default=[])
-CSP_PREFETCH_SRC = ["'self'"] + env.list("CSP_PREFETCH_SRC", default=[])
 CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
 HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)

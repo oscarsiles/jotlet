@@ -6,9 +6,4 @@ class BoardsConfig(AppConfig):
     name = "boards"
 
     def ready(self):
-        from simple_history import register
-
         import boards.signals  # noqa
-        from boards.models import Post
-
-        register(Post)
