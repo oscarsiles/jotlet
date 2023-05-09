@@ -91,10 +91,9 @@ class TestPostReactionView:
         message = await communicator.receive_from()
         assert "session_connected" in message
         for _type in REACTION_TYPE[1:]:
-            type = _type[0]
-            preferences = await sync_to_async(BoardPreferences.objects.get)(board=board)
-            preferences.reaction_type = type
-            await sync_to_async(preferences.save)()
+            preferences = await BoardPreferences.objects.aget(board=board)
+            preferences.reaction_type = _type[0]
+            await preferences.asave()
             message = await communicator.receive_from()
             assert "board_preferences_changed" in message
             await sync_to_async(client.post)(self.post_reaction_url, data={"score": 1})

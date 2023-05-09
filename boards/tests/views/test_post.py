@@ -218,7 +218,7 @@ class TestPostCreateView:
         message = await communicator.receive_from()
         assert "session_connected" in message
         await sync_to_async(client.post)(self.post_create_url, data={"content": "Test Post"})
-        post = await sync_to_async(Post.objects.get)(content="Test Post")
+        post = await Post.objects.aget(content="Test Post")
         assert post is not None
         message = await communicator.receive_from()
         await communicator.disconnect()
@@ -557,16 +557,17 @@ class TestDeletePostsView:
 
     @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
-    async def test_topic_posts_deleted_websocket_message(self, client, board, user):
+    async def test_topic_posts_deleted_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        post_count = await Post.objects.filter(topic=topic).acount()
         connected, _ = await communicator.connect()
         assert connected, "Could not connect"
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
         await sync_to_async(client.post)(self.topic_posts_delete_url)
-        for _ in range(10):
+        for _ in range(post_count):
             message = await communicator.receive_from()
             assert "post_deleted" in message
         await communicator.disconnect()
@@ -576,13 +577,14 @@ class TestDeletePostsView:
     async def test_board_posts_deleted_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
+        post_count = await Post.objects.filter(topic__board=board).acount()
         connected, _ = await communicator.connect()
         assert connected, "Could not connect"
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
         await sync_to_async(client.post)(self.board_posts_delete_url)
-        for _ in range(20):
+        for _ in range(post_count):
             message = await communicator.receive_from()
             assert "post_deleted" in message
         await communicator.disconnect()

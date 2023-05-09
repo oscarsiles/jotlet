@@ -65,7 +65,7 @@ class TestTopicCreateView:
         message = await communicator.receive_from()
         assert "session_connected" in message
         await sync_to_async(client.post)(self.topic_created_url, data={"subject": "Test Topic"})
-        topic = await sync_to_async(Topic.objects.get)(subject="Test Topic")
+        topic = await Topic.objects.aget(subject="Test Topic")
         message = await communicator.receive_from()
         await communicator.disconnect()
         assert "topic_created" in message
