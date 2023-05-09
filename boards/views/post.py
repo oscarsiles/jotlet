@@ -24,6 +24,7 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
     template_name = "boards/post_form.html"
     is_reply = False
     parent = None
+    board = None
 
     def test_func(self):
         topic = (
@@ -43,7 +44,15 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
 
             is_allowed = self.parent.reply_create_allowed(self.request)
 
+        if is_allowed:
+            self.board = topic.board
+
         return is_allowed
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["board"] = self.board
+        return context
 
     def get_form(self):
         return get_post_form(super().get_form())
@@ -86,11 +95,22 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     board_post = None
     fields = ["content"]
     template_name = "boards/post_form.html"
+    board = None
 
     def test_func(self):
         post = self.get_object()
 
-        return post.update_allowed(self.request)
+        is_allowed = post.update_allowed(self.request)
+
+        if is_allowed:
+            self.board = post.topic.board
+
+        return is_allowed
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["board"] = self.board
+        return context
 
     def get_form(self):
         return get_post_form(super().get_form())
@@ -98,7 +118,8 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
     def get_object(self):
         if not self.board_post:
             self.board_post = (
-                Post.objects.prefetch_related("topic__board__owner")
+                Post.objects.prefetch_related("topic__board")
+                .prefetch_related("topic__board__owner")
                 .prefetch_related("topic__board__preferences")
                 .prefetch_related("topic__board__preferences__moderators")
                 .get(pk=self.kwargs["pk"])
