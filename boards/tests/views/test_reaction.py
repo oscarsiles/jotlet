@@ -177,7 +177,8 @@ class TestReactionsDeleteView:
 
     @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
-    async def test_post_toggle_websocket_message(self, client, board, post, user):
+    async def test_post_toggle_websocket_message(self, client, board, user):
+        post = await Post.objects.afirst()
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, _ = await communicator.connect()
