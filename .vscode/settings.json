@@ -18,4 +18,8 @@
         "--load-plugins=pylint_django",
         "--django-settings-module=jotlet.settings",
     ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "black",
 }

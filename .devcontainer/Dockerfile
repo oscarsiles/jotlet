@@ -13,7 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SHELL=/bin/bash \
     VIRTUAL_ENV="/home/$USERNAME/.poetry/venv" \
     WATCHFILES_FORCE_POLLING=1
-RUN mkdir /workspace /opt/poetry
+RUN mkdir /workspace /opt/poetry /workspace/media /workspace/static
 WORKDIR /workspace
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     curl \
@@ -25,7 +25,8 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
 RUN python -m pip install --upgrade pip
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && chown -R $USERNAME:$USERNAME /workspace /opt/poetry
+    && chown -R $USERNAME:$USERNAME /workspace /opt/poetry \
+    && chmod -R 777 /workspace
 USER $USERNAME
 RUN curl -sSL https://install.python-poetry.org | python3 - \
     && python -m venv $VIRTUAL_ENV
