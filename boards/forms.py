@@ -166,7 +166,7 @@ class BoardPreferencesForm(forms.ModelForm):
             "x-data": "",
             "x-init": f"""$store.boardPreferences.type = '{self.initial["type"]}';
             $store.boardPreferences.bg_type = '{self.initial["background_type"]}';
-            $store.boardPreferences.img_uuid = '{self.initial["background_image"]}';
+            $store.boardPreferences.img_id = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
             $store.boardPreferences.img_srcset_jpeg = '{jpeg_url}';
             $store.boardPreferences.bg_opacity = '{self.initial["background_opacity"]}';""",

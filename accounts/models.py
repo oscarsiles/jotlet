@@ -1,3 +1,4 @@
+import uuid
 from functools import cached_property
 
 import auto_prefetch
@@ -27,6 +28,7 @@ class User(AbstractUser):
 
 
 class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = auto_prefetch.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

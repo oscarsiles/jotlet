@@ -22,7 +22,7 @@ def get_image_upload_path(image, filename):
         type=image.type,
         sub1=image.board.slug if image.type == "p" else get_random_string(2),
         sub2=get_random_string(2),
-        name=image.uuid,
+        name=image.id,
         ext=ext.replace(".", ""),
     )
     return file_path
@@ -48,8 +48,8 @@ def post_reaction_send_update_message(post):
             f"board-{post.topic.board.slug}",
             {
                 "type": "reaction_updated",
-                "topic_pk": post.topic.pk,
-                "post_pk": post.pk,
+                "topic_pk": str(post.topic.pk),
+                "post_pk": str(post.pk),
             },
         )
     except Exception:

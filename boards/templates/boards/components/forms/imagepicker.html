@@ -1,5 +1,5 @@
 {% load board_extras crispy_forms_field sorl_thumbnail %}
-{% settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
+{% get_settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
 {% if tag %}
     <{{ tag }}
 {% else %}
@@ -9,34 +9,20 @@
                 {% if field|is_checkbox and form_show_labels %}
                     form-check
                 {% else %}
-                    {% if 'form-horizontal' in form_class %}
-                        row
-                    {% endif %}
+                    {% if 'form-horizontal' in form_class %}row{% endif %}
                 {% endif %}
-                {% if wrapper_class %}
-                    {{ wrapper_class }}
-                {% endif %}
-                {% if field.css_classes %}
-                    {{ field.css_classes }}
-                {% endif %}
-                {% if field.errors %}
-                    has-danger
-                {% endif %}">
+                {% if wrapper_class %}{{ wrapper_class }}{% endif %}
+                {% if field.css_classes %}{{ field.css_classes }}{% endif %}
+                {% if field.errors %}has-danger{% endif %}">
         {% if field.label and not field|is_checkbox and form_show_labels %}
-            <label {% if field.id_for_label and not field|is_radioselect %}
-                       for="{{ field.id_for_label }}"
-                   {% endif %}
+            <label {% if field.id_for_label and not field|is_radioselect %}for="{{ field.id_for_label }}"{% endif %}
                    class="{% if 'form-horizontal' in form_class %}
                               col-form-label
                           {% else %}
                               form-label
                           {% endif %}
-                          {% if label_class %}
-                              {{ label_class }}
-                          {% endif %}
-                          {% if field.field.required %}
-                              requiredField
-                          {% endif %}">
+                          {% if label_class %}{{ label_class }}{% endif %}
+                          {% if field.field.required %}requiredField{% endif %}">
                 {{ field.label }}
                 {% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
             </label>
@@ -46,32 +32,26 @@
                 <span class="input-group-text">{{ crispy_prepended_text }}</span>
                 {% if object.background_image == None or object.background_image == "" %}
                     <button class="btn btn-outline-primary rounded-end form-control
-                                   {% if field.errors %}
-                                       is-invalid
-                                   {% endif %}"
+                                   {% if field.errors %}is-invalid{% endif %}"
                             type="button"
                             value="Select image..."
                             hx-get="{% url 'boards:image-select' 'b' %}"
                             hx-target="#modal-2-body-div"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-2-div"
-                            x-show="$store.boardPreferences.img_uuid == 'None' || $store.boardPreferences.img_uuid == ''"
-                            id="button-{{ field.auto_id }}">
-                        Select image...
-                    </button>
+                            x-show="$store.boardPreferences.img_id == 'None' || $store.boardPreferences.img_id == ''"
+                            id="button-{{ field.auto_id }}">Select image...</button>
                 {% endif %}
                 <picture id="img-picture-tag"
                     class="form-control p-0 rounded-end"
                     x-data="{ srcset_webp: '', srcset_jpeg: '' }"
                     {# djlint:off #}x-effect="if ($store.boardPreferences.img_srcset_webp) { srcset_webp = $store.boardPreferences.img_srcset_webp + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_webp_res({{ res }}) + ' {{ res }}x'{% endfor %}};
                     if ($store.boardPreferences.img_srcset_jpeg) { srcset_jpeg = $store.boardPreferences.img_srcset_jpeg + ' 1x, '{% for res in res_list %}+ $store.boardPreferences.img_srcset_jpeg_res({{ res }}) + ' {{ res }}x'{% endfor %}};"{# djlint:on #}
-                    x-show="$store.boardPreferences.img_uuid != 'None' && $store.boardPreferences.img_uuid != ''">
-                    <source id="src-webp" :srcset="srcset_webp" type="image/webp"/>
-                    <source id="src-jpeg" :srcset="srcset_jpeg" type="image/jpeg"/>
+                    x-show="$store.boardPreferences.img_id != 'None' && $store.boardPreferences.img_id != ''">
+                    <source id="src-webp" :srcset="srcset_webp" type="image/webp" />
+                    <source id="src-jpeg" :srcset="srcset_jpeg" type="image/jpeg" />
                     <img class="p-0 img-fluid w-100 rounded-end
-                                {% if field.errors %}
-                                    is-invalid
-                                {% endif %}"
+                                {% if field.errors %}is-invalid{% endif %}"
                          alt="{{ object.background_image }}"
                          hx-get="{% url 'boards:image-select' 'b' %}"
                          hx-target="#modal-2-body-div"
@@ -81,12 +61,12 @@
                          height="200"
                          data-bs-toggle="modal"
                          data-bs-target="#modal-2-div"
-                         id="img-{{ field.auto_id }}"/>
+                         id="img-{{ field.auto_id }}" />
                 </picture>
                 {% if field.errors %}
-                    {% crispy_field field 'class' 'form-select is-invalid' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
+                    {% crispy_field field 'class' 'form-select is-invalid' 'hidden' 'true' ':value' '$store.boardPreferences.img_id' %}
                 {% else %}
-                    {% crispy_field field 'class' 'form-select' 'hidden' 'true' ':value' '$store.boardPreferences.img_uuid' %}
+                    {% crispy_field field 'class' 'form-select' 'hidden' 'true' ':value' '$store.boardPreferences.img_id' %}
                 {% endif %}
                 {% if field.errors %}
                     <span id="error_{{ forloop.counter }}_{{ field.auto_id }}"

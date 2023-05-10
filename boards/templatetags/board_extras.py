@@ -23,5 +23,5 @@ def get_split_string(string):
 
 
 @register.simple_tag
-def settings_value(name):
+def get_settings_value(name):
     return getattr(settings, name, "")

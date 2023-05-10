@@ -1,6 +1,6 @@
 {% load board_extras cacheops sorl_thumbnail static %}
 {% cached_as images 604800 "image_select" type %}
-{% settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
+{% get_settings_value "THUMBNAIL_ALTERNATIVE_RESOLUTIONS" as res_list %}
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4"
      id="image-select"
      x-data>
@@ -12,11 +12,11 @@
                     <input class="form-check-input d-none"
                            type="radio"
                            name="flexRadioDefault"
-                           x-model="$store.boardPreferences.img_uuid"
+                           x-model="$store.boardPreferences.img_id"
                            @click="$store.boardPreferences.img_srcset_webp = '{{ image.get_small_thumbnail_webp.url }}'; $store.boardPreferences.img_srcset_jpeg = '{{ image.get_small_thumbnail.url }}'"
-                           value="{{ image.uuid }}"
-                           id="{{ image.uuid }}"/>
-                    <label class="form-check-label d-flex" for="{{ image.uuid }}">
+                           value="{{ image.id }}"
+                           id="{{ image.id }}" />
+                    <label class="form-check-label d-flex" for="{{ image.id }}">
                         <picture>
                             <source {# djlint:off #}srcset="{{ image.get_small_thumbnail_webp.url }} 1x{% for res in res_list %}{% with res|addstr:"x" as resx %}, {{ image.get_small_thumbnail_webp.url|resolution:resx }} {{ res }}x{% endwith %}{% endfor %}"{# djlint:on #}
                                 type="image/webp"/>
@@ -27,7 +27,7 @@
                                          alt="{{ image }}"
                                          width="300"
                                          height="200"
-                                         loading="lazy"/>
+                                         loading="lazy" />
                                 </picture>
                             </label>
                         </div>
@@ -69,5 +69,7 @@
     </h5>
 {% endcached_as %}
 <div id="modal-2-scripts" hidden hx-swap-oob="true">
-    <script defer src="{% static 'boards/js/components/image_select.js' %}" nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'boards/js/components/image_select.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
 </div>

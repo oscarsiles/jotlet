@@ -223,7 +223,7 @@ class TestPostCreateView:
         message = await communicator.receive_from()
         await communicator.disconnect()
         assert "post_created" in message
-        assert f'"topic_pk": {topic.pk}' in message
+        assert f'"topic_pk": "{str(topic.pk)}"' in message
 
 
 class TestPostUpdateView:
@@ -375,7 +375,7 @@ class TestPostUpdateView:
         message = await communicator.receive_from()
         await communicator.disconnect()
         assert "post_updated" in message
-        assert f'"post_pk": {post.pk}' in message
+        assert f'"post_pk": "{str(post.pk)}"' in message
 
 
 class TestPostDeleteView:
@@ -432,7 +432,7 @@ class TestPostDeleteView:
         message = await communicator.receive_from()
         await communicator.disconnect()
         assert "post_deleted" in message
-        assert f'"post_pk": {post.pk}' in message
+        assert f'"post_pk": "{str(post.pk)}"' in message
 
 
 #  TODO: test post approvals by topic/board
@@ -802,12 +802,12 @@ class TestPostToggleApprovalView:
         await sync_to_async(client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         assert "post_updated" in message
-        assert f'"post_pk": {post.pk}' in message
+        assert f'"post_pk": "{str(post.pk)}"' in message
         await sync_to_async(client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         await communicator.disconnect()
         assert "post_updated" in message
-        assert f'"post_pk": {post.pk}' in message
+        assert f'"post_pk": "{str(post.pk)}"' in message
 
 
 class TestPostImageUploadView:

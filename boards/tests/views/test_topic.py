@@ -67,9 +67,9 @@ class TestTopicCreateView:
         await sync_to_async(client.post)(self.topic_created_url, data={"subject": "Test Topic"})
         topic = await Topic.objects.aget(subject="Test Topic")
         message = await communicator.receive_from()
-        await communicator.disconnect()
         assert "topic_created" in message
-        assert f'"topic_pk": {topic.pk}' in message
+        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        await communicator.disconnect()
 
 
 class TestTopicUpdateView:
@@ -129,9 +129,9 @@ class TestTopicUpdateView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.topic_updated_url, data={"subject": "Test Topic NEW"})
         message = await communicator.receive_from()
-        await communicator.disconnect()
         assert "topic_updated" in message
-        assert f'"topic_pk": {topic.pk}' in message
+        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        await communicator.disconnect()
 
 
 class TestTopicDeleteView:
@@ -171,9 +171,9 @@ class TestTopicDeleteView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.topic_deleted_url)
         message = await communicator.receive_from()
-        await communicator.disconnect()
         assert "topic_deleted" in message
-        assert f'"topic_pk": {topic.pk}' in message
+        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        await communicator.disconnect()
 
 
 class TestTopicFetchView:

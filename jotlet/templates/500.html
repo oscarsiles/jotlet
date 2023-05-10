@@ -12,7 +12,7 @@
     </div>
     {% if sentry_event_id %}
         {% load board_extras %}
-        {% settings_value "SENTRY_DSN" as sentry_dsn %}
+        {% get_settings_value "SENTRY_DSN" as sentry_dsn %}
         <script nonce="{{ CSP_NONCE }}">
             Sentry.init({ dsn: "{{ sentry_dsn }}" });
             Sentry.showReportDialog({ eventId: "{{ sentry_event_id }}" });

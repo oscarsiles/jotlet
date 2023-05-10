@@ -61,7 +61,7 @@ class TestImageUtils:
                 else:
                     ext = format
 
-                assert re.compile(rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.uuid}.{ext}").search(
+                assert re.compile(rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.id}.{ext}").search(
                     get_image_upload_path(img, img.image.name)
                 )
 

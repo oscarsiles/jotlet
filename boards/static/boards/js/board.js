@@ -113,7 +113,7 @@ document.addEventListener("alpine:init", () => {
   Alpine.store("boardPreferences", {
     bg_type: "",
     bg_opacity: "",
-    img_uuid: "",
+    img_id: "",
     img_srcset_webp: "",
     img_srcset_jpeg: "",
     get colorVisible() {

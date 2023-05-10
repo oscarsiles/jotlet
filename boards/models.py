@@ -50,7 +50,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100, blank=True)
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, null=False, unique=True)  # used as salt for hashing
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="boards"
     )
@@ -157,6 +157,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board"])
     type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
@@ -208,6 +209,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: ignore
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.TextField(max_length=400)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -279,6 +281,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
 
 class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # type: ignore
     objects = TreeQuerySet.as_manager(with_tree_fields=True)  # type: ignore
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = auto_prefetch.ForeignKey(
@@ -292,12 +295,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(
         cascade_delete_history=True,
-        excluded_fields=[
-            "topic",
-            "approved",
-            "allow_replies",
-            "identity_hash",
-        ],
+        excluded_fields=["topic", "approved", "allow_replies", "identity_hash"],
     )
 
     class Meta(auto_prefetch.Model.Meta):
@@ -315,7 +313,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
             prev_post = Post.objects.get(pk=self.pk)
         else:
             string = self.user.username if self.user is not None else self.session_key
-            salt = self.topic.board.uuid
+            salt = str(self.topic.board.id)
             self.identity_hash = blake2b(f"{string}{salt}".encode(), digest_size=32).hexdigest()
         super().save(*args, **kwargs)
 
@@ -454,6 +452,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
 
 
 class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
     user = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions"
@@ -481,7 +480,7 @@ ADDITIONAL_DATA_TYPE = (
 
 
 class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="additional_data")
     type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, default="m", editable=False)
     json = models.JSONField(null=True, blank=True)
@@ -496,7 +495,7 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50)
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -515,7 +514,7 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ]
 
     def __str__(self):
-        return f"{self.title if self.title else str(self.uuid)}"
+        return f"{self.title if self.title else str(self.id)}"
 
     def save(self, *args, **kwargs):
         created = self._state.adding
@@ -536,6 +535,14 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     @cached_property
     def get_image_dimensions(self):
         return f"{self.image.width}x{self.image.height}"
+
+    @cached_property
+    def get_image_file_exists(self):
+        @cached_as(self, timeout=60 * 60 * 24)
+        def _get_image_file_exists():
+            return self.image.storage.exists(self.image.name)
+
+        return _get_image_file_exists()
 
     @cached_property
     def get_half_image_dimensions(self):

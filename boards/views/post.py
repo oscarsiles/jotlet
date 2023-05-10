@@ -216,7 +216,7 @@ class ApprovePostsView(LoginRequiredMixin, UserPassesTestMixin, generic.Template
                 f"board-{slug}",
                 {
                     "type": "topic_updated",
-                    "topic_pk": self.kwargs["topic_pk"],
+                    "topic_pk": str(self.kwargs["topic_pk"]),
                 },
             )
         else:

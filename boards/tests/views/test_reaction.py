@@ -99,7 +99,7 @@ class TestPostReactionView:
             await sync_to_async(client.post)(self.post_reaction_url, data={"score": 1})
             message = await communicator.receive_from()
             assert "reaction_updated" in message
-            assert f'"post_pk": {post.pk}' in message
+            assert f'"post_pk": "{str(post.pk)}"' in message
         await communicator.disconnect()
 
 
@@ -187,6 +187,6 @@ class TestReactionsDeleteView:
         assert "session_connected" in message
         await sync_to_async(client.post)(self.reactions_delete_url)
         message = await communicator.receive_from()
-        await communicator.disconnect()
         assert "reaction_updated" in message
-        assert f'"post_pk": {post.pk}' in message
+        assert f'"post_pk": "{str(post.pk)}"' in message
+        await communicator.disconnect()

@@ -169,7 +169,7 @@
 {% endcached_as %}
 {% if board.preferences.type == 'r' %}
     {% if post.approved or is_owner or is_moderator %}
-        <div x-ref="post-{{ post.pk }}-replies"
+        <div x-ref="post-{{ post.pk.hex }}-replies"
              x-show="!isCollapsedReplies"
              x-collapse
              {% if post.tree_depth <= 2 %}class="ps-4"{% endif %}>

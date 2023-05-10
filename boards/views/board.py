@@ -61,7 +61,7 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
                 static("boards/css/board.css"),
             ]
             files_js = [
-                static("js/vendor/alpinejs-intersect-3.11.1.min.js"),
+                static("js/vendor/alpinejs-3.12.0/alpinejs-intersect.min.js"),
                 static("js/vendor/marked-4.2.12.min.js"),
                 static("js/vendor/purify-2.4.3.min.js"),
                 static("js/vendor/easymde-2.18.0.min.js"),

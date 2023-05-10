@@ -2,10 +2,10 @@
 {% load static cache board_extras %}
 {% block head %}
     <link href="{% static 'css/vendor/easymde-2.18.0.min.css' %}"
-          rel="stylesheet"/>
+          rel="stylesheet" />
     <link href="{% static 'boards/css/board.css' %}" rel="stylesheet" />
     <script defer
-            src="{% static 'js/vendor/alpinejs-intersect-3.11.1.min.js' %}"
+            src="{% static 'js/vendor/alpinejs-3.12.0/alpinejs-intersect.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
     <script defer
             src="{% static 'js/vendor/marked-4.2.12.min.js' %}"

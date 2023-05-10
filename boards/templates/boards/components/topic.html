@@ -7,7 +7,7 @@
      hx-ext="alpine-morph"
      hx-swap="morph"
      x-data="{ postCount: 0 }"
-     x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk }}.childElementCount - 1 })"
+     x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk.hex }}.childElementCount - 1 })"
      @post-deleted.camel="postCount--">
     {% cached_as topic None "topic_posts_list" topic topic.is_locked board.is_posting_allowed request.session.session_key request.user is_moderator %}
     <div class="card border border-secondary my-2"
@@ -103,8 +103,8 @@
         </div>
     {% endif %}
 {% endcached_as %}
-<div x-ref="topicPosts_{{ topic.pk }}">
-    {% for post in topic.posts.all|dictsort:"pk" %}
+<div x-ref="topicPosts_{{ topic.pk.hex }}">
+    {% for post in topic.posts.all|dictsort:"created_at" %}
         {% if post.tree_depth == 0 %}
             {% include "boards/components/post.html" %}
         {% endif %}

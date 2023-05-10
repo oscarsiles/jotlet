@@ -340,7 +340,7 @@ class TestImageModel:
             for img in imgs:
                 _, ext = os.path.splitext(img.image.name)
                 assert re.compile(
-                    rf"^{settings.MEDIA_URL}images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.uuid}{ext}$"
+                    rf"^{settings.MEDIA_URL}images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.id}{ext}$"
                 ).search(img.image.url)
 
     def test_image_max_dimensions(self):

@@ -34,7 +34,7 @@
         <style nonce="{{ CSP_NONCE }}">
         {% cached_as board.preferences None "board_style_cache" board.pk %}
             #main-content-div{
-                {% if board.preferences.background_type == 'i' %}
+                {% if board.preferences.background_type == 'i' and board.preferences.background_image.get_image_file_exists %}
                 {% cached_as bg_image None "board_style_bg_image_cache" bg_image.pk %}
                     background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.get_large_thumbnail.url }}");
                     background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 

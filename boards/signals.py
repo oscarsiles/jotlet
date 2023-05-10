@@ -13,7 +13,7 @@ from .utils import channel_group_send
 
 def invalidate_board_cache(board):
     invalidate_obj(board)
-    key = make_template_fragment_key("board-list-post-count", [board.pk])
+    key = make_template_fragment_key("board-list-post-count", [str(board.pk)])
 
     if cache.get(key) is not None:
         cache.delete(key)
@@ -28,7 +28,7 @@ def invalidate_board_post_count_cache(instance):
             if cache.get(key) is not None:
                 cache.delete(key)
     except Exception:
-        raise Exception(f"Could not delete cache: post-{instance.pk}")
+        raise Exception(f"Could not delete cache: post-{str(instance.pk)}")
 
 
 def invalidate_topic_cache(topic):
@@ -103,7 +103,7 @@ def topic_send_message(sender, instance, created, **kwargs):
         f"board-{instance.board.slug}",
         {
             "type": message_type,
-            "topic_pk": instance.pk,
+            "topic_pk": str(instance.pk),
         },
     )
 
@@ -116,11 +116,11 @@ def topic_delete_send_message(sender, instance, **kwargs):
                 f"board-{instance.board.slug}",
                 {
                     "type": "topic_deleted",
-                    "topic_pk": instance.pk,
+                    "topic_pk": str(instance.pk),
                 },
             )
     except Exception:
-        raise Exception(f"Could not send message: topic_deleted for topic {instance.pk}")
+        raise Exception(f"Could not send message: topic_deleted for topic {str(instance.pk)}")
 
 
 @receiver(post_save, sender=Topic)
@@ -129,7 +129,7 @@ def invalidate_topic_template_cache(sender, instance, **kwargs):
     try:
         invalidate_topic_cache(instance)
     except Exception:
-        raise Exception(f"Could not delete cache: topic-{instance.pk}")
+        raise Exception(f"Could not delete cache: topic-{str(instance.pk)}")
 
 
 @receiver(post_save, sender=Post)
@@ -153,14 +153,14 @@ def post_send_message(sender, instance, created, **kwargs):
             f"board-{board_slug}",
             {
                 "type": "post_created",
-                "topic_pk": instance.topic_id,
-                "post_pk": instance.pk,
+                "topic_pk": str(instance.topic_id),
+                "post_pk": str(instance.pk),
                 "fetch_url": reverse(
                     "boards:post-fetch",
                     kwargs={
                         "slug": board_slug,
-                        "topic_pk": instance.topic_id,
-                        "pk": instance.pk,
+                        "topic_pk": str(instance.topic_id),
+                        "pk": str(instance.pk),
                     },
                 ),
             },
@@ -170,8 +170,8 @@ def post_send_message(sender, instance, created, **kwargs):
             f"board-{board_slug}",
             {
                 "type": "post_updated",
-                "topic_pk": instance.topic_id,
-                "post_pk": instance.ancestors(include_self=True).first().pk,
+                "topic_pk": str(instance.topic_id),
+                "post_pk": str(instance.ancestors(include_self=True).first().pk),
             },
         )
 
@@ -184,12 +184,12 @@ def post_delete_send_message(sender, instance, **kwargs):
                 f"board-{instance.topic.board.slug}",
                 {
                     "type": "post_deleted",
-                    "topic_pk": instance.topic_id,
-                    "post_pk": instance.pk,
+                    "topic_pk": str(instance.topic_id),
+                    "post_pk": str(instance.pk),
                 },
             )
     except Exception:
-        raise Exception(f"Could not send message: post_deleted for post-{instance.pk}")
+        raise Exception(f"Could not send message: post_deleted for post-{str(instance.pk)}")
 
 
 @receiver(post_save, sender=Reaction)
@@ -201,16 +201,16 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
 @receiver(post_save, sender=BgImage)
 @receiver(post_delete, sender=BgImage)
 def invalidate_bg_image_cache(sender, instance, **kwargs):
-    keyImageSelect1 = make_template_fragment_key("image-select", [instance.type])
-    keyImageSelect2 = make_template_fragment_key("image-select-image", [instance.pk])
+    key_image_select_1 = make_template_fragment_key("image-select", [instance.type])
+    key_image_select_2 = make_template_fragment_key("image-select-image", [str(instance.pk)])
     try:
         invalidate_obj(instance)
-        if cache.get(keyImageSelect1) is not None:
-            cache.delete(keyImageSelect1)
-        if cache.get(keyImageSelect2) is not None:
-            cache.delete(keyImageSelect2)
+        if cache.get(key_image_select_1) is not None:
+            cache.delete(key_image_select_1)
+        if cache.get(key_image_select_2) is not None:
+            cache.delete(key_image_select_2)
     except Exception:
-        raise Exception(f"Could not delete cache: image-select-{instance.type}")
+        raise Exception(f"Could not delete cache: image-select-{str(instance.type)}")
 
 
 @receiver(cleanup_pre_delete)
