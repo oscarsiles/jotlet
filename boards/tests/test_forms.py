@@ -10,7 +10,6 @@ TEST_FORM_DATA = {
     "require_post_approval": True,
     "allow_guest_replies": True,
     "enable_latex": True,
-    "enable_chemdoodle": True,
     "moderators": "test_user,non_existent_user",
     "reaction_type": "v",
 }
@@ -30,7 +29,6 @@ class TestBoardPreferencesForm:
         assert board.preferences.background_opacity == form_data.get("background_opacity")
         assert board.preferences.require_post_approval == form_data.get("require_post_approval")
         assert board.preferences.enable_latex == form_data.get("enable_latex")
-        assert board.preferences.enable_chemdoodle == form_data.get("enable_chemdoodle")
         assert board.preferences.moderators.count() == 1
         assert board.preferences.moderators.all()[0] == user
         assert board.preferences.reaction_type == form_data.get("reaction_type")

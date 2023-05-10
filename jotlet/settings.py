@@ -533,7 +533,6 @@ CSP_BASE_URI = ["'none'"] + env.list("CSP_BASE_URI", default=[])
 CSP_CONNECT_SRC = [
     "'self'",
     "maxcdn.bootstrapcdn.com",
-    "ichemlabs.cloud.chemdoodle.com",
 ] + env.list("CSP_CONNECT_SRC", default=[])
 CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
 CSP_MANIFEST_SRC = ["'self'"] + env.list("CSP_MANIFEST_SRC", default=[])
