@@ -72,7 +72,7 @@ jobs:
           DB_PORT: 5432
         run: |
           source .venv/bin/activate
-          python -m pytest -n 2
+          python -m pytest -n auto
 
   docker-image:
     runs-on: ubuntu-latest

@@ -34,7 +34,7 @@ exclude = ["migrations"]
 
 [tool.poetry]
 name = "jotlet"
-version = "1.8.4"
+version = "1.9.0"
 description = ""
 authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
