@@ -183,6 +183,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
     posting_allowed_from = models.DateTimeField(null=True, blank=True)
     posting_allowed_until = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [

@@ -5,6 +5,7 @@ import auto_prefetch
 from cacheops import invalidate_model
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.postgres.indexes import BrinIndex
 from django.db import models
 from simple_history.models import HistoricalRecords
 
@@ -40,6 +41,9 @@ class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "profile"
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
 
     def __str__(self):
         return f"{self.user.username}'s profile"
