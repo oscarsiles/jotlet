@@ -1,5 +1,4 @@
 {
-    "python.defaultInterpreterPath": "~/.poetry/venv/bin/python",
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestArgs": [
@@ -22,4 +21,9 @@
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "python.formatting.provider": "black",
+    "DockerRun.DisableDockerrc": true,
+    "DockerRun.Containers": [
+        "01354e9910e4",
+        "ca2eb5807e53"
+    ],
 }
