@@ -75,6 +75,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             ),
             BrinIndex(fields=["created_at"], autosummarize=True),
         ]
+        ordering = ["created_at"]
 
     def save(self, *args, **kwargs):
         # from https://stackoverflow.com/questions/34935156/
@@ -222,6 +223,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
         ]
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"{self.subject}"
@@ -300,10 +302,11 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     )
 
     class Meta(auto_prefetch.Model.Meta):
-        permissions = (("can_approve_posts", "Can approve posts"),)
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
         ]
+        ordering = ["created_at"]
+        permissions = (("can_approve_posts", "Can approve posts"),)
 
     def __str__(self):
         return f"{self.content}"
@@ -469,9 +472,6 @@ class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             models.UniqueConstraint(fields=["post", "session_key", "type"], name="unique_anonymous_reaction"),
             models.UniqueConstraint(fields=["post", "user", "type"], name="unique_user_reaction"),
         ]
-        indexes = [
-            BrinIndex(fields=["created_at"], autosummarize=True),
-        ]
 
 
 ADDITIONAL_DATA_TYPE = (
@@ -489,6 +489,18 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["post", "type"])
 
+    def save(self, *args, **kwargs):
+        # only save when json(or other data, once implemented) has changed
+        if not self._state.adding:
+            prev_data = AdditionalData.objects.get(pk=self.pk)
+            if prev_data.json == self.json:
+                self.skip_history_when_saving = True
+
+        super().save(*args, **kwargs)
+
+        if self.skip_history_when_saving:
+            del self.skip_history_when_saving
+
     class Meta(auto_prefetch.Model.Meta):
         constraints = [
             models.UniqueConstraint(fields=["post", "type"], name="unique_post_additional_data_type"),
@@ -497,7 +509,7 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=50, db_index=True)
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -509,10 +521,10 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
 
     class Meta(auto_prefetch.Model.Meta):
-        ordering = ["title"]
         indexes = [
             BrinIndex(fields=["created_at"], autosummarize=True),
         ]
+        ordering = ["title", "created_at"]
 
     def __str__(self):
         return f"{self.title if self.title else str(self.id)}"
