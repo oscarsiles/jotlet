@@ -78,6 +78,16 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
                     "https://polyfill.io",
                 ]
 
+            if preferences.enable_chemdoodle:
+                files_css += [
+                    static("css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css"),
+                    static("css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css"),
+                ]
+                files_js += [
+                    static("js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js"),
+                    static("js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js"),
+                ]
+
             if preferences.enable_identicons:
                 files_js += [
                     static("js/vendor/jdenticon-3.2.0.min.js"),

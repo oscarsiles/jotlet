@@ -2,10 +2,14 @@
 <form id="post-form"
       hx-post="{{ request.build_absolute_uri }}"
       @submit.prevent="$nextTick(() => { bootstrap.Modal.getInstance('#modal-1-div').hide() })">
-    {% csrf_token %}
-    <table>
-        {% crispy form %}
-    </table>
+    {% crispy form %}
+    {% if board.preferences.enable_chemdoodle %}
+        <div class="d-flex justify-content-center">
+            <div>
+                <canvas id="chemdoodle-edit-canvas" width="0" height="0"></canvas>
+            </div>
+        </div>
+    {% endif %}
 </form>
 <script defer
         src="{% static 'boards/js/components/board_easymde.js' %}"

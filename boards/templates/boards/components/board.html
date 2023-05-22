@@ -5,6 +5,43 @@
      hx-trigger="topicCreated, boardUpdated"
      hx-ext="alpine-morph"
      hx-swap="morph">
+    <div id="board-scripts">
+        {{ board.slug|json_script:"board_slug" }}
+        {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
+        {{ board.preferences.enable_chemdoodle|json_script:"chemdoodle_enabled" }}
+        {{ board.preferences.enable_identicons|json_script:"identicons_enabled" }}
+        {{ board.preferences.allow_image_uploads|json_script:"allow_image_uploads" }}
+        {% if board.preferences.enable_latex %}
+            <script defer
+                    src="{% static 'boards/js/components/board_mathjax.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+            <script defer
+                    src="https://polyfill.io/v3/polyfill.min.js?features=es6"
+                    nonce="{{ CSP_NONCE }}"></script>
+            <script defer
+                    id="MathJax-script"
+                    src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
+                    integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei"
+                    crossorigin="anonymous"
+                    nonce="{{ CSP_NONCE }}"></script>
+        {% endif %}
+        {% if board.preferences.enable_chemdoodle %}
+            <script defer
+                    src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+            <script defer
+                    src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+            <script defer
+                    src="{% static 'boards/js/components/board_chemdoodle.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+        {% endif %}
+        {% if board.preferences.enable_identicons %}
+            <script defer
+                    src="{% static 'js/vendor/jdenticon-3.2.0.min.js' %}"
+                    nonce="{{ CSP_NONCE }}"></script>
+        {% endif %}
+    </div>
     <div class="d-md-flex justify-content-between px-3">
         {% if not board.is_posting_allowed %}
             <div class="d-grid flex-fill">
@@ -106,31 +143,6 @@
         </div>
     {% endif %}
     <div class="col-md" x-show="topicCount < 2 && !smallWindow"></div>
-    <div id="board-scripts">
-        {{ board.slug|json_script:"board_slug" }}
-        {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
-        {{ board.preferences.enable_identicons|json_script:"identicons_enabled" }}
-        {{ board.preferences.allow_image_uploads|json_script:"allow_image_uploads" }}
-        {% if board.preferences.enable_latex %}
-            <script defer
-                    src="{% static 'boards/js/components/board_mathjax.js' %}"
-                    nonce="{{ CSP_NONCE }}"></script>
-            <script defer
-                    src="https://polyfill.io/v3/polyfill.min.js?features=es6"
-                    nonce="{{ CSP_NONCE }}"></script>
-            <script defer
-                    id="MathJax-script"
-                    src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"
-                    integrity="sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei"
-                    crossorigin="anonymous"
-                    nonce="{{ CSP_NONCE }}"></script>
-        {% endif %}
-        {% if board.preferences.enable_identicons %}
-            <script defer
-                    src="{% static 'js/vendor/jdenticon-3.2.0.min.js' %}"
-                    nonce="{{ CSP_NONCE }}"></script>
-        {% endif %}
-    </div>
 </div>
 <div id="offcanvasTopicList"
      class="offcanvas offcanvas-bottom offcanvas-tall"

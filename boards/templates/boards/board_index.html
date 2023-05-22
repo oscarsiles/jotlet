@@ -4,6 +4,12 @@
     <link href="{% static 'css/vendor/easymde-2.18.0.min.css' %}"
           rel="stylesheet" />
     <link href="{% static 'boards/css/board.css' %}" rel="stylesheet" />
+    {% if board.preferences.enable_chemdoodle %}
+        <link href="{% static 'css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css' %}"
+              rel="stylesheet">
+        <link href="{% static 'css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css' %}"
+              rel="stylesheet">
+    {% endif %}
     <script defer
             src="{% static 'js/vendor/alpinejs-3.12.0/alpinejs-intersect.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>

@@ -36,11 +36,21 @@ class TestBoardView:
         assert f"<{static('js/vendor/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
         assert "boards/js/components/board_mathjax.js" not in link_header
         board.preferences.enable_latex = True
+        board.preferences.enable_chemdoodle = True
         board.preferences.enable_identicons = False
         board.preferences.save()
         response = client.get(url)
         link_header = response.get("Link")
         assert f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js')}>; rel=preload; as=script" in link_header
+        assert (
+            f"<{static('js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js')}>; rel=preload; as=script" in link_header
+        )
+        assert f"<{static('css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css')}>; rel=preload; as=style" in link_header
+        assert (
+            f"<{static('css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css')}>; rel=preload; as=style"
+            in link_header
+        )
         assert "js/vendor/jdenticon-3.2.0.min.js" not in link_header
 
     @pytest.mark.parametrize(

@@ -1,6 +1,9 @@
 var allow_image_uploads = JSON.parse(
   document.getElementById("allow_image_uploads").textContent
 );
+var enable_chemdoodle = JSON.parse(
+  document.getElementById("chemdoodle_enabled").textContent
+);
 var board_slug = JSON.parse(document.getElementById("board_slug").textContent);
 var boardSocket = null;
 var baseUrl =
@@ -59,7 +62,6 @@ function connectWebsocket() {
         break;
       case "topic_deleted":
         htmx.find("#topic-" + data.topic_pk).remove();
-        htmx.trigger(htmx.find(boardDiv), "topicDeleted");
         break;
       case "post_created":
         var newCardDiv =
@@ -159,6 +161,14 @@ function starRating() {
 connectWebsocket();
 
 // Alpine x-markdown
+var allowed_tags = ["span", "b", "i", "em", "strong", "br", "p", "code"];
+if (allow_image_uploads) {
+  allowed_tags.push("img");
+}
+if (enable_chemdoodle) {
+  allowed_tags.push("canvas");
+}
+
 document.addEventListener("alpine:initializing", () => {
   Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
     let getHTML = evaluateLater();
@@ -167,9 +177,7 @@ document.addEventListener("alpine:initializing", () => {
       getHTML(() => {
         el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
           ALLOWED_ATTR: ["alt", "src", "title", "x-ignore"],
-          ALLOWED_TAGS: allow_image_uploads
-            ? ["span", "b", "i", "em", "strong", "br", "p", "code", "img"]
-            : ["span", "b", "i", "em", "strong", "br", "p", "code"],
+          ALLOWED_TAGS: allowed_tags,
           SANITIZE_NAMED_PROPS: true,
         });
       });
