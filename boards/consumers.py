@@ -1,9 +1,18 @@
+import logging
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.core.cache import cache
 from websockets.legacy.protocol import ConnectionClosedError, ConnectionClosedOK
 
+logger = logging.getLogger(__name__)
+
 
 class BoardConsumer(AsyncJsonWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        self.board_slug = None
+        self.board_group_name = None
+        super().__init__(*args, **kwargs)
+
     async def connect(self):
         self.board_slug = self.scope["url_route"]["kwargs"]["slug"]
         self.board_group_name = f"board-{self.board_slug}"
@@ -41,8 +50,8 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
                         "sessions": await cache.aget(self.board_group_name),
                     },
                 )
-        except Exception:
-            raise Exception(f"Error while disconnecting socket from board-{self.board_slug}")
+        except Exception as exc:  # pylint: disable=broad-except
+            logger.exception(exc)
         finally:
             await self.channel_layer.group_discard(
                 self.board_group_name,
