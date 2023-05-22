@@ -237,15 +237,17 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AXES_ENABLED = env("AXES_ENABLED", default=not TESTING)
-AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
-AXES_USERNAME_FORM_FIELD = "login"
-AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
-AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
-AXES_LOCKOUT_URL = "/accounts/lockout/"
-AXES_PROXY_COUNT = env("AXES_PROXY_COUNT", default=0)
+
 if TESTING:
     SILENCED_SYSTEM_CHECKS = ["axes.W001"]
 elif AXES_ENABLED:
+    AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
+    AXES_USERNAME_FORM_FIELD = "login"
+    AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
+    AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
+    AXES_LOCKOUT_URL = "/accounts/lockout/"
+    AXES_LOCKOUT_PARAMETERS = env.list("AXES_LOCKOUT_PARAMETERS", default=["username", "ip_address"])
+    AXES_IPWARE_PROXY_COUNT = env("AXES_IPWARE_PROXY_COUNT", default=None)
     AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend"] + AUTHENTICATION_BACKENDS
 
 PASSWORD_HASHERS = [
