@@ -45,7 +45,7 @@ class TestImageUtils:
             for type, _ in IMAGE_TYPE:
                 img = image_factory(
                     board=board if type == "p" else None,
-                    type=type,
+                    image_type=type,
                     image__format=format,
                     image__filename=f"test.{format}",
                 )

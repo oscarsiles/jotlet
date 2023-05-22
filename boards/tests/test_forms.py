@@ -2,7 +2,7 @@ from boards.forms import BoardPreferencesForm, BoardSearchForm
 from boards.models import Post
 
 TEST_FORM_DATA = {
-    "type": "d",
+    "board_type": "d",
     "background_type": "c",
     "background_color": "#123456",
     "background_image": None,

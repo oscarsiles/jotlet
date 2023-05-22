@@ -206,7 +206,7 @@ def invalidate_post_cache_on_reaction(sender, instance, **kwargs):
 @receiver(post_save, sender=BgImage)
 @receiver(post_delete, sender=BgImage)
 def invalidate_bg_image_cache(sender, instance, **kwargs):
-    key_image_select_1 = make_template_fragment_key("image-select", [instance.type])
+    key_image_select_1 = make_template_fragment_key("image-select", [instance.image_type])
     key_image_select_2 = make_template_fragment_key("image-select-image", [str(instance.pk)])
     try:
         invalidate_obj(instance)
@@ -215,7 +215,7 @@ def invalidate_bg_image_cache(sender, instance, **kwargs):
         if cache.get(key_image_select_2) is not None:
             cache.delete(key_image_select_2)
     except ObjectDoesNotExist:
-        logger.error("Could not delete cache: image-select-%s", str(instance.type))
+        logger.error("Could not delete cache: image-select-%s", str(instance.image_type))
 
 
 @receiver(cleanup_pre_delete)

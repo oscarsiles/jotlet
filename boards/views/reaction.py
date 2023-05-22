@@ -39,7 +39,7 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
 
     def post(self, request, *args, **kwargs):
         post = self.get_object()
-        post.reactions.filter(type=post.topic.board.preferences.reaction_type).delete()
+        post.reactions.filter(reaction_type=post.topic.board.preferences.reaction_type).delete()
         post_reaction_send_update_message(post)
 
         response = HttpResponse(status=204)
@@ -100,7 +100,7 @@ class PostReactionView(generic.View):
                     session_key=request.session.session_key,
                     user=reaction_user,
                     post=post,
-                    type=type,
+                    reaction_type=type,
                     reaction_score=reaction_score,
                 )
 

@@ -128,8 +128,9 @@ class BoardPreferencesForm(forms.ModelForm):
         model = BoardPreferences
         exclude = ["board"]  # pylint: disable=modelform-uses-exclude
         labels = {
-            "type": "Board Type",
+            "board_type": "Board Type",
             "enable_latex": "Enable LaTeX",
+            "enable_chemdoodle": "Enable ChemDoodle",
             "require_post_approval": "Posts Require Approval",
             "allow_guest_replies": "Allow Guest Replies",
             "allow_image_uploads": "Allow Image Uploads",
@@ -163,7 +164,7 @@ class BoardPreferencesForm(forms.ModelForm):
             "hx-target": "#modal-1-body-div",
             "hx-swap": "innerHTML",
             "x-data": "",
-            "x-init": f"""$store.boardPreferences.type = '{self.initial["type"]}';
+            "x-init": f"""$store.boardPreferences.boardType = '{self.initial["board_type"]}';
             $store.boardPreferences.bg_type = '{self.initial["background_type"]}';
             $store.boardPreferences.img_id = '{self.initial["background_image"]}';
             $store.boardPreferences.img_srcset_webp = '{webp_url}';
@@ -187,10 +188,10 @@ class BoardPreferencesForm(forms.ModelForm):
                 css_class=self.checkbox_classes,
             ),
             PrependedText(
-                "type",
+                "board_type",
                 "Board Type",
                 css_class="form-select h-auto my-0",
-                x_model="$store.boardPreferences.type",
+                x_model="$store.boardPreferences.boardType",
             ),
             Div(
                 PrependedText(
@@ -199,7 +200,7 @@ class BoardPreferencesForm(forms.ModelForm):
                     wrapper_class="d-flex",
                     css_class=self.checkbox_classes,
                 ),
-                x_show="$store.boardPreferences.type == 'r'",
+                x_show="$store.boardPreferences.boardType == 'r'",
             ),
             PrependedText(
                 "background_type",
@@ -237,6 +238,12 @@ class BoardPreferencesForm(forms.ModelForm):
             PrependedText(
                 "enable_latex",
                 "Enable LaTeX",
+                wrapper_class="d-flex",
+                css_class=self.checkbox_classes,
+            ),
+            PrependedText(
+                "enable_chemdoodle",
+                "Enable ChemDoodleWeb",
                 wrapper_class="d-flex",
                 css_class=self.checkbox_classes,
             ),

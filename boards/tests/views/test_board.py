@@ -125,7 +125,7 @@ class TestBoardPreferencesView:
         response = await sync_to_async(client.post)(
             reverse("boards:board-preferences", kwargs={"slug": board.slug}),
             data={
-                "type": "d",
+                "board_type": "d",
                 "background_type": "c",
                 "background_color": "#ffffff",
                 "background_image": "",
@@ -314,8 +314,8 @@ class TestDeleteBoardView:
 class TestImageSelectView:
     @pytest.fixture(autouse=True)
     def setup_method_fixture(self, board, image_factory):
-        for type, _ in IMAGE_TYPE:
-            image_factory.create_batch(5, board=board if type == "p" else None, type=type)
+        for image_type, _ in IMAGE_TYPE:
+            image_factory.create_batch(5, board=board if image_type == "p" else None, image_type=image_type)
 
     @classmethod
     def teardown_class(cls):
@@ -324,17 +324,17 @@ class TestImageSelectView:
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def test_image_select_anonymous(self, client):
-        for type, _ in IMAGE_TYPE:
-            response = client.get(reverse("boards:image-select", kwargs={"type": type}))
+        for image_type, _ in IMAGE_TYPE:
+            response = client.get(reverse("boards:image-select", kwargs={"image_type": image_type}))
             assert response.status_code == 302
-            assert response.url == f"/accounts/login/?next=/boards/image_select/{type}/"
+            assert response.url == f"/accounts/login/?next=/boards/image_select/{image_type}/"
 
     def test_image_select_logged_in(self, client, user):
         client.force_login(user)
-        for type, _ in IMAGE_TYPE:
-            response = client.get(reverse("boards:image-select", kwargs={"type": type}))
+        for image_type, _ in IMAGE_TYPE:
+            response = client.get(reverse("boards:image-select", kwargs={"image_type": image_type}))
             assert response.status_code == 200
-            assert response.context["images"].count() == Image.objects.filter(type=type).count()
+            assert response.context["images"].count() == Image.objects.filter(image_type=image_type).count()
 
 
 class TestQrView:

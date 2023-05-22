@@ -13,7 +13,7 @@ class BoardPreferencesInline(admin.StackedInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "background_image":
-            kwargs["queryset"] = Image.objects.filter(type="b")
+            kwargs["queryset"] = Image.objects.filter(image_type="b")
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -66,20 +66,20 @@ class PostAdmin(SimpleHistoryAdmin):
 @admin.register(BgImage)
 class BackgroundImageAdmin(SimpleHistoryAdmin):
     list_display = ("__str__", "get_board_usage_count", "created_at", "updated_at")
-    fields = ("image_tag", "title", "attribution", "image", "type")
+    fields = ("image_tag", "title", "attribution", "image", "image_type")
 
-    readonly_fields = ["image_tag", "type"]
+    readonly_fields = ["image_tag", "image_type"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
-            return self.readonly_fields + ["image", "type"]
+            return self.readonly_fields + ["image", "image_type"]
         return self.readonly_fields
 
 
 @admin.register(PostImage)
 class PostImageAdmin(SimpleHistoryAdmin):
     list_display = ("__str__", "board", "created_at")
-    fields = ("image_tag", "image", "type", "board")
+    fields = ("image_tag", "image", "image_type", "board")
 
     readonly_fields = list(fields)
 

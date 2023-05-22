@@ -115,7 +115,7 @@ class TestReactionsDeleteView:
                 reaction_factory.create_batch(
                     5,
                     post=post,
-                    type=type[0],
+                    reaction_type=type[0],
                     reaction_score="1",
                 )
         post = Post.objects.first()

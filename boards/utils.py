@@ -18,9 +18,9 @@ def channel_group_send(group_name, message):
 
 def get_image_upload_path(image, filename):
     _, ext = os.path.splitext(filename)
-    file_path = "images/{type}/{sub1}/{sub2}/{name}.{ext}".format(
-        type=image.type,
-        sub1=image.board.slug if image.type == "p" else get_random_string(2),
+    file_path = "images/{image_type}/{sub1}/{sub2}/{name}.{ext}".format(
+        image_type=image.image_type,
+        sub1=image.board.slug if image.image_type == "p" else get_random_string(2),
         sub2=get_random_string(2),
         name=image.id,
         ext=ext.replace(".", ""),

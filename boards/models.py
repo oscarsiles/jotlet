@@ -130,7 +130,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     @cached_property
     def get_postimage_count(self):
-        return Image.objects.filter(board=self, type="p").count()
+        return Image.objects.filter(board=self, image_type="p").count()
 
     get_postimage_count.short_description = "Image Count"
 
@@ -161,7 +161,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
     history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board"])
-    type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
+    board_type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = auto_prefetch.ForeignKey(
         "BgImage",
@@ -197,7 +197,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     def save(self, *args, **kwargs):
         if self.background_type == "c" or (
-            self.background_image.type != "b" if self.background_image is not None else True
+            self.background_image.image_type != "b" if self.background_image is not None else True
         ):
             self.background_image = None
         super().save(*args, **kwargs)
@@ -352,7 +352,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     def reply_create_allowed(self, request):
         @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
         def _reply_create_allowed(self, request):
-            is_allowed = self.topic.board.preferences.type == "r" and (
+            is_allowed = self.topic.board.preferences.board_type == "r" and (
                 (self.approved and self.topic.board.preferences.allow_guest_replies)
                 or get_is_moderator(request.user, self.topic.board)
             )
@@ -375,7 +375,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         def _get_reactions(reaction_type):
             if reaction_type is None:
                 reaction_type = self.get_reaction_type
-            return Reaction.objects.filter(post=self, type=reaction_type)
+            return Reaction.objects.filter(post=self, reaction_type=reaction_type)
 
         return _get_reactions(reaction_type)
 
@@ -462,15 +462,17 @@ class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions"
     )
     session_key = models.CharField(max_length=40, null=False, blank=False)
-    type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
+    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
     reaction_score = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta(auto_prefetch.Model.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["post", "session_key", "type"], name="unique_anonymous_reaction"),
-            models.UniqueConstraint(fields=["post", "user", "type"], name="unique_user_reaction"),
+            models.UniqueConstraint(
+                fields=["post", "session_key", "reaction_type"], name="unique_anonymous_reaction"
+            ),
+            models.UniqueConstraint(fields=["post", "user", "reaction_type"], name="unique_user_reaction"),
         ]
 
 
@@ -483,11 +485,11 @@ ADDITIONAL_DATA_TYPE = (
 class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="additional_data")
-    type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, default="m", editable=False)
+    data_type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, default="m", editable=False)
     json = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["post", "type"])
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["post", "data_type"])
 
     def save(self, *args, **kwargs):
         # only save when json(or other data, once implemented) has changed
@@ -503,7 +505,7 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     class Meta(auto_prefetch.Model.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["post", "type"], name="unique_post_additional_data_type"),
+            models.UniqueConstraint(fields=["post", "data_type"], name="unique_post_additional_data_type"),
         ]
 
 
@@ -513,10 +515,10 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "image", "post", "type"])
+    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "image", "post", "image_type"])
     image = models.ImageField(upload_to=get_image_upload_path)
 
-    type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
+    image_type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
 
@@ -532,11 +534,11 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     def save(self, *args, **kwargs):
         created = self._state.adding
         if created:
-            self.image = process_image(self.image, self.type)
+            self.image = process_image(self.image, self.image_type)
         super().save(*args, **kwargs)
 
         if created:
-            if self.type == "b":
+            if self.image_type == "b":
                 create_thumbnails(self)()
 
     @cached_property
@@ -621,19 +623,21 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 class BackgroundImageManager(auto_prefetch.Manager):  # type: ignore
     def get_queryset(self):
-        return super().get_queryset().filter(type="b")
+        return super().get_queryset().filter(image_type="b")
 
     def create(self, *args, **kwargs):
-        kwargs.update({"type": "b"})  # type "b" by default, but adding it here for parity with the other manager(s)
+        kwargs.update(
+            {"image_type": "b"}
+        )  # type "b" by default, but adding it here for parity with the other manager(s)
         return super().create(*args, **kwargs)
 
 
 class PostImageManager(auto_prefetch.Manager):  # type: ignore
     def get_queryset(self):
-        return super().get_queryset().filter(type="p")
+        return super().get_queryset().filter(image_type="p")
 
     def create(self, *args, **kwargs):
-        kwargs.update({"type": "p"})
+        kwargs.update({"image_type": "p"})
         return super().create(*args, **kwargs)
 
 

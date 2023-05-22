@@ -45,7 +45,7 @@ class TestPostCreateView:
         response = client.get(reply_url)
         assert response.status_code == 302
 
-        post.topic.board.preferences.type = "r"
+        post.topic.board.preferences.board_type = "r"
         post.topic.board.preferences.save()
         response = client.get(reply_url)
         assert response.status_code == 302
@@ -69,7 +69,7 @@ class TestPostCreateView:
         response = client.get(reply_url)
         assert response.status_code == 403
 
-        post.topic.board.preferences.type = "r"
+        post.topic.board.preferences.board_type = "r"
         post.topic.board.preferences.save()
         response = client.get(reply_url)
         assert response.status_code == 200
@@ -84,7 +84,7 @@ class TestPostCreateView:
             "boards:post-reply",
             kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic.pk, "post_pk": post.pk},
         )
-        post.topic.board.preferences.type = "r"
+        post.topic.board.preferences.board_type = "r"
         post.topic.board.preferences.allow_guest_replies = True
         post.topic.board.preferences.save()
 
@@ -680,7 +680,7 @@ class TestPostFooterFetchView:
         board.preferences.reaction_type = "l"
         board.preferences.save()
         for type in REACTION_TYPE[1:]:
-            reaction_factory(post=post, type=type[0], user=user)
+            reaction_factory(post=post, reaction_type=type[0], user=user)
         self.post_footer_fetch_url = reverse(
             "boards:post-footer-fetch",
             kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk},

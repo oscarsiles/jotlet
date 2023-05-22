@@ -200,7 +200,7 @@ class TestPostModel:
         reaction_factory.create_batch(
             4,
             post=post,
-            type=type,
+            reaction_type=type,
             reaction_score=factory.Sequence(lambda n: 1 if n % 2 == 0 else -1),  # 2 upvotes, 2 downvotes
         )
         post.refresh_from_db()
@@ -215,7 +215,7 @@ class TestPostModel:
         reaction_factory.create_batch(
             4,
             post=post,
-            type=type,
+            reaction_type=type,
             reaction_score=factory.Sequence(lambda n: n),  # 1, 2, 3, 4
         )
         post.refresh_from_db()
@@ -312,6 +312,25 @@ class TestReactionModel:
         pytest.raises(Reaction.DoesNotExist, Reaction.objects.get, pk=reaction2.pk)
 
 
+# TODO: add tests for AdditionalData Model
+class TestAdditionalDataModel:
+    @pytest.fixture(autouse=True)
+    def setup_method_fixture(self):
+        pass
+
+    def test_valid_json_data(self):
+        pass
+
+    def test_invalid_json_data(self):
+        pass
+
+    def test_type_constraint(self):
+        pass
+
+    def test_correct_data_for_type(self):  # chemdoodle=json, misc=json, file=filefield, etc.
+        pass
+
+
 class TestImageModel:
     @pytest.fixture(autouse=True)
     def setup_method_fixture(self, board, image_factory):
@@ -319,7 +338,7 @@ class TestImageModel:
             for type, _ in IMAGE_TYPE:
                 image_factory(
                     board=board if type == "p" else None,
-                    type=type,
+                    image_type=type,
                     image__format=format,
                     image__filename=f"test.{format}",
                 )
@@ -329,25 +348,25 @@ class TestImageModel:
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def test_image_name_is_title(self):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
                 assert str(img) == img.title
 
     def test_image_url(self):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
                 _, ext = os.path.splitext(img.image.name)
                 assert re.compile(
-                    rf"^{settings.MEDIA_URL}images/{type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.id}{ext}$"
+                    rf"^{settings.MEDIA_URL}images/{image_type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.id}{ext}$"
                 ).search(img.image.url)
 
     def test_image_max_dimensions(self):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
-                if img.type == "p":
+                if img.image_type == "p":
                     assert img.image.width <= settings.MAX_POST_IMAGE_WIDTH
                     assert img.image.height <= settings.MAX_POST_IMAGE_HEIGHT
                 else:
@@ -355,13 +374,13 @@ class TestImageModel:
                     assert img.image.height <= settings.MAX_IMAGE_HEIGHT
 
     def test_get_board_usage_count(self, board):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
                 board.preferences.background_image = img
                 board.preferences.background_type = "i"
                 board.preferences.save()
-                if type == "b":
+                if image_type == "b":
                     assert img.get_board_usage_count == 1
                 else:
                     assert img.get_board_usage_count == 0
@@ -389,8 +408,8 @@ class TestImageModel:
             assert pilimage.format == "WEBP"
 
     def test_thumbnail_url_and_dimensions(self):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
                 small_thumb = img.get_small_thumbnail
                 large_thumb = img.get_large_thumbnail
@@ -409,20 +428,20 @@ class TestImageModel:
                 assert large_thumb.height <= img.image.height / 2
 
     def test_image_tag(self):
-        for type, _ in IMAGE_TYPE:
-            imgs = Image.objects.filter(type=type)
+        for image_type, _ in IMAGE_TYPE:
+            imgs = Image.objects.filter(image_type=image_type)
             for img in imgs:
                 assert f'<img src="{escape(img.get_small_thumbnail.url)}" />' == img.image_tag
 
     def test_proxy_background_image(self, bg_image_factory):
-        assert list(Image.objects.filter(type="b")) == list(BgImage.objects.all())
+        assert list(Image.objects.filter(image_type="b")) == list(BgImage.objects.all())
 
         count_before = BgImage.objects.count()
         bg_image_factory()
         assert BgImage.objects.count() == count_before + 1
 
     def test_proxy_post_image(self, post_image_factory):
-        assert list(Image.objects.filter(type="p")) == list(PostImage.objects.all())
+        assert list(Image.objects.filter(image_type="p")) == list(PostImage.objects.all())
 
         count_before = PostImage.objects.count()
         post_image_factory()

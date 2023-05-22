@@ -202,7 +202,7 @@ class ImageSelectView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["images"] = Image.objects.filter(type=self.kwargs["type"])
+        context["images"] = Image.objects.filter(image_type=self.kwargs["image_type"])
         return context
 
 
