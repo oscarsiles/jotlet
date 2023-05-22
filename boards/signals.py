@@ -1,6 +1,9 @@
+import logging
+
 from cacheops import invalidate_obj
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -9,6 +12,8 @@ from django_cleanup.signals import cleanup_pre_delete
 from .models import BgImage, Board, BoardPreferences, Post, Reaction, Topic
 from .tasks import delete_thumbnails
 from .utils import channel_group_send
+
+logger = logging.getLogger(__name__)
 
 
 def invalidate_board_cache(board):
@@ -27,8 +32,8 @@ def invalidate_board_post_count_cache(instance):
 
             if cache.get(key) is not None:
                 cache.delete(key)
-    except Exception:
-        raise Exception(f"Could not delete cache: post-{str(instance.pk)}")
+    except ObjectDoesNotExist:
+        logger.error("Could not delete cache: post-%s", str(instance.pk))
 
 
 def invalidate_topic_cache(topic):
@@ -59,17 +64,17 @@ def invalidate_reaction_cache(reaction):
 
 
 def invalidate_post_tree_cache(instance):
-    if instance.parent:
-        tree = instance.ancestors().first().descendants(include_self=True)
-        for post in tree:
-            try:
+    try:
+        if Post.objects.filter(id=instance.parent_id).exists():
+            tree = instance.ancestors().first().descendants(include_self=True)
+            for post in tree:
                 invalidate_obj(post)
-            except Exception:
-                raise Exception(f"Could not delete post tree cache: post-{post.pk}")
+    except ObjectDoesNotExist:
+        logger.error("Could not delete post tree cache: post-%s", str(instance.pk))
 
 
 @receiver(post_save, sender=BoardPreferences)
-def board_preferences_send_message(sender, instance, created, **kwargs):
+def board_preferences_send_message(sender, instance, **kwargs):
     channel_group_send(
         f"board-{instance.board.slug}",
         {
@@ -88,8 +93,8 @@ def invalidate_board_preferences_cache(sender, instance, **kwargs):
             invalidate_obj(topic)
             for post in topic.posts.all():
                 invalidate_obj(post)
-    except Exception:
-        raise Exception(f"Could not delete cache: board-{instance.id}")
+    except ObjectDoesNotExist:
+        logger.error("Could not delete cache: board-%s", str(instance.id))
 
 
 @receiver(post_save, sender=Topic)
@@ -119,8 +124,8 @@ def topic_delete_send_message(sender, instance, **kwargs):
                     "topic_pk": str(instance.pk),
                 },
             )
-    except Exception:
-        raise Exception(f"Could not send message: topic_deleted for topic {str(instance.pk)}")
+    except ObjectDoesNotExist:
+        logger.error("Could not send message: topic_deleted for topic: %s", str(instance.pk))
 
 
 @receiver(post_save, sender=Topic)
@@ -128,8 +133,8 @@ def topic_delete_send_message(sender, instance, **kwargs):
 def invalidate_topic_template_cache(sender, instance, **kwargs):
     try:
         invalidate_topic_cache(instance)
-    except Exception:
-        raise Exception(f"Could not delete cache: topic-{str(instance.pk)}")
+    except ObjectDoesNotExist:
+        logger.error("Could not delete cache: topic-%s", str(instance.pk))
 
 
 @receiver(post_save, sender=Post)
@@ -188,8 +193,8 @@ def post_delete_send_message(sender, instance, **kwargs):
                     "post_pk": str(instance.pk),
                 },
             )
-    except Exception:
-        raise Exception(f"Could not send message: post_deleted for post-{str(instance.pk)}")
+    except ObjectDoesNotExist:
+        logger.error("Could not send message: post_deleted for post-%s", str(instance.pk))
 
 
 @receiver(post_save, sender=Reaction)
@@ -209,8 +214,8 @@ def invalidate_bg_image_cache(sender, instance, **kwargs):
             cache.delete(key_image_select_1)
         if cache.get(key_image_select_2) is not None:
             cache.delete(key_image_select_2)
-    except Exception:
-        raise Exception(f"Could not delete cache: image-select-{str(instance.type)}")
+    except ObjectDoesNotExist:
+        logger.error("Could not delete cache: image-select-%s", str(instance.type))
 
 
 @receiver(cleanup_pre_delete)
