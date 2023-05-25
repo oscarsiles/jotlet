@@ -131,6 +131,10 @@ document.addEventListener("alpine:init", () => {
       return img_srcset_res(this.img_srcset_webp, res);
     },
   });
+
+  Alpine.store("postForm", {
+    chemdoodleCanvasEnabled: false,
+  });
 });
 
 function starRating() {
@@ -164,9 +168,6 @@ connectWebsocket();
 var allowed_tags = ["span", "b", "i", "em", "strong", "br", "p", "code"];
 if (allow_image_uploads) {
   allowed_tags.push("img");
-}
-if (enable_chemdoodle) {
-  allowed_tags.push("canvas");
 }
 
 document.addEventListener("alpine:initializing", () => {

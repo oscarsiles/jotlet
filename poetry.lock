@@ -966,6 +966,19 @@ docs = ["furo (>=2021.8.17b43,<2021.9.dev0)", "sphinx (>=3.5.0)", "sphinx-notfou
 testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)"]
 
 [[package]]
+name = "django-extra-views"
+version = "0.14.0"
+description = "Extra class-based views for Django"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-extra-views-0.14.0.tar.gz", hash = "sha256:2b9daf99c79e91035aa3f269232afcb3ccf837f0f49f2dc6da6916fe34bc1e0a"},
+]
+
+[package.dependencies]
+Django = ">=2.1"
+
+[[package]]
 name = "django-filter"
 version = "23.2"
 description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
@@ -3431,4 +3444,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "8c13bc8db629d43bc1b3d9c4196dcf9f787cd7a652fcfee6bf9302b35e41ad71"
+content-hash = "68cede276c500af7d640655522d1d6ecbd3f353dbae971c680181880026f1af8"

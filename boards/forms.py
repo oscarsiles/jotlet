@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 from cacheops import invalidate_obj
 from crispy_bootstrap5.bootstrap5 import FloatingField
@@ -12,7 +12,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import RegexValidator
 from django.urls import reverse
 
-from .models import Board, BoardPreferences, Post
+from .models import AdditionalData, Board, BoardPreferences, Post
 
 # make sure to support legacy 6-digit slugs
 slug_validator = RegexValidator(r"^[a-z0-9]{8}$|^\d{6}$", "ID should be 6 or 8 letters and/or digits.")
@@ -333,3 +333,75 @@ class BoardSearchForm(forms.Form):
         slug_validator(board_slug)
         validate_board_exists(board_slug)
         return board_slug.replace(" ", "")
+
+
+class PostCreateForm(forms.ModelForm):
+    is_additional_data_allowed = False
+    additional_data_type = None
+    additional_data = None
+
+    class Meta:
+        model = Post
+        fields = ["content"]
+
+    def __init__(self, *args, **kwargs):
+        self.is_additional_data_allowed = kwargs.pop("is_additional_data_allowed", False)
+        self.additional_data_type = kwargs.pop("additional_data_type", None)
+        self.additional_data = kwargs.pop("additional_data", None)
+        super().__init__(*args, **kwargs)
+
+        if self.is_additional_data_allowed:
+            self.fields["content"].required = False
+            match self.additional_data_type:
+                case "c":
+                    self.fields["additional_data"] = forms.JSONField(required=False, widget=forms.HiddenInput())
+                    if self.additional_data is not None:
+                        try:
+                            self.fields["additional_data"].initial = self.additional_data.get(data_type="c").json
+                        except AdditionalData.DoesNotExist:
+                            pass
+                case "f":  # not implemented
+                    pass
+                case "m":
+                    self.fields["additional_data"] = forms.CharField(required=False)
+                    if self.additional_data is not None:
+                        try:
+                            self.fields["additional_data"].initial = self.additional_data.get(data_type="m").json
+                        except AdditionalData.DoesNotExist:
+                            pass
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+        self.helper.form_tag = False
+
+    def clean(self):
+        clean_data = super().clean()
+        content = clean_data.get("content", "")
+        if not self.is_additional_data_allowed and content == "":
+            raise forms.ValidationError("Content cannot be empty.")
+        if self.is_additional_data_allowed and content == "" and self.cleaned_data["additional_data"] is None:
+            raise forms.ValidationError("Content and molecule cannot be empty.")
+        return clean_data
+
+    def save(self, commit=True):
+        post = super().save()
+
+        if self.is_additional_data_allowed:
+            match self.additional_data_type:
+                case "c":
+                    if self.cleaned_data["additional_data"] is not None:
+                        AdditionalData.objects.update_or_create(
+                            post=post, data_type="c", defaults={"json": self.cleaned_data["additional_data"]}
+                        )
+                    else:
+                        AdditionalData.objects.filter(post=post, data_type="c").delete()
+                case "f":  # not implemented
+                    pass
+                case "m":
+                    if self.cleaned_data["additional_data"] is not None:
+                        AdditionalData.objects.update_or_create(
+                            post=post, data_type="m", defaults={"json": self.cleaned_data["additional_data"]}
+                        )
+                    else:
+                        AdditionalData.objects.filter(post=post, data_type="m").delete()
+        return post

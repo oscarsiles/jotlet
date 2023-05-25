@@ -8,19 +8,29 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django_htmx.http import trigger_client_event
 
+from boards.forms import PostCreateForm
 from boards.models import Board, Post, PostImage, Topic
 from boards.utils import channel_group_send, get_is_moderator
 
 
-def get_post_form(form):
-    form.helper = FormHelper()
-    form.helper.form_show_labels = False
-    return form
+class PostFormMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["board"] = self.board
+        return context
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super().get_form_kwargs(**kwargs)
+        if self.board.is_additional_data_allowed:
+            kwargs["is_additional_data_allowed"] = self.board.is_additional_data_allowed
+            if self.board.preferences.enable_chemdoodle:
+                kwargs["additional_data_type"] = "c"
+        return kwargs
 
 
-class CreatePostView(UserPassesTestMixin, generic.CreateView):
+class CreatePostView(UserPassesTestMixin, PostFormMixin, generic.CreateView):
     model = Post
-    fields = ["content"]
+    form_class = PostCreateForm
     template_name = "boards/post_form.html"
     is_reply = False
     parent = None
@@ -49,14 +59,6 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
 
         return is_allowed
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["board"] = self.board
-        return context
-
-    def get_form(self):
-        return get_post_form(super().get_form())
-
     def form_valid(self, form):
         if self.is_reply:
             form.instance.topic_id = self.parent.topic_id
@@ -76,24 +78,27 @@ class CreatePostView(UserPassesTestMixin, generic.CreateView):
 
         response = super().form_valid(form)
         response.status_code = 204
-
         return trigger_client_event(
             trigger_client_event(
-                response,
-                "showMessage",
-                {
-                    "message": "Post Created",
-                },
+                trigger_client_event(
+                    response,
+                    "showMessage",
+                    {
+                        "message": "Post Created",
+                    },
+                ),
+                "postCreated",
+                None,
             ),
-            "postCreated",
+            "postSuccessful",
             None,
         )
 
 
-class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
+class UpdatePostView(UserPassesTestMixin, PostFormMixin, generic.UpdateView):
     model = Post
+    form_class = PostCreateForm
     board_post = None
-    fields = ["content"]
     template_name = "boards/post_form.html"
     board = None
 
@@ -107,18 +112,11 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
 
         return is_allowed
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["board"] = self.board
-        return context
-
-    def get_form(self):
-        return get_post_form(super().get_form())
-
     def get_object(self):
         if not self.board_post:
             self.board_post = (
-                Post.objects.prefetch_related("topic__board")
+                Post.objects.prefetch_related("additional_data")
+                .prefetch_related("topic__board")
                 .prefetch_related("topic__board__owner")
                 .prefetch_related("topic__board__preferences")
                 .prefetch_related("topic__board__preferences__moderators")
@@ -126,19 +124,29 @@ class UpdatePostView(UserPassesTestMixin, generic.UpdateView):
             )
         return self.board_post
 
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super().get_form_kwargs(**kwargs)
+        if self.board.is_additional_data_allowed:
+            kwargs["additional_data"] = self.get_object().additional_data
+        return kwargs
+
     def form_valid(self, form):
         response = super().form_valid(form)
         response.status_code = 204
 
         return trigger_client_event(
             trigger_client_event(
-                response,
-                "showMessage",
-                {
-                    "message": "Post Updated",
-                },
+                trigger_client_event(
+                    response,
+                    "showMessage",
+                    {
+                        "message": "Post Updated",
+                    },
+                ),
+                "postUpdated",
+                None,
             ),
-            "postUpdated",
+            "postSuccessful",
             None,
         )
 

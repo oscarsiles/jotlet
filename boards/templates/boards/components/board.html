@@ -26,13 +26,13 @@
                     nonce="{{ CSP_NONCE }}"></script>
         {% endif %}
         {% if board.preferences.enable_chemdoodle %}
-            <script defer
+            <script
                     src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
-            <script defer
+            <script
                     src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
-            <script defer
+            <script
                     src="{% static 'boards/js/components/board_chemdoodle.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
         {% endif %}

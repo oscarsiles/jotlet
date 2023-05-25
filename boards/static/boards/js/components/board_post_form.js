@@ -7,14 +7,76 @@ var enableChemdoodle = JSON.parse(
 var boardSlug = JSON.parse(document.getElementById("board_slug").textContent);
 var csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
+// ChemDoodle setup
+var chemdoodleEditCanvas = null;
+var chemdoodleJson = null;
+var canvasWidth = null;
+var canvasHeight = null;
+
+function chemdoodleToJSONField(evt, chemdoodleEnabled) {
+  var json = null;
+  if (chemdoodleEnabled) {
+    json = JSON.stringify(
+      new ChemDoodle.io.JSONInterpreter().contentTo(
+        chemdoodleEditCanvas.molecules,
+        chemdoodleEditCanvas.shapes
+      )
+    );
+  }
+  evt.detail.requestConfig.parameters.additional_data = json;
+  return evt;
+}
+
+if (enableChemdoodle) {
+  var json = document.getElementById("id_additional_data").value;
+  if (json != "null") {
+    chemdoodleJson = JSON.parse(json);
+    toggleChemdoodleEditor();
+  }
+}
+
+function toggleChemdoodleEditor() {
+  var isChemdoodleCanvasEnabled =
+    Alpine.store("postForm").chemdoodleCanvasEnabled;
+
+  if (!isChemdoodleCanvasEnabled) {
+    document.querySelector(".modal-dialog").classList.add("modal-lg");
+    canvasWidth =
+      bootstrap.Modal.getInstance("#modal-1-div")._dialog.clientWidth * 0.9;
+    canvasHeight = canvasWidth * 0.6;
+    if (!chemdoodleEditCanvas) {
+      chemdoodleEditCanvas = new ChemDoodle.SketcherCanvas(
+        "chemdoodle-edit-canvas",
+        canvasWidth,
+        canvasHeight,
+        { requireStartingAtom: false }
+      );
+      if (chemdoodleJson) {
+        var data = new ChemDoodle.io.JSONInterpreter().contentFrom(
+          chemdoodleJson
+        );
+        chemdoodleEditCanvas.loadContent(data["molecules"], data["shapes"]);
+      }
+      chemdoodleEditCanvas.repaint();
+
+      document
+        .getElementById("chemdoodle-edit-canvas")
+        .setAttribute("x-ref", "chemdoodleEditCanvas");
+    } else {
+    }
+  } else {
+    document.querySelector(".modal-dialog").classList.remove("modal-lg");
+  }
+
+  Alpine.store("postForm").chemdoodleCanvasEnabled = !isChemdoodleCanvasEnabled;
+}
+
 // setup tags/toolbar
 var allowedTags = ["span", "b", "i", "em", "strong", "br", "p", "code"];
 if (allowImageUploads) {
   allowedTags.push("img");
 }
-if (enableChemdoodle) {
-  allowedTags.push("canvas");
-}
+
 var toolbarItems = [
   {
     name: "bold",
@@ -45,20 +107,10 @@ if (allowImageUploads) {
   });
 }
 if (enableChemdoodle) {
-  canvasWidth =
-    bootstrap.Modal.getInstance("#modal-1-div")._dialog.clientWidth * 0.9;
-  canvasHeight = canvasWidth * 0.6;
   toolbarItems.splice(2, 0, {
     name: "chemdoodle",
     action: (editor) => {
-      document.querySelector(".modal-dialog").classList.add("modal-lg");
-      var editorCanvas = new ChemDoodle.SketcherCanvas(
-        "chemdoodle-edit-canvas",
-        canvasWidth,
-        canvasHeight,
-        { requireStartingAtom: false }
-      );
-      editorCanvas.repaint();
+      return toggleChemdoodleEditor();
     },
     className: "bi bi-chemdoodle",
     title: "Chemdoodle",
@@ -68,6 +120,7 @@ if (enableChemdoodle) {
 var easyMDE = new EasyMDE({
   autoDownloadFontAwesome: false,
   autofocus: true,
+  autoRefresh: { delay: 300 },
   element: document.getElementsByName("content")[0],
   forceSync: true,
   imageAccept: allowImageUploads

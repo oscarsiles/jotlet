@@ -9,6 +9,11 @@ def get_is_owner(post, request):
 
 
 @register.simple_tag
+def get_additional_data(post, additional_data_type):
+    return post.get_additional_data(additional_data_type)
+
+
+@register.simple_tag
 def get_reactions(post, reaction_type):
     return post.get_reactions(reaction_type)
 

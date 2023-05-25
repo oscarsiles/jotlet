@@ -1,0 +1,15 @@
+{% load cacheops board_extras post_extras %}
+{% if board.is_additional_data_allowed %}
+    {% if board.preferences.enable_chemdoodle %}
+        {% get_additional_data post 'c' as chemdoodle %}
+    {% endif %}
+{% endif %}
+{% if chemdoodle %}
+    {% with "post-"|addstr:post.pk|addstr:"-chemdoodle-json" as chemdoodle_json %}
+        {{ chemdoodle.first.json|json_script:chemdoodle_json }}
+    {% endwith %}
+    <canvas id="post-{{ post.pk }}-chemdoodle-canvas"
+            x-data
+            x-effect="renderChemdoodle('{{ post.pk }}')"
+            @htmx:after-settle.camel.window="renderChemdoodle('{{ post.pk }}')"></canvas>
+{% endif %}

@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "channels",
     "django_htmx",
+    "extra_views",
     "huey.contrib.djhuey",
     "hueymail",
     "bx_django_utils",
@@ -385,6 +386,7 @@ CACHEOPS = {
     "boards.topic": {"ops": "all"},
     "boards.post": {"ops": "all"},
     "boards.reaction": {"ops": "all"},
+    "boards.additionaldata": {"ops": "all"},
     "*.*": {"ops": ()},
 }
 CACHEOPS_INSIDEOUT = env("CACHEOPS_INSIDEOUT", default=True)

@@ -6,11 +6,10 @@
 		"adrianwilczynski.alpine-js-intellisense",
 		"batisteo.vscode-django",
 		"esbenp.prettier-vscode",
-		"matangover.mypy",
 		"monosans.djlint",
 		"ms-python.flake8",
 		"ms-python.isort",
-		"ms-python.python",
+		"ms-python.python"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": []

@@ -156,6 +156,10 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             is_allowed = timezone.now() <= self.preferences.posting_allowed_until
         return is_allowed and not self.locked
 
+    @cached_property
+    def is_additional_data_allowed(self):
+        return self.preferences.enable_chemdoodle  # currently only have chemdoodle additional data
+
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -379,6 +383,13 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
 
         return _get_reactions(reaction_type)
 
+    def get_additional_data(self, additional_data_type="m"):
+        @cached_as(self, extra=additional_data_type, timeout=60 * 60 * 24)
+        def _get_additional_data(additional_data_type):
+            return AdditionalData.objects.filter(post=self, data_type=additional_data_type)
+
+        return _get_additional_data(additional_data_type)
+
     @cached_property
     def get_descendant_count(self):
         @cached_as(self, timeout=60 * 60 * 24)
@@ -477,8 +488,9 @@ class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 ADDITIONAL_DATA_TYPE = (
-    ("m", "misc"),
     ("c", "chemdoodle"),
+    ("f", "file"),
+    ("m", "misc"),
 )
 
 
@@ -497,11 +509,13 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             prev_data = AdditionalData.objects.get(pk=self.pk)
             if prev_data.json == self.json:
                 self.skip_history_when_saving = True
+                try:
+                    ret = super().save(*args, **kwargs)
+                finally:
+                    del self.skip_history_when_saving
+                return ret
 
         super().save(*args, **kwargs)
-
-        if self.skip_history_when_saving:
-            del self.skip_history_when_saving
 
     class Meta(auto_prefetch.Model.Meta):
         constraints = [

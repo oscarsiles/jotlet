@@ -139,8 +139,7 @@
                                                    hx-target="#modal-1-body-div"
                                                    hx-swap="innerHTML"
                                                    data-bs-toggle="modal"
-                                                   data-bs-target="#modal-1-div"
-                                                   class="btn btn-link shadow-none p-1">
+                                                   data-bs-target="#modal-1-div">
                                                     <i class="bi bi-trash pe-2"></i>Delete Post
                                                 </a>
                                             </li>
@@ -156,6 +155,12 @@
                                x-markdown>
                                 <span x-ignore>{{ post|linebreaksbr }}</span>
                             </p>
+                            {% if board.is_additional_data_allowed %}
+                                <div id="post-{{ post.pk }}-additional_data"
+                                     class="d-flex justify-content-center">
+                                    {% include "boards/components/post_additional_data.html" %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 {% endcached_as %}
