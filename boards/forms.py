@@ -384,7 +384,7 @@ class PostCreateForm(forms.ModelForm):
         return clean_data
 
     def save(self, commit=True):
-        post = super().save()
+        post = super().save(commit=commit)
 
         if self.is_additional_data_allowed:
             match self.additional_data_type:

@@ -1,12 +1,11 @@
 {% load crispy_forms_tags static %}
 <script src="{% static 'boards/js/components/board_post_form.js' %}"
         nonce="{{ CSP_NONCE }}"></script>
-<form id="post-form"
-      x-init="$store.postForm.chemdoodleCanvasEnabled = false;"
-      x-ref="postForm"
-      hx-post="{{ request.build_absolute_uri }}"
-      @htmx:before-request.camel="chemdoodleToJSONField($event, $store.postForm.chemdoodleCanvasEnabled)"
-      @post-successful.camel.window="$nextTick(() => { bootstrap.Modal.getInstance('#modal-1-div').hide() })">
+<form id="post-form" x-init="$store.postForm.chemdoodleCanvasEnabled = false;" x-ref="postForm" hx-post="{{ request.build_absolute_uri }}" @post-successful.camel.window="$nextTick(() => { bootstrap.Modal.getInstance('#modal-1-div').hide() })"
+    {% if board.preferences.enable_chemdoodle %}
+        @htmx:before-request.camel="chemdoodleToJSONField($event, $store.postForm.chemdoodleCanvasEnabled)"
+    {% endif %}
+    >
     {% crispy form %}
     {% if board.preferences.enable_chemdoodle %}
         <div class="d-flex justify-content-center">

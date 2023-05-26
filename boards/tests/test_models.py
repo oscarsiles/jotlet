@@ -7,13 +7,27 @@ import factory
 import pytest
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.db import IntegrityError
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
 from PIL import Image as PILImage
+from pytest_lazyfixture import lazy_fixture
 
-from boards.models import IMAGE_TYPE, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
+from boards.models import (
+    ADDITIONAL_DATA_TYPE,
+    IMAGE_TYPE,
+    AdditionalData,
+    BgImage,
+    Board,
+    BoardPreferences,
+    Image,
+    Post,
+    PostImage,
+    Reaction,
+    Topic,
+)
 from jotlet.tests.utils import create_session
 
 IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
@@ -82,6 +96,13 @@ class TestBoardModel:
         assert board.get_postimage_count < img_count1 + img_count2
         assert board.get_postimage_count == img_count1
 
+    def test_is_additional_data_allowed(self, board):
+        assert board.is_additional_data_allowed is False
+        board.preferences.enable_chemdoodle = True
+        board.preferences.save()
+        board.refresh_from_db()
+        assert board.is_additional_data_allowed is True
+
     def test_get_absolute_url(self, board):
         assert board.get_absolute_url() == f"/boards/{board.slug}/"
 
@@ -104,6 +125,7 @@ class TestBoardModel:
         board.preferences.posting_allowed_from = allowed_from
         board.preferences.posting_allowed_until = allowed_until
         board.preferences.save()
+        board.refresh_from_db()
         assert board.is_posting_allowed == (time_allowed and not locked)
 
 
@@ -119,6 +141,21 @@ class TestBoardPreferencesModel:
 
     def test_inverse_opacity(self, board):
         assert board.preferences.get_inverse_opacity == 1.0 - board.preferences.background_opacity
+
+    @pytest.mark.parametrize("bg_type", ["c", "b"])
+    @pytest.mark.parametrize("image", [None, lazy_fixture("bg_image")])
+    def test_save(self, board, bg_type, image):
+        board.preferences.background_type = bg_type
+        board.preferences.background_image = image
+        board.preferences.save()
+        board.refresh_from_db()
+        if bg_type == "c":
+            assert board.preferences.background_type == "c"
+            assert board.preferences.background_image is None
+        elif bg_type == "b":
+            expected_bg_type = "b" if image is not None else "c"
+            assert board.preferences.background_type == expected_bg_type
+            assert board.preferences.background_image == image
 
     def test_preferences_deleted_after_board_delete(self, board):
         preferences_pk = board.preferences.pk
@@ -160,6 +197,16 @@ class TestTopicModel:
     def test_topic_deleted_after_board_delete(self, topic):
         topic.board.delete()
         pytest.raises(Topic.DoesNotExist, Topic.objects.get, pk=topic.pk)
+
+    @pytest.mark.parametrize("board_locked", [True, False])
+    @pytest.mark.parametrize("topic_locked", [True, False])
+    def test_is_posting_allowed(self, topic, board_locked, topic_locked):
+        topic.locked = topic_locked
+        topic.save()
+        topic.board.locked = board_locked
+        topic.board.save()
+        topic.refresh_from_db()
+        assert topic.is_posting_allowed == (not topic_locked and not board_locked)
 
 
 class TestPostModel:
@@ -277,6 +324,17 @@ class TestPostModel:
         pytest.raises(Post.DoesNotExist, Post.objects.get, pk=post.pk)
         pytest.raises(Post.DoesNotExist, Post.objects.get, pk=post2.pk)
 
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE)
+    def test_get_additional_data(self, post, data_type, misc_data_factory, chemdoodle_data_factory):
+        assert post.get_additional_data(additional_data_type=data_type[0]).count() == 0
+        if data_type == "m":
+            misc_data_factory.create(post=post)
+        elif data_type == "c":
+            chemdoodle_data_factory.create(post=post)
+        if data_type in ["m", "c"]:  # files not yet implemented
+            post.refresh_from_db()
+            assert post.get_additional_data(additional_data_type=data_type).count() == 1
+
     def test_cleanup_image_uploads(self, topic, post_factory, post_image_factory):
         topic.board.preferences.allow_image_uploads = True
         topic.board.preferences.save()
@@ -299,11 +357,15 @@ class TestPostModel:
 
 
 class TestReactionModel:
-    def test_post_deleted_after_topic_delete(self, reaction):
+    def test_reaction_deleted_after_topic_delete(self, reaction):
+        reaction.post.delete()
+        pytest.raises(Reaction.DoesNotExist, Reaction.objects.get, pk=reaction.pk)
+
+    def test_reaction_deleted_after_topic_delete(self, reaction):
         reaction.post.topic.delete()
         pytest.raises(Reaction.DoesNotExist, Reaction.objects.get, pk=reaction.pk)
 
-    def test_post_deleted_after_board_delete(self, reaction, topic_factory, post_factory, reaction_factory):
+    def test_reaction_deleted_after_board_delete(self, reaction, topic_factory, post_factory, reaction_factory):
         topic2 = topic_factory(board=reaction.post.topic.board)
         post2 = post_factory(topic=topic2)
         reaction2 = reaction_factory(post=post2)
@@ -314,21 +376,32 @@ class TestReactionModel:
 
 # TODO: add tests for AdditionalData Model
 class TestAdditionalDataModel:
-    @pytest.fixture(autouse=True)
-    def setup_method_fixture(self):
-        pass
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE)
+    def test_type_constraint(self, post, data_type, additional_data_factory):
+        pytest.raises(IntegrityError, additional_data_factory.create_batch, size=2, post=post, data_type=data_type[0])
 
-    def test_valid_json_data(self):
-        pass
+    @pytest.mark.parametrize(
+        "data", [lazy_fixture("misc_data"), lazy_fixture("chemdoodle_data")]
+    )
+    def test_correct_data_for_type(self, data):
+        if data.data_type in ["m", "c"]:
+            assert data.json is not None
+            # assert data.file is None
+        # elif data.data_type == "f":
+        #     assert data.json is None
+        #     assert data.file is not None
 
-    def test_invalid_json_data(self):
-        pass
+    def test_additional_data_deleted_after_post_delete(self, additional_data):
+        additional_data.post.delete()
+        pytest.raises(AdditionalData.DoesNotExist, AdditionalData.objects.get, pk=additional_data.pk)
 
-    def test_type_constraint(self):
-        pass
+    def test_additional_data_deleted_after_topic_delete(self, additional_data):
+        additional_data.post.topic.delete()
+        pytest.raises(AdditionalData.DoesNotExist, AdditionalData.objects.get, pk=additional_data.pk)
 
-    def test_correct_data_for_type(self):  # chemdoodle=json, misc=json, file=filefield, etc.
-        pass
+    def test_additional_data_deleted_after_board_delete(self, additional_data):
+        additional_data.post.topic.board.delete()
+        pytest.raises(AdditionalData.DoesNotExist, AdditionalData.objects.get, pk=additional_data.pk)
 
 
 class TestImageModel:

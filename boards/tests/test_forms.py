@@ -1,7 +1,10 @@
-from boards.forms import BoardPreferencesForm, BoardSearchForm
+import pytest
+from pytest_lazyfixture import lazy_fixture
+
+from boards.forms import BoardPreferencesForm, BoardSearchForm, PostCreateForm
 from boards.models import Post
 
-TEST_FORM_DATA = {
+BOARD_PREFERENCES_FORM_DATA = {
     "board_type": "d",
     "background_type": "c",
     "background_color": "#123456",
@@ -20,7 +23,7 @@ class TestBoardPreferencesForm:
     def test_board_preferences_form_valid(self, board, user):
         user.username = "test_user"
         user.save()
-        form_data = TEST_FORM_DATA
+        form_data = BOARD_PREFERENCES_FORM_DATA
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         assert form.is_valid()
         assert form.helper.attrs["hx-post"] == f"/boards/{board.slug}/preferences/"
@@ -36,7 +39,7 @@ class TestBoardPreferencesForm:
         assert board.preferences.reaction_type == form_data.get("reaction_type")
 
     def test_board_preferences_form_approve_all(self, board, topic, post_factory):
-        form_data = TEST_FORM_DATA
+        form_data = BOARD_PREFERENCES_FORM_DATA
         form_data["require_post_approval"] = True
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         assert form.is_valid()
@@ -106,3 +109,34 @@ class TestBoardSearchForm:
         form = BoardSearchForm(data=form_data)
         assert not form.is_valid()
         assert form.errors["board_slug"] == ["Board does not exist."]
+
+
+class TestPostCreateForm:
+    @pytest.mark.parametrize("is_additional_data_allowed", [True, False])
+    @pytest.mark.parametrize(
+        "data_type,data",
+        [
+            (None, None),
+            ("m", lazy_fixture("json_data")),
+            ("c", lazy_fixture("json_data")),
+        ],
+    )
+    @pytest.mark.parametrize("text", ["test content", None])
+    def test_post_create_form_data_validation(self, topic, is_additional_data_allowed, data_type, data, text):
+        form_data = {
+            "content": text,
+        }
+        form = PostCreateForm(data=form_data)
+        form.is_additional_data_allowed = is_additional_data_allowed
+        form.additional_data_type = data_type
+        form.additional_data = data
+        form.fields["additional_data"].initial = data
+        is_form_valid = form.is_valid()
+        is_text_data_none = text is None and data is None
+        if is_additional_data_allowed and not is_text_data_none:
+            assert is_form_valid
+            assert form.cleaned_data["additional_data_type"] == data_type
+            assert form.cleaned_data["additional_data"] == data
+        else:
+            assert not is_form_valid
+            assert form.errors["content"] == ["This field is required."]

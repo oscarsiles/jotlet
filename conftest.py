@@ -1,18 +1,20 @@
-import asyncio
-
 import pytest
 from pytest_factoryboy import register
 
 from accounts.tests.factories import UserFactory
 from boards.tests.factories import (
+    AdditionalDataFactory,
     BgImageFactory,
     BoardFactory,
+    ChemdoodleDataFactory,
     ImageFactory,
+    MiscDataFactory,
     PostFactory,
     PostImageFactory,
     ReactionFactory,
     TopicFactory,
 )
+from jotlet.tests.factories import JSONFactory
 
 
 # Autouse Fixtures
@@ -39,8 +41,17 @@ register(PostFactory, "post")
 
 register(ReactionFactory, "reaction")
 
+register(AdditionalDataFactory, "additional_data")
+
+register(MiscDataFactory, "misc_data")
+
+register(ChemdoodleDataFactory, "chemdoodle_data")
+
 register(ImageFactory, "image")
 
 register(PostImageFactory, "post_image")
 
 register(BgImageFactory, "bg_image")
+
+# Utility Factories
+register(JSONFactory, "json_data")

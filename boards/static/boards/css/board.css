@@ -113,3 +113,9 @@
 [data-bs-theme="dark"] .bi-chemdoodle::before {
   filter: invert(0.8);
 }
+
+canvas.ChemDoodleWebComponent {
+  /* no border */
+  border: none !important;
+  padding: 0 !important;
+}

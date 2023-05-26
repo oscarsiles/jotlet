@@ -204,6 +204,8 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             self.background_image.image_type != "b" if self.background_image is not None else True
         ):
             self.background_image = None
+        if self.background_type == "b" and self.background_image is None:
+            self.background_type = "c"
         super().save(*args, **kwargs)
 
     @cached_property
@@ -383,10 +385,21 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
 
         return _get_reactions(reaction_type)
 
+    @cached_property
+    def get_additional_data_count(self):
+        @cached_as(self.additional_data.all(), timeout=60 * 60 * 24)
+        def _get_additional_data_count():
+            return AdditionalData.objects.filter(post=self).count()
+
+        return _get_additional_data_count()
+
     def get_additional_data(self, additional_data_type="m"):
-        @cached_as(self, extra=additional_data_type, timeout=60 * 60 * 24)
+        @cached_as(self.additional_data.all(), extra=additional_data_type, timeout=60 * 60 * 24)
         def _get_additional_data(additional_data_type):
-            return AdditionalData.objects.filter(post=self, data_type=additional_data_type)
+            if self.get_additional_data_count > 0:
+                return AdditionalData.objects.filter(post=self, data_type=additional_data_type)
+            else:
+                return None
 
         return _get_additional_data(additional_data_type)
 
