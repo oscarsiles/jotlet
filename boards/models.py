@@ -389,7 +389,10 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     def get_additional_data_count(self):
         @cached_as(self.additional_data.all(), timeout=60 * 60 * 24)
         def _get_additional_data_count():
-            return AdditionalData.objects.filter(post=self).count()
+            if AdditionalData.objects.filter(post=self).exists():
+                return AdditionalData.objects.filter(post=self).count()
+            else:
+                return 0
 
         return _get_additional_data_count()
 
@@ -397,7 +400,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         @cached_as(self.additional_data.all(), extra=additional_data_type, timeout=60 * 60 * 24)
         def _get_additional_data(additional_data_type):
             if self.get_additional_data_count > 0:
-                return AdditionalData.objects.filter(post=self, data_type=additional_data_type)
+                return AdditionalData.objects.get(post=self, data_type=additional_data_type)
             else:
                 return None
 

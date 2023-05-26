@@ -8,13 +8,14 @@ from boards.tests.factories import (
     BoardFactory,
     ChemdoodleDataFactory,
     ImageFactory,
+    JSONDataFactory,
     MiscDataFactory,
     PostFactory,
     PostImageFactory,
     ReactionFactory,
     TopicFactory,
 )
-from jotlet.tests.factories import JSONFactory
+from jotlet.tests.factories import JSONFactory, JSONStringFactory
 
 
 # Autouse Fixtures
@@ -43,6 +44,8 @@ register(ReactionFactory, "reaction")
 
 register(AdditionalDataFactory, "additional_data")
 
+register(JSONDataFactory, "json_data")
+
 register(MiscDataFactory, "misc_data")
 
 register(ChemdoodleDataFactory, "chemdoodle_data")
@@ -54,4 +57,6 @@ register(PostImageFactory, "post_image")
 register(BgImageFactory, "bg_image")
 
 # Utility Factories
-register(JSONFactory, "json_data")
+register(JSONFactory, "json_object")
+
+register(JSONStringFactory, "json_string")

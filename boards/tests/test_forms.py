@@ -1,8 +1,10 @@
+import json
+
 import pytest
 from pytest_lazyfixture import lazy_fixture
 
 from boards.forms import BoardPreferencesForm, BoardSearchForm, PostCreateForm
-from boards.models import Post
+from boards.models import ADDITIONAL_DATA_TYPE, Post
 
 BOARD_PREFERENCES_FORM_DATA = {
     "board_type": "d",
@@ -17,6 +19,8 @@ BOARD_PREFERENCES_FORM_DATA = {
     "moderators": "test_user,non_existent_user",
     "reaction_type": "v",
 }
+
+ADDITIONAL_DATA_TYPE_CHOICES = [choice[0] for choice in ADDITIONAL_DATA_TYPE]
 
 
 class TestBoardPreferencesForm:
@@ -113,30 +117,50 @@ class TestBoardSearchForm:
 
 class TestPostCreateForm:
     @pytest.mark.parametrize("is_additional_data_allowed", [True, False])
-    @pytest.mark.parametrize(
-        "data_type,data",
-        [
-            (None, None),
-            ("m", lazy_fixture("json_data")),
-            ("c", lazy_fixture("json_data")),
-        ],
-    )
+    @pytest.mark.parametrize("is_blank_data", [True, False])
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE_CHOICES)
     @pytest.mark.parametrize("text", ["test content", None])
-    def test_post_create_form_data_validation(self, topic, is_additional_data_allowed, data_type, data, text):
-        form_data = {
-            "content": text,
-        }
-        form = PostCreateForm(data=form_data)
-        form.is_additional_data_allowed = is_additional_data_allowed
-        form.additional_data_type = data_type
-        form.additional_data = data
-        form.fields["additional_data"].initial = data
+    def test_post_create_form_data_validation(
+        self,
+        is_additional_data_allowed,
+        is_blank_data,
+        json_string,
+        data_type,
+        text,
+    ):
+        form_data = {"content": text}
+        json_data = None
+
+        form = PostCreateForm(
+            data=form_data,
+            is_additional_data_allowed=is_additional_data_allowed,
+            additional_data_type=data_type,
+        )
+
+        if is_additional_data_allowed and not is_blank_data and data_type in ["m", "c"]:
+            json_data = json_string
+            form.data["additional_data"] = json_data
+            if "additional_data" not in form.changed_data:
+                form.changed_data.append("additional_data")
+
         is_form_valid = form.is_valid()
-        is_text_data_none = text is None and data is None
-        if is_additional_data_allowed and not is_text_data_none:
-            assert is_form_valid
-            assert form.cleaned_data["additional_data_type"] == data_type
-            assert form.cleaned_data["additional_data"] == data
-        else:
+        is_text_and_data_none = text is None and json_data is None
+        if is_additional_data_allowed:
+            if is_text_and_data_none:
+                assert not is_form_valid
+                if data_type == "c":
+                    assert form.non_field_errors()[0] == "Content and molecule cannot be empty."
+                else:
+                    assert form.non_field_errors()[0] == "Content and additional data cannot be empty."
+            else:
+                assert is_form_valid
+                if data_type in ["m", "c"] and not is_blank_data:
+                    assert form.cleaned_data["additional_data"] == json.loads(json_data)
+        elif text is None:
             assert not is_form_valid
             assert form.errors["content"] == ["This field is required."]
+        else:
+            assert is_form_valid
+
+    def test_post_update_form_data_validation(self):
+        pass

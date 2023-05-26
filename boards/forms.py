@@ -357,16 +357,16 @@ class PostCreateForm(forms.ModelForm):
                     self.fields["additional_data"] = forms.JSONField(required=False, widget=forms.HiddenInput())
                     if self.additional_data is not None:
                         try:
-                            self.fields["additional_data"].initial = self.additional_data.get(data_type="c").json
+                            self.initial["additional_data"] = self.additional_data.get(data_type="c").json
                         except AdditionalData.DoesNotExist:
                             pass
                 case "f":  # not implemented
                     pass
                 case "m":
-                    self.fields["additional_data"] = forms.CharField(required=False)
+                    self.fields["additional_data"] = forms.JSONField(required=False)
                     if self.additional_data is not None:
                         try:
-                            self.fields["additional_data"].initial = self.additional_data.get(data_type="m").json
+                            self.initial["additional_data"] = self.additional_data.get(data_type="m").json
                         except AdditionalData.DoesNotExist:
                             pass
 
@@ -377,10 +377,15 @@ class PostCreateForm(forms.ModelForm):
     def clean(self):
         clean_data = super().clean()
         content = clean_data.get("content", "")
+        additional_data = clean_data.get("additional_data", None)
+
         if not self.is_additional_data_allowed and content == "":
             raise forms.ValidationError("Content cannot be empty.")
-        if self.is_additional_data_allowed and content == "" and self.cleaned_data["additional_data"] is None:
-            raise forms.ValidationError("Content and molecule cannot be empty.")
+        if self.is_additional_data_allowed and content == "" and additional_data is None:
+            if self.additional_data_type == "c":
+                raise forms.ValidationError("Content and molecule cannot be empty.")
+            else:
+                raise forms.ValidationError("Content and additional data cannot be empty.")
         return clean_data
 
     def save(self, commit=True):

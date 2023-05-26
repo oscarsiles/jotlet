@@ -6,6 +6,7 @@
         "--reuse-db",
         "-n",
         "auto",
+        "--maxprocesses=4"
     ],
     "python.linting.enabled": true,
     "isort.check": true,

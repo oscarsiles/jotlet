@@ -1,11 +1,28 @@
+import json
+
 import factory
-from faker import Faker
+import faker
 
-fake = Faker()
+fake = faker.Faker()
 
 
-# Utility Factories
-class JSONFactory(factory.DictFactory):
+class JotletDict(dict):
+    pass
+
+
+class JSONStringFactory(factory.Factory):
+    class Meta:
+        model = str
+
     @classmethod
-    def _build(cls, model_class, *args, **kwargs):
-        return fake.json(data_columns=[("Name", "name")])
+    def _create(cls, model_class, *args, **kwargs):
+        return json.dumps(fake.pydict(allowed_types=[str, int, float, bool]))
+
+
+class JSONFactory(factory.Factory):
+    class Meta:
+        model = JotletDict
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        return json.loads(json.dumps(fake.pydict(allowed_types=[str, int, float, bool])))

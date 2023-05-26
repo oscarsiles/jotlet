@@ -48,7 +48,7 @@ class ReactionFactory(factory.django.DjangoModelFactory):
         model = Reaction
 
     post = factory.SubFactory(PostFactory)
-    session_key = factory.Sequence(fake.unique.sha1())
+    session_key = factory.Sequence(lambda n: fake.unique.sha1())
 
 
 class AdditionalDataFactory(factory.django.DjangoModelFactory):
@@ -58,12 +58,15 @@ class AdditionalDataFactory(factory.django.DjangoModelFactory):
     post = factory.SubFactory(PostFactory)
 
 
-class MiscDataFactory(AdditionalDataFactory):
-    data_type = "m"
+class JSONDataFactory(AdditionalDataFactory):
     json = factory.SubFactory(JSONFactory)
 
 
-class ChemdoodleDataFactory(AdditionalDataFactory):
+class MiscDataFactory(JSONDataFactory):
+    data_type = "m"
+
+
+class ChemdoodleDataFactory(JSONDataFactory):
     data_type = "c"
     json = json.loads(
         '{"m":[{"a":[{"x":206.99402945382255,"y":131.39880044119698,"i":"a3"},{"x":226.99402945382255,'
@@ -73,7 +76,7 @@ class ChemdoodleDataFactory(AdditionalDataFactory):
         '{"x":196.99402945382255,"y":148.71930851688586,"i":"a83"}],"i":"m3",'
         '"b":[{"b":0,"e":1,"i":"b84"},{"b":1,"e":2,"i":"b85","o":2},{"b":2,"e":3,"i":"b86"},'
         '{"b":3,"e":4,"i":"b87","o":2},{"b":4,"e":5,"i":"b88"},{"b":5,"e":0,"i":"b89","o":2}]}]}'
-    )
+    )  # benzene ChemDoole JSON
 
 
 # class FileDataFactory(AdditionalDataFactory):

@@ -6,7 +6,7 @@
     {% endif %}
     {% if chemdoodle %}
         {% with "post-"|addstr:post.pk|addstr:"-chemdoodle-json" as chemdoodle_json %}
-            {{ chemdoodle.first.json|json_script:chemdoodle_json }}
+            {{ chemdoodle.json|json_script:chemdoodle_json }}
         {% endwith %}
         <canvas id="post-{{ post.pk }}-chemdoodle-canvas"
                 width="0"

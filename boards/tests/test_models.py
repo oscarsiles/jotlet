@@ -31,6 +31,7 @@ from boards.models import (
 from jotlet.tests.utils import create_session
 
 IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
+ADDITIONAL_DATA_TYPE_CHOICES = [choice[0] for choice in ADDITIONAL_DATA_TYPE]
 
 
 class TestBoardModel:
@@ -324,16 +325,17 @@ class TestPostModel:
         pytest.raises(Post.DoesNotExist, Post.objects.get, pk=post.pk)
         pytest.raises(Post.DoesNotExist, Post.objects.get, pk=post2.pk)
 
-    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE)
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE_CHOICES)
     def test_get_additional_data(self, post, data_type, misc_data_factory, chemdoodle_data_factory):
-        assert post.get_additional_data(additional_data_type=data_type[0]).count() == 0
+        assert post.get_additional_data(additional_data_type=data_type) is None
+        additional_data = None
         if data_type == "m":
-            misc_data_factory.create(post=post)
+            additional_data = misc_data_factory.create(post=post)
         elif data_type == "c":
-            chemdoodle_data_factory.create(post=post)
+            additional_data = chemdoodle_data_factory.create(post=post)
         if data_type in ["m", "c"]:  # files not yet implemented
             post.refresh_from_db()
-            assert post.get_additional_data(additional_data_type=data_type).count() == 1
+            assert post.get_additional_data(additional_data_type=data_type) == additional_data
 
     def test_cleanup_image_uploads(self, topic, post_factory, post_image_factory):
         topic.board.preferences.allow_image_uploads = True
@@ -357,7 +359,7 @@ class TestPostModel:
 
 
 class TestReactionModel:
-    def test_reaction_deleted_after_topic_delete(self, reaction):
+    def test_reaction_deleted_after_post_delete(self, reaction):
         reaction.post.delete()
         pytest.raises(Reaction.DoesNotExist, Reaction.objects.get, pk=reaction.pk)
 
@@ -376,16 +378,15 @@ class TestReactionModel:
 
 # TODO: add tests for AdditionalData Model
 class TestAdditionalDataModel:
-    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE)
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE_CHOICES)
     def test_type_constraint(self, post, data_type, additional_data_factory):
-        pytest.raises(IntegrityError, additional_data_factory.create_batch, size=2, post=post, data_type=data_type[0])
+        pytest.raises(IntegrityError, additional_data_factory.create_batch, size=2, post=post, data_type=data_type)
 
-    @pytest.mark.parametrize(
-        "data", [lazy_fixture("misc_data"), lazy_fixture("chemdoodle_data")]
-    )
-    def test_correct_data_for_type(self, data):
-        if data.data_type in ["m", "c"]:
-            assert data.json is not None
+    @pytest.mark.parametrize("data_type", ADDITIONAL_DATA_TYPE_CHOICES)
+    def test_correct_data_for_type(self, post, data_type, additional_data_factory, json_object):
+        if data_type in ["m", "c"]:
+            additional_data_factory.create(post=post, data_type=data_type, json=json_object)
+            assert AdditionalData.objects.filter(post=post, data_type=data_type).count() == 1
             # assert data.file is None
         # elif data.data_type == "f":
         #     assert data.json is None
