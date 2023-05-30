@@ -248,7 +248,7 @@ elif AXES_ENABLED:
     AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
     AXES_LOCKOUT_URL = "/accounts/lockout/"
     AXES_LOCKOUT_PARAMETERS = env.list("AXES_LOCKOUT_PARAMETERS", default=["username", "ip_address"])
-    AXES_IPWARE_PROXY_COUNT = env("AXES_IPWARE_PROXY_COUNT", default=None)
+    AXES_IPWARE_PROXY_COUNT = env("AXES_IPWARE_PROXY_COUNT", default=None, cast=int)
     AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend"] + AUTHENTICATION_BACKENDS
 
 PASSWORD_HASHERS = [
