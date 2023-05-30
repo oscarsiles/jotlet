@@ -119,3 +119,7 @@ canvas.ChemDoodleWebComponent {
   border: none !important;
   padding: 0 !important;
 }
+
+.ui-front {
+  z-index: 1080 !important;
+}
