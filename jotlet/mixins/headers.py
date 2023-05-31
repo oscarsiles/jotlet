@@ -19,14 +19,14 @@ class JotletLinkHeaderMixin(generic.View):
             files_scripts = [
                 static("js/color-mode-toggler.js"),
                 static("js/vendor/bootstrap-5.3.0.bundle.min.js"),
-                static("js/vendor/htmx-1.9.1/htmx.min.js"),
+                static("js/vendor/htmx-1.9.2/htmx.min.js"),
                 static("js/base.js"),
-                static("js/vendor/htmx-1.9.1/htmx-alpine-morph.min.js"),
-                static("js/vendor/alpinejs-3.12.0/alpinejs-collapse.min.js"),
-                static("js/vendor/alpinejs-3.12.0/alpinejs-mask.min.js"),
-                static("js/vendor/alpinejs-3.12.0/alpinejs-morph.min.js"),
-                static("js/vendor/alpinejs-3.12.0/alpinejs-persist.min.js"),
-                static("js/vendor/alpinejs-3.12.0/alpinejs.min.js"),
+                static("js/vendor/htmx-1.9.2/htmx-alpine-morph.js"),
+                static("js/vendor/alpinejs-3.12.1/alpinejs-collapse.min.js"),
+                static("js/vendor/alpinejs-3.12.1/alpinejs-mask.min.js"),
+                static("js/vendor/alpinejs-3.12.1/alpinejs-morph.min.js"),
+                static("js/vendor/alpinejs-3.12.1/alpinejs-persist.min.js"),
+                static("js/vendor/alpinejs-3.12.1/alpinejs.min.js"),
             ]
             response = generate_link_header(response, files_css, files_scripts, files_fonts)
         return response

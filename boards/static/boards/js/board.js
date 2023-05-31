@@ -166,9 +166,16 @@ connectWebsocket();
 
 // Alpine x-markdown
 var allowed_tags = ["span", "b", "i", "em", "strong", "br", "p", "code"];
+var allowed_attr = ["title", "x-ignore"];
 if (allow_image_uploads) {
   allowed_tags.push("img");
+  allowed_attr.push("alt", "src");
 }
+
+marked.use({
+  mangle: false,
+  headerIds: false,
+});
 
 document.addEventListener("alpine:initializing", () => {
   Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
@@ -177,7 +184,7 @@ document.addEventListener("alpine:initializing", () => {
     effect(() => {
       getHTML(() => {
         el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
-          ALLOWED_ATTR: ["alt", "src", "title", "x-ignore"],
+          ALLOWED_ATTR: allowed_attr,
           ALLOWED_TAGS: allowed_tags,
           SANITIZE_NAMED_PROPS: true,
         });

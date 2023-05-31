@@ -18,15 +18,15 @@ class TestJotletLinkHeaderMixin:
         )
         assert f"<{static('js/color-mode-toggler.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/vendor/bootstrap-5.3.0.bundle.min.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/htmx-1.9.1/htmx.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/htmx-1.9.2/htmx.min.js')}>; rel=preload; as=script" in link_header
         assert f"<{static('js/base.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/htmx-1.9.1/htmx-alpine-morph.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/htmx-1.9.2/htmx-alpine-morph.js')}>; rel=preload; as=script" in link_header
         assert (
-            f"<{static('js/vendor/alpinejs-3.12.0/alpinejs-collapse.min.js')}>; rel=preload; as=script" in link_header
+            f"<{static('js/vendor/alpinejs-3.12.1/alpinejs-collapse.min.js')}>; rel=preload; as=script" in link_header
         )
-        assert f"<{static('js/vendor/alpinejs-3.12.0/alpinejs-mask.min.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/alpinejs-3.12.0/alpinejs-morph.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/alpinejs-3.12.1/alpinejs-mask.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/alpinejs-3.12.1/alpinejs-morph.min.js')}>; rel=preload; as=script" in link_header
         assert (
-            f"<{static('js/vendor/alpinejs-3.12.0/alpinejs-persist.min.js')}>; rel=preload; as=script" in link_header
+            f"<{static('js/vendor/alpinejs-3.12.1/alpinejs-persist.min.js')}>; rel=preload; as=script" in link_header
         )
-        assert f"<{static('js/vendor/alpinejs-3.12.0/alpinejs.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('js/vendor/alpinejs-3.12.1/alpinejs.min.js')}>; rel=preload; as=script" in link_header
