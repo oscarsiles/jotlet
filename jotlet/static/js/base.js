@@ -1,3 +1,11 @@
+// Tooltips
+function initializeTooltips(el) {
+  var tooltipTriggerList = el.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(
+    (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+  );
+}
+
 // Toast Notification
 function toastNotification() {
   return {

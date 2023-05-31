@@ -9,7 +9,7 @@ class JotletLinkHeaderMixin(generic.View):
         response = super().dispatch(request, *args, **kwargs)
         if not request.htmx:
             files_css = [
-                static("css/vendor/bootstrap-5.3.0-alpha3.min.css"),
+                static("css/vendor/bootstrap-5.3.0.min.css"),
                 static("css/vendor/bootstrap-icons-1.10.5.min.css"),
                 static("css/styles.css"),
             ]
@@ -18,7 +18,7 @@ class JotletLinkHeaderMixin(generic.View):
             ]
             files_scripts = [
                 static("js/color-mode-toggler.js"),
-                static("js/vendor/bootstrap-5.3.0-alpha3.bundle.min.js"),
+                static("js/vendor/bootstrap-5.3.0.bundle.min.js"),
                 static("js/vendor/htmx-1.9.1/htmx.min.js"),
                 static("js/base.js"),
                 static("js/vendor/htmx-1.9.1/htmx-alpine-morph.min.js"),

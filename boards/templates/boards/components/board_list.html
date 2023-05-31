@@ -3,8 +3,10 @@
     {% define "own" as board_list_type %}
 {% endif %}
 {{ board_list_type|json_script:"board_list_type" }}
-<script defer src="{% static 'boards/js/components/board_list.js' %}" nonce="{{ CSP_NONCE }}"></script>
-<div class="d-flex flex-column gap-2">
+<script defer
+        src="{% static 'boards/js/components/board_list.js' %}"
+        nonce="{{ CSP_NONCE }}"></script>
+<div class="d-flex flex-column gap-2" x-init="initializeTooltips($el)">
     <div class="d-flex gap-2">
         <h4>
             {% if board_list_type == "all" %}
@@ -87,9 +89,7 @@
             <select class="form-select" name="paginate_by">
                 {% for page_size in pagination_sizes %}
                     <option value="{{ page_size }}"
-                            {% if page_size == paginate_by %} selected{% endif %}>
-                        {{ page_size }}
-                    </option>
+                            {% if page_size == paginate_by %}selected{% endif %}>{{ page_size }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -105,9 +105,7 @@
                    href=""
                    hx-indicator="#spinner"
                    hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.previous_page_number }}
-                   {% if querystring %}
-                       &amp;{{ querystring }}
-                   {% endif %}">«</a>
+                           {% if querystring %}&amp;{{ querystring }}{% endif %}">«</a>
             </li>
         {% else %}
             <li class="disabled page-item">
@@ -130,9 +128,7 @@
                            href=""
                            hx-indicator="#spinner"
                            hx-get="{% url 'boards:board-list' board_list_type %}?page={{ i }}
-                           {% if querystring %}
-                               &amp;{{ querystring }}
-                           {% endif %}">{{ i }}</a>
+                                   {% if querystring %}&amp;{{ querystring }}{% endif %}">{{ i }}</a>
                     </li>
                 {% endif %}
             {% endif %}
@@ -143,9 +139,7 @@
                    href=""
                    hx-indicator="#spinner"
                    hx-get="{% url 'boards:board-list' board_list_type %}?page={{ page_obj.next_page_number }}
-                   {% if querystring %}
-                       &amp;{{ querystring }}
-                   {% endif %}">»</a>
+                           {% if querystring %}&amp;{{ querystring }}{% endif %}">»</a>
             </li>
         {% else %}
             <li class="disabled page-item">
