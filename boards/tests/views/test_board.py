@@ -30,8 +30,8 @@ class TestBoardView:
         response = client.get(url)
         link_header = response.get("Link")
         assert link_header is not None
-        assert f"<{static('css/vendor/bootstrap-5.3.0.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('css/vendor/easymde-2.18.0.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
+        assert f"<{static('vendor/easymde-2.18.0/easymde.min.css')}>; rel=preload; as=style" in link_header
 
         assert f"<{static('js/vendor/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
         assert "boards/js/components/board_mathjax.js" not in link_header
@@ -42,14 +42,14 @@ class TestBoardView:
         response = client.get(url)
         link_header = response.get("Link")
         assert f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js')}>; rel=preload; as=script" in link_header
         assert (
-            f"<{static('js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js')}>; rel=preload; as=script" in link_header
-        )
-        assert f"<{static('css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css')}>; rel=preload; as=style" in link_header
-        assert (
-            f"<{static('css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css')}>; rel=preload; as=style"
+            f"<{static('vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js')}>; rel=preload; as=script"
             in link_header
+        )
+        assert f"<{static('vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css')}>; rel=preload; as=style" in link_header
+        assert (
+            f"<{static('vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css')}>; rel=preload; as=style" in link_header
         )
         assert "js/vendor/jdenticon-3.2.0.min.js" not in link_header
 

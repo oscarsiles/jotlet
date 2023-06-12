@@ -57,14 +57,14 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
         if not request.htmx:
             preferences = self.object.preferences
             files_css = [
-                static("css/vendor/easymde-2.18.0.min.css"),
+                static("vendor/easymde-2.18.0/easymde.min.css"),
                 static("boards/css/board.css"),
             ]
             files_js = [
-                static("js/vendor/alpinejs-3.12.1/alpinejs-intersect.min.js"),
-                static("js/vendor/marked-5.0.4.min.js"),
-                static("js/vendor/purify-3.0.3.min.js"),
-                static("js/vendor/easymde-2.18.0.min.js"),
+                static("vendor/alpinejs-3.12.1/alpinejs-intersect.min.js"),
+                static("vendor/marked-5.0.4/marked.min.js"),
+                static("vendor/purify-3.0.3/purify.min.js"),
+                static("vendor/easymde-2.18.0/easymde.min.js"),
                 static("boards/js/vendor/robust-websocket.js"),
                 static("boards/js/board.js"),
             ]
@@ -80,12 +80,12 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
 
             if preferences.enable_chemdoodle:
                 files_css += [
-                    static("css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css"),
-                    static("css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css"),
+                    static("vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css"),
+                    static("vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css"),
                 ]
                 files_js += [
                     static("js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js"),
-                    static("js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js"),
+                    static("js/vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js"),
                 ]
 
             if preferences.enable_identicons:

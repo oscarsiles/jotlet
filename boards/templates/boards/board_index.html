@@ -1,26 +1,26 @@
 {% extends "base_generic.html" %}
 {% load static cache board_extras %}
 {% block head %}
-    <link href="{% static 'css/vendor/easymde-2.18.0.min.css' %}"
+    <link href="{% static 'vendor/easymde-2.18.0/easymde.min.css' %}"
           rel="stylesheet" />
     <link href="{% static 'boards/css/board.css' %}" rel="stylesheet" />
     {% if board.preferences.enable_chemdoodle %}
-        <link href="{% static 'css/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css' %}"
+        <link href="{% static 'vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css' %}"
               rel="stylesheet">
-        <link href="{% static 'css/vendor/chemdoodleweb-9.5.0/jquery-ui-1.11.4.custom.css' %}"
+        <link href="{% static 'vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css' %}"
               rel="stylesheet">
     {% endif %}
     <script defer
-            src="{% static 'js/vendor/alpinejs-3.12.1/alpinejs-intersect.min.js' %}"
+            src="{% static 'vendor/alpinejs-3.12.1/alpinejs-intersect.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
     <script defer
-            src="{% static 'js/vendor/marked-5.0.4.min.js' %}"
+            src="{% static 'vendor/marked-5.0.4/marked.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
     <script defer
-            src="{% static 'js/vendor/purify-3.0.3.min.js' %}"
+            src="{% static 'vendor/purify-3.0.3/purify.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
     <script defer
-            src="{% static 'js/vendor/easymde-2.18.0.min.js' %}"
+            src="{% static 'vendor/easymde-2.18.0/easymde.min.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
     <script defer
             src="{% static 'boards/js/vendor/robust-websocket.js' %}"

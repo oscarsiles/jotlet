@@ -26,14 +26,11 @@
                     nonce="{{ CSP_NONCE }}"></script>
         {% endif %}
         {% if board.preferences.enable_chemdoodle %}
-            <script
-                    src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js' %}"
+            <script src="{% static 'vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
-            <script
-                    src="{% static 'js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb-uis.js' %}"
+            <script src="{% static 'vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
-            <script
-                    src="{% static 'boards/js/components/board_chemdoodle.js' %}"
+            <script src="{% static 'boards/js/components/board_chemdoodle.js' %}"
                     nonce="{{ CSP_NONCE }}"></script>
         {% endif %}
         {% if board.preferences.enable_identicons %}
