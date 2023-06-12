@@ -33,7 +33,7 @@ class TestBoardView:
         assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
         assert f"<{static('vendor/easymde-2.18.0/easymde.min.css')}>; rel=preload; as=style" in link_header
 
-        assert f"<{static('js/vendor/jdenticon-3.2.0.min.js')}>; rel=preload; as=script" in link_header
+        assert f"<{static('vendor/jdenticon-3.2.0/jdenticon.min.js')}>; rel=preload; as=script" in link_header
         assert "boards/js/components/board_mathjax.js" not in link_header
         board.preferences.enable_latex = True
         board.preferences.enable_chemdoodle = True
@@ -51,7 +51,7 @@ class TestBoardView:
         assert (
             f"<{static('vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css')}>; rel=preload; as=style" in link_header
         )
-        assert "js/vendor/jdenticon-3.2.0.min.js" not in link_header
+        assert "vendor/jdenticon-3.2.0/jdenticon.min.js" not in link_header
 
     @pytest.mark.parametrize(
         "current_url,response_template",

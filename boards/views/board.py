@@ -90,7 +90,7 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
 
             if preferences.enable_identicons:
                 files_js += [
-                    static("js/vendor/jdenticon-3.2.0.min.js"),
+                    static("vendor/jdenticon-3.2.0/jdenticon.min.js"),
                 ]
 
             response = generate_link_header(response, files_css, files_js, files_fonts, domain_preconnect)
