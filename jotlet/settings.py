@@ -246,7 +246,7 @@ AXES_ENABLED = env("AXES_ENABLED", default=True)
 if TESTING:
     os.environ["AXES_IPWARE_PROXY_COUNT"] = "1"
     SILENCED_SYSTEM_CHECKS = ["axes.W001"]
-if AXES_ENABLED:
+if AXES_ENABLED and not TESTING:
     AXES_HANDLER = env(
         "AXES_HANDLER",
         default="axes.handlers.dummy.AxesDummyHandler" if TESTING else "axes.handlers.database.AxesDatabaseHandler",
@@ -343,42 +343,28 @@ REDIS_HOST = env("REDIS_HOST", default="localhost")
 REDIS_PORT = env("REDIS_PORT", default=6379)
 REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
-if TESTING:
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "default",
-            "KEY_PREFIX": "jotlet_test",
+CACHES = {
+    "default": {
+        "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
+        "LOCATION": REDIS_URL,
+        "KEY_PREFIX": "jotlet_test" if TESTING else "jotlet",
+        "OPTIONS": {  # type: ignore
+            # this connection pool is also used for Huey
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+            "PARSER_CLASS": "redis.connection.HiredisParser",
         },
-    }
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {  # type: ignore
+            "hosts": [REDIS_URL],
+            "prefix": "jotlet_test" if TESTING else "jotlet",
+            "capacity": 500,
         },
-    }
-else:
-    CACHES = {
-        "default": {
-            "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
-            "LOCATION": REDIS_URL,
-            "KEY_PREFIX": "jotlet",
-            "OPTIONS": {  # type: ignore
-                # this connection pool is also used for Huey
-                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
-                "PARSER_CLASS": "redis.connection.HiredisParser",
-            },
-        },
-    }
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-            "CONFIG": {  # type: ignore
-                "hosts": [REDIS_URL],
-                "prefix": "jotlet",
-                "capacity": 500,
-            },
-        },
-    }
+    },
+}
 
 CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
 CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
@@ -413,6 +399,7 @@ else:
 HUEY = {
     "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
     "immediate": DEBUG or TESTING,
+    "immediate_use_memory": False,
     "consumer": {
         "workers": env("HUEY_WORKERS", default=4, cast=int),
         "worker_type": "thread",

@@ -84,8 +84,8 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
                     static("vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css"),
                 ]
                 files_js += [
-                    static("js/vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js"),
-                    static("js/vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js"),
+                    static("vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js"),
+                    static("vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js"),
                 ]
 
             if preferences.enable_identicons:
