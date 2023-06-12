@@ -28,18 +28,22 @@ MESSAGE_TAGS = {
     messages.ERROR: "alert-danger",
 }
 
+TESTING = "pytest" in sys.modules
+
 mimetypes.add_type("text/javascript", ".js", True)
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+BASE_DIR = Path(__file__).resolve().parent.parent
+test_env_file = os.path.join(BASE_DIR, ".env.test")
+if TESTING and os.path.exists(test_env_file):
+    environ.Env.read_env(test_env_file)
+elif not TESTING:
+    environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True, check=True).stdout.rstrip()
 
-TESTING = "pytest" in sys.modules
-DEBUG = TESTING if TESTING else env("DEBUG", default=False)
+DEBUG = env("DEBUG", default=TESTING if TESTING else False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
 
@@ -200,8 +204,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": env("DB_NAME", default="jotlet"),
-        "USER": env("DB_USER", default="vscode" if TESTING else None),
-        "PASSWORD": env("DB_PASSWORD", default="notsecure" if TESTING else None),
+        "USER": env("DB_USER", default="jotlet"),
+        "PASSWORD": env("DB_PASSWORD"),
         "HOST": env("DB_HOST", default="postgres"),
         "PORT": env("DB_PORT", default="5432"),
     }
@@ -237,12 +241,16 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-AXES_ENABLED = env("AXES_ENABLED", default=not TESTING)
+AXES_ENABLED = env("AXES_ENABLED", default=True)
 
 if TESTING:
+    os.environ["AXES_IPWARE_PROXY_COUNT"] = "1"
     SILENCED_SYSTEM_CHECKS = ["axes.W001"]
-elif AXES_ENABLED:
-    AXES_HANDLER = env("AXES_HANDLER", default="axes.handlers.database.AxesDatabaseHandler")
+if AXES_ENABLED:
+    AXES_HANDLER = env(
+        "AXES_HANDLER",
+        default="axes.handlers.dummy.AxesDummyHandler" if TESTING else "axes.handlers.database.AxesDatabaseHandler",
+    )
     AXES_USERNAME_FORM_FIELD = "login"
     AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
     AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
@@ -302,8 +310,8 @@ else:
     else:
         MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-MAX_IMAGE_WIDTH = 500 if TESTING else env("MAX_IMAGE_WIDTH", default=3840)
-MAX_IMAGE_HEIGHT = 500 if TESTING else env("MAX_IMAGE_HEIGHT", default=2160)
+MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=500 if TESTING else 3840)
+MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=500 if TESTING else 2160)
 SMALL_THUMBNAIL_WIDTH = env("SMALL_THUMBNAIL_WIDTH", default=300)
 SMALL_THUMBNAIL_HEIGHT = env("SMALL_THUMBNAIL_HEIGHT", default=200)
 MAX_POST_IMAGE_FILE_SIZE = env("MAX_IMAGE_FILE_SIZE", default=1024 * 1024 * 2)
@@ -394,28 +402,22 @@ CACHEOPS_INSIDEOUT = env("CACHEOPS_INSIDEOUT", default=True)
 if TESTING:
     CACHEOPS_REDIS = {
         "host": REDIS_HOST,
-        "port": 6379,
+        "port": REDIS_PORT,
         "db": 13,
         "socket_timeout": 3,
     }
 else:
     CACHEOPS_REDIS = REDIS_URL
 
-if TESTING:
-    HUEY = {
-        "huey_class": "huey.SqliteHuey",
-        "immediate": True,
-        "filepath": os.path.join(BASE_DIR, "huey_test.db"),
-    }
-else:
-    HUEY = {
-        "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
-        "immediate": DEBUG,
-        "consumer": {
-            "workers": env("HUEY_WORKERS", default=4),
-            "worker_type": "thread",
-        },
-    }
+
+HUEY = {
+    "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
+    "immediate": DEBUG or TESTING,
+    "consumer": {
+        "workers": env("HUEY_WORKERS", default=4, cast=int),
+        "worker_type": "thread",
+    },
+}
 
 LOGGING = {
     "version": 1,
@@ -460,10 +462,12 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")
 
-if TESTING:
-    HUEY_EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
-    HUEY_EMAIL_BACKEND = env("HUEY_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+HUEY_EMAIL_BACKEND = env(
+    "HUEY_EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend"
+    if TESTING
+    else "django.core.mail.backends.smtp.EmailBackend",
+)
 
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env("EMAIL_PORT", default=25)
@@ -472,7 +476,7 @@ EMAIL_USE_SSL = env("EMAIL_USE_SSL", default=False)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
-FEEDBACK_EMAIL = None if TESTING else env("FEEDBACK_EMAIL", default=None)
+FEEDBACK_EMAIL = env("FEEDBACK_EMAIL", default=None)
 
 ANYMAIL = {
     "MAILGUN_API_KEY": env("MAILGUN_API_KEY", default=""),
@@ -538,12 +542,14 @@ CSP_CONNECT_SRC = [
     "'self'",
     "maxcdn.bootstrapcdn.com",
 ] + env.list("CSP_CONNECT_SRC", default=[])
-CSP_FRAME_SRC = env.list("CSP_FRAME_SRC", default=[])
+CSP_FRAME_SRC = ["'self'"] + env.list("CSP_FRAME_SRC", default=[])
+X_FRAME_OPTIONS = "SAMEORIGIN"
+CSP_FRAME_ANCESTORS = ["'self'"]
 CSP_MANIFEST_SRC = ["'self'"] + env.list("CSP_MANIFEST_SRC", default=[])
 CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
 
-HCAPTCHA_ENABLED = True if TESTING else env("HCAPTCHA_ENABLED", default=False)
-CF_TURNSTILE_ENABLED = False if TESTING else env("CF_TURNSTILE_ENABLED", default=False)
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=True if TESTING else False)
+CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False if TESTING else False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
     raise ImproperlyConfigured("HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled")
 
