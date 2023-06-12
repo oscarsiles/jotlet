@@ -16,7 +16,7 @@ class TestJotletLinkHeaderMixin:
         )
         assert f"<{static('css/styles.css')}>; rel=preload; as=style" in link_header
         assert (
-            f"<{static('css/vendor/fonts/bootstrap-icons.woff2?8d200481aa7f02a2d63a331fc782cfaf')}>; rel=preload; as=font; crossorigin=anonymous"  # noqa: E501
+            f"<{static('vendor/bootstrap-icons-1.10.5/fonts/bootstrap-icons.woff2?8d200481aa7f02a2d63a331fc782cfaf')}>; rel=preload; as=font; crossorigin=anonymous"  # noqa: E501
             in link_header
         )
         assert f"<{static('js/color-mode-toggler.js')}>; rel=preload; as=script" in link_header
