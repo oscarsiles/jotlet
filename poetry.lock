@@ -144,12 +144,12 @@ tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pyte
 
 [[package]]
 name = "autobahn"
-version = "23.6.1"
+version = "23.6.2"
 description = "WebSocket client & server library, WAMP real-time framework"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "autobahn-23.6.1.tar.gz", hash = "sha256:ce6e540402e3524ca46c55a1bc46255225969b5837ca792ea5415d21ac571034"},
+    {file = "autobahn-23.6.2.tar.gz", hash = "sha256:ec9421c52a2103364d1ef0468036e6019ee84f71721e86b36fe19ad6966c1181"},
 ]
 
 [package.dependencies]
@@ -159,16 +159,16 @@ setuptools = "*"
 txaio = ">=21.2.1"
 
 [package.extras]
-all = ["PyGObject (>=3.40.0)", "argon2_cffi (>=20.1.0)", "attrs (>=20.3.0)", "base58 (>=2.1.0)", "base58 (>=2.1.0)", "bitarray @ git+https://github.com/ilanschnell/bitarray.git@master", "bitarray @ git+https://github.com/ilanschnell/bitarray.git@master", "cbor2 (>=5.2.0)", "cbor2 (>=5.2.0)", "cbor2 (>=5.2.0)", "cffi (>=1.14.5)", "cffi (>=1.14.5)", "click (>=8.1.2)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "ecdsa (>=0.16.1)", "eth-abi (>=4.0.0)", "eth-abi (>=4.0.0)", "flatbuffers (>=22.12.6)", "hkdf (>=0.0.3)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "mnemonic (>=0.19)", "passlib (>=1.7.4)", "py-ecc (>=5.1.0)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "py-multihash (>=2.0.1)", "py-ubjson (>=0.16.1)", "pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "python-snappy (>=0.6.0)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "rlp (>=2.0.1)", "rlp (>=2.0.1)", "service_identity (>=18.1.0)", "spake2 (>=0.8)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "twisted (>=20.3.0)", "twisted (>=20.3.0)", "u-msgpack-python (>=2.1)", "web3[ipfs] (>=6.0.0)", "web3[ipfs] (>=6.0.0)", "xbr (>=21.2.1)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)", "zlmdb (>=21.2.1)", "zope.interface (>=5.2.0)"]
+all = ["PyGObject (>=3.40.0)", "argon2_cffi (>=20.1.0)", "attrs (>=20.3.0)", "base58 (>=2.1.0)", "bitarray (>=2.7.5)", "cbor2 (>=5.2.0)", "cffi (>=1.14.5)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi (>=4.0.0)", "flatbuffers (>=22.12.6)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "msgpack (>=1.0.2)", "passlib (>=1.7.4)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "py-ubjson (>=0.16.1)", "pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "python-snappy (>=0.6.0)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "rlp (>=2.0.1)", "service_identity (>=18.1.0)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "ujson (>=4.0.2)", "web3[ipfs] (>=6.0.0)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)", "zope.interface (>=5.2.0)"]
 compress = ["python-snappy (>=0.6.0)"]
 dev = ["backports.tempfile (>=1.0)", "bumpversion (>=0.5.3)", "codecov (>=2.0.15)", "flake8 (<5)", "humanize (>=0.5.1)", "mypy (>=0.610)", "passlib", "pep8-naming (>=0.3.3)", "pip (>=9.0.1)", "pyenchant (>=1.6.6)", "pyflakes (>=1.0.0)", "pyinstaller (>=4.2)", "pylint (>=1.9.2)", "pytest (>=3.4.2)", "pytest-aiohttp", "pytest-asyncio (>=0.14.0)", "pytest-runner (>=2.11.1)", "pyyaml (>=4.2b4)", "qualname", "sphinx (>=1.7.1)", "sphinx-autoapi (>=1.7.0)", "sphinx_rtd_theme (>=0.1.9)", "sphinxcontrib-images (>=0.9.1)", "tox (>=4.2.8)", "tox-gh-actions (>=2.2.0)", "twine (>=3.3.0)", "twisted (>=22.10.0)", "txaio (>=20.4.1)", "watchdog (>=0.8.3)", "wheel (>=0.36.2)", "yapf (==0.29.0)"]
 encryption = ["pynacl (>=1.4.0)", "pyopenssl (>=20.0.1)", "pytrie (>=0.4.0)", "qrcode (>=7.3.1)", "service_identity (>=18.1.0)"]
 nvx = ["cffi (>=1.14.5)"]
 scram = ["argon2_cffi (>=20.1.0)", "cffi (>=1.14.5)", "passlib (>=1.7.4)"]
-serialization = ["cbor2 (>=5.2.0)", "flatbuffers (>=22.12.6)", "py-ubjson (>=0.16.1)", "u-msgpack-python (>=2.1)"]
+serialization = ["cbor2 (>=5.2.0)", "flatbuffers (>=22.12.6)", "msgpack (>=1.0.2)", "py-ubjson (>=0.16.1)", "ujson (>=4.0.2)"]
 twisted = ["attrs (>=20.3.0)", "twisted (>=20.3.0)", "zope.interface (>=5.2.0)"]
 ui = ["PyGObject (>=3.40.0)"]
-xbr = ["base58 (>=2.1.0)", "bitarray @ git+https://github.com/ilanschnell/bitarray.git@master", "cbor2 (>=5.2.0)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi (>=4.0.0)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "rlp (>=2.0.1)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "web3[ipfs] (>=6.0.0)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)"]
+xbr = ["base58 (>=2.1.0)", "bitarray (>=2.7.5)", "cbor2 (>=5.2.0)", "click (>=8.1.2)", "ecdsa (>=0.16.1)", "eth-abi (>=4.0.0)", "hkdf (>=0.0.3)", "jinja2 (>=2.11.3)", "mnemonic (>=0.19)", "py-ecc (>=5.1.0)", "py-eth-sig-utils (>=0.4.0)", "py-multihash (>=2.0.1)", "rlp (>=2.0.1)", "spake2 (>=0.8)", "twisted (>=20.3.0)", "web3[ipfs] (>=6.0.0)", "xbr (>=21.2.1)", "yapf (==0.29.0)", "zlmdb (>=21.2.1)"]
 
 [[package]]
 name = "autoflake8"
@@ -252,17 +252,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.151"
+version = "1.26.154"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.151-py3-none-any.whl", hash = "sha256:20b88a8145845e4923d438f5f89fdbdac5bae4011e706cd0974ac69c41f258b4"},
-    {file = "boto3-1.26.151.tar.gz", hash = "sha256:81bff32c96a6b4b203beb63826214d8cf24ca1a86e81d43bbb688a21c5d79e2a"},
+    {file = "boto3-1.26.154-py3-none-any.whl", hash = "sha256:ee2b3733f40f935da78bf76bc8e82af6e90841406e04605e3b2d765b50cad05e"},
+    {file = "boto3-1.26.154.tar.gz", hash = "sha256:cf1067d101be538f399b685bbe6beb4bfed01095da8497d0c7fa8b8788a65c6b"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.151,<1.30.0"
+botocore = ">=1.29.154,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -271,13 +271,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.151"
+version = "1.29.154"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.151-py3-none-any.whl", hash = "sha256:0790bf5d25ad6f2db3450797251a78fbcb7b72cdeeb2fd0b82c2668a41d9f41c"},
-    {file = "botocore-1.29.151.tar.gz", hash = "sha256:fdaaa34ea5f09666f17d24d2f4179f7ec81dd6f831ef6b785d4552f919291cab"},
+    {file = "botocore-1.29.154-py3-none-any.whl", hash = "sha256:b9853f72a3c93f1aa8c9a1636911cdbec3662bca2e04e4ee00437c4f8c9fa2d4"},
+    {file = "botocore-1.29.154.tar.gz", hash = "sha256:a9c7da497ac5f7d4f3e932b4442e7c32cc2936f3a4658165f1528336fc429c3d"},
 ]
 
 [package.dependencies]
@@ -815,13 +815,13 @@ postal = ["cryptography"]
 
 [[package]]
 name = "django-auto-prefetch"
-version = "1.5.1"
+version = "1.6.0"
 description = "Automatically prefetch foreign key values as needed."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django_auto_prefetch-1.5.1-py3-none-any.whl", hash = "sha256:af3378a791c2aade72482412c5849b321c07c7820325786c28f2976f3508b45c"},
-    {file = "django_auto_prefetch-1.5.1.tar.gz", hash = "sha256:136c4bac431d106a457a0dbea56a88799bb560358df3ce259537c830789ebc3c"},
+    {file = "django_auto_prefetch-1.6.0-py3-none-any.whl", hash = "sha256:ff9569c5b7cfd1a63e76bcaffeef92d271e48d8a4b099802523c819213548621"},
+    {file = "django_auto_prefetch-1.6.0.tar.gz", hash = "sha256:e77084935b8994ceaa0288f2a7a9736b5bfa4941c56a655b3542b83f89a78071"},
 ]
 
 [package.dependencies]
@@ -829,13 +829,13 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-axes"
-version = "6.0.1"
+version = "6.0.2"
 description = "Keep track of failed login attempts in Django-powered sites."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-axes-6.0.1.tar.gz", hash = "sha256:598de5438615d5d3dea7ef3075ae3236e693c9cbc34721bd313d0f52f613eb92"},
-    {file = "django_axes-6.0.1-py3-none-any.whl", hash = "sha256:0d18cecaae77ad35b11d87f491f38a4d9197efb443438c97ca111e1191eaa473"},
+    {file = "django-axes-6.0.2.tar.gz", hash = "sha256:c5a1807b89e2f7a0dd59cc0b8334fef3b526fb1e273eb69645ce9705f5e4a780"},
+    {file = "django_axes-6.0.2-py3-none-any.whl", hash = "sha256:1d09208303f8a829aa4b5a44da6a802c2252029aecc6cd55166cb3486de6cc7a"},
 ]
 
 [package.dependencies]
@@ -874,13 +874,13 @@ files = [
 
 [[package]]
 name = "django-cors-headers"
-version = "4.0.0"
+version = "4.1.0"
 description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django_cors_headers-4.0.0-py3-none-any.whl", hash = "sha256:e3cbd247a1a835da4cf71a70d4214378813ea7e08337778b82cb2c1bc19d28d6"},
-    {file = "django_cors_headers-4.0.0.tar.gz", hash = "sha256:a971cd4c75b29974068cc36b5c595698822f1e0edd5f1b32ea42ea37326ad4aa"},
+    {file = "django_cors_headers-4.1.0-py3-none-any.whl", hash = "sha256:88a4bfae24b6404dd0e0640203cb27704a2a57fd546a429e5d821dfa53dd1acf"},
+    {file = "django_cors_headers-4.1.0.tar.gz", hash = "sha256:36a8d7a6dee6a85f872fe5916cc878a36d0812043866355438dfeda0b20b6b78"},
 ]
 
 [package.dependencies]
@@ -1007,13 +1007,13 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-htmx"
-version = "1.14.0"
+version = "1.15.0"
 description = "Extensions for using Django with htmx."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django_htmx-1.14.0-py3-none-any.whl", hash = "sha256:393e2a4a963aff691b3973c898dbca1363139d7c7bf2e8cc4c605e2ad808a779"},
-    {file = "django_htmx-1.14.0.tar.gz", hash = "sha256:b689a8d6f7052a96a373411ec55ba81c1ddffb4d66b1f5ab4d6e3d28420842fd"},
+    {file = "django_htmx-1.15.0-py3-none-any.whl", hash = "sha256:b76068485905ad9f911419746f07f877633bb036c0870a0f9fc13dec42c6e425"},
+    {file = "django_htmx-1.15.0.tar.gz", hash = "sha256:bac7ff59bf507db6d40424f635f83889ce028a54f47663f227083413de22cabf"},
 ]
 
 [package.dependencies]
@@ -1201,13 +1201,13 @@ tests = ["coverage"]
 
 [[package]]
 name = "djlint"
-version = "1.30.2"
+version = "1.31.0"
 description = "HTML Template Linter and Formatter"
 optional = false
 python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "djlint-1.30.2-py3-none-any.whl", hash = "sha256:b265f66465c4a8b8e5195a6c0c6451a53695ad1094b239488c52c445bbf2f3c3"},
-    {file = "djlint-1.30.2.tar.gz", hash = "sha256:88f0ebb370ec30346151d59d306bac4fc77dc05ceeeb4952edaecee0f4778509"},
+    {file = "djlint-1.31.0-py3-none-any.whl", hash = "sha256:2b9200c67103b79835b7547ff732e910888d1f0ef684f5b329eb64b14d09c046"},
+    {file = "djlint-1.31.0.tar.gz", hash = "sha256:8acb4b751b429c5aabb1aef5b6007bdf53224eceda25c5fbe04c42cc57c0a7ba"},
 ]
 
 [package.dependencies]
@@ -2834,13 +2834,13 @@ tornado = ["tornado (>=5)"]
 
 [[package]]
 name = "service-identity"
-version = "21.1.0"
+version = "23.1.0"
 description = "Service identity verification for pyOpenSSL & cryptography."
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
-    {file = "service_identity-21.1.0-py2.py3-none-any.whl", hash = "sha256:f0b0caac3d40627c3c04d7a51b6e06721857a0e10a8775f2d1d7e72901b3a7db"},
+    {file = "service_identity-23.1.0-py3-none-any.whl", hash = "sha256:87415a691d52fcad954a500cb81f424d0273f8e7e3ee7d766128f4575080f383"},
+    {file = "service_identity-23.1.0.tar.gz", hash = "sha256:ecb33cd96307755041e978ab14f8b14e13b40f1fbd525a4dc78f46d2b986431d"},
 ]
 
 [package.dependencies]
@@ -2848,12 +2848,12 @@ attrs = ">=19.1.0"
 cryptography = "*"
 pyasn1 = "*"
 pyasn1-modules = "*"
-six = "*"
 
 [package.extras]
-dev = ["coverage[toml] (>=5.0.2)", "furo", "idna", "pyOpenSSL", "pytest", "sphinx"]
-docs = ["furo", "sphinx"]
+dev = ["pyopenssl", "service-identity[docs,idna,mypy,tests]"]
+docs = ["furo", "myst-parser", "pyopenssl", "sphinx", "sphinx-notfound-page"]
 idna = ["idna"]
+mypy = ["idna", "mypy", "types-pyopenssl"]
 tests = ["coverage[toml] (>=5.0.2)", "pytest"]
 
 [[package]]
@@ -3457,4 +3457,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "fdd4d06eebd3d320a0863bec64b6976d7f16f86f3e233341c6eaec5732521574"
+content-hash = "b1b1db5d517c7ac52e5d687047abeea3c903ac324cda004fb52b4b8a110ef9cb"
