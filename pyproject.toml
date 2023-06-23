@@ -32,6 +32,14 @@ plugins = ["mypy_django_plugin.main"]
 disable_error_code = ["attr-defined"]
 exclude = ["migrations"]
 
+[[tool.mypy.overrides]]
+module = "allauth.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "axes.*"
+ignore_missing_imports = true
+
 [tool.poetry]
 name = "jotlet"
 version = "1.10.7"
@@ -48,7 +56,7 @@ Django = { extras = ["argon2"], version = "^4.2.2" }
 django-allauth = "^0.54.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^10.0" }
 django-auto-prefetch = "^1.6.0"
-django-axes = {extras = ["ipware"], version = "^6.0.2"}
+django-axes = { extras = ["ipware"], version = "^6.0.2" }
 django-cacheops = "^7.0.1"
 django-cleanup = "^7.0.0"
 django-cors-headers = "^4.1.0"
@@ -75,7 +83,7 @@ redis = { extras = ["hiredis"], version = "^4.5.5" }
 sentry-sdk = "^1.25.1"
 sorl-thumbnail = "^12.9.0"
 uvicorn = { extras = ["standard"], version = "^0.22.0" }
-whitenoise = {extras = ["brotli"], version = "^6.5.0"}
+whitenoise = { extras = ["brotli"], version = "^6.5.0" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake8 = "^0.4.0"
