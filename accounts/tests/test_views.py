@@ -174,15 +174,6 @@ class TestJotletProfileView:
         response = client.get(reverse("account_profile"))
         assert response.status_code == 200
 
-    def test_link_header(self, client, user):
-        client.login(username=user.username, password=USER_TEST_PASSWORD)
-        response = client.get(reverse("account_profile"))
-        link_header = response.get("Link")
-        assert link_header is not None
-
-        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('accounts/js/profile.js')}>; rel=preload; as=script" in link_header
-
 
 class TestJotletProfileEditView:
     def test_toggle_optin_newsletter(self, client, user):

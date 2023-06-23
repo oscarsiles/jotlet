@@ -33,24 +33,6 @@ class TestIndexView:
         assert response.status_code == 200
         assertFormError(response.context["form"], "board_slug", "This field is required.")
 
-    def test_link_headers_staff(self, client, user_staff):
-        client.force_login(user_staff)
-        response = client.get(reverse("boards:index"))
-        link_header = response.get("Link")
-        assert link_header is not None
-        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script" in link_header
-        assert "vendor/tagify-4.17.8/tagify.min.css" not in link_header
-
-    def test_link_headers_anonymous(self, client):
-        response = client.get(reverse("boards:index"))
-        link_header = response.get("Link")
-        assert link_header is not None
-        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
-        assert "boards/js/components/board_list.js" not in link_header
-
 
 class TestIndexAllBoardsView:
     def test_anonymous_all_boards(self, client):
@@ -66,16 +48,6 @@ class TestIndexAllBoardsView:
         client.force_login(user_staff)
         response = client.get(reverse("boards:index-all"))
         assert response.status_code == 200
-
-    def test_link_headers(self, client, user_staff):
-        client.force_login(user_staff)
-        response = client.get(reverse("boards:index-all"))
-        link_header = response.get("Link")
-        assert link_header is not None
-        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('boards/js/index.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('boards/js/components/board_list.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('vendor/tagify-4.17.8/tagify.min.css')}>; rel=preload; as=style" in link_header
 
 
 # TODO: Implement further tests for all board_list_types

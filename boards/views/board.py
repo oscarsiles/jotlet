@@ -1,7 +1,6 @@
 from urllib.parse import urlparse
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -11,11 +10,9 @@ from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefre
 from boards.forms import BoardCreateForm, BoardPreferencesForm
 from boards.models import Board, BoardPreferences, Image
 from boards.utils import get_is_moderator
-from jotlet.mixins.headers import JotletLinkHeaderMixin
-from jotlet.utils import generate_link_header
 
 
-class BoardView(JotletLinkHeaderMixin, generic.DetailView):
+class BoardView(generic.DetailView):
     model = Board
     template_name = "boards/board_index.html"
 
@@ -52,56 +49,11 @@ class BoardView(JotletLinkHeaderMixin, generic.DetailView):
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
 
-    def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
-        if not request.htmx:
-            preferences = self.object.preferences
-            files_css = [
-                static("vendor/easymde-2.18.0/easymde.min.css"),
-                static("boards/css/board.css"),
-            ]
-            files_js = [
-                static("vendor/alpinejs-3.12.1/alpinejs-intersect.min.js"),
-                static("vendor/marked-5.0.4/marked.min.js"),
-                static("vendor/purify-3.0.3/purify.min.js"),
-                static("vendor/easymde-2.18.0/easymde.min.js"),
-                static("boards/js/vendor/robust-websocket.js"),
-                static("boards/js/board.js"),
-            ]
-            files_fonts = []
-            domain_preconnect = []
-
-            if preferences.enable_latex:
-                files_js += [static("boards/js/components/board_mathjax.js")]
-                domain_preconnect += [
-                    "https://cdn.jsdelivr.net",
-                    "https://polyfill.io",
-                ]
-
-            if preferences.enable_chemdoodle:
-                files_css += [
-                    static("vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css"),
-                    static("vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css"),
-                ]
-                files_js += [
-                    static("vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js"),
-                    static("vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js"),
-                ]
-
-            if preferences.enable_identicons:
-                files_js += [
-                    static("vendor/jdenticon-3.2.0/jdenticon.min.js"),
-                ]
-
-            response = generate_link_header(response, files_css, files_js, files_fonts, domain_preconnect)
-
-        return response
-
 
 @method_decorator(cache_control(public=True), name="dispatch")
 class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = BoardPreferences
-    board = None
+    board: Board | None = None
     template_name = "boards/components/board_preferences.html"
     form_class = BoardPreferencesForm
 
@@ -114,7 +66,7 @@ class BoardPreferencesView(LoginRequiredMixin, UserPassesTestMixin, generic.Upda
         )
         return self.request.user == board.owner or self.request.user.is_staff
 
-    def get_object(self):  # needed to prevent 'slug' FieldError
+    def get_object(self, queryset=None):  # needed to prevent 'slug' FieldError
         board = self.board
         if not BoardPreferences.objects.filter(board=board).exists():
             board.preferences = BoardPreferences.objects.create(board=board)
@@ -163,7 +115,7 @@ class CreateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
 class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Board
-    board = None
+    board: Board | None = None
     template_name = "boards/board_form.html"
     form_class = BoardCreateForm
 
@@ -175,7 +127,7 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
             or self.request.user.is_staff
         )
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         if self.board is None:
             self.board = super().get_object()
         return self.board
@@ -187,8 +139,9 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 
 class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+    object: Board
     model = Board
-    board = None
+    board: Board | None = None
     template_name = "boards/board_confirm_delete.html"
     success_url = reverse_lazy("boards:index")
 
@@ -200,7 +153,7 @@ class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
             or self.request.user.is_staff
         )
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         if self.board is None:
             self.board = super().get_object()
         return self.board
@@ -218,7 +171,7 @@ class ImageSelectView(LoginRequiredMixin, generic.TemplateView):
 
 class QrView(UserPassesTestMixin, generic.TemplateView):
     template_name = "boards/components/qr.html"
-    board = None
+    board: Board | None = None
 
     def test_func(self):
         self.board = (

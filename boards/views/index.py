@@ -4,14 +4,14 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
+from accounts.models import UserProfile
 from boards.filters import BoardFilter
 from boards.forms import BoardSearchForm
-from boards.mixins import BoardListLinkHeaderMixin, PaginatedFilterViewsMixin
+from boards.mixins import PaginatedFilterViewsMixin
 from boards.models import Board
-from jotlet.mixins.headers import JotletLinkHeaderMixin
 
 
-class IndexView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, generic.FormView):
+class IndexView(generic.FormView):
     model = Board
     template_name = "boards/index.html"
     form_class = BoardSearchForm
@@ -28,9 +28,7 @@ class IndexView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, generic.FormVie
         return HttpResponseRedirect(reverse("boards:board", kwargs={"slug": form.cleaned_data["board_slug"]}))
 
 
-class IndexAllBoardsView(
-    JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView
-):
+class IndexAllBoardsView(LoginRequiredMixin, UserPassesTestMixin, generic.TemplateView):
     model = Board
     template_name = "boards/index.html"
     permission_required = "boards.can_view_all_boards"
@@ -48,7 +46,7 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViewsMixin, generic.ListV
     model = Board
     template_name = "boards/components/board_list.html"
     context_object_name = "boards"
-    paginate_by = None
+    paginate_by = UserProfile._meta.get_field("boards_paginate_by").get_default()
     board_list_type = "own"
     filterset = None
 
@@ -59,13 +57,17 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViewsMixin, generic.ListV
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
-        page_size = self.request.GET.get("paginate_by", None)
-        if page_size:
-            self.request.user.profile.boards_paginate_by = int(page_size)
-            self.request.user.profile.save()
-        self.paginate_by = self.request.user.profile.boards_paginate_by
-        context = super().get_context_data(**kwargs)
+        query_paginate_by = self.request.GET.get("paginate_by", None)
 
+        if query_paginate_by:
+            query_paginate_by = int(query_paginate_by)
+            self.request.user.profile.boards_paginate_by = query_paginate_by
+            self.request.user.profile.save()
+            self.paginate_by = query_paginate_by
+        else:
+            self.paginate_by = self.request.user.profile.boards_paginate_by
+
+        context = super().get_context_data(**kwargs)
         paginator = Paginator(self.object_list, self.paginate_by)
         page_range = paginator.get_elided_page_range(number=page, on_each_side=1, on_ends=1)
 

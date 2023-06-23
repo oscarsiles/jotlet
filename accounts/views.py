@@ -7,20 +7,17 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
-from boards.mixins import BoardListLinkHeaderMixin
-from jotlet.mixins.headers import JotletLinkHeaderMixin
-from jotlet.utils import generate_link_header
-
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm
+from .models import User as JotletUser
 
 
 class JotletAccountDeleteView(LoginRequiredMixin, generic.DeleteView):
+    object: JotletUser
     model = get_user_model()
     success_url = reverse_lazy("boards:index")
     template_name = "accounts/user_delete.html"
@@ -82,12 +79,12 @@ class JotletLockoutView(generic.TemplateView):
 
 
 class JotletLogoutView(LogoutView):
-    def post(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
+    def post(self, *args, **kwargs):
+        super().post(*args, **kwargs)
         return HttpResponseClientRefresh()
 
 
-class JotletProfileView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRequiredMixin, generic.DetailView):
+class JotletProfileView(LoginRequiredMixin, generic.DetailView):
     context_object_name = "user"
     template_name = "accounts/profile.html"
 
@@ -97,7 +94,7 @@ class JotletProfileView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRe
             templates[0] = "accounts/components/profile_detail.html"
         return templates
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         return self.request.user
 
     def get_context_data(self, **kwargs):
@@ -105,21 +102,13 @@ class JotletProfileView(JotletLinkHeaderMixin, BoardListLinkHeaderMixin, LoginRe
         context["is_email_verified"] = has_verified_email(self.request.user, email=None)
         return context
 
-    def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
-        files_css = []
-        files_js = [static("accounts/js/profile.js")]
-
-        response = generate_link_header(response, files_css, files_js)
-        return response
-
 
 class JotletProfileEditView(LoginRequiredMixin, generic.UpdateView):
     model = get_user_model()
     form_class = CustomProfileEditForm
     template_name = "accounts/components/forms/profile_edit.html"
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         return self.request.user
 
     def get_form_kwargs(self, **kwargs):

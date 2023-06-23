@@ -25,34 +25,6 @@ class TestBoardView:
         response = client.get(reverse("boards:board", kwargs={"slug": "000000"}))
         assert response.status_code == 404
 
-    def test_link_headers(self, client, board):
-        url = reverse("boards:board", kwargs={"slug": board.slug})
-        response = client.get(url)
-        link_header = response.get("Link")
-        assert link_header is not None
-        assert f"<{static('vendor/bootstrap-5.3.0/css/bootstrap.min.css')}>; rel=preload; as=style" in link_header
-        assert f"<{static('vendor/easymde-2.18.0/easymde.min.css')}>; rel=preload; as=style" in link_header
-
-        assert f"<{static('vendor/jdenticon-3.2.0/jdenticon.min.js')}>; rel=preload; as=script" in link_header
-        assert "boards/js/components/board_mathjax.js" not in link_header
-        board.preferences.enable_latex = True
-        board.preferences.enable_chemdoodle = True
-        board.preferences.enable_identicons = False
-        board.preferences.save()
-        response = client.get(url)
-        link_header = response.get("Link")
-        assert f"<{static('boards/js/components/board_mathjax.js')}>; rel=preload; as=script" in link_header
-        assert f"<{static('vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.js')}>; rel=preload; as=script" in link_header
-        assert (
-            f"<{static('vendor/chemdoodleweb-9.5.0/uis/ChemDoodleWeb-uis.js')}>; rel=preload; as=script"
-            in link_header
-        )
-        assert f"<{static('vendor/chemdoodleweb-9.5.0/ChemDoodleWeb.css')}>; rel=preload; as=style" in link_header
-        assert (
-            f"<{static('vendor/chemdoodleweb-9.5.0/uis/jquery-ui-1.11.4.css')}>; rel=preload; as=style" in link_header
-        )
-        assert "vendor/jdenticon-3.2.0/jdenticon.min.js" not in link_header
-
     @pytest.mark.parametrize(
         "current_url,response_template",
         [
