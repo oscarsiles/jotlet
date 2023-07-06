@@ -61,6 +61,13 @@
   opacity: 1;
 }
 
+.nospam {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .offcanvas-tall {
   --bs-offcanvas-height: 50vh;
 }
