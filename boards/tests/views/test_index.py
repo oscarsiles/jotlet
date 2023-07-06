@@ -1,6 +1,5 @@
 import pytest
 from django.contrib.auth.models import Permission
-from django.templatetags.static import static
 from django.urls import reverse
 from pytest_django.asserts import assertFormError, assertTemplateUsed
 
@@ -82,19 +81,19 @@ class TestBoardListView:
         assert len(response.context["boards"]) == 10
 
     @pytest.mark.parametrize(
-        "dict,page",
+        "data,page",
         [
             ({}, 1),
             ({"page": 2}, 2),
         ],
     )
-    def test_user_perm_all_boards(self, client, user, dict, page):
+    def test_user_perm_all_boards(self, client, user, data, page):
         user.user_permissions.add(Permission.objects.get(codename="can_view_all_boards"))
         user.save()
         client.force_login(user)
         response = client.get(
             reverse("boards:board-list", kwargs={"board_list_type": "all"}),
-            dict,
+            data,
             HTTP_REFERER=reverse("boards:index-all"),
         )
         assert response.status_code == 200
