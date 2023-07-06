@@ -9,13 +9,11 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --maxmemory-policy volatile-lru --maxmemory 500M
-    restart: unless-stopped
     ports:
       - "6379:6379"
 
   postgres15:
     image: postgres:15-alpine
-    restart: unless-stopped
     volumes:
       - postgres15_data:/var/lib/postgresql/data
     environment:
