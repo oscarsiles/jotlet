@@ -45,33 +45,6 @@ VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=
 
 DEBUG = env("DEBUG", default=TESTING if TESTING else False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
-SENTRY_ENABLED = env("SENTRY_ENABLED", default=False)
-
-if SENTRY_ENABLED and not DEBUG:
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
-
-    SENTRY_DSN = env("SENTRY_DSN")
-
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[
-            DjangoIntegration(),
-        ],
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        # We recommend adjusting this value in production.
-        traces_sample_rate=env("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
-        # If you wish to associate users to errors (assuming you are using
-        # django.contrib.auth) you may enable sending PII data.
-        send_default_pii=True,
-        # By default the SDK will try to use the SENTRY_RELEASE
-        # environment variable, or infer a git commit
-        # SHA as release, however you may want to set
-        # something more human-readable.
-        release=VERSION,
-        environment=env("SENTRY_ENVIRONMENT", default="production"),
-    )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
