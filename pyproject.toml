@@ -58,7 +58,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "jotlet"
-version = "1.10.10"
+version = "1.10.11"
 description = ""
 authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
