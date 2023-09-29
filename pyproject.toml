@@ -118,14 +118,6 @@ pytest-lazy-fixture = "^0.6.3"
 pytest-sugar = "^0.9.7"
 pytest-xdist = "^3.3.1"
 
-[tool.pylint]
-disable = "no-member"
-django-settings-module = "jotlet.settings"
-ignored-argument-names = "arg|args|kwargs|sender"
-ignore-paths = ".*/migrations"
-load-plugins = "pylint_django"
-max-line-length = 118
-
 [tool.pytest.ini_options]
 addopts = "--cov=jotlet --cov-report xml:cov.xml --cov-report html:htmlcov"
 
