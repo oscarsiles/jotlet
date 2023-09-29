@@ -131,7 +131,7 @@ addopts = "--cov=jotlet --cov-report xml:cov.xml --cov-report html:htmlcov"
 
 [tool.ruff]
 select = ["E", "F", "W", "I", "Q", "DJ", "UP", "RUF"]
-ignore = []
+ignore = ["RUF012"]
 exclude = ["**/migrations/*.py"]
 line-length = 118
 
