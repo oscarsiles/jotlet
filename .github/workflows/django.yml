@@ -3,7 +3,7 @@ name: Django CI
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  POETRY_VERSION: 1.5.1
+  POETRY_VERSION: 1.6.1
   POETRY_VIRTUALENVS_CREATE: true
   POETRY_VIRTUALENVS_IN_PROJECT: true
 
