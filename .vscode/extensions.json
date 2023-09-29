@@ -7,8 +7,6 @@
 		"batisteo.vscode-django",
 		"esbenp.prettier-vscode",
 		"monosans.djlint",
-		"ms-python.flake8",
-		"ms-python.isort",
 		"ms-python.python"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.

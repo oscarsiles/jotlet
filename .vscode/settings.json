@@ -1,6 +1,17 @@
 {
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "DockerRun.Containers": [
+        "603131a5dd89",
+        "e42cf01d0733"
+    ],
+    "DockerRun.DisableDockerrc": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "files.eol": "\n",
+    "python.envFile": "",
     "python.testing.pytestArgs": [
         ".",
         "--reuse-db",
@@ -9,25 +20,8 @@
         "--maxprocesses=4",
         "--dist=loadscope"
     ],
-    "python.linting.enabled": true,
-    "isort.check": true,
-    "python.linting.flake8Enabled": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
     "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.pylintArgs": [
-        "--disable=C0111", // missing docstring
-        "--load-plugins=pylint_django",
-        "--django-settings-module=jotlet.settings",
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
-    "python.formatting.provider": "black",
-    "DockerRun.DisableDockerrc": true,
-    "DockerRun.Containers": [
-        "603131a5dd89",
-        "e42cf01d0733"
-    ],
-    "files.eol": "\n",
-    "python.envFile": "",
+    "python.linting.enabled": true
 }
