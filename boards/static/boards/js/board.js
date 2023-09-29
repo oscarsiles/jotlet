@@ -173,17 +173,11 @@ if (allow_image_uploads) {
 }
 
 document.addEventListener("alpine:initializing", () => {
-  Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
-    let getHTML = evaluateLater();
-
-    effect(() => {
-      getHTML(() => {
-        el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
-          ALLOWED_ATTR: allowed_attr,
-          ALLOWED_TAGS: allowed_tags,
-          SANITIZE_NAMED_PROPS: true,
-        });
-      });
+  Alpine.directive("markdown", (el) => {
+    el.innerHTML = DOMPurify.sanitize(marked.parseInline(el.innerHTML), {
+      ALLOWED_ATTR: allowed_attr,
+      ALLOWED_TAGS: allowed_tags,
+      SANITIZE_NAMED_PROPS: true,
     });
   });
 });
