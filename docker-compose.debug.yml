@@ -12,14 +12,14 @@ services:
     ports:
       - "6379:6379"
 
-  postgres15:
-    image: postgres:15-alpine
+  postgres16:
+    image: postgres:16-alpine
     volumes:
-      - postgres15_data:/var/lib/postgresql/data
+      - jotlet_postgres16_data:/var/lib/postgresql/data
     environment:
       <<: *default-environment
     ports:
       - "5432:5432"
 
 volumes:
-  postgres15_data:
+  jotlet_postgres16_data:
