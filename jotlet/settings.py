@@ -48,7 +48,7 @@ DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
-CORS_ALLOW_HEADERS = list(default_headers) + ["link"]
+CORS_ALLOW_HEADERS = [*list(default_headers), "link"]
 CORS_EXPOSE_HEADERS = ["link"]
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
@@ -119,9 +119,7 @@ MIDDLEWARE = [
 ]
 
 if DEBUG:
-    INSTALLED_APPS = [
-        "whitenoise.runserver_nostatic",
-    ] + INSTALLED_APPS
+    INSTALLED_APPS = ["whitenoise.runserver_nostatic", *INSTALLED_APPS]
 
     if DEBUG_TOOLBAR_ENABLED:
         import socket
@@ -130,9 +128,10 @@ if DEBUG:
 
         RENDER_PANELS = False
         INSTALLED_APPS += ["debug_toolbar", "template_profiler_panel"]
-        MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
-        DEBUG_TOOLBAR_PANELS = debug_toolbar_settings.PANELS_DEFAULTS + [
-            "template_profiler_panel.panels.template.TemplateProfilerPanel"
+        MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", *MIDDLEWARE]
+        DEBUG_TOOLBAR_PANELS = [
+            *debug_toolbar_settings.PANELS_DEFAULTS,
+            "template_profiler_panel.panels.template.TemplateProfilerPanel",
         ]
 
         hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
@@ -230,7 +229,7 @@ if AXES_ENABLED and not TESTING:
     AXES_LOCKOUT_URL = "/accounts/lockout/"
     AXES_LOCKOUT_PARAMETERS = env.list("AXES_LOCKOUT_PARAMETERS", default=["username", "ip_address"])
     AXES_IPWARE_PROXY_COUNT = env("AXES_IPWARE_PROXY_COUNT", default=None, cast=int)
-    AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend"] + AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend", *AUTHENTICATION_BACKENDS]
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -485,29 +484,25 @@ CSP_SCRIPT_SRC = [
     "cdn.jsdelivr.net",
     "'unsafe-eval'",
     "'unsafe-inline'",
-] + env.list("CSP_SCRIPT_SRC", default=[])
+    *env.list("CSP_SCRIPT_SRC", default=[]),
+]
 CSP_STYLE_SRC = [
     "'self'",
     "cdn.jsdelivr.net",
     "fonts.googleapis.com",
     "fonts.gstatic.com",
     "'unsafe-inline'",
-] + env.list("CSP_STYLE_SRC", default=[])
+    *env.list("CSP_STYLE_SRC", default=[]),
+]
 CSP_FONT_SRC = CSP_STYLE_SRC + env.list("CSP_FONT_SRC", default=[])
-CSP_IMG_SRC = [
-    "'self'",
-    "data:",
-] + env.list("CSP_IMG_SRC", default=[])
-CSP_BASE_URI = ["'none'"] + env.list("CSP_BASE_URI", default=[])
-CSP_CONNECT_SRC = [
-    "'self'",
-    "maxcdn.bootstrapcdn.com",
-] + env.list("CSP_CONNECT_SRC", default=[])
-CSP_FRAME_SRC = ["'self'"] + env.list("CSP_FRAME_SRC", default=[])
+CSP_IMG_SRC = ["'self'", "data:", *env.list("CSP_IMG_SRC", default=[])]
+CSP_BASE_URI = ["'none'", *env.list("CSP_BASE_URI", default=[])]
+CSP_CONNECT_SRC = ["'self'", "maxcdn.bootstrapcdn.com", *env.list("CSP_CONNECT_SRC", default=[])]
+CSP_FRAME_SRC = ["'self'", *env.list("CSP_FRAME_SRC", default=[])]
 X_FRAME_OPTIONS = "SAMEORIGIN"
 CSP_FRAME_ANCESTORS = ["'self'"]
-CSP_MANIFEST_SRC = ["'self'"] + env.list("CSP_MANIFEST_SRC", default=[])
-CSP_INCLUDE_NONCE_IN = ["script-src"] + env.list("CSP_INCLUDE_NONCE_IN", default=[])
+CSP_MANIFEST_SRC = ["'self'", *env.list("CSP_MANIFEST_SRC", default=[])]
+CSP_INCLUDE_NONCE_IN = ["script-src", *env.list("CSP_INCLUDE_NONCE_IN", default=[])]
 
 HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=True if TESTING else False)
 CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False if TESTING else False)
