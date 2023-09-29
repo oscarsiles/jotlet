@@ -172,11 +172,6 @@ if (allow_image_uploads) {
   allowed_attr.push("alt", "src");
 }
 
-marked.use({
-  mangle: false,
-  headerIds: false,
-});
-
 document.addEventListener("alpine:initializing", () => {
   Alpine.directive("markdown", (el, {}, { effect, evaluateLater }) => {
     let getHTML = evaluateLater();
