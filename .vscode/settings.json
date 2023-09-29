@@ -3,8 +3,8 @@
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "DockerRun.Containers": [
-        "603131a5dd89",
-        "e42cf01d0733"
+        "1281b79b49ad",
+        "d45f9b6ec87e"
     ],
     "DockerRun.DisableDockerrc": true,
     "editor.codeActionsOnSave": {
@@ -22,6 +22,4 @@
     ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
-    "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true
 }
