@@ -484,6 +484,7 @@ CSP_SCRIPT_SRC = [
     "polyfill.io",
     "cdn.jsdelivr.net",
     "'unsafe-eval'",
+    "'unsafe-inline'",
 ] + env.list("CSP_SCRIPT_SRC", default=[])
 CSP_STYLE_SRC = [
     "'self'",
