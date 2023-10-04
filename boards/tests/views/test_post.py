@@ -222,7 +222,7 @@ class TestPostCreateView:
         assert post is not None
         message = await communicator.receive_from()
         assert "post_created" in message
-        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        assert f'"topic_pk": "{topic.pk!s}"' in message
         await communicator.disconnect()
 
 
@@ -374,7 +374,7 @@ class TestPostUpdateView:
         await sync_to_async(client.post)(self.post_updated_url, data={"content": "Test Post NEW"})
         message = await communicator.receive_from()
         assert "post_updated" in message
-        assert f'"post_pk": "{str(post.pk)}"' in message
+        assert f'"post_pk": "{post.pk!s}"' in message
         await communicator.disconnect()
 
 
@@ -431,7 +431,7 @@ class TestPostDeleteView:
         await sync_to_async(client.post)(self.post_deleted_url)
         message = await communicator.receive_from()
         assert "post_deleted" in message
-        assert f'"post_pk": "{str(post.pk)}"' in message
+        assert f'"post_pk": "{post.pk!s}"' in message
         await communicator.disconnect()
 
 
@@ -802,11 +802,11 @@ class TestPostToggleApprovalView:
         await sync_to_async(client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         assert "post_updated" in message
-        assert f'"post_pk": "{str(post.pk)}"' in message
+        assert f'"post_pk": "{post.pk!s}"' in message
         await sync_to_async(client.post)(self.post_approval_url)
         message = await communicator.receive_from()
         assert "post_updated" in message
-        assert f'"post_pk": "{str(post.pk)}"' in message
+        assert f'"post_pk": "{post.pk!s}"' in message
         await communicator.disconnect()
 
 

@@ -1,6 +1,5 @@
 import json
 
-from crispy_forms.helper import FormHelper
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse

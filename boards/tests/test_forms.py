@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from pytest_lazyfixture import lazy_fixture
 
 from boards.forms import BoardPreferencesForm, BoardSearchForm, PostCreateForm
 from boards.models import ADDITIONAL_DATA_TYPE, Post

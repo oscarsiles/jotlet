@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import List
 
 from cacheops import invalidate_obj
 from crispy_bootstrap5.bootstrap5 import FloatingField
@@ -126,7 +126,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
     class Meta:
         model = BoardPreferences
-        exclude = ["board"]  # pylint: disable=modelform-uses-exclude
+        exclude = ["board"]  # noqa: DJ006
         labels = {
             "board_type": "Board Type",
             "enable_latex": "Enable LaTeX",

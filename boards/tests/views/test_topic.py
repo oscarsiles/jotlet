@@ -68,7 +68,7 @@ class TestTopicCreateView:
         topic = await Topic.objects.aget(subject="Test Topic")
         message = await communicator.receive_from()
         assert "topic_created" in message
-        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        assert f'"topic_pk": "{topic.pk!s}"' in message
         await communicator.disconnect()
 
 
@@ -130,7 +130,7 @@ class TestTopicUpdateView:
         await sync_to_async(client.post)(self.topic_updated_url, data={"subject": "Test Topic NEW"})
         message = await communicator.receive_from()
         assert "topic_updated" in message
-        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        assert f'"topic_pk": "{topic.pk!s}"' in message
         await communicator.disconnect()
 
 
@@ -172,7 +172,7 @@ class TestTopicDeleteView:
         await sync_to_async(client.post)(self.topic_deleted_url)
         message = await communicator.receive_from()
         assert "topic_deleted" in message
-        assert f'"topic_pk": "{str(topic.pk)}"' in message
+        assert f'"topic_pk": "{topic.pk!s}"' in message
         await communicator.disconnect()
 
 
