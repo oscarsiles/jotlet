@@ -821,9 +821,20 @@ class TestPostImageUploadView:
     def teardown_class(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    def test_permissions(self, client, board):
+    @pytest.mark.parametrize(
+        "test_user,expected_response_get,expected_response_post",
+        [
+            (None, 302, 302),
+            (lazy_fixture("user2"), 403, 403),
+            (lazy_fixture("user"), 405, 200),
+            (lazy_fixture("user_staff"), 405, 200),
+        ],
+    )
+    def test_permissions(self, client, board, test_user, expected_response_get, expected_response_post):
+        if test_user is not None:
+            client.force_login(test_user)
         response = client.get(self.upload_url)
-        assert response.status_code == 405
+        assert response.status_code == expected_response_get
 
         valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
         for image_type in valid_image_types:
@@ -831,24 +842,31 @@ class TestPostImageUploadView:
                 self.upload_url,
                 {
                     "image": SimpleUploadedFile(
-                        "test.png",
+                        f"{test_user}.png",
                         create_image(image_type.split("/")[1]),
                         content_type=image_type,
                     )
                 },
             )
-            assert response.status_code == 200
-            image = Image.objects.order_by("created_at").last()
-            data = json.loads(response.content)
-            assert data["data"]["filePath"] == image.image.url
+            assert response.status_code == expected_response_post
+            if response.status_code != 200:
+                assert Image.objects.count() == 0
+            else:
+                image = Image.objects.order_by("created_at").last()
+                data = json.loads(response.content)
+                assert data["data"]["filePath"] == image.image.url
 
         board.preferences.allow_image_uploads = False
         board.preferences.save()
 
         response = client.post(self.upload_url)
-        assert response.status_code == 302
+        if test_user is not None:
+            assert response.status_code == 403
+        else:
+            assert response.status_code == 302
 
-    def test_upload_image_over_max_count(self, client):
+    def test_upload_image_over_max_count(self, client, user_staff):
+        client.force_login(user_staff)
         for i in range(settings.MAX_POST_IMAGE_COUNT + 1):
             response = client.post(
                 self.upload_url,
@@ -860,7 +878,8 @@ class TestPostImageUploadView:
             else:
                 assert data["error"] == "Board image quota exceeded"
 
-    def test_upload_invalid_image(self, client):
+    def test_upload_invalid_image(self, client, user_staff):
+        client.force_login(user_staff)
         response = client.post(
             self.upload_url,
             {"image": SimpleUploadedFile("test.avif", create_image("avif"), content_type="image/avif")},

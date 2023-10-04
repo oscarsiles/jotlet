@@ -362,7 +362,7 @@ class PostImageUploadView(UserPassesTestMixin, generic.View):
 
     def test_func(self):
         self.board = Board.objects.get(slug=self.kwargs["slug"])
-        return self.board.preferences.allow_image_uploads
+        return get_is_moderator(self.request.user, self.board) and self.board.preferences.allow_image_uploads
 
     def post(self, request, *args, **kwargs):
         response_data = {}

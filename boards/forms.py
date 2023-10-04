@@ -249,7 +249,7 @@ class BoardPreferencesForm(forms.ModelForm):
             ),
             PrependedText(
                 "allow_image_uploads",
-                "Allow Images",
+                "Allow Image Uploads (Mods Only)",
                 wrapper_class="d-flex",
                 css_class=self.checkbox_classes,
             ),

@@ -10,7 +10,11 @@
         {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
         {{ board.preferences.enable_chemdoodle|json_script:"chemdoodle_enabled" }}
         {{ board.preferences.enable_identicons|json_script:"identicons_enabled" }}
-        {{ board.preferences.allow_image_uploads|json_script:"allow_image_uploads" }}
+        {% if request.user.is_moderator or request.user.is_staff %}
+            {{ board.preferences.allow_image_uploads|json_script:"allow_image_uploads" }}
+        {% else %}
+            {{ False|json_script:"allow_image_uploads" }}
+        {% endif %}
         {% if board.preferences.enable_latex %}
             <script defer
                     src="{% static 'boards/js/components/board_mathjax.js' %}"
