@@ -10,9 +10,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import mimetypes
 import os
-import subprocess
 import sys
 from datetime import timedelta
+from importlib.metadata import distribution
 from pathlib import Path
 
 import environ
@@ -41,7 +41,7 @@ elif not TESTING:
     environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
-VERSION = subprocess.run(["poetry", "version", "-s"], capture_output=True, text=True, check=True).stdout.rstrip()
+VERSION = distribution("jotlet").version
 
 DEBUG = env("DEBUG", default=TESTING if TESTING else False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)

@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 118          # override black's default line-length
-target-version = ['py311']
+target-version = ['py312']
 
 [tool.coverage.run]
 omit = "*/tests/*"
@@ -60,11 +60,11 @@ authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-boto3 = "^1.28.59"
+boto3 = "^1.28.61"
 channels = "^4.0.0"
 channels-redis = "^4.1.0"
 crispy-bootstrap5 = "^0.7"
-Django = { extras = ["argon2"], version = "^4.2.5" }
+Django = { extras = ["argon2"], version = "^4.2.6" }
 django-allauth = "^0.54.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^10.1" }
 django-auto-prefetch = "^1.7.0"
@@ -92,7 +92,7 @@ Pillow = "^10.0.1"
 psycopg = { extras = ["binary"], version = "^3.1.12" }
 python = ">=3.10,<4.0.0"
 redis = { extras = ["hiredis"], version = "^5.0.1" }
-sorl-thumbnail = "^12.9.0"
+sorl-thumbnail = "^12.10.0"
 uvicorn = { extras = ["standard"], version = "^0.22.0" }
 whitenoise = { extras = ["brotli"], version = "^6.5.0" }
 

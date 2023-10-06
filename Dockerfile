@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim-bookworm
 ARG USERNAME=jotlet
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
