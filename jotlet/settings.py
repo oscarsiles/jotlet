@@ -92,7 +92,6 @@ INSTALLED_APPS = [
     "django_filters",
     "qr_code",
     "sorl.thumbnail",
-    "simple_history",
     "cacheops",
     "notices",
     "accounts",
@@ -111,7 +110,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware",
     "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "notices.middleware.NoticesMiddleware",
@@ -189,8 +187,6 @@ CONN_HEALTH_CHECKS = CONN_MAX_AGE is None or CONN_MAX_AGE > 0  # only check if w
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", default=60 * 60 * 24 * 30)  # 30 days
-
-SIMPLE_HISTORY_HISTORY_ID_USE_UUID = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {

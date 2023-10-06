@@ -1,5 +1,4 @@
 from django.contrib import admin
-from simple_history.admin import SimpleHistoryAdmin
 
 from jotlet.admin import DisableDeleteInlineFormSet
 
@@ -31,7 +30,7 @@ class PostInline(admin.TabularInline):
 
 
 @admin.register(Board)
-class BoardAdmin(SimpleHistoryAdmin):
+class BoardAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "description",
@@ -50,7 +49,7 @@ class BoardAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(Topic)
-class TopicAdmin(SimpleHistoryAdmin):
+class TopicAdmin(admin.ModelAdmin):
     list_display = ("subject", "board", "get_post_count", "created_at", "updated_at")
     fields = ("subject", "board")
     readonly_fields = ["board"]
@@ -58,13 +57,13 @@ class TopicAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(Post)
-class PostAdmin(SimpleHistoryAdmin):
+class PostAdmin(admin.ModelAdmin):
     list_display = ("content", "topic", "created_at", "updated_at")
     fields = ("content", "topic")
 
 
 @admin.register(BgImage)
-class BackgroundImageAdmin(SimpleHistoryAdmin):
+class BackgroundImageAdmin(admin.ModelAdmin):
     list_display = ("__str__", "get_board_usage_count", "created_at", "updated_at")
     fields = ("image_tag", "title", "attribution", "image", "image_type")
 
@@ -77,7 +76,7 @@ class BackgroundImageAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(PostImage)
-class PostImageAdmin(SimpleHistoryAdmin):
+class PostImageAdmin(admin.ModelAdmin):
     list_display = ("__str__", "board", "created_at")
     fields = ("image_tag", "image", "image_type", "board")
 

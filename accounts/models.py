@@ -7,7 +7,6 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
 from django.contrib.postgres.indexes import BrinIndex
 from django.db import models
-from simple_history.models import HistoricalRecords
 
 from boards.models import Board
 from jotlet.mixins.refresh_from_db_invalidates_cached_properties import InvalidateCachedPropertiesMixin
@@ -33,7 +32,6 @@ class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     user = auto_prefetch.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["user"])
 
     # user preferences
     optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")

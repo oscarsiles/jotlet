@@ -37,16 +37,6 @@ def post_image_cleanup(post, imgs=None):
     return f"{matched} matched, {deleted} deleted"
 
 
-@db_periodic_task(crontab(minute="30"))
-def history_clean_duplicates_past_hour_command():
-    return management.call_command("clean_duplicate_history", "-m", "60", "--auto")
-
-
-@db_periodic_task(crontab(minute="0", hour="1"))
-def history_clean_old_command():
-    return management.call_command("clean_old_history", "--auto")
-
-
 @db_periodic_task(crontab(minute="0", hour="2"))
 @lock_task("post_image_cleanup-lock")
 def post_image_cleanup_command():

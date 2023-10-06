@@ -13,7 +13,6 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from simple_history.models import HistoricalRecords
 from sorl.thumbnail import get_thumbnail
 from tree_queries.models import TreeNode
 from tree_queries.query import TreeQuerySet
@@ -57,7 +56,6 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     locked = models.BooleanField(default=False)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["slug", "locked"])
 
     class Meta(auto_prefetch.Model.Meta):
         permissions = (
@@ -164,7 +162,6 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board"])
     board_type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
     background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
     background_image = auto_prefetch.ForeignKey(
@@ -223,7 +220,6 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     locked = models.BooleanField(default=False)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "locked"])
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
@@ -302,10 +298,6 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     allow_replies = models.BooleanField(default=True)  # TODO: use to override single post reply permission
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(
-        cascade_delete_history=True,
-        excluded_fields=["topic", "approved", "allow_replies", "identity_hash"],
-    )
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
@@ -517,21 +509,6 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     json = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["post", "data_type"])
-
-    def save(self, *args, **kwargs):
-        # only save when json(or other data, once implemented) has changed
-        if not self._state.adding:
-            prev_data = AdditionalData.objects.get(pk=self.pk)
-            if prev_data.json == self.json:
-                self.skip_history_when_saving = True
-                try:
-                    ret = super().save(*args, **kwargs)
-                finally:
-                    del self.skip_history_when_saving
-                return ret
-
-        super().save(*args, **kwargs)
 
     class Meta(auto_prefetch.Model.Meta):
         constraints = [
@@ -545,7 +522,6 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     attribution = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True, excluded_fields=["board", "image", "post", "image_type"])
     image = models.ImageField(upload_to=get_image_upload_path)
 
     image_type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
@@ -672,7 +648,7 @@ class PostImageManager(auto_prefetch.Manager):  # type: ignore
 
 
 class BgImage(Image):
-    objects = BackgroundImageManager()
+    objects = BackgroundImageManager()  # type: ignore
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "background image"
@@ -680,7 +656,7 @@ class BgImage(Image):
 
 
 class PostImage(Image):
-    objects = PostImageManager()
+    objects = PostImageManager()  # type: ignore
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "post image"
