@@ -292,8 +292,8 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
     user = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="posts"
     )
-    session_key = models.CharField(max_length=40, null=True, blank=True)
-    identity_hash = models.CharField(max_length=64, null=True, blank=True)
+    session_key = models.CharField(max_length=40, blank=True)
+    identity_hash = models.CharField(max_length=64, blank=True)
     approved = models.BooleanField(default=True)
     allow_replies = models.BooleanField(default=True)  # TODO: use to override single post reply permission
     created_at = models.DateTimeField(auto_now_add=True)
@@ -519,7 +519,7 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50, db_index=True)
-    attribution = models.CharField(max_length=100, null=True, blank=True)
+    attribution = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=get_image_upload_path)
