@@ -12,10 +12,10 @@ import mimetypes
 import os
 import sys
 from datetime import timedelta
-from importlib.metadata import distribution
 from pathlib import Path
 
 import environ
+import tomli
 from corsheaders.defaults import default_headers
 from django.contrib.messages import constants as messages
 from django.core.exceptions import ImproperlyConfigured
@@ -41,7 +41,13 @@ elif not TESTING:
     environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
-VERSION = distribution("jotlet").version
+
+# workaround for poetry packages that aren't "installed"
+# https://github.com/wemake-services/wemake-python-styleguide/blob/master/docs/conf.py#L22-L37
+VERSION = ""
+with open(os.path.join(BASE_DIR, "pyproject.toml"), mode="rb") as pyproject:
+    VERSION = tomli.load(pyproject)["tool"]["poetry"]["version"]
+    print(f"Jotlet version {VERSION}")
 
 DEBUG = env("DEBUG", default=TESTING if TESTING else False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)

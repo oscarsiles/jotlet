@@ -1203,7 +1203,7 @@ files = [
 django = "*"
 django-stubs-ext = ">=4.2.2"
 mypy = [
-    {version = ">=1.0.0", optional = true, markers = "extra != \"compatible-mypy\""},
+    {version = ">=1.0.0"},
     {version = "==1.5.*", optional = true, markers = "extra == \"compatible-mypy\""},
 ]
 tomli = {version = "*", markers = "python_version < \"3.11\""}
@@ -3519,4 +3519,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "96da404b06a00b1eb401bd72ba5915d372b3ef7a44581454abb1232d1082f367"
+content-hash = "08ee45e978d247c79fd40ef95419f9ab845b17f062f9d7c09807ff4720635e8c"
