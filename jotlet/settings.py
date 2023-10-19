@@ -47,7 +47,6 @@ SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 VERSION = ""
 with open(os.path.join(BASE_DIR, "pyproject.toml"), mode="rb") as pyproject:
     VERSION = tomli.load(pyproject)["tool"]["poetry"]["version"]
-    print(f"Jotlet version {VERSION}")
 
 DEBUG = env("DEBUG", default=TESTING if TESTING else False)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
