@@ -60,7 +60,7 @@ channels = "^4.0.0"
 channels-redis = "^4.1.0"
 crispy-bootstrap5 = "^0.7"
 Django = { extras = ["argon2"], version = "^4.2.6" }
-django-allauth = "^0.54.0"
+django-allauth = "^0.57.0"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^10.1" }
 django-auto-prefetch = "^1.8.0"
 django-axes = { extras = ["ipware"], version = "^6.1.1" }
