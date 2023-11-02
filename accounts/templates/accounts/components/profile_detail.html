@@ -7,7 +7,7 @@
             <h6 class="mb-0">
                 Email
                 {% if is_email_verified %}
-                    <i class="bi bi-check-square" title="Email verified"></i>
+                    <i class="bi bi-exclamation-square" title="Email verified"></i>
                 {% else %}
                     <a href="{% url 'account_email' %}"><i class="bi bi-x-square" title="Email not verified"></i></a>
                 {% endif %}
@@ -29,9 +29,7 @@
                    hx-target="#board-list"
                    hx-indicator="#spinner"
                    hx-swap="innerHTML"
-                   href="">
-                    {{ user.profile.get_board_count }}
-                </a>
+                   href="">{{ user.profile.get_board_count }}</a>
             </span>
         </div>
         <div>
@@ -41,9 +39,7 @@
                    hx-target="#board-list"
                    hx-indicator="#spinner"
                    hx-swap="innerHTML"
-                   href="">
-                    {{ user.profile.get_mod_board_count }}
-                </a>
+                   href="">{{ user.profile.get_mod_board_count }}</a>
             </span>
         </div>
         <div>
@@ -68,9 +64,7 @@
                hx-target="#modal-1-body-div"
                hx-swap="innerHTML"
                data-bs-toggle="modal"
-               data-bs-target="#modal-1-div">
-                Change Password
-            </a>
+               data-bs-target="#modal-1-div">Change Password</a>
         </div>
         <div>
             <a class="btn btn-danger"
@@ -79,9 +73,7 @@
                hx-target="#modal-1-body-div"
                hx-swap="innerHTML"
                data-bs-toggle="modal"
-               data-bs-target="#modal-1-div">
-                Delete Account
-            </a>
+               data-bs-target="#modal-1-div">Delete Account</a>
         </div>
     </div>
 </div>
