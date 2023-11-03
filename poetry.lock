@@ -1075,20 +1075,26 @@ huey = ">=2"
 
 [[package]]
 name = "django-huey-monitor"
-version = "0.6.0"
+version = "0.7.1"
 description = "Django based tool for monitoring huey task queue: https://github.com/coleifer/huey"
 optional = false
-python-versions = ">=3.8,<4.0.0"
+python-versions = "<4,>=3.9"
 files = [
-    {file = "django_huey_monitor-0.6.0-py3-none-any.whl", hash = "sha256:3be3fe71ab825de6c24c0b20bad4966442fabaa91504ff48ef5461cdaf0b4c14"},
-    {file = "django_huey_monitor-0.6.0.tar.gz", hash = "sha256:c9f30c62050cc5658d6f07de94184851b0c49090be31a0c7f94ff9061d04ef10"},
+    {file = "django-huey-monitor-0.7.1.tar.gz", hash = "sha256:c7d2a8c83467754ca32feb75f3af9c93cdbb13d3f332d70ab4132a06aee96ea1"},
+    {file = "django_huey_monitor-0.7.1-py3-none-any.whl", hash = "sha256:65a26c9d3f75c7a1bf95e023f2cb5c7eb88cf1fdc8c9cc0271f6ec0fc0776523"},
 ]
 
 [package.dependencies]
-bx_django_utils = "*"
-bx_py_utils = "*"
+bx-django-utils = "*"
+bx-py-utils = "*"
 django = "*"
 huey = "*"
+
+[package.extras]
+dev = ["EditorConfig", "autopep8", "codespell", "colorlog", "coverage", "darker[color,flynt,isort]", "django-debug-toolbar", "django-redis", "flake8", "gunicorn", "manage-django-project (>=0.3.0)", "model-bakery", "mypy", "pip-tools", "psycopg2-binary", "pyflakes", "pyupgrade", "requests-mock", "safety", "tblib", "tomli", "tox", "twine"]
+django32 = ["django (>=3.2,<3.3)"]
+django41 = ["django (>=4.1,<4.2)"]
+django42 = ["django (>=4.2,<4.3)"]
 
 [[package]]
 name = "django-ipware"
@@ -3277,4 +3283,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "017afca954028251a096b2485ee6529a2de53faf1c5aac5e78cdc1d48a0ff32e"
+content-hash = "5e3e4761ae2328c3d97d677c5e59a96784a25b64192ac65b39b101f7c68dae4e"
