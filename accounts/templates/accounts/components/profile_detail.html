@@ -7,9 +7,9 @@
             <h6 class="mb-0">
                 Email
                 {% if is_email_verified %}
-                    <i class="bi bi-exclamation-square" title="Email verified"></i>
+                    <i class="bi bi-check-square" title="Email verified"></i>
                 {% else %}
-                    <a href="{% url 'account_email' %}"><i class="bi bi-x-square" title="Email not verified"></i></a>
+                    <a href="{% url 'account_email' %}"><i class="bi bi-exclamation-square" title="Email not verified"></i></a>
                 {% endif %}
             </h6>
             <span title="{{ user.email }}">{{ user.email }}</span>
