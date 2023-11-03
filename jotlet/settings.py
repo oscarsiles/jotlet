@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     "bx_django_utils",
     "huey_monitor",
     "django_filters",
-    "qr_code",
     "sorl.thumbnail",
     "cacheops",
     "notices",

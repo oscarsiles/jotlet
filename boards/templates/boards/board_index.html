@@ -25,6 +25,9 @@
     <script defer
             src="{% static 'boards/js/vendor/robust-websocket.js' %}"
             nonce="{{ CSP_NONCE }}"></script>
+    <script defer
+            src="{% static 'boards/js/vendor/qrcode.js' %}"
+            nonce="{{ CSP_NONCE }}"></script>
     <script defer src="{% static 'boards/js/board.js' %}" nonce="{{ CSP_NONCE }}"></script>
 {% endblock head %}
 {% block title %}

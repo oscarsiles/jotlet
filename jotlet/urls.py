@@ -31,7 +31,6 @@ urlpatterns = [
     path("notices/", include("notices.urls")),
     path("privacy/", views.PrivacyPolicyView.as_view(), name="privacy-policy"),
     path("terms/", views.TermsOfUseView.as_view(), name="terms-of-use"),
-    path("qr_code/", include("qr_code.urls", namespace="qr_code")),
     path(
         "robots.txt",
         cache_page(60 * 60 * 24)(TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),

@@ -181,3 +181,12 @@ document.addEventListener("alpine:initializing", () => {
     });
   });
 });
+
+function createQr(el, url) {
+  new QRCode(el, {
+    text: url,
+    width: 350,
+    height: 350,
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+}

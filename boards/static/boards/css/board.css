@@ -123,3 +123,7 @@ canvas.ChemDoodleWebComponent {
 .ui-front {
   z-index: 1080 !important;
 }
+
+.border-qr {
+  --bs-border-width: 1rem;
+}

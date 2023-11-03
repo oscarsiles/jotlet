@@ -6,6 +6,7 @@ from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.urls import reverse
 from pytest_django.asserts import assertFormError
+from pytest_lazyfixture import lazy_fixture
 
 from boards.models import IMAGE_TYPE, Board, BoardPreferences, Image
 from boards.routing import websocket_urlpatterns
@@ -324,30 +325,20 @@ class TestQrView:
         board.preferences.moderators.add(user3)
         board.preferences.save()
 
-    def test_qr_anonymous(self, client, board):
+    @pytest.mark.parametrize(
+        "test_user,expected_response",
+        [
+            (None, 302),
+            (lazy_fixture("user2"), 403),
+            (lazy_fixture("user"), 200),
+            (lazy_fixture("user3"), 200),
+            (lazy_fixture("user_staff"), 200),
+        ],
+    )
+    def test_qr_permissions(self, client, board, test_user, expected_response):
+        if test_user:
+            client.force_login(test_user)
         response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
-        assert response.status_code == 302
-        assert response.url == f"/accounts/login/?next=/boards/{board.slug}/qr/"
-
-    def test_qr_other_user(self, client, board, user2):
-        client.force_login(user2)
-        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
-        assert response.status_code == 403
-
-    def test_qr_board_moderator(self, client, board, user3):
-        client.force_login(user3)
-        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
-        assert response.status_code == 200
-        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")
-
-    def test_qr_owner(self, client, board, user):
-        client.force_login(user)
-        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
-        assert response.status_code == 200
-        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")
-
-    def test_qr_staff(self, client, board, user_staff):
-        client.force_login(user_staff)
-        response = client.get(reverse("boards:board-qr", kwargs={"slug": board.slug}))
-        assert response.status_code == 200
-        assert "/qr_code/images/serve-qr-code-image/" in response.content.decode("utf-8")
+        assert response.status_code == expected_response
+        if expected_response == 302:
+            assert response.url == f"/accounts/login/?next=/boards/{board.slug}/qr/"

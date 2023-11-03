@@ -1,13 +1,10 @@
-{% load board_extras cacheops qr_code %}
+{% load board_extras cacheops static %}
 {% cached_as board None "board_qr" board.pk %}
 <div class="flex-column justify-content-center">
     {% get_split_string board.slug as split_slug %}
     <div class="d-flex justify-content-center">
-        <img src="{% qr_url_from_text url size=8 image_format="png" error_correction="H" border=3 %}"
-             alt="QR Code"
-             class="img-fluid w-75"
-             width="350"
-             height="350"/>
+        <div class="qrcode img-fluid w-75 border border-white border-qr"
+             x-init="$nextTick(() => { createQr($el, '{{ url }}') })"></div>
     </div>
     <div class="d-flex justify-content-center">
         <span class="badge text-bg-info mt-2 fs-5">{{ request.get_host }}
