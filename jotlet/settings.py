@@ -115,6 +115,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "notices.middleware.NoticesMiddleware",
     "axes.middleware.AxesMiddleware",

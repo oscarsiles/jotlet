@@ -1,3 +1,4 @@
+from allauth.core import context
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -135,7 +136,8 @@ class TestJotletLoginView:
         request.user = AnonymousUser()
         request._messages = messages.storage.default_storage(request)
         create_session(request)
-        response = JotletLoginView.as_view()(request)
+        with context.request_context(request):
+            response = JotletLoginView.as_view()(request)
         assert response.status_code == 200
         assert not request.session.get_expire_at_browser_close()
 
@@ -158,7 +160,8 @@ class TestJotletLoginView:
         request.user = AnonymousUser()
         request._messages = messages.storage.default_storage(request)
         create_session(request)
-        response = JotletLoginView.as_view()(request)
+        with context.request_context(request):
+            response = JotletLoginView.as_view()(request)
         assert response.status_code == 200
         assert request.session.get_expire_at_browser_close()
 

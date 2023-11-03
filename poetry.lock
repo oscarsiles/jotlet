@@ -214,17 +214,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.28.76"
+version = "1.28.77"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.28.76-py3-none-any.whl", hash = "sha256:85e2fa361ad3210d30800bad311688261f2673a9b301e0edab56463d89609761"},
-    {file = "boto3-1.28.76.tar.gz", hash = "sha256:d18688bc5d688decf3cc404430a3ac3ec317be653cdcfbc51104c01f38a66434"},
+    {file = "boto3-1.28.77-py3-none-any.whl", hash = "sha256:c0899e54df362bea0ae329da59b0a00e4be5e220e99dc764802ed83cdfc4285c"},
+    {file = "boto3-1.28.77.tar.gz", hash = "sha256:1a47e5b8faea527bb2a40d0cf58faf0d09b5a46cf5658e2c5729479af20c96b8"},
 ]
 
 [package.dependencies]
-botocore = ">=1.31.76,<1.32.0"
+botocore = ">=1.31.77,<1.32.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.7.0,<0.8.0"
 
@@ -233,13 +233,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.31.76"
+version = "1.31.77"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.31.76-py3-none-any.whl", hash = "sha256:74e0a4515d61b2860b24dc208ca89a68d79dc00147125d531746d3ba808822ad"},
-    {file = "botocore-1.31.76.tar.gz", hash = "sha256:479abb5a1ee03eb00faa1ea176bc595b2f46f7494777807681a9df45ed99ea18"},
+    {file = "botocore-1.31.77-py3-none-any.whl", hash = "sha256:4c5c9562b5d1fb8355314ddf37142edf3f6abd7526f4a68cc1b6cd79bdda48ec"},
+    {file = "botocore-1.31.77.tar.gz", hash = "sha256:509168151f8a0e1b8296031a7fc7822d59d027865d3baa86917682b311a74d26"},
 ]
 
 [package.dependencies]
@@ -344,13 +344,13 @@ files = [
 
 [[package]]
 name = "bx-django-utils"
-version = "66"
+version = "67"
 description = "Various Django utility functions"
 optional = false
 python-versions = ">=3.9,<4.0.0"
 files = [
-    {file = "bx_django_utils-66-py3-none-any.whl", hash = "sha256:a56f45644dc8f1cfd793bb5c939fcad1b483afbd04192b810f933b10058cd4cc"},
-    {file = "bx_django_utils-66.tar.gz", hash = "sha256:99a5454284841d7059160d2f03c9c062d8def6c4936bf9a4ffa1fd728dbda08c"},
+    {file = "bx_django_utils-67-py3-none-any.whl", hash = "sha256:8740fdaf98ed68a8ddb3af025d9b4f87c99101405898ddca86810b0c384b215a"},
+    {file = "bx_django_utils-67.tar.gz", hash = "sha256:aca0ae5c91a62e4f594172b8c43468c701516f99ae50d99412d5299ba375df03"},
 ]
 
 [package.dependencies]
@@ -817,20 +817,24 @@ bcrypt = ["bcrypt"]
 
 [[package]]
 name = "django-allauth"
-version = "0.54.0"
+version = "0.58.1"
 description = "Integrated set of Django applications addressing authentication, registration, account management as well as 3rd party (social) account authentication."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-allauth-0.54.0.tar.gz", hash = "sha256:120e265f802b65738899c6cb627b827fde46a4d03067034c633f516c2adf3e3e"},
+    {file = "django-allauth-0.58.1.tar.gz", hash = "sha256:485db513f1794f5636ae38a78e9414e8818ce076770b75a6f8a003ab3a32b8fa"},
 ]
 
 [package.dependencies]
-Django = ">=2.0"
+Django = ">=3.2"
 pyjwt = {version = ">=1.7", extras = ["crypto"]}
 python3-openid = ">=3.0.8"
-requests = "*"
+requests = ">=2.0.0"
 requests-oauthlib = ">=0.3.0"
+
+[package.extras]
+mfa = ["qrcode (>=7.0.0)"]
+saml = ["python3-saml (>=1.15.0,<2.0.0)"]
 
 [[package]]
 name = "django-anymail"
@@ -1075,20 +1079,26 @@ huey = ">=2"
 
 [[package]]
 name = "django-huey-monitor"
-version = "0.6.0"
+version = "0.7.1"
 description = "Django based tool for monitoring huey task queue: https://github.com/coleifer/huey"
 optional = false
-python-versions = ">=3.8,<4.0.0"
+python-versions = "<4,>=3.9"
 files = [
-    {file = "django_huey_monitor-0.6.0-py3-none-any.whl", hash = "sha256:3be3fe71ab825de6c24c0b20bad4966442fabaa91504ff48ef5461cdaf0b4c14"},
-    {file = "django_huey_monitor-0.6.0.tar.gz", hash = "sha256:c9f30c62050cc5658d6f07de94184851b0c49090be31a0c7f94ff9061d04ef10"},
+    {file = "django-huey-monitor-0.7.1.tar.gz", hash = "sha256:c7d2a8c83467754ca32feb75f3af9c93cdbb13d3f332d70ab4132a06aee96ea1"},
+    {file = "django_huey_monitor-0.7.1-py3-none-any.whl", hash = "sha256:65a26c9d3f75c7a1bf95e023f2cb5c7eb88cf1fdc8c9cc0271f6ec0fc0776523"},
 ]
 
 [package.dependencies]
-bx_django_utils = "*"
-bx_py_utils = "*"
+bx-django-utils = "*"
+bx-py-utils = "*"
 django = "*"
 huey = "*"
+
+[package.extras]
+dev = ["EditorConfig", "autopep8", "codespell", "colorlog", "coverage", "darker[color,flynt,isort]", "django-debug-toolbar", "django-redis", "flake8", "gunicorn", "manage-django-project (>=0.3.0)", "model-bakery", "mypy", "pip-tools", "psycopg2-binary", "pyflakes", "pyupgrade", "requests-mock", "safety", "tblib", "tomli", "tox", "twine"]
+django32 = ["django (>=3.2,<3.3)"]
+django41 = ["django (>=4.1,<4.2)"]
+django42 = ["django (>=4.2,<4.3)"]
 
 [[package]]
 name = "django-ipware"
@@ -1469,24 +1479,24 @@ files = [
 
 [[package]]
 name = "httpcore"
-version = "0.17.3"
+version = "1.0.1"
 description = "A minimal low-level HTTP client."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "httpcore-0.17.3-py3-none-any.whl", hash = "sha256:c2789b767ddddfa2a5782e3199b2b7f6894540b17b16ec26b2c4d8e103510b87"},
-    {file = "httpcore-0.17.3.tar.gz", hash = "sha256:a6f30213335e34c1ade7be6ec7c47f19f50c56db36abef1a9dfa3815b1cb3888"},
+    {file = "httpcore-1.0.1-py3-none-any.whl", hash = "sha256:c5e97ef177dca2023d0b9aad98e49507ef5423e9f1d94ffe2cfe250aa28e63b0"},
+    {file = "httpcore-1.0.1.tar.gz", hash = "sha256:fce1ddf9b606cfb98132ab58865c3728c52c8e4c3c46e2aabb3674464a186e92"},
 ]
 
 [package.dependencies]
-anyio = ">=3.0,<5.0"
 certifi = "*"
 h11 = ">=0.13,<0.15"
-sniffio = "==1.*"
 
 [package.extras]
+asyncio = ["anyio (>=4.0,<5.0)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
+trio = ["trio (>=0.22.0,<0.23.0)"]
 
 [[package]]
 name = "httptools"
@@ -1538,18 +1548,19 @@ test = ["Cython (>=0.29.24,<0.30.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.24.1"
+version = "0.25.1"
 description = "The next generation HTTP client."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "httpx-0.24.1-py3-none-any.whl", hash = "sha256:06781eb9ac53cde990577af654bd990a4949de37a28bdb4a230d434f3a30b9bd"},
-    {file = "httpx-0.24.1.tar.gz", hash = "sha256:5853a43053df830c20f8110c5e69fe44d035d850b2dfe795e196f00fdb774bdd"},
+    {file = "httpx-0.25.1-py3-none-any.whl", hash = "sha256:fec7d6cc5c27c578a391f7e87b9aa7d3d8fbcd034f6399f9f79b45bcc12a866a"},
+    {file = "httpx-0.25.1.tar.gz", hash = "sha256:ffd96d5cf901e63863d9f1b4b6807861dbea4d301613415d9e6e57ead15fc5d0"},
 ]
 
 [package.dependencies]
+anyio = "*"
 certifi = "*"
-httpcore = ">=0.15.0,<0.18.0"
+httpcore = "*"
 idna = "*"
 sniffio = "*"
 
@@ -3277,4 +3288,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "017afca954028251a096b2485ee6529a2de53faf1c5aac5e78cdc1d48a0ff32e"
+content-hash = "5f7ae0217073fec03565611f8eb51715692e126a0d94e10d7578331607b72ddb"
