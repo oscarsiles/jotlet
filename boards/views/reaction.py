@@ -79,11 +79,7 @@ class PostReactionView(generic.View):
             message_color = "danger"
             is_updated = False
         else:
-            if type == "l":
-                reaction_score = 1
-            else:
-                reaction_score = int(request.POST.get("score"))
-
+            reaction_score = 1 if type == "l" else int(request.POST.get("score"))
             has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, post.reactions.all())
 
             if has_reacted:

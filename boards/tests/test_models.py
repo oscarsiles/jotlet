@@ -150,13 +150,13 @@ class TestBoardPreferencesModel:
         board.preferences.background_image = image
         board.preferences.save()
         board.refresh_from_db()
-        if bg_type == "c":
-            assert board.preferences.background_type == "c"
-            assert board.preferences.background_image is None
-        elif bg_type == "b":
+        if bg_type == "b":
             expected_bg_type = "b" if image is not None else "c"
             assert board.preferences.background_type == expected_bg_type
             assert board.preferences.background_image == image
+        elif bg_type == "c":
+            assert board.preferences.background_type == "c"
+            assert board.preferences.background_image is None
 
     def test_preferences_deleted_after_board_delete(self, board):
         preferences_pk = board.preferences.pk

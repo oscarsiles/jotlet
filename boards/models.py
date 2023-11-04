@@ -320,11 +320,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         super().save(*args, **kwargs)
 
         if self.topic.board.preferences.allow_image_uploads:
-            cleanup_task = False
-            if prev_post is None:
-                cleanup_task = True
-            elif prev_post.content != self.content:
-                cleanup_task = True
+            cleanup_task = prev_post is None or prev_post.content != self.content
             if cleanup_task:
                 post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
 
@@ -632,9 +628,7 @@ class BackgroundImageManager(auto_prefetch.Manager):  # type: ignore
         return super().get_queryset().filter(image_type="b")
 
     def create(self, *args, **kwargs):
-        kwargs.update(
-            {"image_type": "b"}
-        )  # type "b" by default, but adding it here for parity with the other manager(s)
+        kwargs["image_type"] = "b"
         return super().create(*args, **kwargs)
 
 
@@ -643,7 +637,7 @@ class PostImageManager(auto_prefetch.Manager):  # type: ignore
         return super().get_queryset().filter(image_type="p")
 
     def create(self, *args, **kwargs):
-        kwargs.update({"image_type": "p"})
+        kwargs["image_type"] = "p"
         return super().create(*args, **kwargs)
 
 

@@ -143,8 +143,8 @@ class TestPostCreateForm:
                 form.changed_data.append("additional_data")
 
         is_form_valid = form.is_valid()
-        is_text_and_data_none = text is None and json_data is None
         if is_additional_data_allowed:
+            is_text_and_data_none = text is None and json_data is None
             if is_text_and_data_none:
                 assert not is_form_valid
                 if data_type == "c":

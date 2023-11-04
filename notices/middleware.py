@@ -6,8 +6,7 @@ class NoticesMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
-        return response
+        return self.get_response(request)
 
     def process_template_response(self, request, response):
         if not request.htmx and request.user.is_authenticated and request.session.get("beta_message", True):

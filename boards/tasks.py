@@ -27,7 +27,7 @@ def post_image_cleanup(post, imgs=None):
     if imgs is None:
         raise ValueError("Post images must be provided")
     for img in imgs:
-        if img.image.url in post.content and not img.post == post:
+        if img.image.url in post.content and img.post != post:
             img.post = post
             img.save()
             matched += 1

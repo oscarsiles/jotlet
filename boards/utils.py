@@ -18,14 +18,15 @@ def channel_group_send(group_name, message):
 
 def get_image_upload_path(image, filename):
     _, ext = os.path.splitext(filename)
-    file_path = "images/{image_type}/{sub1}/{sub2}/{name}.{ext}".format(
+    return "images/{image_type}/{sub1}/{sub2}/{name}.{ext}".format(
         image_type=image.image_type,
-        sub1=image.board.slug if image.image_type == "p" else get_random_string(2),
+        sub1=image.board.slug
+        if image.image_type == "p"
+        else get_random_string(2),
         sub2=get_random_string(2),
         name=image.id,
         ext=ext.replace(".", ""),
     )
-    return file_path
 
 
 def get_is_moderator(user, board):
@@ -38,8 +39,10 @@ def get_is_moderator(user, board):
 
 
 def get_random_string(length):
-    code = "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
-    return code
+    return "".join(
+        random.SystemRandom().choice(string.ascii_lowercase + string.digits)
+        for _ in range(length)
+    )
 
 
 def post_reaction_send_update_message(post):
@@ -67,7 +70,7 @@ def process_image(image, image_type="b", width=settings.MAX_IMAGE_WIDTH, height=
     if img.format not in ["JPEG", "PNG"]:
         output_format = "JPEG"
         name, _ = os.path.splitext(image.name)
-        image.name = name + ".jpg"
+        image.name = f"{name}.jpg"
         if img.mode != "RGB":
             img = img.convert("RGB")
         process = True

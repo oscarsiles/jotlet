@@ -56,11 +56,7 @@ class TestImageUtils:
                     sub1 = "[a-z0-9]{2}"
                     assert img.board is None
 
-                if format in ["gif", "bmp"]:
-                    ext = "jpg"
-                else:
-                    ext = format
-
+                ext = "jpg" if format in ["gif", "bmp"] else format
                 assert re.compile(rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.id}.{ext}").search(
                     get_image_upload_path(img, img.image.name)
                 )

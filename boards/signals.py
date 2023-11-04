@@ -99,11 +99,7 @@ def invalidate_board_preferences_cache(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Topic)
 def topic_send_message(sender, instance, created, **kwargs):
-    if created:
-        message_type = "topic_created"
-    else:
-        message_type = "topic_updated"
-
+    message_type = "topic_created" if created else "topic_updated"
     channel_group_send(
         f"board-{instance.board.slug}",
         {

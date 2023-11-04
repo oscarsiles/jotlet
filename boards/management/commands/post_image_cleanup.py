@@ -29,10 +29,9 @@ class Command(BaseCommand):
                         if not matched:
                             img.delete()
                             count_orphans += 1
-                    else:
-                        if img.image.url not in img.post.content:
-                            img.delete()
-                            count_orphans += 1
+                    elif img.image.url not in img.post.content:
+                        img.delete()
+                        count_orphans += 1
 
             count_images = Image.objects.filter(image_type="p").count()
             self.stdout.write(self.style.SUCCESS(f"{count_images} total post image{pluralize(count_images)}."))

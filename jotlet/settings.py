@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+
 import mimetypes
 import os
 import sys
@@ -278,7 +279,7 @@ else:
     if TESTING:
         import tempfile
 
-        MEDIA_ROOT = tempfile.mkdtemp() + "/"
+        MEDIA_ROOT = f"{tempfile.mkdtemp()}/"
         WHITENOISE_AUTOREFRESH = True
     else:
         MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -505,7 +506,7 @@ CSP_FRAME_ANCESTORS = ["'self'"]
 CSP_MANIFEST_SRC = ["'self'", *env.list("CSP_MANIFEST_SRC", default=[])]
 CSP_INCLUDE_NONCE_IN = ["script-src", *env.list("CSP_INCLUDE_NONCE_IN", default=[])]
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=True if TESTING else False)
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=TESTING)
 CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False if TESTING else False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
     raise ImproperlyConfigured("HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled")
