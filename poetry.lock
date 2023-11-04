@@ -1050,6 +1050,23 @@ files = [
 Django = ">=3.2"
 
 [[package]]
+name = "django-filter-stubs"
+version = "0.1.3"
+description = "PEP-484 stubs for django-filter"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-filter-stubs-0.1.3.tar.gz", hash = "sha256:8b03ef8c304024672c3ebc99b72b59fb6f9d6c1a2b3b16a5100bf11a1577bc8b"},
+    {file = "django_filter_stubs-0.1.3-py3-none-any.whl", hash = "sha256:b683e8ddb92a1e1456a53dc299963ae4a5768f8d3cc3318dbef06c4b7d943336"},
+]
+
+[package.dependencies]
+django-stubs = ">=1.3.0"
+djangorestframework-stubs = ">=0.4.0"
+mypy = ">=0.750"
+typing-extensions = ">=3.7.4"
+
+[[package]]
 name = "django-htmx"
 version = "1.17.0"
 description = "Extensions for using Django with htmx."
@@ -1218,6 +1235,30 @@ files = [
 
 [package.extras]
 tests = ["coverage"]
+
+[[package]]
+name = "djangorestframework-stubs"
+version = "3.14.4"
+description = "PEP-484 stubs for django-rest-framework"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "djangorestframework-stubs-3.14.4.tar.gz", hash = "sha256:8ee8719bfeb647b92cc200e15b3cc9813d2e4468c8190777a55a121542a4b2d4"},
+    {file = "djangorestframework_stubs-3.14.4-py3-none-any.whl", hash = "sha256:5be8275dd05d6629b3d1688929586ef7b6bc66b4f3f728b5e0389305f07c7a7f"},
+]
+
+[package.dependencies]
+django-stubs = ">=4.2.5"
+mypy = ">=0.991"
+requests = ">=2.0.0"
+types-PyYAML = ">=5.4.3"
+types-requests = ">=0.1.12"
+typing-extensions = ">=3.10.0"
+
+[package.extras]
+compatible-mypy = ["mypy (>=1.6.0,<1.7.0)"]
+coreapi = ["coreapi (>=2.0.0)"]
+markdown = ["types-Markdown (>=0.1.5)"]
 
 [[package]]
 name = "djlint"
@@ -2856,6 +2897,20 @@ files = [
 ]
 
 [[package]]
+name = "types-requests"
+version = "2.31.0.10"
+description = "Typing stubs for requests"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "types-requests-2.31.0.10.tar.gz", hash = "sha256:dc5852a76f1eaf60eafa81a2e50aefa3d1f015c34cf0cba130930866b1b22a92"},
+    {file = "types_requests-2.31.0.10-py3-none-any.whl", hash = "sha256:b32b9a86beffa876c0c3ac99a4cd3b8b51e973fb8e3bd4e0a6bb32c7efad80fc"},
+]
+
+[package.dependencies]
+urllib3 = ">=2"
+
+[[package]]
 name = "typing-extensions"
 version = "4.8.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -3289,4 +3344,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "7c68622a193b7c9c177fc4b0d3a029d2dace84c26b7e73f3eee9c2bbe7c15b02"
+content-hash = "550b93e87dc5cef8a8b9dbdb0417bc4c20d3a84762d82c4877a488ebad46f67c"
