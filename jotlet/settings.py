@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+
 import mimetypes
 import os
 import sys
@@ -30,25 +31,26 @@ MESSAGE_TAGS = {
 
 TESTING = "pytest" in sys.modules
 
-mimetypes.add_type("text/javascript", ".js", True)
+mimetypes.add_type("text/javascript", ".js", strict=True)
 
 env = environ.Env()
+env.smart_cast = False
 BASE_DIR = Path(__file__).resolve().parent.parent
-test_env_file = os.path.join(BASE_DIR, ".env.test")
-if TESTING and os.path.exists(test_env_file):
+test_env_file = Path(BASE_DIR) / ".env.test"
+if TESTING and Path.exists(test_env_file):
     environ.Env.read_env(test_env_file)
 elif not TESTING:
-    environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+    environ.Env.read_env(Path(BASE_DIR) / ".env")
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 
 # workaround for poetry packages that aren't "installed"
 # https://github.com/wemake-services/wemake-python-styleguide/blob/master/docs/conf.py#L22-L37
 VERSION = ""
-with open(os.path.join(BASE_DIR, "pyproject.toml"), mode="rb") as pyproject:
+with Path.open(Path(BASE_DIR) / "pyproject.toml", mode="rb") as pyproject:
     VERSION = tomli.load(pyproject)["tool"]["poetry"]["version"]
 
-DEBUG = env("DEBUG", default=TESTING if TESTING else False)
+DEBUG = env("DEBUG", default=TESTING)
 DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
@@ -153,9 +155,9 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR / "templates"),
-            os.path.join(BASE_DIR / "jotlet" / "templates"),
-            os.path.join(BASE_DIR / "accounts" / "templates" / "allauth"),
+            Path(BASE_DIR) / "templates",
+            Path(BASE_DIR) / "jotlet" / "templates",
+            Path(BASE_DIR) / "accounts" / "templates" / "allauth",
         ],
         "OPTIONS": {
             "context_processors": [
@@ -278,10 +280,10 @@ else:
     if TESTING:
         import tempfile
 
-        MEDIA_ROOT = tempfile.mkdtemp() + "/"
+        MEDIA_ROOT = f"{tempfile.mkdtemp()}/"
         WHITENOISE_AUTOREFRESH = True
     else:
-        MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+        MEDIA_ROOT = Path(BASE_DIR) / "media"
 
 MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=500 if TESTING else 3840)
 MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=500 if TESTING else 2160)
@@ -295,8 +297,8 @@ MAX_POST_IMAGE_HEIGHT = env("MAX_POST_IMAGE_HEIGHT", default=MAX_POST_IMAGE_WIDT
 THUMBNAIL_ALTERNATIVE_RESOLUTIONS = env("THUMBNAIL_ALTERNATIVE_RESOLUTIONS", default=[2])
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "jotlet", "static")]
+STATIC_ROOT = Path(BASE_DIR) / "static"
+STATICFILES_DIRS = [Path(BASE_DIR) / "jotlet" / "static"]
 
 STORAGES = {
     "default": {
@@ -358,16 +360,7 @@ CACHEOPS = {
 }
 CACHEOPS_INSIDEOUT = env("CACHEOPS_INSIDEOUT", default=True)
 
-if TESTING:
-    CACHEOPS_REDIS = {
-        "host": REDIS_HOST,
-        "port": REDIS_PORT,
-        "db": 13,
-        "socket_timeout": 3,
-    }
-else:
-    CACHEOPS_REDIS = REDIS_URL
-
+CACHEOPS_REDIS = {"host": REDIS_HOST, "port": REDIS_PORT, "db": 13, "socket_timeout": 3} if TESTING else REDIS_URL
 
 HUEY = {
     "huey_class": "jotlet.huey.DjangoPriorityRedisExpiryHuey",  # custom class that uses django-redis pool
@@ -454,7 +447,7 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https" if not DEBUG else "http"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_ALLOW_SIGNUPS = env("ACCOUNT_ALLOW_SIGNUPS", default=True)
 
@@ -505,10 +498,11 @@ CSP_FRAME_ANCESTORS = ["'self'"]
 CSP_MANIFEST_SRC = ["'self'", *env.list("CSP_MANIFEST_SRC", default=[])]
 CSP_INCLUDE_NONCE_IN = ["script-src", *env.list("CSP_INCLUDE_NONCE_IN", default=[])]
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=True if TESTING else False)
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=TESTING or False)
 CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False if TESTING else False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
-    raise ImproperlyConfigured("HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled")
+    msg = "HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled"
+    raise ImproperlyConfigured(msg)
 
 HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
 if HCAPTCHA_ENABLED and not TESTING:
@@ -524,10 +518,11 @@ if CF_TURNSTILE_ENABLED and not TESTING:
     CF_TURNSTILE_SECRET_KEY = env("CF_TURNSTILE_SECRET_KEY")
 
 if TESTING:
+    # Use dummy keys for testing
     HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"
-    HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"
+    HCAPTCHA_SECRET_KEY = "0x0000000000000000000000000000000000000000"  # noqa: S105
     CF_TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
-    CF_TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
+    CF_TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"  # noqa: S105
 
 if HCAPTCHA_ENABLED:
     CSP_SCRIPT_SRC += ["hcaptcha.com", "*.hcaptcha.com"]

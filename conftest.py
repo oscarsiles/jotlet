@@ -20,7 +20,7 @@ from jotlet.tests.factories import JSONFactory, JSONStringFactory
 
 # Autouse Fixtures
 @pytest.fixture(autouse=True)
-def enable_db_access_for_all_tests(db):  # pylint: disable=W0613, C0103
+def _enable_db_access_for_all_tests(db):  # noqa: ARG001
     pass
 
 
