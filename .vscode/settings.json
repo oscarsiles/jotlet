@@ -1,7 +1,4 @@
 {
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
     "DockerRun.Containers": [
         "1281b79b49ad",
         "d45f9b6ec87e"
@@ -22,5 +19,4 @@
     ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
-    "python.analysis.typeCheckingMode": "off",
 }

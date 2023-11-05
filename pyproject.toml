@@ -1,7 +1,3 @@
-[tool.black]
-line-length = 118          # override black's default line-length
-target-version = ['py312']
-
 [tool.coverage.run]
 omit = "*/tests/*"
 plugins = ["django_coverage_plugin"]
@@ -24,11 +20,6 @@ indent_size = 2
 [tool.djlint.js]
 indent_size = 2
 
-[tool.isort]
-# make it compatible with black
-profile = "black"
-line_length = 118
-
 [tool.mypy]
 python_version = "3.12"
 plugins = ["mypy_django_plugin.main"]
@@ -41,9 +32,15 @@ module = [
     "axes.*",
     "cacheops.*",
     "channels.*",
+    "crispy_bootstrap5.*",
+    "crispy_forms.*",
     "debug_toolbar",
+    "django_cleanup.*",
+    "django_redis",
     "environ",
+    "huey_monitor.*",
     "sorl.*",
+    "storages.backends.*",
     "tree_queries.*",
 ]
 ignore_missing_imports = true
@@ -92,18 +89,19 @@ uvicorn = { extras = ["standard"], version = "^0.23.2" }
 whitenoise = { extras = ["brotli"], version = "^6.6.0" }
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.10.1"
 coverage = { extras = ["toml"], version = "^7.3.2" }
 django-coverage-plugin = "^3.1.0"
 django-debug-toolbar = "^4.2.0"
 django-debug-toolbar-template-profiler = "^2.1.0"
+django-filter-stubs = "^0.1.3"
 django-stubs = { extras = ["compatible-mypy"], version = "^4.2.6" }
 djlint = "^1.34.0"
 huey-stubs = "^0.0.2"
 pytest-cov = "^4.1.0"
 ruff = "^0.1.0"
+types-factory-boy = "^0.4.1"
+types-pillow = "^10.1.0.0"
 types-pytest-lazy-fixture = "^0.6.3.4"
-django-filter-stubs = "^0.1.3"
 
 [tool.poetry.group.test.dependencies]
 daphne = "^4.0.0"
@@ -120,10 +118,56 @@ pytest-xdist = "^3.3.1"
 addopts = "--cov=jotlet --cov-report xml:cov.xml --cov-report html:htmlcov"
 
 [tool.ruff]
-select = ["E", "F", "W", "I", "Q", "DJ", "UP", "RUF"]
-ignore = ["RUF012"]
-exclude = ["**/migrations/*.py"]
+exclude = ["manage.py", "**/migrations/*.py"]
 line-length = 118
+target-version = "py37"
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN",
+    "EXE",
+    "T10",
+    "TD",
+    "TRIO",
+    # Individual Rules
+    "ARG002",
+    "ARG003",
+    "COM812",
+    "COM819",
+    "D100",   # ignore missing docs
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D200",
+    "D205",
+    "D212",
+    "D400",
+    "D401",
+    "D415",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "RUF012",
+    "S101",
+    "TRY003",
+    "W191",
+]
 
 [build-system]
 requires = ["poetry-core>=1.1.0"]
