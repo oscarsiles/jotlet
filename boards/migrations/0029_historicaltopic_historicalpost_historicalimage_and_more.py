@@ -3,7 +3,6 @@
 import uuid
 
 import django.db.models.deletion
-import shortuuidfield.fields
 from django.conf import settings
 from django.db import migrations, models
 
@@ -158,7 +157,7 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(max_length=50)),
                 (
                     "uuid",
-                    shortuuidfield.fields.ShortUUIDField(blank=True, db_index=True, editable=False, max_length=22),
+                    models.UUIDField(blank=True, db_index=True, editable=False, max_length=22),
                 ),
                 ("slug", models.SlugField(max_length=6, null=True)),
                 ("description", models.CharField(max_length=100)),
