@@ -14,4 +14,4 @@ class TestRobots:
     def test_post_disallowed(self, client):
         response = client.post("/robots.txt")
 
-        assert HTTPStatus.METHOD_NOT_ALLOWED == response.status_code
+        assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED

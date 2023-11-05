@@ -6,7 +6,7 @@ from django.core.cache import cache
 from boards.routing import websocket_urlpatterns
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 class TestBoardConsumer:
     async def test_session_connect_disconnect_websocket_message(self, board):
         application = URLRouter(websocket_urlpatterns)

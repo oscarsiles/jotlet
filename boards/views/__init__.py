@@ -1,1 +1,1 @@
-from . import board, index, post, reaction, topic
+from . import board, index, post, reaction, topic  # noqa: F401

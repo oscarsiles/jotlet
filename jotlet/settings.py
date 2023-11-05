@@ -321,7 +321,7 @@ CACHES = {
         "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
         "LOCATION": REDIS_URL,
         "KEY_PREFIX": "jotlet_test" if TESTING else "jotlet",
-        "OPTIONS": {  # type: ignore
+        "OPTIONS": {
             # this connection pool is also used for Huey
             "CONNECTION_POOL_KWARGS": {"max_connections": 100},
             "PARSER_CLASS": "redis.connection._HiredisParser",
@@ -331,7 +331,7 @@ CACHES = {
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-        "CONFIG": {  # type: ignore
+        "CONFIG": {
             "hosts": [REDIS_URL],
             "prefix": "jotlet_test" if TESTING else "jotlet",
             "capacity": 500,

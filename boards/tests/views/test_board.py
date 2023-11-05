@@ -94,7 +94,7 @@ class TestBoardPreferencesView:
         preferences = BoardPreferences.objects.get(board=board)
         assert preferences.board == board
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_preferences_changed_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)

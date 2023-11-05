@@ -207,7 +207,7 @@ class TestPostCreateView:
         assert response.status_code == 302
         pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_post_created_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)
@@ -361,7 +361,7 @@ class TestPostUpdateView:
         else:
             assert Post.objects.get(pk=post.pk).content == original_content
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_post_updated_websocket_message(self, client, board, post, user):
         application = URLRouter(websocket_urlpatterns)
@@ -418,7 +418,7 @@ class TestPostDeleteView:
         assert response.status_code == 204
         assert Post.objects.count() == 0
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_post_deleted_websocket_message(self, client, board, post, user):
         application = URLRouter(websocket_urlpatterns)
@@ -481,7 +481,7 @@ class TestApprovePostsView:
         assert response.status_code == 204
         assert Post.objects.filter(topic__board=board, approved=True).count() == 20
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_topic_posts_approved_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
@@ -496,7 +496,7 @@ class TestApprovePostsView:
         assert "topic_updated" in message
         await communicator.disconnect()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_board_posts_approved_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
@@ -555,7 +555,7 @@ class TestDeletePostsView:
         assert response.status_code == 204
         assert Post.objects.filter(topic__board=board).count() == 0
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_topic_posts_deleted_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)
@@ -572,7 +572,7 @@ class TestDeletePostsView:
             assert "post_deleted" in message
         await communicator.disconnect()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_board_posts_deleted_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
@@ -789,7 +789,7 @@ class TestPostToggleApprovalView:
         post.refresh_from_db()
         assert not post.approved
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
     async def test_post_toggle_websocket_message(self, client, board, post, user):
         application = URLRouter(websocket_urlpatterns)
