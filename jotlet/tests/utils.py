@@ -10,7 +10,7 @@ def create_session(request):
 
 
 def create_htmx_session(request):
-    def dummy_view(request):
+    def dummy_view(_request):
         return HttpResponse("Hello!")
 
     create_session(request)

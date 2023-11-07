@@ -2192,18 +2192,18 @@ pytest = ">=6.2"
 typing_extensions = "*"
 
 [[package]]
-name = "pytest-lazy-fixture"
-version = "0.6.3"
-description = "It helps to use fixtures in pytest.mark.parametrize"
+name = "pytest-lazy-fixtures"
+version = "1.0.1"
+description = "Allows you to use fixtures in @pytest.mark.parametrize."
 optional = false
-python-versions = "*"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pytest-lazy-fixture-0.6.3.tar.gz", hash = "sha256:0e7d0c7f74ba33e6e80905e9bfd81f9d15ef9a790de97993e34213deb5ad10ac"},
-    {file = "pytest_lazy_fixture-0.6.3-py3-none-any.whl", hash = "sha256:e0b379f38299ff27a653f03eaa69b08a6fd4484e46fd1c9907d984b9f9daeda6"},
+    {file = "pytest_lazy_fixtures-1.0.1-py3-none-any.whl", hash = "sha256:b85c30eaec34d1d2c2ad4c3b55a1301b9d89b963725bb50d7931bf38b02b5f8d"},
+    {file = "pytest_lazy_fixtures-1.0.1.tar.gz", hash = "sha256:29f11f1ce4e50475b645ea8a2fbcf981508ca911926f73cbb45df17163d48a6a"},
 ]
 
 [package.dependencies]
-pytest = ">=3.2.5"
+pytest = ">=7.2.1,<8.0.0"
 
 [[package]]
 name = "pytest-sugar"
@@ -2807,17 +2807,6 @@ files = [
 ]
 
 [[package]]
-name = "types-pytest-lazy-fixture"
-version = "0.6.3.4"
-description = "Typing stubs for pytest-lazy-fixture"
-optional = false
-python-versions = "*"
-files = [
-    {file = "types-pytest-lazy-fixture-0.6.3.4.tar.gz", hash = "sha256:4882a7a9a0fe0a38d407df17907167e9f336f5f5571b6e9954b4b4b4b30b7cca"},
-    {file = "types_pytest_lazy_fixture-0.6.3.4-py3-none-any.whl", hash = "sha256:a12d4f2878b88d0a4e7644fc6978fcf5683859e33f77d4ebe6a61f211a066c30"},
-]
-
-[[package]]
 name = "types-pytz"
 version = "2023.3.1.1"
 description = "Typing stubs for pytz"
@@ -3287,4 +3276,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "3516b593b4589d904590d9b5c92094565ac889bea2f77c57bf4b782c8a7b5a69"
+content-hash = "e63c5e3f6f897afac59d1d70892d361be214b2b03a96f4653eeca90f5c5bb24b"

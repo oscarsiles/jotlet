@@ -1,4 +1,4 @@
-from typing import List
+import contextlib
 
 from cacheops import invalidate_obj
 from crispy_bootstrap5.bootstrap5 import FloatingField
@@ -22,12 +22,14 @@ def validate_board_exists(board_slug):
     try:
         Board.objects.get(slug=board_slug)
     except Board.DoesNotExist as ex:
-        raise forms.ValidationError("Board does not exist.") from ex
+        msg = "Board does not exist."
+        raise forms.ValidationError(msg) from ex
 
 
 def validate_percentage(percentage):
-    if percentage < 0.0 or percentage > 1.0:
-        raise forms.ValidationError("Value needs to be between 0.0 and 1.0.")
+    if percentage < 0 or percentage > 1:
+        msg = "Value needs to be between 0.0 and 1.0."
+        raise forms.ValidationError(msg)
 
 
 class BoardCreateForm(forms.ModelForm):
@@ -116,7 +118,7 @@ class BoardFilterForm(forms.Form):
 
 class BoardPreferencesForm(forms.ModelForm):
     checkbox_classes = "form-check-input h-auto my-0"
-    initial_moderators: List[AbstractBaseUser] = []
+    initial_moderators: list[AbstractBaseUser] = []
     initial_require_post_approval = False
     initial_board = None
     moderators = forms.CharField(
@@ -149,7 +151,7 @@ class BoardPreferencesForm(forms.ModelForm):
         )
 
         self.initial_moderators = list(self.initial_board.preferences.moderators.all())
-        self.initial["moderators"] = ",".join(map(lambda user: user.username, self.initial_moderators))
+        self.initial["moderators"] = ",".join(user.username for user in self.initial_moderators)
         self.initial_require_post_approval = self.initial["require_post_approval"]
 
         self.helper = FormHelper()
@@ -301,7 +303,7 @@ class BoardPreferencesForm(forms.ModelForm):
 
         return value
 
-    def save(self, commit=True):
+    def save(self):
         preferences = super().save()
 
         # approve all posts if post approval is disabled
@@ -356,19 +358,15 @@ class PostCreateForm(forms.ModelForm):
                 case "c":
                     self.fields["additional_data"] = forms.JSONField(required=False, widget=forms.HiddenInput())
                     if self.additional_data is not None:
-                        try:
+                        with contextlib.suppress(AdditionalData.DoesNotExist):
                             self.initial["additional_data"] = self.additional_data.get(data_type="c").json
-                        except AdditionalData.DoesNotExist:
-                            pass
                 case "f":  # not implemented
                     pass
                 case "m":
                     self.fields["additional_data"] = forms.JSONField(required=False)
                     if self.additional_data is not None:
-                        try:
+                        with contextlib.suppress(AdditionalData.DoesNotExist):
                             self.initial["additional_data"] = self.additional_data.get(data_type="m").json
-                        except AdditionalData.DoesNotExist:
-                            pass
 
         self.helper = FormHelper()
         self.helper.form_show_labels = False
@@ -380,16 +378,18 @@ class PostCreateForm(forms.ModelForm):
         additional_data = clean_data.get("additional_data", None)
 
         if not self.is_additional_data_allowed and content == "":
-            raise forms.ValidationError("Content cannot be empty.")
+            msg = "Content cannot be empty."
+            raise forms.ValidationError(msg)
         if self.is_additional_data_allowed and content == "" and additional_data is None:
             if self.additional_data_type == "c":
-                raise forms.ValidationError("Content and molecule cannot be empty.")
-            else:
-                raise forms.ValidationError("Content and additional data cannot be empty.")
+                msg = "Content and molecule cannot be empty."
+                raise forms.ValidationError(msg)
+            msg = "Content and additional data cannot be empty."
+            raise forms.ValidationError(msg)
         return clean_data
 
-    def save(self, commit=True):
-        post = super().save(commit=commit)
+    def save(self):
+        post = super().save()
 
         if self.is_additional_data_allowed:
             match self.additional_data_type:

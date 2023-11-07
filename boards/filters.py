@@ -33,11 +33,11 @@ class BoardFilter(django_filters.FilterSet):
     @property
     def form(self):
         if not hasattr(self, "_form"):
-            Form = self.get_form_class()
+            form = self.get_form_class()
             if self.is_bound:
-                self._form = Form(self.data, prefix=self.form_prefix, board_list_type=self.board_list_type)
+                self._form = form(self.data, prefix=self.form_prefix, board_list_type=self.board_list_type)
             else:
-                self._form = Form(prefix=self.form_prefix, board_list_type=self.board_list_type)
+                self._form = form(prefix=self.form_prefix, board_list_type=self.board_list_type)
         return self._form
 
     @property
@@ -48,9 +48,8 @@ class BoardFilter(django_filters.FilterSet):
             qs = qs.filter(preferences__moderators__in=[self.request.user])
         elif self.board_list_type == "own":
             qs = qs.filter(owner=self.request.user)
-        qs = qs.order_by("-created_at", "id")
 
-        return qs
+        return qs.order_by("-created_at", "id")
 
     def filter_title_description(self, queryset, name, value):
         return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
@@ -58,6 +57,6 @@ class BoardFilter(django_filters.FilterSet):
     def filter_username(self, queryset, name, value):
         # https://stackoverflow.com/a/14908214
         value = value.split(",")
-        value = map(lambda n: Q(owner__username__iexact=n), value)
+        value = (Q(owner__username__iexact=n) for n in value)
         value = reduce(lambda a, b: a | b, value)
         return queryset.filter(value)

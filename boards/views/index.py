@@ -57,9 +57,7 @@ class BoardListView(LoginRequiredMixin, PaginatedFilterViewsMixin, generic.ListV
 
     def get_context_data(self, **kwargs):
         page = self.request.GET.get("page", 1)
-        query_paginate_by = self.request.GET.get("paginate_by", None)
-
-        if query_paginate_by:
+        if query_paginate_by := self.request.GET.get("paginate_by", None):
             query_paginate_by = int(query_paginate_by)
             self.request.user.profile.boards_paginate_by = query_paginate_by
             self.request.user.profile.save()

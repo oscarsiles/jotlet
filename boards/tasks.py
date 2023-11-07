@@ -6,10 +6,11 @@ from sorl.thumbnail import delete as sorl_delete
 
 @db_task()
 def create_thumbnails(img):
-    img.get_large_thumbnail
-    img.get_large_thumbnail_webp
-    img.get_small_thumbnail
-    img.get_small_thumbnail_webp
+    # need to "get" thumbnails to create them
+    _ = img.get_large_thumbnail
+    _ = img.get_large_thumbnail_webp
+    _ = img.get_small_thumbnail
+    _ = img.get_small_thumbnail_webp
     return f"created thumbnails for {img}"
 
 
@@ -25,7 +26,8 @@ def post_image_cleanup(post, imgs=None):
     matched = 0
     deleted = 0
     if imgs is None:
-        raise ValueError("Post images must be provided")
+        msg = "Post images must be provided"
+        raise ValueError(msg)
     for img in imgs:
         if img.image.url in post.content and img.post != post:
             img.post = post

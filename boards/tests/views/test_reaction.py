@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from asgiref.sync import sync_to_async
 from channels.routing import URLRouter
@@ -11,75 +13,74 @@ from boards.routing import websocket_urlpatterns
 
 class TestPostReactionView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post):
+    def _setup_method_fixture(self, board, topic, post):
         self.post_reaction_url = reverse(
             "boards:post-reaction", kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk}
         )
 
-    def test_post_reaction_repeat_anonymous(self, client, post):
+    @pytest.mark.parametrize("reaction_type", [reaction for reaction in REACTION_TYPE if reaction[0] != "n"])
+    def test_post_reaction_repeat_anonymous(self, client, post, reaction_type):
         assert Reaction.objects.count() == 0
 
-        for _type in REACTION_TYPE[1:]:
-            type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
+        post.topic.board.preferences.reaction_type = reaction_type[0]
+        post.topic.board.preferences.save()
 
-            response = client.post(self.post_reaction_url, {"score": 1})
-            assert response.status_code == 204
-            assert Reaction.objects.count() == 1
+        response = client.post(self.post_reaction_url, {"score": 1})
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Reaction.objects.count() == 1
 
-            response = client.post(self.post_reaction_url, {"score": 1})
-            assert response.status_code == 204
-            assert Reaction.objects.count() == 0
-
-    def test_post_reaction_score_changed(self, client, post):
+        response = client.post(self.post_reaction_url, {"score": 1})
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Reaction.objects.count() == 0
 
-        for _type in REACTION_TYPE[2:]:  # like only has one score
-            type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
-            if type == "v":
-                second_score = -1
-            elif type == "s":
-                second_score = 2
+    @pytest.mark.parametrize(
+        "reaction_type",
+        [reaction for reaction in REACTION_TYPE if reaction[0] not in ["n", "l"]],
+    )
+    def test_post_reaction_score_changed(self, client, post, reaction_type):
+        assert Reaction.objects.count() == 0
 
-            response = client.post(self.post_reaction_url, {"score": 1})
-            assert response.status_code == 204
-            assert Reaction.objects.count() == 1
-            assert Reaction.objects.first().reaction_score == 1
+        post.topic.board.preferences.reaction_type = reaction_type[0]
+        post.topic.board.preferences.save()
 
-            response = client.post(self.post_reaction_url, {"score": second_score})
-            assert response.status_code == 204
-            assert Reaction.objects.count() == 1
-            assert Reaction.objects.first().reaction_score == second_score
+        first_score = 1
+        second_score = 2
+        response = client.post(self.post_reaction_url, {"score": first_score})
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Reaction.objects.count() == 1
+        assert Reaction.objects.first().reaction_score == first_score
 
-            Reaction.objects.filter(post=post).delete()
+        response = client.post(self.post_reaction_url, {"score": second_score})
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Reaction.objects.count() == 1
+        assert Reaction.objects.first().reaction_score == second_score
+
+        Reaction.objects.filter(post=post).delete()
 
     def test_post_reaction_disabled(self, client):
         assert Reaction.objects.count() == 0
 
         response = client.post(self.post_reaction_url, {"score": 1})
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Reaction.objects.count() == 0
 
     @pytest.mark.parametrize("post__user", [LazyFixture("user")])
-    def test_post_reaction_own_post(self, client, post, user):
+    @pytest.mark.parametrize("reaction_type", REACTION_TYPE[1:])
+    def test_post_reaction_own_post(self, client, post, user, reaction_type):
         assert Reaction.objects.count() == 0
 
         client.force_login(user)
 
-        for _type in REACTION_TYPE[1:]:
-            type = _type[0]
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
+        reaction_type = reaction_type[0]
+        post.topic.board.preferences.reaction_type = reaction_type
+        post.topic.board.preferences.save()
 
-            response = client.post(
-                self.post_reaction_url,
-                {"score": 1},
-            )
-            assert response.status_code == 204
-            assert Reaction.objects.count() == 0
+        response = client.post(
+            self.post_reaction_url,
+            {"score": 1},
+        )
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Reaction.objects.count() == 0
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
@@ -105,17 +106,17 @@ class TestPostReactionView:
 
 class TestReactionsDeleteView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post, user3, post_factory, reaction_factory):
+    def _setup_method(self, board, topic, post, user3, post_factory, reaction_factory):
         board.preferences.moderators.add(user3)
         board.preferences.reaction_type = "l"
         board.preferences.save()
         post_factory.create_batch(4, topic=topic)
         for post in Post.objects.all():
-            for type in REACTION_TYPE[1:]:
+            for reaction_type in REACTION_TYPE[1:]:
                 reaction_factory.create_batch(
                     5,
                     post=post,
-                    reaction_type=type[0],
+                    reaction_type=reaction_type[0],
                     reaction_score="1",
                 )
         post = Post.objects.first()
@@ -126,41 +127,41 @@ class TestReactionsDeleteView:
 
     def test_anonymous_permissions(self, client):
         response = client.get(self.reactions_delete_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
         response = client.post(self.reactions_delete_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
     def test_other_user_permissions(self, client, user2):
         client.force_login(user2)
         response = client.get(self.reactions_delete_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
         response = client.post(self.reactions_delete_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
     def test_moderator_permissions(self, client, user3):
         client.force_login(user3)
         response = client.get(self.reactions_delete_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
         response = client.post(self.reactions_delete_url)
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1) - 5
 
     def test_owner_permissions(self, client, user):
         client.force_login(user)
         response = client.get(self.reactions_delete_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
         response = client.post(self.reactions_delete_url)
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1) - 5
 
     def test_no_reactions_preferences(self, client, board, user):
@@ -168,11 +169,11 @@ class TestReactionsDeleteView:
         board.preferences.save()
         client.force_login(user)
         response = client.get(self.reactions_delete_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
         response = client.post(self.reactions_delete_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
     @pytest.mark.asyncio()

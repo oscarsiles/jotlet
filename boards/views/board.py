@@ -139,7 +139,6 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 
 class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
-    object: Board
     model = Board
     board: Board | None = None
     template_name = "boards/board_confirm_delete.html"

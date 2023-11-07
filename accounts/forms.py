@@ -13,12 +13,14 @@ from accounts.utils import cf_turnstile_verified, hcaptcha_verified
 
 def verify_hcaptcha(request):
     if not async_to_sync(hcaptcha_verified)(request):
-        raise forms.ValidationError("Captcha challenge failed. Please try again.")
+        msg = "Captcha challenge failed. Please try again."
+        raise forms.ValidationError(msg)
 
 
 def verify_cf_turnstile(request):
     if not async_to_sync(cf_turnstile_verified)(request):
-        raise forms.ValidationError("Captcha challenge failed. Please try again.")
+        msg = "Captcha challenge failed. Please try again."
+        raise forms.ValidationError(msg)
 
 
 class CustomLoginForm(LoginForm):

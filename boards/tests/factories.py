@@ -1,11 +1,12 @@
 import json
 
 import factory
+from django.contrib.auth.models import AbstractBaseUser
 from faker import Faker
 
 from accounts.tests.factories import UserFactory
 from boards.models import AdditionalData, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
-from jotlet.tests.factories import JSONFactory
+from jotlet.tests.factories import JotletDict, JSONFactory
 
 fake = Faker()
 
@@ -14,7 +15,7 @@ class BoardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Board
 
-    owner = factory.SubFactory(UserFactory)
+    owner: AbstractBaseUser = factory.SubFactory(UserFactory)
     title = factory.Sequence(lambda n: f"Test Board {n}")
     description = factory.Sequence(lambda n: f"Test Board Description {n}")
 
@@ -23,14 +24,14 @@ class BoardPreferencesFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BoardPreferences
 
-    board = factory.SubFactory(BoardFactory)
+    board: Board = factory.SubFactory(BoardFactory)
 
 
 class TopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Topic
 
-    board = factory.SubFactory(BoardFactory)
+    board: Board = factory.SubFactory(BoardFactory)
     subject = factory.Sequence(lambda n: f"Test Topic {n}")
 
 
@@ -39,7 +40,7 @@ class PostFactory(factory.django.DjangoModelFactory):
         model = Post
 
     user = None
-    topic = factory.SubFactory(TopicFactory)
+    topic: Topic = factory.SubFactory(TopicFactory)
     content = factory.Sequence(lambda n: f"Test Post {n}")
 
 
@@ -47,19 +48,19 @@ class ReactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Reaction
 
-    post = factory.SubFactory(PostFactory)
-    session_key = factory.Sequence(lambda n: fake.unique.sha1())
+    post: Post = factory.SubFactory(PostFactory)
+    session_key = factory.Sequence(lambda _n: fake.unique.sha1())
 
 
 class AdditionalDataFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AdditionalData
 
-    post = factory.SubFactory(PostFactory)
+    post: Post = factory.SubFactory(PostFactory)
 
 
 class JSONDataFactory(AdditionalDataFactory):
-    json = factory.SubFactory(JSONFactory)
+    json: JotletDict = factory.SubFactory(JSONFactory)
 
 
 class MiscDataFactory(JSONDataFactory):
@@ -79,11 +80,6 @@ class ChemdoodleDataFactory(JSONDataFactory):
     )  # benzene ChemDoole JSON
 
 
-# class FileDataFactory(AdditionalDataFactory):
-#     data_type = "f"
-#     file = factory.django.FileField(filename="the_file.dat")
-
-
 class ImageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Image
@@ -101,4 +97,4 @@ class PostImageFactory(ImageFactory):
     class Meta:
         model = PostImage
 
-    board = factory.SubFactory(BoardFactory)
+    board: Board = factory.SubFactory(BoardFactory)

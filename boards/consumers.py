@@ -1,3 +1,4 @@
+import contextlib
 import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -50,76 +51,47 @@ class BoardConsumer(AsyncJsonWebsocketConsumer):
                         "sessions": await cache.aget(self.board_group_name),
                     },
                 )
-        except Exception as exc:  # pylint: disable=broad-except
-            logger.exception(exc)
+        except Exception:
+            logger.exception("Error disconnecting from board consumer")
         finally:
             await self.channel_layer.group_discard(
                 self.board_group_name,
                 self.channel_name,
             )
 
-    async def session_connected(self, event):
-        try:
+    async def send_event(self, event):
+        with contextlib.suppress(ConnectionClosedError, ConnectionClosedOK):
             await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+
+    async def session_connected(self, event):
+        await self.send_event(event)
 
     async def session_disconnected(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def board_preferences_changed(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def board_updated(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def topic_created(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def topic_updated(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def topic_deleted(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def post_created(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def post_updated(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def post_deleted(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)
 
     async def reaction_updated(self, event):
-        try:
-            await self.send_json(event)
-        except (ConnectionClosedError, ConnectionClosedOK):
-            pass
+        await self.send_event(event)

@@ -4,7 +4,7 @@ from django.contrib.auth.hashers import make_password
 
 from accounts.models import UserProfile
 
-USER_TEST_PASSWORD = "test_password"
+USER_TEST_PASSWORD = "test_password"  # noqa: S105
 
 
 class UserFactory(factory.django.DjangoModelFactory):

@@ -11,8 +11,7 @@ from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from sorl.thumbnail import get_thumbnail
 from tree_queries.models import TreeNode
 from tree_queries.query import TreeQuerySet
@@ -43,6 +42,8 @@ IMAGE_TYPE = (
     ("b", "Background"),
     ("p", "Post"),
 )
+
+IMAGE_FORMATS = ["png", "jpeg", "bmp", "gif"]
 
 
 class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
@@ -88,11 +89,10 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
                         super().save(*args, **kwargs)
                     except IntegrityError:
                         errors += 1
-                        if errors > 5:
+                        if errors > 5:  # noqa: PLR2004
                             # tried 5 times, no dice. raise the integrity error and handle elsewhere
                             raise
-                        else:
-                            self.slug = get_random_string(max_length)
+                        self.slug = get_random_string(max_length)
                     else:
                         success = True
             else:
@@ -213,7 +213,7 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         return reverse("boards:board-preferences", kwargs={"slug": self.board.slug})
 
 
-class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: ignore
+class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subject = models.TextField(max_length=400)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
@@ -272,11 +272,9 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
         @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
         def _post_create_allowed(self, request):
             is_locked = self.is_locked
-            is_allowed = ((self.board.is_posting_allowed or request.user == self.board.owner) and not is_locked) or (
+            return ((self.board.is_posting_allowed or request.user == self.board.owner) and not is_locked) or (
                 request.user.is_staff or get_is_moderator(request.user, self.board)
             )
-
-            return is_allowed
 
         return _post_create_allowed(self, request)
 
@@ -284,8 +282,8 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):  # type: igno
         return reverse("boards:board", kwargs={"slug": self.board.slug})
 
 
-class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # type: ignore
-    objects = TreeQuerySet.as_manager(with_tree_fields=True)  # type: ignore
+class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
+    objects = TreeQuerySet.as_manager(with_tree_fields=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
@@ -320,11 +318,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         super().save(*args, **kwargs)
 
         if self.topic.board.preferences.allow_image_uploads:
-            cleanup_task = False
-            if prev_post is None:
-                cleanup_task = True
-            elif prev_post.content != self.content:
-                cleanup_task = True
+            cleanup_task = prev_post is None or prev_post.content != self.content
             if cleanup_task:
                 post_image_cleanup(self, PostImage.objects.filter(board=self.topic.board))()
 
@@ -334,7 +328,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
             is_locked = (
                 self.topic.locked or self.topic.board.locked or not self.topic.board.preferences.allow_post_editing
             )
-            is_allowed = (
+            return (
                 (
                     request.session.session_key == self.session_key
                     or request.user == self.user
@@ -343,19 +337,15 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
                 and not is_locked
             ) or get_is_moderator(request.user, self.topic.board)
 
-            return is_allowed
-
         return _update_allowed(self, request)
 
     def reply_create_allowed(self, request):
         @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
         def _reply_create_allowed(self, request):
-            is_allowed = self.topic.board.preferences.board_type == "r" and (
+            return self.topic.board.preferences.board_type == "r" and (
                 (self.approved and self.topic.board.preferences.allow_guest_replies)
                 or get_is_moderator(request.user, self.topic.board)
             )
-
-            return is_allowed
 
         return _reply_create_allowed(self, request)
 
@@ -383,8 +373,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         def _get_additional_data_count():
             if AdditionalData.objects.filter(post=self).exists():
                 return AdditionalData.objects.filter(post=self).count()
-            else:
-                return 0
+            return 0
 
         return _get_additional_data_count()
 
@@ -393,8 +382,7 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         def _get_additional_data(additional_data_type):
             if self.get_additional_data_count > 0:
                 return AdditionalData.objects.get(post=self, data_type=additional_data_type)
-            else:
-                return None
+            return None
 
         return _get_additional_data(additional_data_type)
 
@@ -418,24 +406,21 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
 
         @cached_as(reactions, extra=reaction_type, timeout=60 * 60 * 24)
         def _get_reaction_score(reactions, reaction_type):
-            try:
-                if reaction_type == "l":  # cannot use match/switch before python 3.10
-                    return reactions.count()
-                elif reaction_type == "v":
-                    return sum(1 for reaction in reactions if reaction.reaction_score == 1), sum(
-                        1 for reaction in reactions if reaction.reaction_score == -1
-                    )
-                elif reaction_type == "s":
-                    score = ""
-                    count = reactions.count()
+            count = reactions.count()
+            match reaction_type:
+                case "l":
+                    return count
+                case "v":
+                    positive_count = sum(reaction.reaction_score == 1 for reaction in reactions)
+                    negative_count = sum(reaction.reaction_score == -1 for reaction in reactions)
+                    return positive_count, negative_count
+                case "s":
                     if count != 0:
                         sumvar = sum(reaction.reaction_score for reaction in reactions)
-                        score = f"{(sumvar / count):.2g}"
-                    return score
-                else:
+                        return f"{(sumvar / count):.2g}"
+                    return ""
+                case _:
                     return 0
-            except Exception:
-                raise Exception(f"Error calculating reaction score for: post-{self.pk}")
 
         return _get_reaction_score(reactions, reaction_type)
 
@@ -447,26 +432,19 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):  # t
         reaction_id = None
         reacted_score = 1  # default score
 
-        @cached_as(post_reactions, extra=request.session.session_key, timeout=60 * 60 * 24)
-        def _get_has_reacted_session_key():
+        @cached_as(post_reactions, timeout=60 * 60 * 24)
+        def _get_has_reacted(attribute, value):
             for reaction in post_reactions:
-                if reaction.session_key == request.session.session_key:
-                    return True, reaction.pk, reaction.reaction_score
-            return has_reacted, reaction_id, reacted_score
-
-        @cached_as(post_reactions, extra=request.user, timeout=60 * 60 * 24)
-        def _get_has_reacted_user():
-            for reaction in post_reactions:
-                if reaction.user == request.user:
+                if getattr(reaction, attribute) == value:
                     return True, reaction.pk, reaction.reaction_score
             return has_reacted, reaction_id, reacted_score
 
         if post_reactions:
             if request.session.session_key:
-                has_reacted, reaction_id, reacted_score = _get_has_reacted_session_key()
+                has_reacted, reaction_id, reacted_score = _get_has_reacted("session_key", request.session.session_key)
 
             if request.user.is_authenticated and not has_reacted:
-                has_reacted, reaction_id, reacted_score = _get_has_reacted_user()
+                has_reacted, reaction_id, reacted_score = _get_has_reacted("user", request.user)
 
         return has_reacted, reaction_id, reacted_score
 
@@ -535,7 +513,7 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         ordering = ["title", "created_at"]
 
     def __str__(self):
-        return f"{self.title if self.title else str(self.id)}"
+        return f"{self.title or str(self.id)}"
 
     def save(self, *args, **kwargs):
         created = self._state.adding
@@ -543,9 +521,8 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             self.image = process_image(self.image, self.image_type)
         super().save(*args, **kwargs)
 
-        if created:
-            if self.image_type == "b":
-                create_thumbnails(self)()
+        if created and self.image_type == "b":
+            create_thumbnails(self)()
 
     @cached_property
     def get_board_usage_count(self):
@@ -620,35 +597,33 @@ class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     @cached_property
     def image_tag(self):
         if self.image:
-            return mark_safe(f'<img src="{escape(self.get_small_thumbnail.url)}" />')
+            return format_html('<img src="{}" />', self.get_small_thumbnail.url)
         return ""
 
     image_tag.short_description = "Image"
     image_tag.allow_tags = True
 
 
-class BackgroundImageManager(auto_prefetch.Manager):  # type: ignore
+class BackgroundImageManager(auto_prefetch.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(image_type="b")
 
     def create(self, *args, **kwargs):
-        kwargs.update(
-            {"image_type": "b"}
-        )  # type "b" by default, but adding it here for parity with the other manager(s)
+        kwargs["image_type"] = "b"
         return super().create(*args, **kwargs)
 
 
-class PostImageManager(auto_prefetch.Manager):  # type: ignore
+class PostImageManager(auto_prefetch.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(image_type="p")
 
     def create(self, *args, **kwargs):
-        kwargs.update({"image_type": "p"})
+        kwargs["image_type"] = "p"
         return super().create(*args, **kwargs)
 
 
 class BgImage(Image):
-    objects = BackgroundImageManager()  # type: ignore
+    objects = BackgroundImageManager()
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "background image"
@@ -656,7 +631,7 @@ class BgImage(Image):
 
 
 class PostImage(Image):
-    objects = PostImageManager()  # type: ignore
+    objects = PostImageManager()
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "post image"

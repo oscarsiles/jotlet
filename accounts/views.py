@@ -13,11 +13,9 @@ from django.views import generic
 from django_htmx.http import HttpResponseClientRedirect, HttpResponseClientRefresh
 
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomSignupForm, CustomSocialSignupForm
-from .models import User as JotletUser
 
 
 class JotletAccountDeleteView(LoginRequiredMixin, generic.DeleteView):
-    object: JotletUser
     model = get_user_model()
     success_url = reverse_lazy("boards:index")
     template_name = "accounts/user_delete.html"
@@ -155,8 +153,7 @@ class JotletSocialSignupView(SocialSignupView):
 class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        next_page = self.request.GET.get("next")
-        if next_page:
+        if next_page := self.request.GET.get("next"):
             context["next"] = next_page
         return context
 
@@ -165,18 +162,15 @@ class JotletChangePasswordView(LoginRequiredMixin, PasswordChangeView):
         return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):
-        next_url = self.request.POST.get("next", None)
-        if next_url:
+        if next_url := self.request.POST.get("next", None):
             return next_url
-        else:
-            return reverse_lazy("boards:index")
+        return reverse_lazy("boards:index")
 
 
 class JotletSetPasswordView(PasswordSetView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        next_page = self.request.GET.get("next")
-        if next_page:
+        if next_page := self.request.GET.get("next"):
             context["next"] = next_page
         return context
 
@@ -185,8 +179,6 @@ class JotletSetPasswordView(PasswordSetView):
         return HttpResponseClientRedirect(self.get_success_url())
 
     def get_success_url(self):
-        next_url = self.request.POST.get("next", None)
-        if next_url:
+        if next_url := self.request.POST.get("next", None):
             return next_url
-        else:
-            return reverse_lazy("boards:index")
+        return reverse_lazy("boards:index")

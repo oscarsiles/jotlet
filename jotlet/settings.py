@@ -283,7 +283,7 @@ else:
         MEDIA_ROOT = f"{tempfile.mkdtemp()}/"
         WHITENOISE_AUTOREFRESH = True
     else:
-        MEDIA_ROOT = Path(BASE_DIR) / "media"
+        MEDIA_ROOT = str(Path(BASE_DIR) / "media")
 
 MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=500 if TESTING else 3840)
 MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=500 if TESTING else 2160)
@@ -498,8 +498,8 @@ CSP_FRAME_ANCESTORS = ["'self'"]
 CSP_MANIFEST_SRC = ["'self'", *env.list("CSP_MANIFEST_SRC", default=[])]
 CSP_INCLUDE_NONCE_IN = ["script-src", *env.list("CSP_INCLUDE_NONCE_IN", default=[])]
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", default=TESTING or False)
-CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", default=False if TESTING else False)
+HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", cast=bool, default=False)
+CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", cast=bool, default=False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
     msg = "HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled"
     raise ImproperlyConfigured(msg)

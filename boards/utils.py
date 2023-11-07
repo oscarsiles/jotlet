@@ -1,8 +1,8 @@
-import os
 import random
 import string
 import sys
 from io import BytesIO
+from pathlib import Path
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -17,15 +17,14 @@ def channel_group_send(group_name, message):
 
 
 def get_image_upload_path(image, filename):
-    _, ext = os.path.splitext(filename)
-    file_path = "images/{image_type}/{sub1}/{sub2}/{name}.{ext}".format(
+    ext = Path(filename).suffix
+    return "images/{image_type}/{sub1}/{sub2}/{name}.{ext}".format(
         image_type=image.image_type,
         sub1=image.board.slug if image.image_type == "p" else get_random_string(2),
         sub2=get_random_string(2),
         name=image.id,
         ext=ext.replace(".", ""),
     )
-    return file_path
 
 
 def get_is_moderator(user, board):
@@ -38,58 +37,60 @@ def get_is_moderator(user, board):
 
 
 def get_random_string(length):
-    code = "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
-    return code
+    return "".join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
 
 def post_reaction_send_update_message(post):
-    try:
-        channel_group_send(
-            f"board-{post.topic.board.slug}",
-            {
-                "type": "reaction_updated",
-                "topic_pk": str(post.topic.pk),
-                "post_pk": str(post.pk),
-            },
-        )
-    except Exception:
-        raise Exception(f"Could not send message: reaction_updated for reaction-{post.pk}")
+    channel_group_send(
+        f"board-{post.topic.board.slug}",
+        {
+            "type": "reaction_updated",
+            "topic_pk": str(post.topic.pk),
+            "post_pk": str(post.pk),
+        },
+    )
+
+
+def open_image(image):
+    return PILImage.open(image)
+
+
+def convert_image_format(img, image):
+    if img.format not in ["JPEG", "PNG"]:
+        output_format = "JPEG"
+        name = Path(image.name).stem
+        image.name = f"{name}.jpg"
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        return img, output_format, True
+    return img, img.format, False
+
+
+def resize_image(img, width, height):
+    if img.width > width or img.height > height:
+        output_size = (width, height)
+        img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
+        return img, True
+    return img, False
+
+
+def save_image(img, image, output_format):
+    img_filename = Path(image.name).name
+    buffer = BytesIO()
+    img.save(buffer, format=output_format, quality=80, optimize=True)
+    return InMemoryUploadedFile(buffer, "ImageField", img_filename, output_format, sys.getsizeof(buffer), None)
 
 
 def process_image(image, image_type="b", width=settings.MAX_IMAGE_WIDTH, height=settings.MAX_IMAGE_HEIGHT):
-    process = False
-    # Open the image using Pillow
-    img = PILImage.open(image)
     if image_type == "p":
         width = settings.MAX_POST_IMAGE_WIDTH
         height = settings.MAX_POST_IMAGE_HEIGHT
 
-    if img.format not in ["JPEG", "PNG"]:
-        output_format = "JPEG"
-        name, _ = os.path.splitext(image.name)
-        image.name = name + ".jpg"
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-        process = True
-    else:
-        output_format = img.format
+    img = open_image(image)
+    img, output_format, format_changed = convert_image_format(img, image)
+    img, size_changed = resize_image(img, width, height)
 
-    if img.width > width or img.height > height:
-        process = True
-    else:
-        width = img.width
-        height = img.height
+    if format_changed or size_changed:
+        image = save_image(img, image, output_format)
 
-    if process:
-        # Adapted from https://blog.soards.me/posts/resize-image-on-save-in-django-before-sending-to-amazon-s3/
-        output_size = (width, height)
-        # Create a new resized “thumbnail” version of the image with Pillow
-        img.thumbnail(output_size, PILImage.Resampling.LANCZOS)
-        # Find the file name of the image
-        img_filename = os.path.basename(image.name)
-        # Save the resized image into the buffer, noting the correct file type
-        buffer = BytesIO()
-        img.save(buffer, format=output_format, quality=80, optimize=True)
-        # Save the new resized file
-        image = InMemoryUploadedFile(buffer, "ImageField", img_filename, output_format, sys.getsizeof(buffer), None)
     return image

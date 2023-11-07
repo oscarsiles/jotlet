@@ -1,5 +1,5 @@
 import factory
 
 
-def create_image(type):
-    return factory.Faker("image", image_format=type).evaluate({}, None, {"locale": "en"})
+def create_image(image_format):
+    return factory.Faker("image", image_format=image_format).evaluate({}, None, {"locale": "en"})

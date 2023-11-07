@@ -151,7 +151,6 @@ class UpdatePostView(UserPassesTestMixin, PostFormMixin, generic.UpdateView):
 
 
 class DeletePostView(UserPassesTestMixin, generic.DeleteView):
-    object: Post  # fix mypy error
     model = Post
     board_post = None
     template_name = "boards/post_confirm_delete.html"

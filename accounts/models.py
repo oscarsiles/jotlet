@@ -20,8 +20,8 @@ class User(AbstractUser):
             perm_list = ["add_board"]
             if settings.TESTING:
                 invalidate_model(Permission)
-            for perm in perm_list:
-                perm = Permission.objects.get(content_type__app_label="boards", codename=perm)
+            for perm_str in perm_list:
+                perm = Permission.objects.get(content_type__app_label="boards", codename=perm_str)
                 self.user_permissions.add(perm)
         if not hasattr(self, "profile"):
             UserProfile.objects.create(user=self)

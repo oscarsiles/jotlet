@@ -1,6 +1,6 @@
-import datetime
 import json
 import shutil
+from http import HTTPStatus
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -10,31 +10,31 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
-from django.utils import timezone
 from pytest_django.asserts import assertContains, assertNotContains
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf
 
 from boards.models import REACTION_TYPE, Image, Post
 from boards.routing import websocket_urlpatterns
 from boards.tests.utils import create_image
+from jotlet.utils import offset_date
 
 
 @pytest.fixture(autouse=True)
-def set_user3_board_moderator(board, user3):
+def _set_user3_board_moderator(board, user3):
     board.preferences.moderators.add(user3)
     board.preferences.save()
 
 
 class TestPostCreateView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic):
+    def _setup_method(self, board, topic):
         self.post_create_url = reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": topic.pk})
 
     def test_anonymous_permissions(self, client):
         response = client.get(self.post_create_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         response = client.post(self.post_create_url, data={"content": "Test Message anon"})
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.first().content == "Test Message anon"
 
     def test_replies_permissions_anonymous(self, client, post):
@@ -43,22 +43,22 @@ class TestPostCreateView:
             kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic.pk, "post_pk": post.pk},
         )
         response = client.get(reply_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
 
         post.topic.board.preferences.board_type = "r"
         post.topic.board.preferences.save()
         response = client.get(reply_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
 
         post.topic.board.preferences.allow_guest_replies = True
         post.topic.board.preferences.save()
         response = client.get(reply_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
 
         post.approved = False
         post.save()
         response = client.get(reply_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
 
     def test_replies_permissions_owner(self, client, post, user):
         client.force_login(user)
@@ -67,17 +67,17 @@ class TestPostCreateView:
             kwargs={"slug": post.topic.board.slug, "topic_pk": post.topic.pk, "post_pk": post.pk},
         )
         response = client.get(reply_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
 
         post.topic.board.preferences.board_type = "r"
         post.topic.board.preferences.save()
         response = client.get(reply_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
 
         post.approved = False
         post.save()
         response = client.get(reply_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
 
     def test_reply(self, client, post):
         reply_url = reverse(
@@ -132,12 +132,12 @@ class TestPostCreateView:
 
     @pytest.mark.parametrize("locked_object", ["board", "topic"])
     @pytest.mark.parametrize(
-        "test_user,expected_response_get,expected_response_post",
+        ("test_user", "expected_response_get", "expected_response_post"),
         [
             (None, 302, 302),
-            (lazy_fixture("user2"), 403, 403),
-            (lazy_fixture("user"), 200, 204),
-            (lazy_fixture("user_staff"), 200, 204),
+            (lf("user2"), 403, 403),
+            (lf("user"), 200, 204),
+            (lf("user_staff"), 200, 204),
         ],
     )
     def test_locked(self, client, topic, locked_object, test_user, expected_response_get, expected_response_post):
@@ -156,22 +156,22 @@ class TestPostCreateView:
             data={"content": "Test Post"},
         )
         assert response.status_code == expected_response_post
-        if expected_response_post == 204:
+        if expected_response_post == HTTPStatus.NO_CONTENT:
             assert Post.objects.count() == 1
         else:
             pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
             assert Post.objects.count() == 0
 
     @pytest.mark.parametrize(
-        "allowed_from,allowed_until,expected_response",
+        ("allowed_from", "allowed_until", "expected_response"),
         [
-            (timezone.now() - datetime.timedelta(days=1), None, 204),
-            (None, timezone.now() + datetime.timedelta(days=1), 204),
-            (timezone.now() - datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=1), 204),
-            (timezone.now() - datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=2), 204),
-            (timezone.now() + datetime.timedelta(days=2), timezone.now() + datetime.timedelta(days=1), 204),
-            (timezone.now() + datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=2), 302),
-            (timezone.now() + datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=1), 302),
+            (offset_date(days=-1), None, HTTPStatus.NO_CONTENT),
+            (None, offset_date(days=1), HTTPStatus.NO_CONTENT),
+            (offset_date(days=-1), offset_date(days=1), HTTPStatus.NO_CONTENT),
+            (offset_date(days=-1), offset_date(days=-2), HTTPStatus.NO_CONTENT),
+            (offset_date(days=2), offset_date(days=1), HTTPStatus.NO_CONTENT),
+            (offset_date(days=1), offset_date(days=2), HTTPStatus.FOUND),
+            (offset_date(days=1), offset_date(days=-1), HTTPStatus.FOUND),
         ],
     )
     def test_post_allowed_time(self, client, board, allowed_from, allowed_until, expected_response):
@@ -184,16 +184,16 @@ class TestPostCreateView:
             data={"content": "Test Post"},
         )
         assert response.status_code == expected_response
-        if expected_response == 204:
+        if expected_response == HTTPStatus.NO_CONTENT:
             assert Post.objects.count() == 1
         else:
             assert Post.objects.count() == 0
 
     @pytest.mark.parametrize(
-        "allowed_from,allowed_until",
+        ("allowed_from", "allowed_until"),
         [
-            (timezone.now() + datetime.timedelta(days=1), timezone.now() + datetime.timedelta(days=2)),
-            (timezone.now() + datetime.timedelta(days=1), timezone.now() - datetime.timedelta(days=1)),
+            (offset_date(days=1), offset_date(days=2)),
+            (offset_date(days=1), offset_date(days=1)),
         ],
     )
     def test_post_outside_window(self, client, board, allowed_from, allowed_until):
@@ -204,7 +204,7 @@ class TestPostCreateView:
             self.post_create_url,
             data={"content": "Test Post"},
         )
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
         pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
 
     @pytest.mark.asyncio()
@@ -228,7 +228,7 @@ class TestPostCreateView:
 
 class TestPostUpdateView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post):
+    def _setup_method(self, board, topic, post):
         self.post_updated_url = reverse(
             "boards:post-update", kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk}
         )
@@ -239,50 +239,50 @@ class TestPostUpdateView:
             data={"content": "Test Post anon"},
         )
         post = Post.objects.get(content="Test Post anon")
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert client.session.session_key == post.session_key
         response = client.post(
             reverse("boards:post-update", kwargs={"slug": topic.board.slug, "topic_pk": topic.pk, "pk": post.pk}),
             data={"content": "Test Post anon NEW"},
         )
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.get(pk=post.pk).content == "Test Post anon NEW"
 
     def test_other_user_permissions(self, client, user2):
         client.force_login(user2)
         response = client.get(self.post_updated_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
 
     def test_board_moderator_permissions(self, client, post, user3):
         client.force_login(user3)
         response = client.get(self.post_updated_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         response = client.post(
             self.post_updated_url,
             data={"content": "Test Post NEW"},
         )
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
 
     def test_owner_permissions(self, client, post, user):
         client.force_login(user)
         response = client.get(self.post_updated_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         response = client.post(
             self.post_updated_url,
             data={"content": "Test Post NEW"},
         )
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
 
     @pytest.mark.parametrize(
-        "test_user,expected_response_get,expected_response_post",
+        ("test_user", "expected_response_get", "expected_response_post"),
         [
             (None, 302, 302),
-            (lazy_fixture("user"), 200, 204),  # board owner
-            (lazy_fixture("user2"), 403, 403),  # other user
-            (lazy_fixture("user3"), 200, 204),  # board moderator
-            (lazy_fixture("user_staff"), 200, 204),
+            (lf("user"), HTTPStatus.OK, HTTPStatus.NO_CONTENT),  # board owner
+            (lf("user2"), HTTPStatus.FORBIDDEN, HTTPStatus.FORBIDDEN),  # other user
+            (lf("user3"), HTTPStatus.OK, HTTPStatus.NO_CONTENT),  # board moderator
+            (lf("user_staff"), HTTPStatus.OK, HTTPStatus.NO_CONTENT),
         ],
     )
     def test_editing_forbidden(self, client, post, topic, test_user, expected_response_get, expected_response_post):
@@ -312,8 +312,8 @@ class TestPostUpdateView:
             post_updated_url,
             data={"content": "Test Post NEW"},
         )
-        if expected_response_post == 204:
-            assert response.status_code == 204
+        if expected_response_post == HTTPStatus.NO_CONTENT:
+            assert response.status_code == HTTPStatus.NO_CONTENT
             assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
         else:
             assert Post.objects.get(pk=post.pk).content == original_content
@@ -321,18 +321,18 @@ class TestPostUpdateView:
     @pytest.mark.parametrize(
         "locked_object",
         [
-            lazy_fixture("board"),
-            lazy_fixture("topic"),
+            lf("board"),
+            lf("topic"),
         ],
     )
     @pytest.mark.parametrize(
-        "test_user,expected_response_get,expected_response_post",
+        ("test_user", "expected_response_get", "expected_response_post"),
         [
             (None, 302, 302),
-            (lazy_fixture("user2"), 403, 403),
-            (lazy_fixture("user"), 200, 204),  # owner
-            (lazy_fixture("user3"), 200, 204),  # moderator
-            (lazy_fixture("user_staff"), 200, 204),
+            (lf("user2"), 403, 403),
+            (lf("user"), 200, 204),  # owner
+            (lf("user3"), 200, 204),  # moderator
+            (lf("user_staff"), 200, 204),
         ],
     )
     def test_locked(self, client, post, locked_object, test_user, expected_response_get, expected_response_post):
@@ -356,7 +356,7 @@ class TestPostUpdateView:
             data={"content": "Test Post NEW"},
         )
         assert response.status_code == expected_response_post
-        if expected_response_post == 204:
+        if expected_response_post == HTTPStatus.NO_CONTENT:
             assert Post.objects.get(pk=post.pk).content == "Test Post NEW"
         else:
             assert Post.objects.get(pk=post.pk).content == original_content
@@ -380,21 +380,21 @@ class TestPostUpdateView:
 
 class TestPostDeleteView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post):
+    def _setup_method(self, board, topic, post):
         self.post_deleted_url = reverse(
             "boards:post-delete", kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk}
         )
 
     def test_anonymous_permissions(self, client, topic):
         response = client.post(self.post_deleted_url)
-        assert response.status_code == 302
+        assert response.status_code == HTTPStatus.FOUND
         assert Post.objects.count() == 1
         client.post(
             reverse("boards:post-create", kwargs={"slug": topic.board.slug, "topic_pk": topic.pk}),
             data={"content": "Test Post anon"},
         )
         post2 = Post.objects.get(content="Test Post anon")
-        assert Post.objects.count() == 2
+        assert Post.objects.count() == 2  # noqa: PLR2004
         client.post(
             reverse("boards:post-delete", kwargs={"slug": topic.board.slug, "topic_pk": topic.pk, "pk": post2.pk})
         )
@@ -403,19 +403,19 @@ class TestPostDeleteView:
     def test_other_user_permissions(self, client, user2):
         client.force_login(user2)
         response = client.post(self.post_deleted_url)
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert Post.objects.count() == 1
 
     def test_board_moderator_permissions(self, client, user3):
         client.force_login(user3)
         response = client.post(self.post_deleted_url)
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.count() == 0
 
     def test_owner_permissions(self, client, user):
         client.force_login(user)
         response = client.post(self.post_deleted_url)
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.count() == 0
 
     @pytest.mark.asyncio()
@@ -438,52 +438,59 @@ class TestPostDeleteView:
 #  TODO: test post approvals by topic/board
 class TestApprovePostsView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, topic_factory, post_factory):
+    def _setup_method(self, board, topic, topic_factory, post_factory):
         board.preferences.require_post_approval = True
         board.preferences.save()
-        self.topic_posts_approve_url = reverse(
-            "boards:topic-posts-approve", kwargs={"slug": board.slug, "topic_pk": topic.pk}
-        )
-        self.board_posts_approve_url = reverse("boards:board-posts-approve", kwargs={"slug": board.slug})
         topic2 = topic_factory(board=board)
-        post_factory.create_batch(10, topic=topic, approved=False)
-        post_factory.create_batch(10, topic=topic2, approved=False)
+
+        self.first_batch_count = 10
+        self.second_batch_count = 20
+        self.total_posts = self.first_batch_count + self.second_batch_count
+        post_factory.create_batch(self.first_batch_count, topic=topic, approved=False)
+        post_factory.create_batch(self.second_batch_count, topic=topic2, approved=False)
+
+    @pytest.fixture()
+    def board_posts_approve_url(self, board):
+        return reverse("boards:board-posts-approve", kwargs={"slug": board.slug})
+
+    @pytest.fixture()
+    def topic_posts_approve_url(self, board, topic):
+        return reverse("boards:topic-posts-approve", kwargs={"slug": board.slug, "topic_pk": topic.pk})
 
     @pytest.mark.parametrize(
-        "test_user,expected_response",
+        ("test_user", "expected_response"),
         [
-            (None, 302),
-            (lazy_fixture("user2"), 403),
-            (lazy_fixture("user"), 200),
-            (lazy_fixture("user_staff"), 200),
+            (None, HTTPStatus.FOUND),
+            (lf("user2"), HTTPStatus.FORBIDDEN),
+            (lf("user"), HTTPStatus.OK),
+            (lf("user_staff"), HTTPStatus.OK),
         ],
     )
-    def test_approve_permissions(self, client, test_user, expected_response):
+    @pytest.mark.parametrize("url", [lf("topic_posts_approve_url"), lf("board_posts_approve_url")])
+    def test_approve_permissions(self, client, test_user, expected_response, url):
         if test_user:
             client.force_login(test_user)
-        response = client.get(self.topic_posts_approve_url)
-        assert response.status_code == expected_response
-        response = client.get(self.board_posts_approve_url)
+        response = client.get(url)
         assert response.status_code == expected_response
 
-    def test_topic_posts_approve(self, client, board, topic, user):
+    def test_topic_posts_approve(self, client, board, topic, user, topic_posts_approve_url):
         client.force_login(user)
-        assert Post.objects.filter(topic__board=board, approved=False).count() == 20
-        response = client.post(self.topic_posts_approve_url)
-        assert response.status_code == 204
-        assert Post.objects.filter(topic=topic, approved=True).count() == 10
-        assert Post.objects.filter(topic__board=board, approved=False).count() == 10
+        assert Post.objects.filter(topic__board=board, approved=False).count() == self.total_posts
+        response = client.post(topic_posts_approve_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Post.objects.filter(topic=topic, approved=True).count() == self.first_batch_count
+        assert Post.objects.filter(topic__board=board, approved=False).count() == self.second_batch_count
 
-    def test_board_posts_approve(self, client, board, user):
+    def test_board_posts_approve(self, client, board, user, board_posts_approve_url):
         client.force_login(user)
-        assert Post.objects.filter(topic__board=board, approved=False).count() == 20
-        response = client.post(self.board_posts_approve_url)
-        assert response.status_code == 204
-        assert Post.objects.filter(topic__board=board, approved=True).count() == 20
+        assert Post.objects.filter(topic__board=board, approved=False).count() == self.total_posts
+        response = client.post(board_posts_approve_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
+        assert Post.objects.filter(topic__board=board, approved=True).count() == self.total_posts
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
-    async def test_topic_posts_approved_websocket_message(self, client, board, user):
+    async def test_topic_posts_approved_websocket_message(self, client, board, user, topic_posts_approve_url):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, _ = await communicator.connect()
@@ -491,14 +498,14 @@ class TestApprovePostsView:
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
-        await sync_to_async(client.post)(self.topic_posts_approve_url)
+        await sync_to_async(client.post)(topic_posts_approve_url)
         message = await communicator.receive_from()
         assert "topic_updated" in message
         await communicator.disconnect()
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
-    async def test_board_posts_approved_websocket_message(self, client, board, user):
+    async def test_board_posts_approved_websocket_message(self, client, board, user, board_posts_approve_url):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, _ = await communicator.connect()
@@ -506,7 +513,7 @@ class TestApprovePostsView:
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
-        await sync_to_async(client.post)(self.board_posts_approve_url)
+        await sync_to_async(client.post)(board_posts_approve_url)
         message = await communicator.receive_from()
         assert "board_updated" in message
         await communicator.disconnect()
@@ -514,50 +521,57 @@ class TestApprovePostsView:
 
 class TestDeletePostsView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, topic_factory, post_factory):
-        self.topic_posts_delete_url = reverse(
-            "boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.pk}
-        )
-        self.board_posts_delete_url = reverse("boards:board-posts-delete", kwargs={"slug": board.slug})
+    def _setup_method(self, board, topic, topic_factory, post_factory):
         topic2 = topic_factory(board=board)
-        post_factory.create_batch(10, topic=topic)
-        post_factory.create_batch(10, topic=topic2)
+
+        self.first_topic_count = 10
+        self.second_topic_count = 20
+        self.total_posts = self.first_topic_count + self.second_topic_count
+        post_factory.create_batch(self.first_topic_count, topic=topic)
+        post_factory.create_batch(self.second_topic_count, topic=topic2)
+
+    @pytest.fixture()
+    def board_posts_delete_url(self, board):
+        return reverse("boards:board-posts-delete", kwargs={"slug": board.slug})
+
+    @pytest.fixture()
+    def topic_posts_delete_url(self, board, topic):
+        return reverse("boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.pk})
 
     @pytest.mark.parametrize(
-        "test_user,expected_response",
+        ("test_user", "expected_response"),
         [
-            (None, 302),
-            (lazy_fixture("user2"), 403),
-            (lazy_fixture("user"), 200),
-            (lazy_fixture("user_staff"), 200),
+            (None, HTTPStatus.FOUND),
+            (lf("user2"), HTTPStatus.FORBIDDEN),
+            (lf("user"), HTTPStatus.OK),
+            (lf("user_staff"), HTTPStatus.OK),
         ],
     )
-    def test_delete_permissions(self, client, test_user, expected_response):
+    @pytest.mark.parametrize("url", [lf("topic_posts_delete_url"), lf("board_posts_delete_url")])
+    def test_delete_permissions(self, client, test_user, expected_response, url):
         if test_user:
             client.force_login(test_user)
-        response = client.get(self.topic_posts_delete_url)
-        assert response.status_code == expected_response
-        response = client.get(self.board_posts_delete_url)
+        response = client.get(url)
         assert response.status_code == expected_response
 
-    def test_topic_posts_delete(self, client, board, topic, user):
+    def test_topic_posts_delete(self, client, board, topic, user, topic_posts_delete_url):
         client.force_login(user)
-        assert Post.objects.filter(topic__board=board).count() == 20
-        response = client.post(self.topic_posts_delete_url)
-        assert response.status_code == 204
+        assert Post.objects.filter(topic__board=board).count() == self.total_posts
+        response = client.post(topic_posts_delete_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.filter(topic=topic).count() == 0
-        assert Post.objects.filter(topic__board=board).count() == 10
+        assert Post.objects.filter(topic__board=board).count() == self.second_topic_count
 
-    def test_board_posts_delete(self, client, board, user):
+    def test_board_posts_delete(self, client, board, user, board_posts_delete_url):
         client.force_login(user)
-        assert Post.objects.filter(topic__board=board).count() == 20
-        response = client.post(self.board_posts_delete_url)
-        assert response.status_code == 204
+        assert Post.objects.filter(topic__board=board).count() == self.total_posts
+        response = client.post(board_posts_delete_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.filter(topic__board=board).count() == 0
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
-    async def test_topic_posts_deleted_websocket_message(self, client, board, topic, user):
+    async def test_topic_posts_deleted_websocket_message(self, client, board, topic, user, topic_posts_delete_url):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         post_count = await Post.objects.filter(topic=topic).acount()
@@ -566,7 +580,7 @@ class TestDeletePostsView:
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
-        await sync_to_async(client.post)(self.topic_posts_delete_url)
+        await sync_to_async(client.post)(topic_posts_delete_url)
         for _ in range(post_count):
             message = await communicator.receive_from()
             assert "post_deleted" in message
@@ -574,7 +588,7 @@ class TestDeletePostsView:
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
-    async def test_board_posts_deleted_websocket_message(self, client, board, user):
+    async def test_board_posts_deleted_websocket_message(self, client, board, user, board_posts_delete_url):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         post_count = await Post.objects.filter(topic__board=board).acount()
@@ -583,7 +597,7 @@ class TestDeletePostsView:
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
-        await sync_to_async(client.post)(self.board_posts_delete_url)
+        await sync_to_async(client.post)(board_posts_delete_url)
         for _ in range(post_count):
             message = await communicator.receive_from()
             assert "post_deleted" in message
@@ -592,7 +606,7 @@ class TestDeletePostsView:
 
 class TestPostFetchView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post):
+    def _setup_method(self, board, topic, post):
         board.preferences.require_post_approval = True
         board.preferences.save()
         post.approved = False
@@ -605,7 +619,7 @@ class TestPostFetchView:
         board.preferences.require_post_approval = False
         board.preferences.save()
         response = client.get(self.post_fetch_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.context["post"] == post
         assertContains(response, post.content, html=True)
 
@@ -615,7 +629,7 @@ class TestPostFetchView:
         post.approved = True
         post.save()
         response = client.get(self.post_fetch_url)
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.context["post"] == post
         assertContains(response, post.content, html=True)
 
@@ -629,7 +643,7 @@ class TestPostFetchView:
             reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": post.topic.pk}),
             data={"content": "Test Post anon"},
         )
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         post = Post.objects.get(content="Test Post anon")
         response = client.get(
             reverse("boards:post-fetch", kwargs={"slug": board.slug, "topic_pk": post.topic.pk, "pk": post.pk})
@@ -649,7 +663,7 @@ class TestPostFetchView:
             reverse("boards:post-create", kwargs={"slug": board.slug, "topic_pk": post.topic.pk}),
             data={"content": "Test Post anon"},
         )
-        assert response.status_code == 204
+        assert response.status_code == HTTPStatus.NO_CONTENT
         post = Post.objects.get(content="Test Post anon")
         response = client.get(
             reverse("boards:post-fetch", kwargs={"slug": board.slug, "topic_pk": post.topic.pk, "pk": post.pk})
@@ -676,122 +690,125 @@ class TestPostFetchView:
 
 class TestPostFooterFetchView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post, user, reaction_factory):
+    def _setup_method(self, board, topic, post, user, reaction_factory):
         board.preferences.reaction_type = "l"
         board.preferences.save()
-        for type in REACTION_TYPE[1:]:
-            reaction_factory(post=post, reaction_type=type[0], user=user)
-        self.post_footer_fetch_url = reverse(
+        for reaction_type in REACTION_TYPE[1:]:
+            reaction_factory(post=post, reaction_type=reaction_type[0], user=user)
+
+    @pytest.fixture()
+    def post_footer_fetch_url(self, board, topic, post):
+        return reverse(
             "boards:post-footer-fetch",
             kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk},
         )
 
-    def test_post_footer_fetch_anonymous(self, client, post):
-        for _type in REACTION_TYPE[1:]:
-            type = _type[0]
-            if type == "l":
-                icon = "bi-heart"
-            elif type == "v":
-                icon = "bi-hand-thumbs-up"
-            elif type == "s":
-                icon = "bi-star"
+    def set_reaction_icon(self, reaction_type):
+        icon = "bi-heart"  # default "l"
+        if reaction_type == "v":
+            icon = "bi-hand-thumbs-up"
+        elif reaction_type == "s":
+            icon = "bi-star"
+        return icon
 
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
-            post.approved = False
-            post.save()
+    @pytest.mark.parametrize("reaction_type", [reaction[0] for reaction in REACTION_TYPE[1:]])
+    def test_post_footer_fetch_anonymous(self, client, post, reaction_type, post_footer_fetch_url):
+        icon = self.set_reaction_icon(reaction_type)
 
-            response = client.get(self.post_footer_fetch_url)
-            assert response.status_code == 200
-            assert response.context["post"] == post
-            assertNotContains(response, icon)
+        post.topic.board.preferences.reaction_type = reaction_type
+        post.topic.board.preferences.save()
+        post.approved = False
+        post.save()
 
-            post.approved = True
-            post.save()
-            response = client.get(self.post_footer_fetch_url)
-            assert response.status_code == 200
-            assert response.context["post"] == post
-            assertContains(response, icon)
+        response = client.get(post_footer_fetch_url)
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["post"] == post
+        assertNotContains(response, icon)
 
-    def test_post_footer_fetch_moderator(self, client, post, user3):
+        post.approved = True
+        post.save()
+        response = client.get(post_footer_fetch_url)
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["post"] == post
+        assertContains(response, icon)
+
+    @pytest.mark.parametrize("reaction_type", [reaction[0] for reaction in REACTION_TYPE[1:]])
+    def test_post_footer_fetch_moderator(self, client, post, user3, reaction_type, post_footer_fetch_url):
         client.force_login(user3)
-        for _type in REACTION_TYPE[1:]:
-            type = _type[0]
-            if type == "l":
-                icon = "bi-heart"
-            elif type == "v":
-                icon = "bi-hand-thumbs-up"
-            elif type == "s":
-                icon = "bi-star"
 
-            post.topic.board.preferences.reaction_type = type
-            post.topic.board.preferences.save()
-            post.approved = False
-            post.save()
+        icon = self.set_reaction_icon(reaction_type)
 
-            response = client.get(self.post_footer_fetch_url)
-            assert response.status_code == 200
-            assert response.context["post"] == post
-            assertContains(response, icon)
+        post.topic.board.preferences.reaction_type = reaction_type
+        post.topic.board.preferences.save()
+        post.approved = False
+        post.save()
 
-            post.approved = True
-            post.save()
-            response = client.get(self.post_footer_fetch_url)
-            assert response.status_code == 200
-            assert response.context["post"] == post
-            assertContains(response, icon)
+        response = client.get(post_footer_fetch_url)
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["post"] == post
+        assertContains(response, icon)
+
+        post.approved = True
+        post.save()
+        response = client.get(post_footer_fetch_url)
+        assert response.status_code == HTTPStatus.OK
+        assert response.context["post"] == post
+        assertContains(response, icon)
 
 
 class TestPostToggleApprovalView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board, topic, post):
+    def _setup_method(self, board, topic, post):
         board.preferences.require_post_approval = True
         board.preferences.save()
         post.approved = False
         post.save()
-        self.post_approval_url = reverse(
+
+    @pytest.fixture()
+    def post_approval_url(self, board, topic, post):
+        return reverse(
             "boards:post-toggle-approval",
             kwargs={"slug": board.slug, "topic_pk": topic.pk, "pk": post.pk},
         )
 
-    def test_post_toggle_approval_anonymous(self, client, post):
+    def test_post_toggle_approval_anonymous(self, client, post, post_approval_url):
         assert not post.approved
-        response = client.post(self.post_approval_url)
-        assert response.status_code == 302
+        response = client.post(post_approval_url)
+        assert response.status_code == HTTPStatus.FOUND
         post.refresh_from_db()
         assert not post.approved
 
-    def test_post_toggle_approval_other_user(self, client, post, user2):
+    def test_post_toggle_approval_other_user(self, client, post, user2, post_approval_url):
         client.force_login(user2)
         assert not post.approved
-        response = client.post(self.post_approval_url)
-        assert response.status_code == 403
+        response = client.post(post_approval_url)
+        assert response.status_code == HTTPStatus.FORBIDDEN
         post.refresh_from_db()
         assert not post.approved
 
     @pytest.mark.parametrize(
         "test_user",
         [
-            lazy_fixture("user"),
-            lazy_fixture("user3"),
-            lazy_fixture("user_staff"),
+            lf("user"),
+            lf("user3"),
+            lf("user_staff"),
         ],
     )
-    def test_post_toggle_approval_authorized_user(self, client, post, test_user):
+    def test_post_toggle_approval_authorized_user(self, client, post, test_user, post_approval_url):
         client.force_login(test_user)
         assert not post.approved
-        response = client.post(self.post_approval_url)
-        assert response.status_code == 204
+        response = client.post(post_approval_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
         post.refresh_from_db()
         assert post.approved
-        response = client.post(self.post_approval_url)
-        assert response.status_code == 204
+        response = client.post(post_approval_url)
+        assert response.status_code == HTTPStatus.NO_CONTENT
         post.refresh_from_db()
         assert not post.approved
 
     @pytest.mark.asyncio()
     @pytest.mark.django_db(transaction=True)
-    async def test_post_toggle_websocket_message(self, client, board, post, user):
+    async def test_post_toggle_websocket_message(self, client, board, post, user, post_approval_url):
         application = URLRouter(websocket_urlpatterns)
         communicator = WebsocketCommunicator(application, f"/ws/boards/{board.slug}/")
         connected, _ = await communicator.connect()
@@ -799,11 +816,11 @@ class TestPostToggleApprovalView:
         await sync_to_async(client.force_login)(user)
         message = await communicator.receive_from()
         assert "session_connected" in message
-        await sync_to_async(client.post)(self.post_approval_url)
+        await sync_to_async(client.post)(post_approval_url)
         message = await communicator.receive_from()
         assert "post_updated" in message
         assert f'"post_pk": "{post.pk!s}"' in message
-        await sync_to_async(client.post)(self.post_approval_url)
+        await sync_to_async(client.post)(post_approval_url)
         message = await communicator.receive_from()
         assert "post_updated" in message
         assert f'"post_pk": "{post.pk!s}"' in message
@@ -812,64 +829,73 @@ class TestPostToggleApprovalView:
 
 class TestPostImageUploadView:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, board):
+    def _setup_method(self, board):
         board.preferences.allow_image_uploads = True
         board.preferences.save()
-        self.upload_url = reverse("boards:post-image-upload", kwargs={"slug": board.slug})
+
+    @pytest.fixture()
+    def upload_url(self, board):
+        return reverse("boards:post-image-upload", kwargs={"slug": board.slug})
 
     @classmethod
     def teardown_class(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
+    def post_image_and_assert(self, client, upload_url, image_type, test_user, expected_response_post):
+        response = client.post(
+            upload_url,
+            {
+                "image": SimpleUploadedFile(
+                    f"{test_user}.png",
+                    create_image(image_type.split("/")[1]),
+                    content_type=image_type,
+                )
+            },
+        )
+        assert response.status_code == expected_response_post
+        if response.status_code != HTTPStatus.OK:
+            assert Image.objects.count() == self.expected_image_count
+        else:
+            image = Image.objects.order_by("created_at").last()
+            data = json.loads(response.content)
+            assert data["data"]["filePath"] == image.image.url
+
     @pytest.mark.parametrize(
-        "test_user,expected_response_get,expected_response_post",
+        ("test_user", "expected_response_get", "expected_response_post"),
         [
-            (None, 302, 302),
-            (lazy_fixture("user2"), 403, 403),
-            (lazy_fixture("user"), 405, 200),
-            (lazy_fixture("user_staff"), 405, 200),
+            (None, HTTPStatus.FOUND, HTTPStatus.FOUND),
+            (lf("user2"), HTTPStatus.FORBIDDEN, HTTPStatus.FORBIDDEN),
+            (lf("user"), HTTPStatus.METHOD_NOT_ALLOWED, HTTPStatus.OK),
+            (lf("user_staff"), HTTPStatus.METHOD_NOT_ALLOWED, HTTPStatus.OK),
         ],
     )
-    def test_permissions(self, client, board, test_user, expected_response_get, expected_response_post):
+    @pytest.mark.parametrize("image_type", ["image/png", "image/jpeg", "image/bmp", "image/webp"])
+    def test_permissions(
+        self, client, board, test_user, expected_response_get, expected_response_post, upload_url, image_type
+    ):
         if test_user is not None:
             client.force_login(test_user)
-        response = client.get(self.upload_url)
+        response = client.get(upload_url)
         assert response.status_code == expected_response_get
 
-        valid_image_types = ["image/png", "image/jpeg", "image/bmp", "image/webp"]
-        for image_type in valid_image_types:
-            response = client.post(
-                self.upload_url,
-                {
-                    "image": SimpleUploadedFile(
-                        f"{test_user}.png",
-                        create_image(image_type.split("/")[1]),
-                        content_type=image_type,
-                    )
-                },
-            )
-            assert response.status_code == expected_response_post
-            if response.status_code != 200:
-                assert Image.objects.count() == 0
-            else:
-                image = Image.objects.order_by("created_at").last()
-                data = json.loads(response.content)
-                assert data["data"]["filePath"] == image.image.url
+        self.expected_image_count = 0
+        self.post_image_and_assert(client, upload_url, image_type, test_user, expected_response_post)
+        if expected_response_post == HTTPStatus.OK:
+            self.expected_image_count = 1
 
         board.preferences.allow_image_uploads = False
         board.preferences.save()
 
-        response = client.post(self.upload_url)
-        if test_user is not None:
-            assert response.status_code == 403
-        else:
-            assert response.status_code == 302
+        self.post_image_and_assert(
+            client, upload_url, "image/png", test_user, HTTPStatus.FORBIDDEN if test_user else HTTPStatus.FOUND
+        )
 
-    def test_upload_image_over_max_count(self, client, user_staff):
+    def test_upload_image_over_max_count(self, client, user_staff, upload_url):
         client.force_login(user_staff)
+        # sourcery skip: no-loop-in-tests
         for i in range(settings.MAX_POST_IMAGE_COUNT + 1):
             response = client.post(
-                self.upload_url,
+                upload_url,
                 {"image": SimpleUploadedFile(f"test{i}.png", create_image("png"), content_type="image/png")},
             )
             data = json.loads(response.content)
@@ -878,10 +904,10 @@ class TestPostImageUploadView:
             else:
                 assert data["error"] == "Board image quota exceeded"
 
-    def test_upload_invalid_image(self, client, user_staff):
+    def test_upload_invalid_image(self, client, user_staff, upload_url):
         client.force_login(user_staff)
         response = client.post(
-            self.upload_url,
+            upload_url,
             {"image": SimpleUploadedFile("test.avif", create_image("avif"), content_type="image/avif")},
         )
         data = json.loads(response.content)

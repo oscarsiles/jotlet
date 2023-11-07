@@ -26,7 +26,7 @@ class TestBoardPreferencesForm:
     def test_board_preferences_form_valid(self, board, user):
         user.username = "test_user"
         user.save()
-        form_data = BOARD_PREFERENCES_FORM_DATA
+        form_data = BOARD_PREFERENCES_FORM_DATA.copy()
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         assert form.is_valid()
         assert form.helper.attrs["hx-post"] == f"/boards/{board.slug}/preferences/"
@@ -41,21 +41,27 @@ class TestBoardPreferencesForm:
         assert board.preferences.moderators.all()[0] == user
         assert board.preferences.reaction_type == form_data.get("reaction_type")
 
-    def test_board_preferences_form_approve_all(self, board, topic, post_factory):
-        form_data = BOARD_PREFERENCES_FORM_DATA
-        form_data["require_post_approval"] = True
+    def create_and_save_form(self, form_data, board):
         form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
         assert form.is_valid()
         form.save()
-        assert board.preferences.require_post_approval is True
-        post_factory.create_batch(5, topic=topic, approved=False)
 
-        assert Post.objects.filter(approved=True).count() == 0
+    def assert_approved_posts_count(self, expected_count):
+        assert Post.objects.filter(approved=True).count() == expected_count
+
+    def test_board_preferences_form_approve_all(self, board, topic, post_factory):
+        form_data = BOARD_PREFERENCES_FORM_DATA.copy()
+        form_data["require_post_approval"] = True
+        self.create_and_save_form(form_data, board)
+        assert board.preferences.require_post_approval is True
+
+        batch_count = 5
+        post_factory.create_batch(batch_count, topic=topic, approved=False)
+
+        self.assert_approved_posts_count(0)
         form_data["require_post_approval"] = False
-        form = BoardPreferencesForm(data=form_data, board=board, instance=board.preferences)
-        assert form.is_valid()
-        form.save()
-        assert Post.objects.filter(approved=True).count() == 5
+        self.create_and_save_form(form_data, board)
+        self.assert_approved_posts_count(batch_count)
 
     def test_board_preferences_form_invalid(self, board):
         form_data = {
@@ -71,47 +77,35 @@ class TestBoardPreferencesForm:
 
 
 class TestBoardSearchForm:
+    def assert_search_form_valid(self, form_data, board):
+        form = BoardSearchForm(data=form_data)
+        assert form.is_valid()
+        assert form.cleaned_data["board_slug"] == board.slug
+
     def test_search_boards_form_valid(self, board):
-        form_data = {
-            "board_slug": f"{board.slug}",
-        }
-        form = BoardSearchForm(data=form_data)
-        assert form.is_valid()
+        form_data = {"board_slug": f"{board.slug}"}
+        self.assert_search_form_valid(form_data, board)
 
-    def test_search_clean_board_slug(self, board):
-        board.slug = "123456ab"
-        board.save()
-        form_data = {
-            "board_slug": " 12 34-56-ab",
-        }
-        form = BoardSearchForm(data=form_data)
-        assert form.is_valid()
-        assert form.cleaned_data["board_slug"] == "123456ab"
-
-    def test_search_clean_board_slug_uppercase(self, board):
-        board.slug = "123456ab"
-        board.save()
-        form_data = {
-            "board_slug": " 12 34-56-AB",
-        }
-        form = BoardSearchForm(data=form_data)
-        assert form.is_valid()
-        assert form.cleaned_data["board_slug"] == "123456ab"
-
-    def test_search_boards_form_invalid(self):
-        form_data = {
-            "board_slug": "x",
-        }
+    def assert_search_form_invalid(self, form_data, error_message):
         form = BoardSearchForm(data=form_data)
         assert not form.is_valid()
-        assert form.errors["board_slug"] == ["ID should be 6 or 8 letters and/or digits."]
+        assert form.errors["board_slug"] == [error_message]
+
+    @pytest.mark.parametrize("search_slug", [" 12 34-56-ab", " 12 34-56-AB"])
+    def test_search_clean_board_slug(self, board, search_slug):
+        board.slug = "123456ab"
+        board.save()
+        form_data = {"board_slug": search_slug}
+        self.assert_search_form_valid(form_data, board)
+
+    def test_search_boards_form_invalid(self):
+        form_data = {"board_slug": "x"}
+        self.assert_search_form_invalid(form_data, "ID should be 6 or 8 letters and/or digits.")
 
     def test_search_boards_form_not_exist(self, board):
         test_slug = "123456ab" if board.slug != "123456ab" else "123456cd"
         form_data = {"board_slug": test_slug}
-        form = BoardSearchForm(data=form_data)
-        assert not form.is_valid()
-        assert form.errors["board_slug"] == ["Board does not exist."]
+        self.assert_search_form_invalid(form_data, "Board does not exist.")
 
 
 class TestPostCreateForm:
@@ -143,19 +137,29 @@ class TestPostCreateForm:
                 form.changed_data.append("additional_data")
 
         is_form_valid = form.is_valid()
-        is_text_and_data_none = text is None and json_data is None
+
         if is_additional_data_allowed:
-            if is_text_and_data_none:
-                assert not is_form_valid
-                if data_type == "c":
-                    assert form.non_field_errors()[0] == "Content and molecule cannot be empty."
-                else:
-                    assert form.non_field_errors()[0] == "Content and additional data cannot be empty."
-            else:
-                assert is_form_valid
-                if data_type in ["m", "c"] and not is_blank_data:
-                    assert form.cleaned_data["additional_data"] == json.loads(json_data)
-        elif text is None:
+            self._test_additional_data_allowed(form, is_form_valid, text, json_data, data_type, is_blank_data)
+        else:
+            self._test_additional_data_not_allowed(form, is_form_valid, text)
+
+    def _test_additional_data_allowed(self, form, is_form_valid, text, json_data, data_type, is_blank_data):
+        is_text_and_data_none = text is None and json_data is None
+        if is_text_and_data_none:
+            assert not is_form_valid
+            expected_error = (
+                "Content and molecule cannot be empty."
+                if data_type == "c"
+                else "Content and additional data cannot be empty."
+            )
+            assert form.non_field_errors()[0] == expected_error
+        else:
+            assert is_form_valid
+            if data_type in ["m", "c"] and not is_blank_data:
+                assert form.cleaned_data["additional_data"] == json.loads(json_data)
+
+    def _test_additional_data_not_allowed(self, form, is_form_valid, text):
+        if text is None:
             assert not is_form_valid
             assert form.errors["content"] == ["This field is required."]
         else:

@@ -1,3 +1,5 @@
+import contextlib
+
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.utils import perform_login
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
@@ -14,8 +16,8 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         # Override with setting, otherwise default to super.
         return getattr(settings, "ACCOUNT_ALLOW_SIGNUPS", allow_signups)
 
-    def save_user(self, request, user, form, commit=True):
-        user = super().save_user(request, user, form, commit)
+    def save_user(self, request, user, form):
+        user = super().save_user(request, user, form)
         user.profile.optin_newsletter = form.cleaned_data["optin_newsletter"]
         user.profile.save(update_fields=["optin_newsletter"])
         return user
@@ -35,12 +37,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user = sociallogin.user
         if user.id:
             return
-        try:
+        with contextlib.suppress(get_user_model().DoesNotExist):
             user = get_user_model().objects.get(email__iexact=user.email)
             sociallogin.state["process"] = "connect"
             perform_login(request, user, "none")
-        except get_user_model().DoesNotExist:
-            pass
 
     def populate_user(self, request, sociallogin, data):
         if sociallogin.account.provider == "microsoft":

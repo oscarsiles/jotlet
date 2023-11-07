@@ -1,11 +1,13 @@
 from http import HTTPStatus
 
+import pytest
 from allauth.core import context
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.test import override_settings
 from django.urls import reverse
+from pytest_lazy_fixtures import lf
 
 from accounts.views import JotletLoginView
 from jotlet.tests.utils import create_session
@@ -16,36 +18,24 @@ HCAPTCHA_TEST_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001"
 
 
 class TestJotletAccountDeleteView:
-    def test_delete_anonymous(self, client):
+    @pytest.mark.parametrize(
+        ("test_user", "expected_redirect", "expected_exists"),
+        [
+            (None, f"{reverse("account_login")}?next={reverse("account_delete")}", False),
+            (lf("user"), reverse("boards:index"), False),
+            (lf("user_staff"), reverse("account_profile"), True),
+            (lf("user_superuser"), reverse("account_profile"), True),
+        ],
+    )
+    def test_delete_user(self, client, test_user, expected_redirect, expected_exists):
+        if test_user:
+            client.login(username=test_user, password=USER_TEST_PASSWORD)
         response = client.get(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.FOUND
-
-    def test_delete_user(self, client, user):
-        client.login(username=user.username, password=USER_TEST_PASSWORD)
-        response = client.get(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK if test_user else HTTPStatus.FOUND
         response = client.post(reverse("account_delete"))
         assert response.status_code == HTTPStatus.FOUND
-        assert response.url == reverse("boards:index")
-        assert not get_user_model().objects.filter(username=user.username).exists()
-
-    def test_delete_staff(self, client, user_staff):
-        client.login(username=user_staff.username, password=USER_TEST_PASSWORD)
-        response = client.get(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.OK
-        response = client.post(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.url == reverse("account_profile")
-        assert get_user_model().objects.filter(username=user_staff.username).exists()
-
-    def test_delete_superuser(self, client, user_superuser):
-        client.login(username=user_superuser.username, password=USER_TEST_PASSWORD)
-        response = client.get(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.OK
-        response = client.post(reverse("account_delete"))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.url == reverse("account_profile")
-        assert get_user_model().objects.filter(username=user_superuser.username).exists()
+        assert response.url == expected_redirect
+        assert get_user_model().objects.filter(username=test_user).exists() == expected_exists
 
 
 class TestJotletLoginView:
@@ -77,6 +67,7 @@ class TestJotletLoginView:
         assert response.status_code == HTTPStatus.OK
         assert response.headers["HX-Redirect"] == reverse(settings.LOGIN_REDIRECT_URL)
 
+    @override_settings(HCAPTCHA_ENABLED=True)
     def test_hcaptcha_fail(self, client, user):
         response = client.post(
             reverse("account_login"),
@@ -180,24 +171,17 @@ class TestJotletProfileView:
 
 
 class TestJotletProfileEditView:
-    def test_toggle_optin_newsletter(self, client, user):
+    @pytest.mark.parametrize("optin_newsletter", [True, False])
+    def test_toggle_optin_newsletter(self, client, user, optin_newsletter):
         client.login(username=user.username, password=USER_TEST_PASSWORD)
-        assert user.profile.optin_newsletter is False
+        if optin_newsletter:
+            assert user.profile.optin_newsletter is not optin_newsletter
 
         response = client.post(
             reverse("account_profile_edit"),
-            {"optin_newsletter": True},
+            {"optin_newsletter": optin_newsletter},
         )
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == reverse("account_profile")
         user.refresh_from_db()
-        assert user.profile.optin_newsletter is True
-
-        response = client.post(
-            reverse("account_profile_edit"),
-            {"optin_newsletter": False},
-        )
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.url == reverse("account_profile")
-        user.refresh_from_db()
-        assert user.profile.optin_newsletter is False
+        assert user.profile.optin_newsletter is optin_newsletter

@@ -61,7 +61,7 @@ class ReactionsDeleteView(UserPassesTestMixin, generic.TemplateView):
 class PostReactionView(generic.View):
     def post(self, request, *args, **kwargs):
         post = Post.objects.get(pk=self.kwargs["pk"])
-        type = post.topic.board.preferences.reaction_type
+        reaction_type = post.topic.board.preferences.reaction_type
         message_text = "Reaction Saved"
         message_color = "success"
         is_updated = True
@@ -70,7 +70,7 @@ class PostReactionView(generic.View):
             request.session.create()
 
         # check if user is creator of post, and if so, don't allow them to react
-        if type == "n":
+        if reaction_type == "n":
             message_text = "Reactions disabled"
             message_color = "danger"
             is_updated = False
@@ -79,10 +79,7 @@ class PostReactionView(generic.View):
             message_color = "danger"
             is_updated = False
         else:
-            if type == "l":
-                reaction_score = 1
-            else:
-                reaction_score = int(request.POST.get("score"))
+            reaction_score = 1 if reaction_type == "l" else int(request.POST.get("score"))
 
             has_reacted, reaction_id, reacted_score = post.get_has_reacted(request, post.reactions.all())
 
@@ -100,7 +97,7 @@ class PostReactionView(generic.View):
                     session_key=request.session.session_key,
                     user=reaction_user,
                     post=post,
-                    reaction_type=type,
+                    reaction_type=reaction_type,
                     reaction_score=reaction_score,
                 )
 

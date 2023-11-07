@@ -7,10 +7,10 @@ django_settings_module = "jotlet.settings"
 
 [tool.djlint]
 custom_blocks = "element,slot,setvar"
+format_attribute_template_tags = true
 format_css = false
 format_js = false
 ignore = "H016"
-format_attribute_template_tags = true
 max_line_length = 118
 profile = "django"
 
@@ -21,12 +21,13 @@ indent_size = 2
 indent_size = 2
 
 [tool.mypy]
-python_version = "3.12"
-plugins = ["mypy_django_plugin.main"]
 disable_error_code = ["attr-defined"]
 exclude = ["migrations"]
+plugins = ["mypy_django_plugin.main"]
+python_version = "3.12"
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = [
     "allauth.*",
     "axes.*",
@@ -39,11 +40,11 @@ module = [
     "django_redis",
     "environ",
     "huey_monitor.*",
+    "pytest_lazy_fixtures.*",
     "sorl.*",
     "storages.backends.*",
     "tree_queries.*",
 ]
-ignore_missing_imports = true
 
 [tool.poetry]
 name = "jotlet"
@@ -97,10 +98,9 @@ django-stubs = { extras = ["compatible-mypy"], version = "^4.2.6" }
 djlint = "^1.34.0"
 huey-stubs = "^0.0.2"
 pytest-cov = "^4.1.0"
-ruff = "^0.1.0"
+ruff = "^0.1.4"
 types-factory-boy = "^0.4.1"
 types-pillow = "^10.1.0.0"
-types-pytest-lazy-fixture = "^0.6.3.4"
 
 [tool.poetry.group.test.dependencies]
 daphne = "^4.0.0"
@@ -109,21 +109,30 @@ pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
 pytest-django = "^4.6.0"
 pytest-factoryboy = "^2.6.0"
-pytest-lazy-fixture = "^0.6.3"
+pytest-lazy-fixtures = "^1.0.1"
 pytest-sugar = "^0.9.7"
 pytest-xdist = "^3.3.1"
 
 [tool.pyright]
 exclude = ["**/migrations/*.py"]
 reportGeneralTypeIssues = false
+reportMissingTypeStubs = false
+reportOptionalMemberAccess = false
+reportPrivateUsage = false
+reportShadowedImports = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 addopts = "--cov=jotlet --cov-report xml:cov.xml --cov-report html:htmlcov"
 
 [tool.ruff]
 exclude = ["manage.py", "**/migrations/*.py"]
 line-length = 118
-target-version = "py37"
+target-version = "py312"
 
 [tool.ruff.format]
 indent-style = "space"
@@ -150,6 +159,7 @@ ignore = [
     "D106",
     "D107",
     "D200",
+    "D203",
     "D205",
     "D212",
     "D400",
@@ -166,14 +176,22 @@ ignore = [
     "Q002",
     "Q003",
     "RUF012",
+    "FIX002",
     "TRY003",
     "W191",
 ]
 
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.lint.flake8-self]
+ignore-names = ["_meta"]
+
 [tool.ruff.per-file-ignores]
-"**/tests/*.py" = [
-    "S101", # Use of assert detected
-]
+"**/management/commands/*.py" = ["A003"]
+"**/models.py" = ["A003"]
+"**/signals.py" = ["ARG001"]
+"**/tests/*.py" = ["PLR0913", "S101", "SLF001"]
 
 [build-system]
 requires = ["poetry-core>=1.1.0"]

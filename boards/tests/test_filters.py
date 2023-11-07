@@ -1,18 +1,18 @@
-from datetime import date, timedelta
+import datetime
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from boards.filters import BoardFilter
+from jotlet.utils import offset_date
 
 
 # TODO: Implement full set of tests for all board_list_types
 class TestBoardFilter:
     @pytest.fixture(autouse=True)
-    def setup_method_fixture(self, user, user2, board_factory):
+    def _setup_method(self, user, user2, board_factory):
         board_factory.reset_sequence(1)
-        yesterday = timezone.now() - timedelta(days=1)
+        yesterday = offset_date(days=-1)
         board = board_factory(owner=user)
         board.created_at = yesterday
         board.save()
@@ -29,17 +29,17 @@ class TestBoardFilter:
         request.GET["before"] = ""
         request.GET["owner"] = user2.username
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 2
+        assert filterset.qs.count() == 2  # noqa: PLR2004
 
         request.GET["q"] = "board"
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 2
+        assert filterset.qs.count() == 2  # noqa: PLR2004
         request.GET["q"] = "description"
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         assert filterset.qs.count() == 1
         request.GET["q"] = ""
 
-        request.GET["before"] = date.today().strftime("%Y-%m-%d")
+        request.GET["before"] = datetime.datetime.now(tz=datetime.UTC).date().strftime("%Y-%m-%d")
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         assert filterset.qs.count() == 1
         request.GET["before"] = ""
@@ -58,21 +58,21 @@ class TestBoardFilter:
         request.GET["before"] = ""
         request.GET["owner"] = ""
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 3
+        assert filterset.qs.count() == 3  # noqa: PLR2004
 
         request.GET["q"] = "Test Board 1"
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         assert filterset.qs.count() == 1
         request.GET["q"] = ""
 
-        request.GET["before"] = date.today().strftime("%Y-%m-%d")
+        request.GET["before"] = datetime.datetime.now(tz=datetime.UTC).date().strftime("%Y-%m-%d")
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         assert filterset.qs.count() == 1
         request.GET["before"] = ""
 
         request.GET["owner"] = ""
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 3
+        assert filterset.qs.count() == 3  # noqa: PLR2004
 
         request.GET["owner"] = user2.username
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
@@ -81,9 +81,9 @@ class TestBoardFilter:
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
         assert filterset.qs.count() == 1
 
-        request.GET["owner"] = ",".join([user.username, user2.username])
+        request.GET["owner"] = f"{user.username},{user2.username}"
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 3
-        request.GET["owner"] = ",".join([user.username.title(), user2.username.upper()])
+        assert filterset.qs.count() == 3  # noqa: PLR2004
+        request.GET["owner"] = f"{user.username.title()},{user2.username.upper()}"
         filterset = BoardFilter(request.GET, request=request, board_list_type=board_list_type)
-        assert filterset.qs.count() == 3
+        assert filterset.qs.count() == 3  # noqa: PLR2004

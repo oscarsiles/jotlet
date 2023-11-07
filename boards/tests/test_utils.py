@@ -1,6 +1,8 @@
 import re
 import shutil
+from itertools import product
 
+import pytest
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -8,10 +10,8 @@ from faker import Faker
 from PIL import Image as PILImage
 from PIL import ImageFile
 
-from boards.models import IMAGE_TYPE
+from boards.models import IMAGE_FORMATS, IMAGE_TYPE
 from boards.utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
-
-from .test_models import IMAGE_FORMATS
 
 
 class TestUtils:
@@ -28,11 +28,11 @@ class TestUtils:
         board.preferences.moderators.add(user2)
         assert get_is_moderator(user2, board)
 
-    def test_get_random_string(self):
-        for i in range(20):  # arbitrary range
-            randstr = get_random_string(i)
-            assert len(randstr) == i
-            assert re.compile(rf"^[a-z0-9]{{{i}}}$").search(randstr)
+    @pytest.mark.parametrize("length", [5, 10, 15, 20, 25])
+    def test_get_random_string(self, length):
+        randstr = get_random_string(length)
+        assert len(randstr) == length
+        assert randstr.isalnum()
 
 
 class TestImageUtils:
@@ -40,67 +40,76 @@ class TestImageUtils:
     def teardown_class(cls):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    def test_get_image_upload_path(self, board, image_factory):
-        for format in IMAGE_FORMATS:
-            for type, _ in IMAGE_TYPE:
-                img = image_factory(
-                    board=board if type == "p" else None,
-                    image_type=type,
-                    image__format=format,
-                    image__filename=f"test.{format}",
-                )
-                if type == "p":
-                    sub1 = board.slug
-                    assert img.board == board
-                else:
-                    sub1 = "[a-z0-9]{2}"
-                    assert img.board is None
+    @pytest.mark.parametrize(
+        ("image_format", "image_type"),
+        product(IMAGE_FORMATS, [image_type[0] for image_type in IMAGE_TYPE]),
+    )
+    def test_get_image_upload_path(self, board, image_factory, image_format, image_type):
+        image_type_map = {
+            "p": (board.slug, board),
+            "default": ("[a-z0-9]{2}", None),
+        }
+        ext_map = {
+            "gif": "jpg",
+            "bmp": "jpg",
+            "default": image_format,
+        }
 
-                if format in ["gif", "bmp"]:
-                    ext = "jpg"
-                else:
-                    ext = format
+        sub1, board_value = image_type_map.get(image_type, image_type_map["default"])
+        ext = ext_map.get(image_format, ext_map["default"])
 
-                assert re.compile(rf"images/{type}/{sub1}/[a-z0-9]{{2}}/{img.id}.{ext}").search(
-                    get_image_upload_path(img, img.image.name)
-                )
+        img = image_factory(
+            board=board_value,
+            image_type=image_type,
+            image__format=image_format,
+            image__filename=f"test.{image_format}",
+        )
 
-    def test_process_image(self):
+        assert img.board == board_value
+
+        assert re.compile(rf"images/{image_type}/{sub1}/[a-z0-9]{{2}}/{img.id}.{ext}").search(
+            get_image_upload_path(img, img.image.name)
+        )
+
+    @pytest.mark.parametrize(
+        ("image_format", "image_type", "resolution"),
+        product(
+            IMAGE_FORMATS,
+            [image_type[0] for image_type in IMAGE_TYPE],
+            [
+                (settings.MAX_IMAGE_HEIGHT + 100, settings.MAX_IMAGE_WIDTH),
+                (settings.MAX_IMAGE_HEIGHT, settings.MAX_IMAGE_WIDTH + 100),
+            ],
+        ),
+    )
+    def test_process_image(self, resolution, image_format, image_type):
+        height, width = resolution
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         fake = Faker()
 
-        resolutions = [
-            (settings.MAX_IMAGE_HEIGHT + 100, settings.MAX_IMAGE_WIDTH),
-            (settings.MAX_IMAGE_HEIGHT, settings.MAX_IMAGE_WIDTH + 100),
-        ]
+        image = SimpleUploadedFile(
+            name=f"{height}x{width}.{image_format}",
+            content=fake.image(size=(height, width), image_format=image_format),
+        )
 
-        for height, width in resolutions:
-            for format in IMAGE_FORMATS:
-                for type, _ in IMAGE_TYPE:
-                    image = SimpleUploadedFile(
-                        name=f"{height}x{width}.{format}",
-                        content=fake.image(size=(height, width), image_format=format),
-                        # palette="P" if format == "bmp" else "RGB",
-                    )
+        image = process_image(
+            image,
+            image_type=image_type,
+            height=settings.MAX_IMAGE_HEIGHT,
+            width=settings.MAX_IMAGE_WIDTH,
+        )
 
-                    image = process_image(
-                        image,
-                        image_type=type,
-                        height=settings.MAX_IMAGE_HEIGHT,
-                        width=settings.MAX_IMAGE_WIDTH,
-                    )
+        if image_type == "p":
+            max_width = settings.MAX_POST_IMAGE_WIDTH
+            max_height = settings.MAX_POST_IMAGE_HEIGHT
+        else:
+            max_width = settings.MAX_IMAGE_WIDTH
+            max_height = settings.MAX_IMAGE_HEIGHT
 
-                    if type == "p":
-                        max_width = settings.MAX_POST_IMAGE_WIDTH
-                        max_height = settings.MAX_POST_IMAGE_HEIGHT
-                    else:
-                        max_width = settings.MAX_IMAGE_WIDTH
-                        max_height = settings.MAX_IMAGE_HEIGHT
+        pilimage = PILImage.open(image)
+        assert pilimage.width <= max_width
+        assert pilimage.height <= max_height
 
-                    pilimage = PILImage.open(image)
-                    assert pilimage.width <= max_width
-                    assert pilimage.height <= max_height
-
-                    assert pilimage.mode == "RGB"
-                    if format not in ["jpeg", "png"]:
-                        assert pilimage.format == "JPEG"
+        assert pilimage.mode == "RGB"
+        if image_format not in ["jpeg", "png"]:
+            assert pilimage.format == "JPEG"

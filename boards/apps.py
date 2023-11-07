@@ -1,3 +1,6 @@
+import contextlib
+from importlib import import_module
+
 from django.apps import AppConfig
 
 
@@ -6,4 +9,5 @@ class BoardsConfig(AppConfig):
     name = "boards"
 
     def ready(self):
-        import boards.signals  # noqa
+        with contextlib.suppress(ImportError):
+            import_module(f"{self.name}.signals")
