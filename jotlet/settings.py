@@ -42,7 +42,7 @@ if TESTING and Path.exists(test_env_file):
 elif not TESTING:
     environ.Env.read_env(Path(BASE_DIR) / ".env")
 
-SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
+SECRET_KEY = env.str("SECRET_KEY", default="unsafe-secret-key")
 
 # workaround for poetry packages that aren't "installed"
 # https://github.com/wemake-services/wemake-python-styleguide/blob/master/docs/conf.py#L22-L37
@@ -50,8 +50,8 @@ VERSION = ""
 with Path.open(Path(BASE_DIR) / "pyproject.toml", mode="rb") as pyproject:
     VERSION = tomli.load(pyproject)["tool"]["poetry"]["version"]
 
-DEBUG = env("DEBUG", default=TESTING)
-DEBUG_TOOLBAR_ENABLED = env("DEBUG_TOOLBAR_ENABLED", default=False)
+DEBUG = env.bool("DEBUG", default=TESTING)
+DEBUG_TOOLBAR_ENABLED = env.bool("DEBUG_TOOLBAR_ENABLED", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
@@ -63,7 +63,7 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
 
-USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST", default=False)
+USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
 if USE_X_FORWARDED_HOST:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -180,20 +180,20 @@ ASGI_APPLICATION = "jotlet.asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME", default="jotlet"),
-        "USER": env("DB_USER", default="jotlet"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST", default="postgres"),
-        "PORT": env("DB_PORT", default="5432"),
+        "NAME": env.str("DB_NAME", default="jotlet"),
+        "USER": env.str("DB_USER", default="jotlet"),
+        "PASSWORD": env.str("DB_PASSWORD"),
+        "HOST": env.str("DB_HOST", default="postgres"),
+        "PORT": env.str("DB_PORT", default="5432"),
     }
 }
 
 
-CONN_MAX_AGE = env("CONN_MAX_AGE", default=None, cast=int)
+CONN_MAX_AGE = env.int("CONN_MAX_AGE", default=None)
 CONN_HEALTH_CHECKS = CONN_MAX_AGE is None or CONN_MAX_AGE > 0  # only check if we're using persistent connections
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE", default=60 * 60 * 24 * 30)  # 30 days
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=60 * 60 * 24 * 30)  # 30 days
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -216,22 +216,22 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-AXES_ENABLED = env("AXES_ENABLED", default=True)
+AXES_ENABLED = env.bool("AXES_ENABLED", default=True)
 
 if TESTING:
     os.environ["AXES_IPWARE_PROXY_COUNT"] = "1"
     SILENCED_SYSTEM_CHECKS = ["axes.W001"]
 if AXES_ENABLED and not TESTING:
-    AXES_HANDLER = env(
+    AXES_HANDLER = env.str(
         "AXES_HANDLER",
         default="axes.handlers.dummy.AxesDummyHandler" if TESTING else "axes.handlers.database.AxesDatabaseHandler",
     )
     AXES_USERNAME_FORM_FIELD = "login"
-    AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT", default=5)
+    AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
     AXES_COOLOFF_TIME = timedelta(minutes=env("AXES_COOLOFF_MINUTES", default=15))
     AXES_LOCKOUT_URL = "/accounts/lockout/"
     AXES_LOCKOUT_PARAMETERS = env.list("AXES_LOCKOUT_PARAMETERS", default=["username", "ip_address"])
-    AXES_IPWARE_PROXY_COUNT = env("AXES_IPWARE_PROXY_COUNT", default=None, cast=int)
+    AXES_IPWARE_PROXY_COUNT = env.int("AXES_IPWARE_PROXY_COUNT", default=None)
     AUTHENTICATION_BACKENDS = ["axes.backends.AxesStandaloneBackend", *AUTHENTICATION_BACKENDS]
 
 PASSWORD_HASHERS = [
@@ -243,10 +243,10 @@ PASSWORD_HASHERS = [
 ]
 
 USE_I18N = False
-LANGUAGE_CODE = env("LANGUAGE_CODE", default="en-us")
+LANGUAGE_CODE = env.str("LANGUAGE_CODE", default="en-us")
 
 USE_TZ = True
-TIME_ZONE = env("TIME_ZONE", default="UTC")
+TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -258,22 +258,22 @@ LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "boards:index"
 LOGOUT_REDIRECT_URL = "boards:index"
 
-USE_S3 = env("USE_S3", default=False)
+USE_S3 = env.bool("USE_S3", default=False)
 if USE_S3:
     # aws settings
-    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="eu-west-2")
-    AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-    AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default=None)
-    AWS_S3_CUSTOM_DOMAIN = env("AWS_S3_CUSTOM_DOMAIN", default=None)
-    AWS_S3_SIGNATURE_VERSION = env("AWS_S3_SIGNATURE_VERSION", default="s3v4")
-    AWS_S3_OBJECT_PARAMETERS = env("AWS_S3_OBJECT_PARAMETERS", default={"CacheControl": "max-age=2592000"})
-    AWS_DEFAULT_ACL = env("AWS_DEFAULT_ACL", default=None)
-    AWS_IS_GZIPPED = env("AWS_IS_GZIPPED", default=False)
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-west-2")
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default=None)
+    AWS_S3_CUSTOM_DOMAIN = env.str("AWS_S3_CUSTOM_DOMAIN", default=None)
+    AWS_S3_SIGNATURE_VERSION = env.str("AWS_S3_SIGNATURE_VERSION", default="s3v4")
+    AWS_S3_OBJECT_PARAMETERS = env.str("AWS_S3_OBJECT_PARAMETERS", default={"CacheControl": "max-age=2592000"})
+    AWS_DEFAULT_ACL = env.str("AWS_DEFAULT_ACL", default=None)
+    AWS_IS_GZIPPED = env.bool("AWS_IS_GZIPPED", default=False)
     # s3 public media settings
     THUMBNAIL_FORCE_OVERWRITE = True
-    PUBLIC_MEDIA_LOCATION = env("PUBLIC_MEDIA_LOCATION", default="media")
+    PUBLIC_MEDIA_LOCATION = env.str("PUBLIC_MEDIA_LOCATION", default="media")
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
 else:
     MEDIA_URL = "media/"
@@ -285,16 +285,16 @@ else:
     else:
         MEDIA_ROOT = str(Path(BASE_DIR) / "media")
 
-MAX_IMAGE_WIDTH = env("MAX_IMAGE_WIDTH", default=500 if TESTING else 3840)
-MAX_IMAGE_HEIGHT = env("MAX_IMAGE_HEIGHT", default=500 if TESTING else 2160)
-SMALL_THUMBNAIL_WIDTH = env("SMALL_THUMBNAIL_WIDTH", default=300)
-SMALL_THUMBNAIL_HEIGHT = env("SMALL_THUMBNAIL_HEIGHT", default=200)
-MAX_POST_IMAGE_FILE_SIZE = env("MAX_IMAGE_FILE_SIZE", default=1024 * 1024 * 2)
-MAX_POST_IMAGE_COUNT = env("MAX_POST_IMAGE_COUNT", default=100)
-MAX_POST_IMAGE_WIDTH = env("MAX_POST_IMAGE_WIDTH", default=400)
-MAX_POST_IMAGE_HEIGHT = env("MAX_POST_IMAGE_HEIGHT", default=MAX_POST_IMAGE_WIDTH)
+MAX_IMAGE_WIDTH = env.int("MAX_IMAGE_WIDTH", default=500 if TESTING else 3840)
+MAX_IMAGE_HEIGHT = env.int("MAX_IMAGE_HEIGHT", default=500 if TESTING else 2160)
+SMALL_THUMBNAIL_WIDTH = env.int("SMALL_THUMBNAIL_WIDTH", default=300)
+SMALL_THUMBNAIL_HEIGHT = env.int("SMALL_THUMBNAIL_HEIGHT", default=200)
+MAX_POST_IMAGE_FILE_SIZE = env.int("MAX_IMAGE_FILE_SIZE", default=1024 * 1024 * 2)
+MAX_POST_IMAGE_COUNT = env.int("MAX_POST_IMAGE_COUNT", default=100)
+MAX_POST_IMAGE_WIDTH = env.int("MAX_POST_IMAGE_WIDTH", default=400)
+MAX_POST_IMAGE_HEIGHT = env.int("MAX_POST_IMAGE_HEIGHT", default=MAX_POST_IMAGE_WIDTH)
 
-THUMBNAIL_ALTERNATIVE_RESOLUTIONS = env("THUMBNAIL_ALTERNATIVE_RESOLUTIONS", default=[2])
+THUMBNAIL_ALTERNATIVE_RESOLUTIONS = env.list("THUMBNAIL_ALTERNATIVE_RESOLUTIONS", default=[2])
 
 STATIC_URL = "static/"
 STATIC_ROOT = Path(BASE_DIR) / "static"
@@ -314,13 +314,13 @@ STORAGES = {
 }
 THUMBNAIL_STORAGE = STORAGES["default"]["BACKEND"]
 
-REDIS_HOST = env("REDIS_HOST", default="localhost")
-REDIS_PORT = env("REDIS_PORT", default=6379)
-REDIS_URL = env("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
+REDIS_HOST = env.str("REDIS_HOST", default="localhost")
+REDIS_PORT = env.int("REDIS_PORT", default=6379)
+REDIS_URL = env.str("REDIS_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}")
 
 CACHES = {
     "default": {
-        "BACKEND": env("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
+        "BACKEND": env.str("REDIS_BACKEND", default="django_redis.cache.RedisCache"),
         "LOCATION": REDIS_URL,
         "KEY_PREFIX": "jotlet_test" if TESTING else "jotlet",
         "OPTIONS": {
@@ -341,8 +341,8 @@ CHANNEL_LAYERS = {
     },
 }
 
-CACHEOPS_ENABLED = env("CACHEOPS_ENABLED", default=True)
-CACHEOPS_DEFAULTS = {"timeout": env("CACHEOPS_TIMEOUT", default=31556952)}
+CACHEOPS_ENABLED = env.bool("CACHEOPS_ENABLED", default=True)
+CACHEOPS_DEFAULTS = {"timeout": env.int("CACHEOPS_TIMEOUT", default=31556952)}
 CACHEOPS = {
     "accounts.*": {"ops": "all", "timeout": 60 * 60 * 24},
     "auth.*": {"ops": "all", "timeout": 60 * 60 * 24},
@@ -358,7 +358,7 @@ CACHEOPS = {
     "boards.additionaldata": {"ops": "all"},
     "*.*": {"ops": ()},
 }
-CACHEOPS_INSIDEOUT = env("CACHEOPS_INSIDEOUT", default=True)
+CACHEOPS_INSIDEOUT = env.bool("CACHEOPS_INSIDEOUT", default=True)
 
 CACHEOPS_REDIS = {"host": REDIS_HOST, "port": REDIS_PORT, "db": 13, "socket_timeout": 3} if TESTING else REDIS_URL
 
@@ -367,7 +367,7 @@ HUEY = {
     "immediate": DEBUG or TESTING,
     "immediate_use_memory": False,
     "consumer": {
-        "workers": env("HUEY_WORKERS", default=4, cast=int),
+        "workers": env.int("HUEY_WORKERS", default=4),
         "worker_type": "thread",
     },
 }
@@ -413,47 +413,47 @@ CRISPY_CLASS_CONVERTERS = {
 }
 CRISPY_FAIL_SILENTLY = not DEBUG
 
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")
+EMAIL_BACKEND = env.str("EMAIL_BACKEND", default="hueymail.backends.EmailBackend")
 
-HUEY_EMAIL_BACKEND = env(
+HUEY_EMAIL_BACKEND = env.str(
     "HUEY_EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend"
     if TESTING
     else "django.core.mail.backends.smtp.EmailBackend",
 )
 
-EMAIL_HOST = env("EMAIL_HOST", default="localhost")
-EMAIL_PORT = env("EMAIL_PORT", default=25)
-EMAIL_USE_TLS = env("EMAIL_USE_TLS", default=False)
-EMAIL_USE_SSL = env("EMAIL_USE_SSL", default=False)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
-FEEDBACK_EMAIL = env("FEEDBACK_EMAIL", default=None)
+EMAIL_HOST = env.str("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=25)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
+FEEDBACK_EMAIL = env.str("FEEDBACK_EMAIL", default=None)
 
 ANYMAIL = {
-    "MAILGUN_API_KEY": env("MAILGUN_API_KEY", default=""),
-    "MAILGUN_API_URL": env("MAILGUN_API_URL", default="https://api.eu.mailgun.net/v3"),
-    "MAILGUN_SENDER_DOMAIN": env("MAILGUN_SENDER_DOMAIN", default=""),
-    "SENDGRID_API_KEY": env("SENDGRID_API_KEY", default=""),
+    "MAILGUN_API_KEY": env.str("MAILGUN_API_KEY", default=""),
+    "MAILGUN_API_URL": env.str("MAILGUN_API_URL", default="https://api.eu.mailgun.net/v3"),
+    "MAILGUN_SENDER_DOMAIN": env.str("MAILGUN_SENDER_DOMAIN", default=""),
+    "SENDGRID_API_KEY": env.str("SENDGRID_API_KEY", default=""),
 }
 
 ACCOUNT_ADAPTER = "accounts.adapter.CustomAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "accounts.adapter.CustomSocialAccountAdapter"
-ACCOUNT_EMAIL_REQUIRED = env("ACCOUNT_EMAIL_REQUIRED", default=True)
+ACCOUNT_EMAIL_REQUIRED = env.bool("ACCOUNT_EMAIL_REQUIRED", default=True)
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = env("ACCOUNT_EMAIL_VERIFICATION", default="optional")
+ACCOUNT_EMAIL_VERIFICATION = env.str("ACCOUNT_EMAIL_VERIFICATION", default="optional")
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 ACCOUNT_SESSION_REMEMBER = True
-ACCOUNT_ALLOW_SIGNUPS = env("ACCOUNT_ALLOW_SIGNUPS", default=True)
+ACCOUNT_ALLOW_SIGNUPS = env.bool("ACCOUNT_ALLOW_SIGNUPS", default=True)
 
-SOCIALACCOUNT_ALLOW_SIGNUPS = env("SOCIALACCOUNT_ALLOW_SIGNUPS", default=ACCOUNT_ALLOW_SIGNUPS)
+SOCIALACCOUNT_ALLOW_SIGNUPS = env.bool("SOCIALACCOUNT_ALLOW_SIGNUPS", default=ACCOUNT_ALLOW_SIGNUPS)
 SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_EMAIL_VERIFICATION = env("SOCIALACCOUNT_EMAIL_VERIFICATION", default=ACCOUNT_EMAIL_VERIFICATION)
+SOCIALACCOUNT_EMAIL_VERIFICATION = env.bool("SOCIALACCOUNT_EMAIL_VERIFICATION", default=ACCOUNT_EMAIL_VERIFICATION)
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -498,24 +498,24 @@ CSP_FRAME_ANCESTORS = ["'self'"]
 CSP_MANIFEST_SRC = ["'self'", *env.list("CSP_MANIFEST_SRC", default=[])]
 CSP_INCLUDE_NONCE_IN = ["script-src", *env.list("CSP_INCLUDE_NONCE_IN", default=[])]
 
-HCAPTCHA_ENABLED = env("HCAPTCHA_ENABLED", cast=bool, default=False)
-CF_TURNSTILE_ENABLED = env("CF_TURNSTILE_ENABLED", cast=bool, default=False)
+HCAPTCHA_ENABLED = env.bool("HCAPTCHA_ENABLED", default=False)
+CF_TURNSTILE_ENABLED = env.bool("CF_TURNSTILE_ENABLED", default=False)
 if HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED:
     msg = "HCAPTCHA_ENABLED and CF_TURNSTILE_ENABLED cannot both be enabled"
     raise ImproperlyConfigured(msg)
 
-HCAPTCHA_VERIFY_URL = env("VERIFY_URL", default="https://hcaptcha.com/siteverify")
+HCAPTCHA_VERIFY_URL = env.str("VERIFY_URL", default="https://hcaptcha.com/siteverify")
 if HCAPTCHA_ENABLED and not TESTING:
-    HCAPTCHA_SITE_KEY = env("HCAPTCHA_SITE_KEY")
-    HCAPTCHA_SECRET_KEY = env("HCAPTCHA_SECRET_KEY")
+    HCAPTCHA_SITE_KEY = env.str("HCAPTCHA_SITE_KEY")
+    HCAPTCHA_SECRET_KEY = env.str("HCAPTCHA_SECRET_KEY")
 
-CF_TURNSTILE_VERIFY_URL = env(
+CF_TURNSTILE_VERIFY_URL = env.str(
     "CF_TURNSTILE_VERIFY_URL",
     default="https://challenges.cloudflare.com/turnstile/v0/siteverify",
 )
 if CF_TURNSTILE_ENABLED and not TESTING:
-    CF_TURNSTILE_SITE_KEY = env("CF_TURNSTILE_SITE_KEY")
-    CF_TURNSTILE_SECRET_KEY = env("CF_TURNSTILE_SECRET_KEY")
+    CF_TURNSTILE_SITE_KEY = env.str("CF_TURNSTILE_SITE_KEY")
+    CF_TURNSTILE_SECRET_KEY = env.str("CF_TURNSTILE_SECRET_KEY")
 
 if TESTING:
     # Use dummy keys for testing
