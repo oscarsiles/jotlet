@@ -59,7 +59,7 @@ channels = "^4.0.0"
 channels-redis = "^4.1.0"
 crispy-bootstrap5 = "^2023.10"
 Django = { extras = ["argon2"], version = "^4.2.7" }
-django-allauth = "0.58.1"
+django-allauth = "0.58.2"
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^10.2" }
 django-auto-prefetch = "^1.8.0"
 django-axes = { extras = ["ipware"], version = "^6.1.1" }
@@ -85,7 +85,7 @@ python = ">=3.10,<4.0.0"
 redis = { extras = ["hiredis"], version = "^5.0.1" }
 sorl-thumbnail = "^12.10.0"
 tomli = "^2.0.1"
-uvicorn = { extras = ["standard"], version = "^0.23.2" }
+uvicorn = {version = "0.24.0.post1", extras = ["standard"]}
 whitenoise = { extras = ["brotli"], version = "^6.6.0" }
 
 [tool.poetry.group.dev.dependencies]
