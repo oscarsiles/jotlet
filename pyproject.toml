@@ -98,7 +98,7 @@ django-stubs = { extras = ["compatible-mypy"], version = "^4.2.6" }
 djlint = "^1.34.0"
 huey-stubs = "^0.0.2"
 pytest-cov = "^4.1.0"
-ruff = "^0.1.4"
+ruff = "^0.1.5"
 types-factory-boy = "^0.4.1"
 types-pillow = "^10.1.0.0"
 
