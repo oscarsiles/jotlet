@@ -176,3 +176,4 @@ jotlet/templates/terms_content.html
 locustfile.py
 tmp/
 keys/
+.vscode/settings.json
