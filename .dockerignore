@@ -2,8 +2,9 @@
 **/.venv
 **/.classpath
 **/.dockerignore
-**/.env
+**/.env*
 **/.git
+**/.github
 **/.gitignore
 **/.project
 **/.settings
@@ -23,8 +24,10 @@
 **/npm-debug.log
 **/obj
 **/secrets.dev.yaml
+**/tests
 **/values.dev.yaml
+.sourcery.yaml
 LICENSE
 README.md
-db.sqlite3
-test.db.sqlite3
+conftest.py
+pytest.ini
