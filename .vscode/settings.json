@@ -1,9 +1,4 @@
 {
-    "DockerRun.Containers": [
-        "1281b79b49ad",
-        "d45f9b6ec87e"
-    ],
-    "DockerRun.DisableDockerrc": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },

@@ -166,6 +166,7 @@ cython_debug/
 
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 static/
 !*/static/
 test.db.sqlite3
@@ -175,3 +176,4 @@ jotlet/templates/terms_content.html
 locustfile.py
 tmp/
 keys/
+.dockerrc
