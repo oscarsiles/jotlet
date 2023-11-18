@@ -53,6 +53,35 @@ with Path.open(Path(BASE_DIR) / "pyproject.toml", mode="rb") as pyproject:
 DEBUG = env.bool("DEBUG", default=TESTING)
 DEBUG_TOOLBAR_ENABLED = env.bool("DEBUG_TOOLBAR_ENABLED", default=False)
 
+SENTRY_ENABLED = env.bool("SENTRY_ENABLED", default=False)
+if SENTRY_ENABLED and not DEBUG and not TESTING:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    SENTRY_DSN = env.str("SENTRY_DSN")
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+        ],
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.01),
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=env.bool("SENTRY_SEND_DEFAULT_PII", default=False),
+        # By default the SDK will try to use the SENTRY_RELEASE
+        # environment variable, or infer a git commit
+        # SHA as release, however you may want to set
+        # something more human-readable.
+        release=VERSION,
+        environment=env.str("SENTRY_ENVIRONMENT", default="production"),
+    )
+    CSP_REPORT_URI = env.str("SENTRY_SECURITY_ENDPOINT", default=None)
+
+
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 CORS_ALLOW_HEADERS = [*list(default_headers), "link"]
@@ -300,17 +329,21 @@ STATIC_URL = "static/"
 STATIC_ROOT = Path(BASE_DIR) / "static"
 STATICFILES_DIRS = [Path(BASE_DIR) / "jotlet" / "static"]
 
+STATIC_COMPRESSED = env.bool("STATIC_COMPRESSED", default=not TESTING)
+if TESTING:
+    STATIC_BACKEND = "django.core.files.storage.InMemoryStorage"
+elif STATIC_COMPRESSED:
+    STATIC_BACKEND = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+else:
+    STATIC_BACKEND = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+
 STORAGES = {
     "default": {
         "BACKEND": "jotlet.storage_backends.PublicMediaStorage"
         if USE_S3
         else "django.core.files.storage.FileSystemStorage",
     },
-    "staticfiles": {
-        "BACKEND": "django.core.files.storage.InMemoryStorage"
-        if TESTING
-        else "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
+    "staticfiles": {"BACKEND": STATIC_BACKEND},
 }
 THUMBNAIL_STORAGE = STORAGES["default"]["BACKEND"]
 
