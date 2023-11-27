@@ -227,6 +227,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     locked = models.BooleanField(default=False)
+    posts: "models.QuerySet[Post]"
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
