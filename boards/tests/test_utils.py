@@ -10,8 +10,15 @@ from faker import Faker
 from PIL import Image as PILImage
 from PIL import ImageFile
 
-from boards.models import IMAGE_FORMATS, IMAGE_TYPE
-from boards.utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
+from boards.models import IMAGE_FORMATS, IMAGE_TYPE, Export
+from boards.utils import (
+    generate_csv,
+    get_export_upload_path,
+    get_image_upload_path,
+    get_is_moderator,
+    get_random_string,
+    process_image,
+)
 
 
 class TestUtils:
@@ -33,6 +40,30 @@ class TestUtils:
         randstr = get_random_string(length)
         assert len(randstr) == length
         assert randstr.isalnum()
+
+
+class TestExportUtils:
+    @classmethod
+    def teardown_class(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+
+    def test_get_export_upload_path(self, board):
+        export = Export(board=board)
+        assert re.compile(
+            rf"exports/boards/[a-z0-9]{{2}}/[a-z0-9-]{{36}}/{board.slug}_[0-9]{{8}}-[0-9]{{6}}.csv"
+        ).search(get_export_upload_path(export, "test.csv"))
+
+    def test_generate_csv(self):
+        header = ["head1", "head2", "head3"]
+        rows = [
+            {"head1": "test1", "head2": "test2", "head3": "test3"},
+            {"head1": "test4", "head2": "test5", "head3": "test6"},
+        ]
+
+        with generate_csv(header, rows) as csv:
+            assert csv.content_type == "text/csv"
+            assert csv.charset == "utf-8"
+            assert csv.read().decode("utf-8") == "head1,head2,head3\r\ntest1,test2,test3\r\ntest4,test5,test6\r\n"
 
 
 class TestImageUtils:

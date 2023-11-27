@@ -19,7 +19,14 @@ from tree_queries.query import TreeQuerySet
 from jotlet.mixins.refresh_from_db_invalidates_cached_properties import InvalidateCachedPropertiesMixin
 
 from .tasks import create_thumbnails, post_image_cleanup
-from .utils import get_image_upload_path, get_is_moderator, get_random_string, process_image
+from .utils import (
+    generate_csv,
+    get_export_upload_path,
+    get_image_upload_path,
+    get_is_moderator,
+    get_random_string,
+    process_image,
+)
 
 BOARD_TYPE = (
     ("d", "Default"),
@@ -636,3 +643,44 @@ class PostImage(Image):
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "post image"
         proxy = True
+
+
+class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, related_name="exports", null=False)
+    file = models.FileField(upload_to=get_export_upload_path, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta(auto_prefetch.Model.Meta):
+        indexes = [
+            BrinIndex(fields=["created_at"], autosummarize=True),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.file.name}"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.generate_and_set_file()
+            # only want to save the file when it is first created
+            super().save(*args, **kwargs)
+
+    def generate_and_set_file(self):
+        header, posts = self.get_export_data()
+        self.file = generate_csv(header, posts)
+
+    def get_export_data(self):
+        header = [
+            "id",
+            "content",
+            "parent",
+            "topic",
+            "identity_hash",
+            "approved",
+            "created_at",
+            "updated_at",
+        ]
+        posts = self.board.get_posts.values(*header)
+
+        return header, posts
