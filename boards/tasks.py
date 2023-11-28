@@ -1,7 +1,10 @@
+from django.apps import apps
 from django.core import management
 from huey import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, lock_task
 from sorl.thumbnail import delete as sorl_delete
+
+from jotlet.utils import offset_date
 
 
 @db_task()
@@ -18,6 +21,12 @@ def create_thumbnails(img):
 def delete_thumbnails(file):
     sorl_delete(file)
     return f"deleted thumbnails for {file}"
+
+
+@db_periodic_task(crontab(minute="0", hour="3"))
+@lock_task("export_cleanup-lock")
+def export_cleanup():
+    apps.get_model("boards.Export").objects.filter(created_at__lt=offset_date(days=-7)).delete()
 
 
 @db_task()

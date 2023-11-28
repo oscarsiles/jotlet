@@ -5,7 +5,18 @@ from django.contrib.auth.models import AbstractBaseUser
 from faker import Faker
 
 from accounts.tests.factories import UserFactory
-from boards.models import AdditionalData, BgImage, Board, BoardPreferences, Image, Post, PostImage, Reaction, Topic
+from boards.models import (
+    AdditionalData,
+    BgImage,
+    Board,
+    BoardPreferences,
+    Export,
+    Image,
+    Post,
+    PostImage,
+    Reaction,
+    Topic,
+)
 from jotlet.tests.factories import JotletDict, JSONFactory
 
 fake = Faker()
@@ -78,6 +89,13 @@ class ChemdoodleDataFactory(JSONDataFactory):
         '"b":[{"b":0,"e":1,"i":"b84"},{"b":1,"e":2,"i":"b85","o":2},{"b":2,"e":3,"i":"b86"},'
         '{"b":3,"e":4,"i":"b87","o":2},{"b":4,"e":5,"i":"b88"},{"b":5,"e":0,"i":"b89","o":2}]}]}'
     )  # benzene ChemDoole JSON
+
+
+class ExportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Export
+
+    board: Board = factory.SubFactory(BoardFactory)
 
 
 class ImageFactory(factory.django.DjangoModelFactory):

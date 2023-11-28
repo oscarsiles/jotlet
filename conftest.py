@@ -7,6 +7,7 @@ from boards.tests.factories import (
     BgImageFactory,
     BoardFactory,
     ChemdoodleDataFactory,
+    ExportFactory,
     ImageFactory,
     JSONDataFactory,
     MiscDataFactory,
@@ -49,6 +50,8 @@ register(JSONDataFactory, "json_data")
 register(MiscDataFactory, "misc_data")
 
 register(ChemdoodleDataFactory, "chemdoodle_data")
+
+register(ExportFactory, "export")
 
 register(ImageFactory, "image")
 
