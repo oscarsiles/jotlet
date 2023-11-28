@@ -10,6 +10,7 @@ from django.db import IntegrityError
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils.html import escape
+from freezegun import freeze_time
 from PIL import Image as PILImage
 from pytest_lazy_fixtures import lf
 
@@ -69,8 +70,10 @@ class TestBoardModel:
     def test_get_last_post_date(self, board, board_factory, topic_factory, post_factory):
         assert board.get_last_post_date is None
         topic = topic_factory(board=board)
-        post_factory(topic=topic, created_at=offset_date(days=2))
-        post2 = post_factory(topic=topic, created_at=offset_date(days=1))
+        with freeze_time(offset_date(days=-2)):
+            post_factory(topic=topic)
+        with freeze_time(offset_date(days=-1)):
+            post2 = post_factory(topic=topic)
         # make sure another board's posts are not counted
         board2 = board_factory()
         topic2 = topic_factory(board=board2)
@@ -179,7 +182,8 @@ class TestTopicModel:
         post = post_factory(topic=topic)
         topic.refresh_from_db()
         assert topic.get_last_post_date == date(post.created_at, "d/m/Y")
-        post_factory(topic=topic, created_at=offset_date(days=1))
+        with freeze_time(offset_date(days=-1)):
+            post_factory(topic=topic)
         topic.refresh_from_db()
         assert topic.get_last_post_date == date(post.created_at, "d/m/Y")
 

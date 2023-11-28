@@ -128,7 +128,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     @cached_property
     def get_last_post_date(self):
         if self.get_post_count > 0:
-            return date(self.get_posts.first().created_at, "d/m/Y")
+            return date(self.get_posts.last().created_at, "d/m/Y")
         return None
 
     get_last_post_date.short_description = "Last Post Date"
@@ -263,7 +263,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     @cached_property
     def get_last_post_date(self):
         if self.get_post_count > 0:
-            return date(self.get_posts.first().created_at, "d/m/Y")
+            return date(self.get_posts.last().created_at, "d/m/Y")
         return None
 
     get_last_post_date.short_description = "Last Post Date"

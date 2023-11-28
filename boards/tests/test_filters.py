@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 from django.urls import reverse
+from freezegun import freeze_time
 
 from boards.filters import BoardFilter
 from jotlet.utils import offset_date
@@ -12,10 +13,8 @@ class TestBoardFilter:
     @pytest.fixture(autouse=True)
     def _setup_method(self, user, user2, board_factory):
         board_factory.reset_sequence(1)
-        yesterday = offset_date(days=-1)
-        board = board_factory(owner=user)
-        board.created_at = yesterday
-        board.save()
+        with freeze_time(offset_date(days=-1)):
+            board_factory(owner=user)
         board_factory(description="Some other text", owner=user)
         board_factory(description="Some other text", owner=user2)
 
