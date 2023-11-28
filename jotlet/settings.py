@@ -199,7 +199,6 @@ TEMPLATES = [
                 "csp.context_processors.nonce",
                 "jotlet.context_processors.captcha_sitekeys",
             ],
-            "debug": DEBUG,
             "loaders": default_loaders if DEBUG else cached_loaders,
         },
     },
