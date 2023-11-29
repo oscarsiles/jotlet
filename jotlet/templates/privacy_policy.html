@@ -1,10 +1,10 @@
 {% extends "base_generic.html" %}
-{% load cache %}
+{% load cacheops %}
 {% block title %}
     Jotlet - Privacy Policy
 {% endblock title %}
 {% block content %}
-    {% cache 43200 privacy_policy %}
+    {% cached 43200 privacy_policy %}
     <div class="flex-grow-1">{% include "privacy_policy_content.html" %}</div>
-{% endcache %}
+{% endcached %}
 {% endblock content %}

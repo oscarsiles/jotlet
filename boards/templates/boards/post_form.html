@@ -22,17 +22,7 @@
             data-bs-dismiss="modal"
             tabindex="-1">Close</button>
     <button type="submit" class="btn btn-success" form="post-form" tabindex="0">
-        {% if form.instance.pk != None %}
-            Save changes
-        {% else %}
-            Create post
-        {% endif %}
+        {{ object|yesno:'Save changes,Create post' }}
     </button>
 </div>
-<h5 id="modal-1-title-div" hx-swap-oob="true">
-    {% if form.instance.pk != None %}
-        Edit Post
-    {% else %}
-        Create Post
-    {% endif %}
-</h5>
+<h5 id="modal-1-title-div" hx-swap-oob="true">{{ object|yesno:'Edit,Create' }} Post</h5>

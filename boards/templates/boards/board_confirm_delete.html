@@ -1,7 +1,10 @@
 <p>
     Are you sure you want to delete the board:
     <h5>{{ board }}</h5>
-    {{ board.description }}
+    <p>{{ board.description }}</p>
+    <p>
+        <em>This action is <strong>irreversible</strong>.</em>
+    </p>
 </p>
 <form action="{% url 'boards:board-delete' board.slug %}"
       method="post"

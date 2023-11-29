@@ -1,10 +1,10 @@
 {% extends "base_generic.html" %}
-{% load cache %}
+{% load cacheops %}
 {% block title %}
     Jotlet - Terms
 {% endblock title %}
 {% block content %}
-    {% cache 43200 terms %}
+    {% cached 43200 terms %}
     <div class="flex-grow-1">{% include "terms_content.html" %}</div>
-{% endcache %}
+{% endcached %}
 {% endblock content %}

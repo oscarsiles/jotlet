@@ -1,15 +1,11 @@
-{% load cache %}
-{% cache 86400 modal num %}
+{% load cacheops %}
+{% cached None modal num %}
 <div class="modal fade"
      id="modal-{{ num }}-div"
      tabindex="-1"
-     {% if num == 2 %}
-         data-bs-backdrop="static" data-bs-keyboard="false"
-     {% endif %}>
+     {% if num == 2 %}data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}>
     <div class="modal-dialog modal-dialog-scrollable
-                {% if num == 2 %}
-                    modal-xl
-                {% endif %}">
+                {% if num == 2 %}modal-xl{% endif %}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modal-{{ num }}-title-div">Loading...</h5>
@@ -18,8 +14,7 @@
                         data-bs-toggle="modal"
                         data-bs-target="#modal-{{ num }}-div"
                         aria-label="Close"
-                        tabindex="-1">
-                </button>
+                        tabindex="-1"></button>
             </div>
             <div class="modal-body" id="modal-{{ num }}-body-div">
                 <div class="d-flex justify-content-center">
@@ -33,4 +28,4 @@
         </div>
     </div>
 </div>
-{% endcache %}
+{% endcached %}

@@ -1,5 +1,5 @@
 {% extends "base_generic.html" %}
-{% load static cache board_extras %}
+{% load static cacheops board_extras %}
 {% block head %}
     <link href="{% static 'vendor/easymde-2.18.0/easymde.min.css' %}"
           rel="stylesheet" />
@@ -34,14 +34,24 @@
     Board: {{ board }}
 {% endblock title %}
 {% block navbar_title %}
-    <div class="me-2">
-        {{ board }}
+    <div class="d-flex me-2">
+        <span hx-disable>{{ board }}</span>
         {% if board.locked %}<i class="bi bi-lock"></i>{% endif %}
+        {% if request.user == board.owner or user.is_staff %}
+            <a class="nav-link d-inline py-0"
+               role="button"
+               hx-get="{% url 'boards:board-update' board.slug %}"
+               hx-target="#modal-1-body-div"
+               data-bs-toggle="modal"
+               data-bs-target="#modal-1-div">
+                <i class="bi bi-pen"></i>
+            </a>
+        {% endif %}
     </div>
 {% endblock navbar_title %}
 {% block navbar_subtitle %}
     <div class="d-flex flex-wrap">
-        {% if board.description %}<div class="me-2">{{ board.description }}</div>{% endif %}
+        {% if board.description %}<div class="me-2" hx-disable>{{ board.description }}</div>{% endif %}
         {% if request.user == board.owner or user.is_staff %}
             <div class="d-flex align-items-center">
                 <small class="d-flex align-items-center">
@@ -57,7 +67,6 @@
 {% endblock navbar_subtitle %}
 {% block navbar-items %}
     {% if is_moderator %}
-        {% cache 86400 navbar-board-index board.pk request.user %}
         <li class="nav-item">
             <span data-bs-toggle="collapse" data-bs-target="#navbarText">
                 <a class="nav-link"
@@ -65,56 +74,54 @@
                    hx-get="{% url 'boards:board-qr' board.slug %}"
                    hx-target="#modal-1-body-div"
                    data-bs-toggle="modal"
-                   data-bs-target="#modal-1-div">
+                   data-bs-target="#modal-1-div"
+                   title="QR Code">
                     <i class="bi bi-qr-code"></i>
-                    <span>QR Code</span>
                 </a>
             </span>
         </li>
-        {% if request.user == board.owner or user.is_staff %}
-            <li class="nav-item">
-                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                    <a class="nav-link"
+    {% endif %}
+    {% cached_as board None "navbar_board_index" board.pk request.user %}
+    {% if request.user == board.owner or user.is_staff %}
+        <li class="nav-item dropdown">
+            <a class="nav-link"
+               type="button"
+               id="dropdownMenuButton1"
+               data-bs-toggle="dropdown"
+               aria-expanded="false"
+               title="More...">
+                <i class="bi bi-three-dots-vertical"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item"
                        role="button"
                        hx-get="{% url 'boards:board-preferences' board.slug %}"
                        hx-target="#offcanvasPreferences-body-div"
                        hx-swap="innerHTML"
                        data-bs-toggle="offcanvas"
                        data-bs-target="#offcanvasPreferences">
-                        <i class="bi bi-gear"></i>
-                        <span>Preferences</span>
+                        <i class="bi bi-gear pe-2"></i>Preferences
                     </a>
-                </span>
-            </li>
-            <li class="nav-item">
-                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                    <a class="nav-link"
-                       role="button"
-                       hx-get="{% url 'boards:board-update' board.slug %}"
-                       hx-target="#modal-1-body-div"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal-1-div">
-                        <i class="bi bi-pen"></i>
-                        <span>Edit Board</span>
-                    </a>
-                </span>
-            </li>
-            <li class="nav-item">
-                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                    <a class="nav-link"
+                </li>
+                <li>
+                    <a class="dropdown-item dropdown-item-del-bg"
                        role="button"
                        hx-get="{% url 'boards:board-delete' board.slug %}"
                        hx-target="#modal-1-body-div"
                        data-bs-toggle="modal"
                        data-bs-target="#modal-1-div">
-                        <i class="bi bi-trash"></i>
-                        <span>Delete Board</span>
+                        <i class="bi bi-trash pe-2"></i>Delete Board
                     </a>
-                </span>
-            </li>
-        {% endif %}
-    {% endcache %}
-{% endif %}
+                </li>
+            </ul>
+        </li>
+    {% endif %}
+    <li class="nav-item py-2 py-xxl-1">
+        <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
+        <hr class="d-xxl-none my-2 opacity-50" />
+    </li>
+{% endcached_as %}
 {% endblock navbar-items %}
 {% block content %}
     <div class="d-flex flex-column overflow-auto flex-grow-1"

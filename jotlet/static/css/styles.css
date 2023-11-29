@@ -28,6 +28,16 @@
   --bs-dropdown-min-width: 8rem;
 }
 
+.dropdown-item-approve-bg {
+  --bs-dropdown-link-hover-bg: rgba(var(--bs-success-rgb), 0.2);
+  --bs-dropdown-link-active-bg: var(--bs-success);
+}
+
+.dropdown-item-del-bg {
+  --bs-dropdown-link-hover-bg: rgba(var(--bs-danger-rgb), 0.2);
+  --bs-dropdown-link-active-bg: var(--bs-danger);
+}
+
 [data-bs-theme="dark"] input {
   color-scheme: dark;
 }

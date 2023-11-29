@@ -1,4 +1,4 @@
-{% load board_extras cache cacheops crispy_forms_tags static %}
+{% load board_extras cacheops crispy_forms_tags static %}
 {% if board_list_type is None %}
     {% define "own" as board_list_type %}
 {% endif %}
@@ -95,7 +95,7 @@
         </div>
     </form>
 </div>
-{% cache 86400 board-list-pagination page_obj request.user.username querystring %}
+{% cached None "board_list_pagination" page_obj request.user.username querystring %}
 <div>
     <ul class="pagination justify-content-center flex-wrap mb-4"
         hx-target="#board-list">
@@ -148,5 +148,5 @@
         {% endif %}
     </ul>
 </div>
-{% endcache %}
+{% endcached %}
 </div>

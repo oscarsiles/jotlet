@@ -7,15 +7,7 @@
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal">Close</button>
     <button type="submit" class="btn btn-success" form="board-form">
-        {% if form.instance.pk != None %}
-            Save changes
-        {% else %}
-            Create board
-        {% endif %}
+        {{ object|yesno:'Save changes,Create board' }}
     </button>
 </div>
-{% if form.instance.pk != None %}
-    <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Board</h5>
-{% else %}
-    <h5 id="modal-1-title-div" hx-swap-oob="true">Create Board</h5>
-{% endif %}
+<h5 id="modal-1-title-div" hx-swap-oob="true">{{ object|yesno:'Edit,Create' }} Board</h5>

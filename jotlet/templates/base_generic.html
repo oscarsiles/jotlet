@@ -1,4 +1,4 @@
-{% load static cache %}
+{% load static cacheops %}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
     <head>
@@ -83,7 +83,7 @@
                         <ul class="navbar-nav">
                             <li class="nav-item">
                                 <a class="nav-link p-0 active" href="{% url 'boards:index' %}">
-                                    <div class="d-flex flex-column" hx-disable x-data x-ignore>
+                                    <div class="d-flex flex-column" x-data x-ignore>
                                         <div class="py-0 fs-5 fw-semibold text-break">
                                             {% block navbar_title %}
                                                 Jotlet
@@ -121,29 +121,25 @@
                                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                     {% block navbar-items %}
                                     {% endblock navbar-items %}
-                                    {% if perms.boards.add_board %}
-                                        {% cache 86400 navbar-button-addBoard perms.boards.add_board %}
-                                        <li class="nav-item">
-                                            <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                                                <a class="nav-link"
-                                                   role="button"
-                                                   hx-get="{% url 'boards:board-create' %}"
-                                                   hx-target="#modal-1-body-div"
-                                                   data-bs-toggle="modal"
-                                                   data-bs-target="#modal-1-div">
-                                                    <i class="bi bi-plus-circle"></i>
-                                                    <span>Create board</span>
-                                                </a>
-                                            </span>
-                                        </li>
-                                    {% endcache %}
-                                {% endif %}
-                                {% if request.user.is_authenticated %}
-                                    <li class="nav-item py-2 py-xxl-1">
-                                        <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
-                                        <hr class="d-xxl-none my-2 opacity-50" />
-                                    </li>
-                                    {% cache 86400 navbar-user-menu request.path request.user %}
+                                    {% if request.user.is_authenticated %}
+                                        {% if perms.boards.add_board %}
+                                            {% cached None "navbar_button_addBoard" perms.boards.add_board %}
+                                            <li class="nav-item">
+                                                <span data-bs-toggle="collapse" data-bs-target="#navbarText">
+                                                    <a class="nav-link"
+                                                       role="button"
+                                                       hx-get="{% url 'boards:board-create' %}"
+                                                       hx-target="#modal-1-body-div"
+                                                       data-bs-toggle="modal"
+                                                       data-bs-target="#modal-1-div">
+                                                        <i class="bi bi-plus-circle"></i>
+                                                        <span>Create board</span>
+                                                    </a>
+                                                </span>
+                                            </li>
+                                        {% endcached %}
+                                    {% endif %}
+                                    {% cached None "navbar_user_menu" request.path request.user %}
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle"
                                            href="#"
@@ -153,89 +149,96 @@
                                            aria-expanded="false">{{ user }}</a>
                                         <ul class="dropdown-menu dropdown-menu-lg-end"
                                             aria-labelledby="navbarDropdownMenuLink">
-                                            {% if user.is_staff %}
-                                                <li>
-                                                    <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a>
-                                                </li>
-                                            {% endif %}
                                             <li>
-                                                <a class="dropdown-item" href="{% url 'account_profile' %}">Profile</a>
+                                                <a class="dropdown-item" href="{% url 'account_profile' %}"><i class="bi bi-person pe-2"></i>Profile</a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item"
                                                    role="button"
                                                    hx-post="{% url 'account_logout' %}?next={{ request.path }}"
-                                                   hx-target="body">Logout</a>
+                                                   hx-target="body"><i class="bi bi-box-arrow-left pe-2"></i>Logout
+                                                </a>
                                             </li>
+                                            {% if user.is_staff %}
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-tools pe-2"></i>Admin Panel
+                                                    </a>
+                                                </li>
+                                            {% endif %}
                                         </ul>
                                     </li>
-                                {% endcache %}
+                                {% endcached %}
                             {% else %}
-                                {% cache 86400 navbar-login-menu request.path %}
+                                {% cached None "navbar_login_menu" request.path %}
                                 <li class="nav-item">
                                     <span data-bs-toggle="collapse" data-bs-target="#navbarText">
-                                        <a class="nav-link"
-                                           role="button"
-                                           hx-get="{% url 'account_login' %}?next={{ request.path }}"
-                                           hx-target="#modal-1-body-div"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#modal-1-div">Login/Register</a>
-                                    </span>
-                                </li>
-                            {% endcache %}
-                        {% endif %}
-                        <li class="nav-item py-2 py-xxl-1">
-                            <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
-                            <hr class="d-xxl-none my-2 opacity-50" />
+                                    <a class="nav-link"
+                                       role="button"
+                                       hx-get="{% url 'account_login' %}?next={{ request.path }}"
+                                       hx-target="#modal-1-body-div"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal-1-div"><i class="bi bi-box-arrow-in-right"></i>
+                                    <span>Login/Register</span>
+                                </a>
+                            </span>
                         </li>
-                        <li class="nav-item dropdown">
-                            <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
-                                    id="bd-theme"
-                                    type="button"
-                                    aria-expanded="false"
-                                    data-bs-toggle="dropdown"
-                                    data-bs-display="static">
-                                <span class="theme-icon-active">
-                                    <i class="bi bi-sun-fill"></i>
-                                </span>
-                                <span class="d-lg-none ms-2">Toggle theme</span>
+                    {% endcached %}
+                {% endif %}
+                <li class="nav-item py-2 py-xxl-1">
+                    <div class="vr d-none d-xxl-flex h-100 mx-xxl-2"></div>
+                    <hr class="d-xxl-none my-2 opacity-50" />
+                </li>
+                <li class="nav-item dropdown">
+                    <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+                            id="bd-theme"
+                            type="button"
+                            aria-expanded="false"
+                            data-bs-toggle="dropdown"
+                            data-bs-display="static">
+                        <span class="theme-icon-active">
+                            <i class="bi bi-sun-fill"></i>
+                        </span>
+                        <span class="d-lg-none ms-2">Toggle theme</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-color-mode"
+                        aria-labelledby="bd-theme">
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item d-flex align-items-center"
+                                    data-bs-theme-value="light">
+                                <i class="bi bi-sun-fill pe-1"></i>
+                                <span>Light</span>
+                                <i class="bi bi-check2 ms-auto d-none"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-color-mode"
-                                aria-labelledby="bd-theme">
-                                <li>
-                                    <button type="button"
-                                            class="dropdown-item d-flex align-items-center"
-                                            data-bs-theme-value="light">
-                                        <i class="bi bi-sun-fill pe-1"></i>
-                                        <span>Light</span>
-                                        <i class="bi bi-check2 ms-auto d-none"></i>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button type="button"
-                                            class="dropdown-item d-flex align-items-center active"
-                                            data-bs-theme-value="dark">
-                                        <i class="bi bi-moon-stars-fill pe-1"></i>
-                                        <span>Dark</span>
-                                        <i class="bi bi-check2 ms-auto d-none"></i>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button type="button"
-                                            class="dropdown-item d-flex align-items-center"
-                                            data-bs-theme-value="auto">
-                                        <i class="bi bi-circle-half pe-1"></i>
-                                        <span>Auto</span>
-                                        <i class="bi bi-check2 ms-auto d-none"></i>
-                                    </button>
-                                </li>
-                            </ul>
+                        </li>
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item d-flex align-items-center active"
+                                    data-bs-theme-value="dark">
+                                <i class="bi bi-moon-stars-fill pe-1"></i>
+                                <span>Dark</span>
+                                <i class="bi bi-check2 ms-auto d-none"></i>
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button"
+                                    class="dropdown-item d-flex align-items-center"
+                                    data-bs-theme-value="auto">
+                                <i class="bi bi-circle-half pe-1"></i>
+                                <span>Auto</span>
+                                <i class="bi bi-check2 ms-auto d-none"></i>
+                            </button>
                         </li>
                     </ul>
-                </div>
-            </div>
-        </span>
+                </li>
+            </ul>
+        </div>
     </div>
+</span>
+</div>
 </nav>
 <div class="d-flex flex-column flex-grow-1 overflow-auto bg-body gap-2 pt-2"
      id="main-content-div">
@@ -253,7 +256,7 @@
 {% include "boards/components/modal.html" with num=2 %}
 {% if not request.htmx %}
     <script type="module" nonce="{{ CSP_NONCE }}">
-        /* beautify ignore:start */{% cache 86400 base-script-modals %}/* beautify ignore:end */
+        /* beautify ignore:start */{% cached None "base-script-modals" %}/* beautify ignore:end */
         htmx.on("hidden.bs.modal", function(e) {
           var modal2 = bootstrap.Modal.getInstance(
             document.getElementById("modal-2-div")
@@ -275,7 +278,7 @@
             ).outerHTML = `{% include 'boards/components/modal.html' with num=2 %}`;
           }
         });
-        /* beautify ignore:start */{% endcache %}/* beautify ignore:end */
+        /* beautify ignore:start */{% endcached %}/* beautify ignore:end */
     </script>
 {% endif %}
 {% block script %}

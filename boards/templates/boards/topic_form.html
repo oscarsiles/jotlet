@@ -19,16 +19,6 @@
             class="btn btn-success"
             form="topic-form"
             data-bs-dismiss="modal"
-            tabindex="0">
-        {% if form.instance.pk != None %}
-            Save changes
-        {% else %}
-            Create topic
-        {% endif %}
-    </button>
+            tabindex="0">{{ object|yesno:'Save changes,Create topic' }}</button>
 </div>
-{% if form.instance.pk != None %}
-    <h5 id="modal-1-title-div" hx-swap-oob="true">Edit Topic</h5>
-{% else %}
-    <h5 id="modal-1-title-div" hx-swap-oob="true">Create Topic</h5>
-{% endif %}
+<h5 id="modal-1-title-div" hx-swap-oob="true">{{ object|yesno:'Edit,Create' }} Topic</h5>
