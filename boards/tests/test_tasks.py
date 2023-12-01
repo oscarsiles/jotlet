@@ -10,8 +10,8 @@ class TestTasks:
     @pytest.mark.parametrize(
         ("exports_count", "days_offset", "expected_count"),
         [
-            (5, -7, 5),
-            (5, -8, 0),
+            (5, -Export.MAX_AGE + 1, 5),
+            (5, -Export.MAX_AGE - 1, 0),
         ],
     )
     def test_export_cleanup(self, export_factory, exports_count, days_offset, expected_count):

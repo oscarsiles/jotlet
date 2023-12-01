@@ -26,7 +26,9 @@ def delete_thumbnails(file):
 @db_periodic_task(crontab(minute="0", hour="3"))
 @lock_task("export_cleanup-lock")
 def export_cleanup():
-    apps.get_model("boards.Export").objects.filter(created_at__lt=offset_date(days=-7)).delete()
+    export_model = apps.get_model("boards.Export")
+    max_age = export_model.MAX_AGE
+    export_model.objects.filter(created_at__lt=offset_date(days=-max_age)).delete()
 
 
 @db_task()

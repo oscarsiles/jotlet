@@ -1,0 +1,26 @@
+{% load board_extras cacheops static %}
+{% cached_as board None "board_export" board.pk board.exports %}
+<div id="board-exports"
+     hx-get="{% url 'boards:board-export-table' board.slug %}"
+     hx-trigger="load, exportCreated, exportDeleted"
+     hx-indicator="#spinner"
+     hx-ext="alpine-morph"
+     hx-swap="morph"
+     hx-target="#board-export-table"
+     x-init="$refs.modal1.classList.add('modal-xl')">
+    <div id="board-export-table"></div>
+</div>
+<div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
+    <button type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal">Close</button>
+</div>
+<h5 id="modal-1-title-div" class="modal-title" hx-swap-oob="true">
+    Export Board
+    <div id="spinner"
+         class="spinner-border spinner-border-sm htmx-indicator"
+         role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</h5>
+{% endcached_as %}

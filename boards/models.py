@@ -165,6 +165,13 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     def is_additional_data_allowed(self):
         return self.preferences.enable_chemdoodle  # currently only have chemdoodle additional data
 
+    def is_export_allowed(self, request):
+        @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
+        def _is_export_allowed(self, request):
+            return request.user.is_staff or request.user == self.board.owner
+
+        return _is_export_allowed(self, request)
+
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -650,7 +657,11 @@ class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, related_name="exports", null=False)
     file = models.FileField(upload_to=get_export_upload_path, null=False)
+    post_count = models.PositiveSmallIntegerField(default=0, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    MAX_AGE = 7  # days
+    MAX_COUNT = 5
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
@@ -667,21 +678,25 @@ class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             # only want to save the file when it is first created
             super().save(*args, **kwargs)
 
+            while self.board.exports.count() > self.MAX_COUNT:
+                self.board.exports.last().delete()
+
     def generate_and_set_file(self):
         header, posts = self.get_export_data()
         self.file = generate_csv(header, posts)
+        self.post_count = len(posts)
 
     def get_export_data(self):
-        header = [
-            "id",
-            "content",
-            "parent",
-            "topic",
-            "identity_hash",
-            "approved",
-            "created_at",
-            "updated_at",
-        ]
-        posts = self.board.get_posts.values(*header)
+        header = {
+            "id": "post id",
+            "content": "post content",
+            "parent": "post parent id",
+            "topic__subject": "topic subject",
+            "identity_hash": "post identity hash",
+            "approved": "post approved",
+            "created_at": "post created at",
+            "updated_at": "post updated at",
+        }
+        posts = self.board.get_posts.values(*header.keys())
 
         return header, posts

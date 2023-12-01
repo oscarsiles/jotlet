@@ -54,7 +54,7 @@ class TestExportUtils:
         ).search(get_export_upload_path(export, "test.csv"))
 
     def test_generate_csv(self):
-        header = ["head1", "head2", "head3"]
+        header = {"head1": "head 1", "head2": "head 2", "head3": "head 3"}
         rows = [
             {"head1": "test1", "head2": "test2", "head3": "test3"},
             {"head1": "test4", "head2": "test5", "head3": "test6"},
@@ -63,7 +63,7 @@ class TestExportUtils:
         with generate_csv(header, rows) as csv:
             assert csv.content_type == "text/csv"
             assert csv.charset == "utf-8"
-            assert csv.read().decode("utf-8") == "head1,head2,head3\r\ntest1,test2,test3\r\ntest4,test5,test6\r\n"
+            assert csv.read().decode("utf-8") == "head 1,head 2,head 3\r\ntest1,test2,test3\r\ntest4,test5,test6\r\n"
 
 
 class TestImageUtils:

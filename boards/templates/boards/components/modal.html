@@ -5,7 +5,8 @@
      tabindex="-1"
      {% if num == 2 %}data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}>
     <div class="modal-dialog modal-dialog-scrollable
-                {% if num == 2 %}modal-xl{% endif %}">
+                {% if num == 2 %}modal-xl{% endif %}"
+         x-ref="modal{{ num }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modal-{{ num }}-title-div">Loading...</h5>

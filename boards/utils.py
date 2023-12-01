@@ -27,8 +27,8 @@ def get_export_upload_path(export, filename):
 
 def generate_csv(header, rows):
     with StringIO(newline="") as csv_buffer:
-        csv_writer = csv.DictWriter(csv_buffer, fieldnames=header)
-        csv_writer.writeheader()
+        csv_writer = csv.DictWriter(csv_buffer, fieldnames=header.keys())
+        csv_writer.writerow(header)
         csv_writer.writerows(iter(rows))
 
         bytes_buffer = BytesIO(csv_buffer.getvalue().encode("utf-8"))

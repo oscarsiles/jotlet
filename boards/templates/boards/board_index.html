@@ -105,6 +105,16 @@
                     </a>
                 </li>
                 <li>
+                    <a class="dropdown-item"
+                       role="button"
+                       hx-get="{% url 'boards:board-export' board.slug %}"
+                       hx-target="#modal-1-body-div"
+                       data-bs-toggle="modal"
+                       data-bs-target="#modal-1-div">
+                        <i class="bi bi-file-earmark-arrow-down pe-2"></i>Export Posts
+                    </a>
+                </li>
+                <li>
                     <a class="dropdown-item dropdown-item-del-bg"
                        role="button"
                        hx-get="{% url 'boards:board-delete' board.slug %}"
