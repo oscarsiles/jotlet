@@ -1,0 +1,115 @@
+{% load cacheops humanize %}
+{% cached_as exports 86400 "board-exports-table" board.pk %}
+<div id="board-export-table">
+    <div class="d-flex flex-column m-2 gap-3">
+        <div class="d-flex flex-wrap justify-content-start gap-3">
+            <button class="btn btn-success"
+                    hx-post="{% url "boards:board-export-create" board.slug %}"
+                    hx-swap="none"
+                    x-data="{ isDisabled: false}"
+                    x-effect="isDisabled = false"
+                    :disabled="isDisabled"
+                    @click="isDisabled = true">
+                <span class="spinner-border spinner-border-sm"
+                      x-show="isDisabled"
+                      aria-hidden="true"></span>
+                <span x-show="!isDisabled">Generate export</span>
+                <span role="status" x-show="isDisabled">Please wait...</span>
+            </button>
+            {% if board.num_exports == 5 %}
+                <div class="d-flex">
+                    <div class="d-flex align-items-center alert alert-warning m-0 px-2 py-2 py-lg-0"
+                         role="alert">
+                        <span>Max count reached; generating another will <strong>delete</strong> the oldest (<i class="bi bi-clock-history"></i>) export.</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% if board.num_exports > 0 %}
+            <div class="table-responsive-lg">
+                <table class="table table-striped align-middle m-0"
+                       x-effect="initializeTooltips($el)">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="col-lg-1">#</th>
+                            <th scope="col" class="col-lg-3">Created</th>
+                            <th scope="col" class="col-lg-1">Posts</th>
+                            <th scope="col" class="col-lg-auto">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for export in board.exports.all %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>
+                                    <span data-bs-toggle="tooltip"
+                                          data-bs-placement="right"
+                                          title="{{ export.created_at }}">
+                                        {{ export.created_at|naturaltime }}
+                                        {% if forloop.counter == 5 %}&nbsp;<i class="bi bi-clock-history"></i>{% endif %}
+                                    </span>
+                                </td>
+                                {% cached_as export 86400 "board-export-row" board.pk %}
+                                <td>{{ export.post_count }}</td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="btn btn-primary btn-sm pe-2"
+                                                hx-post="{% url "boards:board-export-download" board.slug export.pk %}"
+                                                hx-swap="none"
+                                                x-data="{ isDisabled: false}"
+                                                :disabled="isDisabled"
+                                                @click="isDisabled = true"
+                                                @export-downloaded.camel="await new Promise(r => setTimeout(r, 1000)); isDisabled = false;">
+                                            <span class="spinner-border spinner-border-sm"
+                                                  x-show="isDisabled"
+                                                  aria-hidden="true"></span>
+                                            <span x-show="!isDisabled">Download</span>
+                                            <span role="status" x-show="isDisabled">Please wait...</span>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm"
+                                                hx-post="{% url "boards:board-export-delete" board.slug export.pk %}"
+                                                hx-swap="none"
+                                                x-data="{ isDisabled: false}"
+                                                x-effect="isDisabled = false"
+                                                :disabled="isDisabled"
+                                                @click="isDisabled = true">
+                                            <span class="spinner-border spinner-border-sm"
+                                                  x-show="isDisabled"
+                                                  aria-hidden="true"></span>
+                                            <span x-show="!isDisabled">Delete</span>
+                                            <span role="status" x-show="isDisabled">Please wait...</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            {% endcached_as %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex flex-column">
+            <div class="d-flex justify-content-start">
+                <button class="d-flex btn btn-danger"
+                        hx-post="{% url "boards:board-export-delete-all" board.slug %}"
+                        hx-swap="none"
+                        x-data="{ isDisabled: false}"
+                        x-effect="isDisabled = false"
+                        :disabled="isDisabled"
+                        @click="isDisabled = true">
+                    <span class="spinner-border spinner-border-sm"
+                          x-show="isDisabled"
+                          aria-hidden="true"></span>
+                    <span x-show="!isDisabled">Delete all</span>
+                    <span role="status" x-show="isDisabled">Please wait...</span>
+                </button>
+            </div>
+            <div>
+                <em><strong>Note</strong>: Exports will be automatically deleted after 7 days, and you may have a maximum of 5 at any one time.</em>
+            </div>
+        </div>
+    {% else %}
+        <div>No exports found for this board.</div>
+    {% endif %}
+</div>
+</div>
+{% endcached_as %}

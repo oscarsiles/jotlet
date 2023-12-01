@@ -10,7 +10,7 @@
             {% endif %}
             <form id="signup-form"
                   hx-post="{% url 'account_signup' %}"
-                  {% if show_modal %} hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
+                  {% if show_modal %}hx-target="#modal-1-body-div" hx-swap="innerHTML"{% endif %}>
                 {% crispy form %}
                 {% include "accounts/components/forms/captcha.html" %}
                 <p class="text-center px-3">
@@ -26,6 +26,6 @@
             </div>
         </div>
     {% else %}
-        <h5 id="modal-1-title-div" hx-swap-oob="true">Create Account</h5>
+        <h5 id="modal-1-title-div" class="modal-title" hx-swap-oob="true">Create Account</h5>
     {% endif %}
 {% endblock content %}

@@ -10,7 +10,7 @@
                 <input id="userDeleteConfirmCheckbox"
                        class="form-check-input"
                        type="checkbox"
-                       x-model="$store.userPreferences.deleteConfirm"/>
+                       x-model="$store.userPreferences.deleteConfirm" />
             </div>
             <label class="form-control form-check-label" for="userDeleteConfirmCheckbox">
                 I confirm that I understand and wish to delete my account.
@@ -31,9 +31,7 @@
                 class="btn btn-danger"
                 form="post-delete-form"
                 data-bs-dismiss="modal"
-                :disabled="!$store.userPreferences.deleteConfirm">
-            Delete
-        </button>
+                :disabled="!$store.userPreferences.deleteConfirm">Delete</button>
     </div>
 {% endif %}
-<h5 id="modal-1-title-div" hx-swap-oob="true">Delete Account</h5>
+<h5 id="modal-1-title-div" class="modal-title" hx-swap-oob="true">Delete Account</h5>

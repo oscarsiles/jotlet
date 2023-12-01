@@ -104,7 +104,7 @@
     {% endif %}
 {% endcached_as %}
 <div x-ref="topicPosts_{{ topic.pk.hex }}">
-    {% for post in topic.posts.all|dictsort:"created_at" %}
+    {% for post in topic.posts.all %}
         {% if post.tree_depth == 0 %}
             {% include "boards/components/post.html" %}
         {% endif %}

@@ -1,6 +1,9 @@
 var allow_image_uploads = JSON.parse(
   document.getElementById("allow_image_uploads").textContent
 );
+var image_uploads = JSON.parse(
+  document.getElementById("image_uploads").textContent
+);
 var enable_chemdoodle = JSON.parse(
   document.getElementById("chemdoodle_enabled").textContent
 );
@@ -167,7 +170,7 @@ connectWebsocket();
 // Alpine x-markdown
 var allowed_tags = ["span", "b", "i", "em", "strong", "br", "p", "code"];
 var allowed_attr = ["title", "x-ignore"];
-if (allow_image_uploads) {
+if (image_uploads) {
   allowed_tags.push("img");
   allowed_attr.push("alt", "src");
 }

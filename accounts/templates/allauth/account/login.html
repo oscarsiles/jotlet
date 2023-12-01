@@ -30,9 +30,7 @@
                                 hx-get="{% url 'account_reset_password' %}"
                                 hx-target="#modal-1-body-div"
                                 hx-swap="innerHTML"
-                                {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>
-                            Forgot Password
-                        </button>
+                                {% if not show_modal %}data-bs-target="#modal-1-div" data-bs-toggle="modal"{% endif %}>Forgot Password</button>
                         <div class="col-auto my-auto text-secondary">/</div>
                         <button class="btn btn-link link-secondary text-decoration-none"
                                 id="signup-button"
@@ -42,12 +40,14 @@
                                 {% else %}
                                     hx-target="#central-login-column" hx-push-url="true"
                                 {% endif %}
-                                hx-swap="innerHTML">
-                            Register
-                        </button>
+                                hx-swap="innerHTML">Register</button>
                         <input type="hidden"
                                name="{{ redirect_field_name }}"
-                               {% if redirect_field_value %} value="{{ redirect_field_value }}" {% else %} value="/" {% endif %}/>
+                               {% if redirect_field_value %}
+                                   value="{{ redirect_field_value }}"
+                               {% else %}
+                                   value="/"
+                               {% endif %} />
                     </div>
                 </div>
             </form>
@@ -69,6 +69,6 @@
             </div>
         </div>
     {% else %}
-        <h5 id="modal-1-title-div" hx-swap-oob="true">Login</h5>
+        <h5 id="modal-1-title-div" class="modal-title" hx-swap-oob="true">Login</h5>
     {% endif %}
 {% endblock content %}
