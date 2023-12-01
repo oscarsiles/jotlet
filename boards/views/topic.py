@@ -62,6 +62,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+    object: Topic  # noqa: A003
     model = Topic
     template_name = "boards/topic_confirm_delete.html"
 
@@ -101,6 +102,9 @@ class TopicFetchView(generic.TemplateView):
             Board.objects.prefetch_related("owner")
             .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
+            .prefetch_related("topics")
+            .prefetch_related("topics__posts")
+            .prefetch_related("topics__posts__children")
             .get(slug=self.kwargs["slug"])
         )
         context["topic"] = board.topics.get(pk=self.kwargs["pk"])

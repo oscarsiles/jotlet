@@ -32,6 +32,9 @@ class BoardView(generic.DetailView):
             .prefetch_related("owner")
             .prefetch_related("preferences")
             .prefetch_related("preferences__moderators")
+            .prefetch_related("topics")
+            .prefetch_related("topics__posts")
+            .prefetch_related("topics__posts__children")
         )
 
     def get_context_data(self, **kwargs):
@@ -44,7 +47,7 @@ class BoardView(generic.DetailView):
         if board.preferences.background_type == "i":
             context["bg_image"] = board.preferences.background_image
 
-        context["topics"] = board.topics.order_by("created_at")
+        context["topics"] = board.topics.all()
         context["support_webp"] = self.request.META.get("HTTP_ACCEPT", "").find("image/webp") > -1
         context["is_moderator"] = get_is_moderator(self.request.user, board)
         return context
@@ -139,6 +142,7 @@ class UpdateBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 
 class DeleteBoardView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+    object: Board  # noqa: A003
     model = Board
     board: Board | None = None
     template_name = "boards/board_confirm_delete.html"
