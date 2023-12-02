@@ -10,19 +10,17 @@
         {{ board.preferences.enable_latex|json_script:"mathjax_enabled" }}
         {{ board.preferences.enable_chemdoodle|json_script:"chemdoodle_enabled" }}
         {{ board.preferences.enable_identicons|json_script:"identicons_enabled" }}
-        {% with board.preferences.allow_image_uploads as image_uploads %}
-            {% if image_uploads %}
-                {{ image_uploads|json_script:"image_uploads" }}
-                {% if request.user.is_moderator or request.user.is_staff %}
-                    {{ True|json_script:"allow_image_uploads" }}
-                {% else %}
-                    {{ False|json_script:"allow_image_uploads" }}
-                {% endif %}
+        {% if board.preferences.allow_image_uploads %}
+            {{ True|json_script:"image_uploads" }}
+            {% if request.user.is_moderator or request.user.is_staff %}
+                {{ True|json_script:"allow_image_uploads" }}
             {% else %}
-                {{ False|json_script:"image_uploads" }}
                 {{ False|json_script:"allow_image_uploads" }}
             {% endif %}
-        {% endwith %}
+        {% else %}
+            {{ False|json_script:"image_uploads" }}
+            {{ False|json_script:"allow_image_uploads" }}
+        {% endif %}
         {% if board.preferences.enable_latex %}
             <script defer
                     src="{% static 'boards/js/components/board_mathjax.js' %}"
