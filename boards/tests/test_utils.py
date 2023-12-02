@@ -56,8 +56,8 @@ class TestExportUtils:
     def test_generate_csv(self):
         header = {"head1": "head 1", "head2": "head 2", "head3": "head 3"}
         rows = [
-            {"head1": "test1", "head2": "test2", "head3": "test3"},
-            {"head1": "test4", "head2": "test5", "head3": "test6"},
+            ["test1", "test2", "test3"],
+            ["test4", "test5", "test6"],
         ]
 
         with generate_csv(header, rows) as csv:

@@ -692,11 +692,17 @@ class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
             "content": "post content",
             "parent": "post parent id",
             "topic__subject": "topic subject",
-            "identity_hash": "post identity hash",
+            "topic__created_at": "topic created at",
+            "identity_hash": "poster identity hash",
             "approved": "post approved",
             "created_at": "post created at",
             "updated_at": "post updated at",
         }
-        posts = self.board.get_posts.values(*header.keys())
 
+        # As TreeNode cannot order by related fields, we need to sort each topic individually and concatenate them
+        topics = Topic.objects.filter(board=self.board).prefetch_related("posts", "posts__children")
+        posts = []
+
+        for topic in topics:
+            posts.extend(iter(topic.posts.values_list(*header.keys())))
         return header, posts
