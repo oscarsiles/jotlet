@@ -14,10 +14,13 @@
             {% if image_uploads %}
                 {{ image_uploads|json_script:"image_uploads" }}
                 {% if request.user.is_moderator or request.user.is_staff %}
-                    {{ image_uploads|json_script:"allow_image_uploads" }}
+                    {{ True|json_script:"allow_image_uploads" }}
                 {% else %}
                     {{ False|json_script:"allow_image_uploads" }}
                 {% endif %}
+            {% else %}
+                {{ False|json_script:"image_uploads" }}
+                {{ False|json_script:"allow_image_uploads" }}
             {% endif %}
         {% endwith %}
         {% if board.preferences.enable_latex %}
