@@ -2,10 +2,9 @@ from http import HTTPStatus
 
 import pytest
 from allauth.core import context
-from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.test import override_settings
 from django.urls import reverse
 from pytest_lazy_fixtures import lf
 
@@ -39,23 +38,35 @@ class TestJotletAccountDeleteView:
 
 
 class TestJotletLoginView:
-    def test_successful_hcaptcha_login(self, client, user):
+    @pytest.mark.parametrize(
+        ("hcaptcha_response", "success"),
+        [(HCAPTCHA_TEST_RESPONSE, True), ("incorrect_captcha_response", False)],
+    )
+    def test_hcaptcha(self, settings, client, user, hcaptcha_response, success):
+        settings.HCAPTCHA_ENABLED = True
+        settings.CF_TURNSTILE_ENABLED = False
+
         response = client.post(
             reverse("account_login"),
             {
                 "login": user.username,
                 "password": USER_TEST_PASSWORD,
-                "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
+                "h-captcha-response": hcaptcha_response,
             },
         )
         assert response.status_code == HTTPStatus.OK
-        assert response.headers["HX-Redirect"] == reverse(settings.LOGIN_REDIRECT_URL)
+        if success:
+            assert response.headers["HX-Redirect"] == reverse(settings.LOGIN_REDIRECT_URL)
+        else:
+            assert (
+                response.context_data["form"].errors.get("__all__")[0]
+                == "Captcha challenge failed. Please try again."
+            )
 
-    @override_settings(
-        HCAPTCHA_ENABLED=False,
-        CF_TURNSTILE_ENABLED=True,
-    )
-    def test_successful_cf_turnstile_login(self, client, user):
+    def test_successful_cf_turnstile_login(self, settings, client, user):
+        settings.HCAPTCHA_ENABLED = False
+        settings.CF_TURNSTILE_ENABLED = True
+
         response = client.post(
             reverse("account_login"),
             {
@@ -67,26 +78,12 @@ class TestJotletLoginView:
         assert response.status_code == HTTPStatus.OK
         assert response.headers["HX-Redirect"] == reverse(settings.LOGIN_REDIRECT_URL)
 
-    @override_settings(HCAPTCHA_ENABLED=True)
-    def test_hcaptcha_fail(self, client, user):
-        response = client.post(
-            reverse("account_login"),
-            {
-                "login": user.username,
-                "password": USER_TEST_PASSWORD,
-                "h-captcha-response": "incorrect_captcha_response",
-            },
-        )
-        assert response.status_code == HTTPStatus.OK
-        assert response.context_data["form"].errors.get("__all__")[0] == "Captcha challenge failed. Please try again."
+    def test_cf_turnstile_fail(self, settings, client, user):
+        settings.CF_TURNSTILE_ENABLED = True
+        settings.HCAPTCHA_ENABLED = False
+        settings.CF_TURNSTILE_SITE_KEY = "2x00000000000000000000AB"  # always blocks
+        settings.CF_TURNSTILE_SECRET_KEY = "2x0000000000000000000000000000000AA"  # always fails  # noqa: S105
 
-    @override_settings(
-        HCAPTCHA_ENABLED=False,
-        CF_TURNSTILE_ENABLED=True,
-        CF_TURNSTILE_SITE_KEY="2x00000000000000000000AB",  # blocks all challenges
-        CF_TURNSTILE_SECRET_KEY="2x0000000000000000000000000000000AA",  # noqa: S106
-    )
-    def test_cf_turnstile_fail(self, client, user):
         response = client.post(
             reverse("account_login"),
             {
@@ -110,12 +107,9 @@ class TestJotletLoginView:
         assert response.status_code == HTTPStatus.OK
         assert response.context_data["form"].errors is not None
 
-    @override_settings(
-        HCAPTCHA_ENABLED=False,
-        MESSAGE_STORAGE="django.contrib.messages.storage.cookie.CookieStorage",
-    )
-    def test_remember_me(self, rf, user):
-        from django.contrib import messages
+    def test_remember_me(self, settings, rf, user):
+        settings.HCAPTCHA_ENABLED = False
+        settings.MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
         request = rf.post(
             reverse("account_login"),
@@ -134,11 +128,10 @@ class TestJotletLoginView:
         assert response.status_code == HTTPStatus.OK
         assert not request.session.get_expire_at_browser_close()
 
-    @override_settings(
-        HCAPTCHA_ENABLED=False,
-        MESSAGE_STORAGE="django.contrib.messages.storage.cookie.CookieStorage",
-    )
-    def test_not_remember_me(self, rf, user):
+    def test_not_remember_me(self, settings, rf, user):
+        settings.HCAPTCHA_ENABLED = False
+        settings.MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+
         from django.contrib import messages
 
         request = rf.post(

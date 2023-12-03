@@ -128,8 +128,8 @@ reportUnknownParameterType = false
 reportUnknownVariableType = false
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 addopts = "--cov=jotlet --cov-report xml:cov.xml --cov-report html:htmlcov"
+asyncio_mode = "auto"
 
 [tool.ruff]
 exclude = ["manage.py", "**/migrations/*.py"]

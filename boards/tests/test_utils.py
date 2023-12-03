@@ -1,5 +1,4 @@
 import re
-import shutil
 from itertools import product
 
 import pytest
@@ -43,10 +42,6 @@ class TestUtils:
 
 
 class TestExportUtils:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_get_export_upload_path(self, board):
         export = Export(board=board)
         assert re.compile(
@@ -67,10 +62,6 @@ class TestExportUtils:
 
 
 class TestImageUtils:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     @pytest.mark.parametrize(
         ("image_format", "image_type"),
         product(IMAGE_FORMATS, [image_type[0] for image_type in IMAGE_TYPE]),

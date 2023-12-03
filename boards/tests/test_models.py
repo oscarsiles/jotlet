@@ -1,5 +1,6 @@
+import csv
 import re
-import shutil
+from io import StringIO
 from pathlib import Path
 
 import factory
@@ -22,6 +23,7 @@ from boards.models import (
     BgImage,
     Board,
     BoardPreferences,
+    Export,
     Image,
     Post,
     PostImage,
@@ -35,10 +37,6 @@ ADDITIONAL_DATA_TYPE_CHOICES = [choice[0] for choice in ADDITIONAL_DATA_TYPE]
 
 
 class TestBoardModel:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_object_name_is_title(self, board):
         assert str(board) == board.title
 
@@ -206,10 +204,6 @@ class TestTopicModel:
 
 
 class TestPostModel:
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     def test_content_max_length(self, post):
         assert post._meta.get_field("content").max_length == 1000  # noqa: PLR2004
 
@@ -404,10 +398,6 @@ class TestImageModel:
                     image__filename=f"test.{image_format}",
                 )
 
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
     @pytest.mark.parametrize("image_type", [image_type[0] for image_type in IMAGE_TYPE])
     def test_image_name_is_title(self, image_type):
         img = Image.objects.filter(image_type=image_type).first()
@@ -467,11 +457,11 @@ class TestImageModel:
         def check_thumb_exists(thumb):
             assert thumb is not None
             assert f"{settings.MEDIA_URL}cache/" in thumb.url
-            assert default_storage.exists(f"{settings.MEDIA_ROOT}{thumb.name}")
+            assert default_storage.exists(Path(settings.MEDIA_ROOT) / thumb.name)
 
             name = Path(thumb.name).with_suffix("")
             ext = Path(thumb.name).suffix
-            assert default_storage.exists(f"{settings.MEDIA_ROOT}/{name}@{alternate_resolution}x{ext}")
+            assert default_storage.exists(Path(settings.MEDIA_ROOT) / f"{name}@{alternate_resolution}x{ext}")
 
         def check_thumb_dimensions(thumb, width, height):
             assert thumb.width <= width
@@ -502,3 +492,57 @@ class TestImageModel:
         count_before = PostImage.objects.count()
         post_image_factory()
         assert PostImage.objects.count() == count_before + 1
+
+
+class TestExportModel:
+    @pytest.mark.parametrize(("topic_count"), [1, 5])
+    @pytest.mark.parametrize(("post_count"), [0, 1, 10])
+    def test_export_save(self, board, topic_factory, post_factory, topic_count, post_count):
+        topics = topic_factory.create_batch(topic_count, board=board)
+
+        # want posts in different topics to have mixed created times
+        for _ in range(post_count):
+            for topic in topics:
+                post_factory(topic=topic)
+
+        csv_output = StringIO()
+        writer = csv.writer(csv_output)
+
+        writer.writerow(Export.HEADER.values())
+        for topic in topics:
+            for post in topic.posts.values_list(*Export.HEADER.keys()):
+                writer.writerow(post)
+        expected_file_content = csv_output.getvalue()
+
+        export = Export.objects.create(board=board)
+        assert export.post_count == topic_count * post_count
+        with export.file.open() as file:
+            file_content = file.read().decode()
+
+        assert file_content == expected_file_content
+
+    @pytest.mark.parametrize(
+        ("initial_export_count", "expected_exports"),
+        [
+            (Export.MAX_COUNT - 2, Export.MAX_COUNT - 1),
+            (Export.MAX_COUNT, Export.MAX_COUNT),
+            (Export.MAX_COUNT + 2, Export.MAX_COUNT),
+        ],
+    )
+    def test_export_save_max_count(self, board, initial_export_count, expected_exports):
+        for _ in range(initial_export_count):
+            Export.objects.create(board=board)
+
+        new_export = Export(board=board)
+        new_export.save()
+
+        assert Export.objects.filter(board=board).count() == expected_exports
+
+    def test_oldest_max_count_export_deleted(self, board, export_factory):
+        export_factory.create_batch(Export.MAX_COUNT, board=board)
+        oldest_export = Export.objects.filter(board=board).order_by("created_at").first()
+        export_factory(board=board)
+
+        exports = Export.objects.filter(board=board)
+        assert exports.count() == Export.MAX_COUNT
+        assert oldest_export not in exports

@@ -1,5 +1,4 @@
 import json
-import shutil
 from http import HTTPStatus
 
 import pytest
@@ -836,10 +835,6 @@ class TestPostImageUploadView:
     @pytest.fixture()
     def upload_url(self, board):
         return reverse("boards:post-image-upload", kwargs={"slug": board.slug})
-
-    @classmethod
-    def teardown_class(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     def post_image_and_assert(self, client, upload_url, image_type, test_user, expected_response_post):
         response = client.post(

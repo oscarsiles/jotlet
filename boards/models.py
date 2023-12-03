@@ -168,7 +168,7 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     def is_export_allowed(self, request):
         @cached_as(self, extra=request.session.session_key, timeout=60 * 60 * 24)
         def _is_export_allowed(self, request):
-            return request.user.is_staff or request.user == self.board.owner
+            return request.user.is_staff or request.user == self.owner
 
         return _is_export_allowed(self, request)
 
@@ -662,6 +662,17 @@ class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
     MAX_AGE = 7  # days
     MAX_COUNT = 5
+    HEADER = {
+        "id": "post id",
+        "content": "post content",
+        "parent": "post parent id",
+        "topic__subject": "topic subject",
+        "topic__created_at": "topic created at",
+        "identity_hash": "poster identity hash",
+        "approved": "post approved",
+        "created_at": "post created at",
+        "updated_at": "post updated at",
+    }
 
     class Meta(auto_prefetch.Model.Meta):
         indexes = [
@@ -687,22 +698,10 @@ class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         self.post_count = len(posts)
 
     def get_export_data(self):
-        header = {
-            "id": "post id",
-            "content": "post content",
-            "parent": "post parent id",
-            "topic__subject": "topic subject",
-            "topic__created_at": "topic created at",
-            "identity_hash": "poster identity hash",
-            "approved": "post approved",
-            "created_at": "post created at",
-            "updated_at": "post updated at",
-        }
-
         # As TreeNode cannot order by related fields, we need to sort each topic individually and concatenate them
         topics = Topic.objects.filter(board=self.board).prefetch_related("posts", "posts__children")
         posts = []
 
         for topic in topics:
-            posts.extend(iter(topic.posts.values_list(*header.keys())))
-        return header, posts
+            posts.extend(iter(topic.posts.values_list(*self.HEADER.keys())))
+        return self.HEADER, posts

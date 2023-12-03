@@ -1,4 +1,3 @@
-import shutil
 from http import HTTPStatus
 
 import pytest
@@ -278,12 +277,6 @@ class TestImageSelectView:
     def _setup_method(self, board, image_factory):
         for image_type, _ in IMAGE_TYPE:
             image_factory.create_batch(5, board=board if image_type == "p" else None, image_type=image_type)
-
-    @classmethod
-    def teardown_class(cls):
-        from django.conf import settings
-
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
     @pytest.mark.parametrize(
         ("test_user", "expected_response"),

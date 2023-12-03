@@ -308,9 +308,6 @@ if USE_S3:
 else:
     MEDIA_URL = "media/"
     if TESTING:
-        import tempfile
-
-        MEDIA_ROOT = f"{tempfile.mkdtemp()}/"
         WHITENOISE_AUTOREFRESH = True
     else:
         MEDIA_ROOT = str(Path(BASE_DIR) / "media")

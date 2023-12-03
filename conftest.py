@@ -1,3 +1,7 @@
+import shutil
+import tempfile
+from pathlib import Path
+
 import pytest
 from pytest_factoryboy import register
 
@@ -23,6 +27,19 @@ from jotlet.tests.factories import JSONFactory, JSONStringFactory
 @pytest.fixture(autouse=True)
 def _enable_db_access_for_all_tests(db):  # noqa: ARG001
     pass
+
+
+@pytest.fixture(scope="session")
+def temp_dir():
+    tmp_dir = tempfile.mkdtemp(prefix="jotlet_test_")
+    yield tmp_dir
+    shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+@pytest.fixture(autouse=True)
+def _global_settings_override(settings, temp_dir):
+    settings.MEDIA_ROOT = Path(temp_dir) / "media"
+    settings.STATIC_ROOT = Path(temp_dir) / "static"
 
 
 # Other Fixtures
