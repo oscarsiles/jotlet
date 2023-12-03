@@ -121,7 +121,6 @@ class ExportDeleteView(UserPassesTestMixin, generic.View):
 class ExportDownloadView(UserPassesTestMixin, generic.View):
     model = Board
     board: Board | None = None
-    http_method_names = ["post"]
 
     def test_func(self):
         self.board = (
@@ -132,6 +131,6 @@ class ExportDownloadView(UserPassesTestMixin, generic.View):
         )
         return self.board.is_export_allowed(self.request)
 
-    def post(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
         export = Export.objects.get(pk=self.kwargs["pk"])
         return trigger_client_event(HttpResponseClientRedirect(export.file.url), "exportDownloaded", None)
