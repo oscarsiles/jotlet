@@ -5,6 +5,7 @@ from pathlib import Path
 
 import factory
 import pytest
+from django.apps import apps
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import IntegrityError
@@ -34,6 +35,12 @@ from jotlet.tests.utils import create_session
 from jotlet.utils import offset_date
 
 ADDITIONAL_DATA_TYPE_CHOICES = [choice[0] for choice in ADDITIONAL_DATA_TYPE]
+
+
+class TestModelCommon:
+    def test_id_is_uuid(self):
+        for model in apps.get_app_config("boards").get_models():
+            assert model._meta.pk.get_internal_type() == "UUIDField"
 
 
 class TestBoardModel:
@@ -407,7 +414,7 @@ class TestImageModel:
     def test_image_url(self, image_type):
         img = Image.objects.filter(image_type=image_type).first()
         ext = Path(img.image.name).suffix
-        pattern = rf"^{settings.MEDIA_URL}images/{image_type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.id}{ext}$"
+        pattern = rf"^{settings.MEDIA_URL}images/{image_type}/[a-z0-9]+/[a-z0-9]{{2}}/{img.pk}{ext}$"
         assert re.match(pattern, img.image.url)
 
     @pytest.mark.parametrize("image_type", [image_type[0] for image_type in IMAGE_TYPE])

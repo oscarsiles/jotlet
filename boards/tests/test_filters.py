@@ -14,7 +14,7 @@ class TestBoardFilter:
     def _setup_method(self, user, user2, board_factory):
         board_factory.reset_sequence(1)
         with freeze_time(offset_date(days=-1)):
-            board_factory(owner=user)
+            board_factory(owner=user, created_at=datetime.datetime.now(tz=datetime.UTC))
         board_factory(description="Some other text", owner=user)
         board_factory(description="Some other text", owner=user2)
 

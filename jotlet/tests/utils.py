@@ -11,7 +11,7 @@ def create_session(request):
 
 def create_htmx_session(request):
     def dummy_view(_request):
-        return HttpResponse("Hello!")
+        return HttpResponse()
 
     create_session(request)
     htmx_middleware = HtmxMiddleware(dummy_view)

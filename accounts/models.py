@@ -5,8 +5,10 @@ import auto_prefetch
 from cacheops import invalidate_model
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.postgres.functions import RandomUUID
 from django.contrib.postgres.indexes import BrinIndex
 from django.db import models
+from django.db.models.functions import Now
 
 from boards.models import Board
 from jotlet.mixins.refresh_from_db_invalidates_cached_properties import InvalidateCachedPropertiesMixin
@@ -28,14 +30,14 @@ class User(AbstractUser):
 
 
 class UserProfile(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     user = auto_prefetch.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     # user preferences
-    optin_newsletter = models.BooleanField(default=False, verbose_name="Opt-in to newsletter")
-    boards_paginate_by = models.PositiveSmallIntegerField(default=10)
+    optin_newsletter = models.BooleanField(db_default=False, verbose_name="Opt-in to newsletter")
+    boards_paginate_by = models.PositiveSmallIntegerField(db_default=10)
 
     class Meta(auto_prefetch.Model.Meta):
         verbose_name = "profile"

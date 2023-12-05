@@ -6,7 +6,6 @@ from django.contrib.auth.models import Permission
 from django.urls import reverse
 from pytest_django.asserts import assertFormError, assertTemplateUsed
 
-from accounts.models import UserProfile
 from boards.views.index import BoardListView
 
 
@@ -61,7 +60,7 @@ class TestBoardListView:
         self.user_mod_board_count = 5
         self.user2_board_count = 25
         self.total_posts = self.user_board_count + self.user_mod_board_count + self.user2_board_count
-        self.default_paginate_by = UserProfile._meta.get_field("boards_paginate_by").get_default()
+        self.default_paginate_by = user.profile.boards_paginate_by
         board_factory.create_batch(self.user_board_count, owner=user)
         board_factory.create_batch(self.user2_board_count, owner=user2)
         mod_boards = board_factory.create_batch(self.user_mod_board_count, owner=user2)

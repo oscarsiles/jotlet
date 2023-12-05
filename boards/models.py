@@ -4,9 +4,10 @@ from hashlib import blake2b
 import auto_prefetch
 from cacheops import cached_as
 from django.conf import settings
+from django.contrib.postgres.functions import RandomUUID
 from django.contrib.postgres.indexes import BrinIndex, GinIndex, OpClass
 from django.db import IntegrityError, models
-from django.db.models.functions import Upper
+from django.db.models.functions import Now, Upper
 from django.template.defaultfilters import date
 from django.urls import reverse
 from django.utils import timezone
@@ -57,13 +58,13 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(max_length=8, unique=True, null=False)
     description = models.CharField(max_length=100, blank=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     owner = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="boards"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
-    locked = models.BooleanField(default=False)
+    locked = models.BooleanField(db_default=False)
 
     class Meta(auto_prefetch.Model.Meta):
         permissions = (
@@ -174,10 +175,10 @@ class Board(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     board = auto_prefetch.OneToOneField(Board, on_delete=models.CASCADE, related_name="preferences")
-    board_type = models.CharField(max_length=1, choices=BOARD_TYPE, default="d")
-    background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, default="c")
+    board_type = models.CharField(max_length=1, choices=BOARD_TYPE, db_default="d")
+    background_type = models.CharField(max_length=1, choices=BACKGROUND_TYPE, db_default="c")
     background_image = auto_prefetch.ForeignKey(
         "BgImage",
         on_delete=models.SET_NULL,
@@ -185,18 +186,18 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
         blank=True,
         related_name="background",
     )
-    background_color = models.CharField(max_length=7, default="#ffffff")
-    background_opacity = models.FloatField(default=1.0)
-    enable_latex = models.BooleanField(default=False)
-    enable_chemdoodle = models.BooleanField(default=False)
-    enable_identicons = models.BooleanField(default=True)
-    require_post_approval = models.BooleanField(default=False)
-    allow_post_editing = models.BooleanField(default=True)
-    require_post_reapproval_on_edit = models.BooleanField(default=False)
-    allow_guest_replies = models.BooleanField(default=False)
-    allow_image_uploads = models.BooleanField(default=False)
+    background_color = models.CharField(max_length=7, db_default="#ffffff")
+    background_opacity = models.FloatField(db_default=1.0)
+    enable_latex = models.BooleanField(db_default=False)
+    enable_chemdoodle = models.BooleanField(db_default=False)
+    enable_identicons = models.BooleanField(db_default=True)
+    require_post_approval = models.BooleanField(db_default=False)
+    allow_post_editing = models.BooleanField(db_default=True)
+    require_post_reapproval_on_edit = models.BooleanField(db_default=False)
+    allow_guest_replies = models.BooleanField(db_default=False)
+    allow_image_uploads = models.BooleanField(db_default=False)
     moderators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="moderated_boards")
-    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="n")
+    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, db_default="n")
     posting_allowed_from = models.DateTimeField(null=True, blank=True)
     posting_allowed_until = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -228,12 +229,12 @@ class BoardPreferences(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     subject = models.TextField(max_length=400)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, related_name="topics")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
-    locked = models.BooleanField(default=False)
+    locked = models.BooleanField(db_default=False)
     posts: "models.QuerySet[Post]"
 
     class Meta(auto_prefetch.Model.Meta):
@@ -299,7 +300,7 @@ class Topic(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
     objects = TreeQuerySet.as_manager(with_tree_fields=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     content = models.TextField(max_length=1000)
     topic = auto_prefetch.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="posts")
     user = auto_prefetch.ForeignKey(
@@ -307,9 +308,9 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
     )
     session_key = models.CharField(max_length=40, blank=True)
     identity_hash = models.CharField(max_length=64, blank=True)
-    approved = models.BooleanField(default=True)
-    allow_replies = models.BooleanField(default=True)  # TODO: use to override single post reply permission
-    created_at = models.DateTimeField(auto_now_add=True)
+    approved = models.BooleanField(db_default=True)
+    allow_replies = models.BooleanField(db_default=True)  # TODO: use to override single post reply permission
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta(auto_prefetch.Model.Meta):
@@ -468,15 +469,15 @@ class Post(InvalidateCachedPropertiesMixin, auto_prefetch.Model, TreeNode):
 
 
 class Reaction(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
     user = auto_prefetch.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reactions"
     )
     session_key = models.CharField(max_length=40, null=False, blank=False)
-    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, default="l")
-    reaction_score = models.IntegerField(default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
+    reaction_type = models.CharField(max_length=1, choices=REACTION_TYPE, db_default="l")
+    reaction_score = models.IntegerField(db_default=1)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta(auto_prefetch.Model.Meta):
@@ -496,11 +497,11 @@ ADDITIONAL_DATA_TYPE = (
 
 
 class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, related_name="additional_data")
-    data_type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, default="m", editable=False)
+    data_type = models.CharField(max_length=1, choices=ADDITIONAL_DATA_TYPE, db_default="m", editable=False)
     json = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta(auto_prefetch.Model.Meta):
@@ -510,14 +511,14 @@ class AdditionalData(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
 
 
 class Image(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     title = models.CharField(max_length=50, db_index=True)
     attribution = models.CharField(max_length=100, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=get_image_upload_path)
 
-    image_type = models.CharField(max_length=1, choices=IMAGE_TYPE, default="b", help_text="Image type")
+    image_type = models.CharField(max_length=1, choices=IMAGE_TYPE, db_default="b", help_text="Image type")
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
     post = auto_prefetch.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, related_name="images")
 
@@ -654,11 +655,11 @@ class PostImage(Image):
 
 
 class Export(InvalidateCachedPropertiesMixin, auto_prefetch.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID(), editable=False)
     board = auto_prefetch.ForeignKey(Board, on_delete=models.CASCADE, related_name="exports", null=False)
     file = models.FileField(upload_to=get_export_upload_path, null=False)
-    post_count = models.PositiveSmallIntegerField(default=0, null=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    post_count = models.PositiveSmallIntegerField(db_default=0, null=False)
+    created_at = models.DateTimeField(db_default=Now(), editable=False)
 
     MAX_AGE = 7  # days
     MAX_COUNT = 5

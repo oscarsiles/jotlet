@@ -47,7 +47,7 @@ def get_image_upload_path(image, filename):
     ext = Path(filename).suffix
     sub1 = image.board.slug if image.image_type == "p" else get_random_string(2)
     sub2 = get_random_string(2)
-    return f"images/{image.image_type}/{sub1}/{sub2}/{image.id}{ext}"
+    return f"images/{image.image_type}/{sub1}/{sub2}/{image.pk}{ext}"
 
 
 def get_is_moderator(user, board):
