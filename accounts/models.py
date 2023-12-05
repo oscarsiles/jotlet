@@ -15,6 +15,8 @@ from jotlet.mixins.refresh_from_db_invalidates_cached_properties import Invalida
 
 
 class User(AbstractUser):
+    uuid = models.UUIDField(default=uuid.uuid4, db_default=RandomUUID(), unique=True, editable=False)
+
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         super().save(*args, **kwargs)
