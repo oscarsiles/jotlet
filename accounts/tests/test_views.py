@@ -107,9 +107,9 @@ class TestJotletLoginView:
         assert response.status_code == HTTPStatus.OK
         assert response.context_data["form"].errors is not None
 
-    def test_remember_me(self, settings, rf, user):
+    @pytest.mark.parametrize("remember_me", [True, False])
+    def test_remember_me(self, settings, rf, user, remember_me):
         settings.HCAPTCHA_ENABLED = False
-        settings.MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
         request = rf.post(
             reverse("account_login"),
@@ -117,39 +117,16 @@ class TestJotletLoginView:
                 "login": user.username,
                 "password": USER_TEST_PASSWORD,
                 "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
-                "remember_me": True,
+                "remember_me": remember_me,
             },
         )
         request.user = AnonymousUser()
-        request._messages = messages.storage.default_storage(request)
         create_session(request)
+        request._messages = messages.storage.default_storage(request)
         with context.request_context(request):
             response = JotletLoginView.as_view()(request)
         assert response.status_code == HTTPStatus.OK
-        assert not request.session.get_expire_at_browser_close()
-
-    def test_not_remember_me(self, settings, rf, user):
-        settings.HCAPTCHA_ENABLED = False
-        settings.MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
-
-        from django.contrib import messages
-
-        request = rf.post(
-            reverse("account_login"),
-            {
-                "login": user.username,
-                "password": USER_TEST_PASSWORD,
-                "h-captcha-response": HCAPTCHA_TEST_RESPONSE,
-                "remember_me": False,
-            },
-        )
-        request.user = AnonymousUser()
-        request._messages = messages.storage.default_storage(request)
-        create_session(request)
-        with context.request_context(request):
-            response = JotletLoginView.as_view()(request)
-        assert response.status_code == HTTPStatus.OK
-        assert request.session.get_expire_at_browser_close()
+        assert request.session.get_expire_at_browser_close() is not remember_me
 
 
 class TestJotletProfileView:
