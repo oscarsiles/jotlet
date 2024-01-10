@@ -123,7 +123,7 @@
                                     {% endblock navbar-items %}
                                     {% if request.user.is_authenticated %}
                                         {% if perms.boards.add_board %}
-                                            {% cached None "navbar_button_addBoard" perms.boards.add_board %}
+                                            {% cached 86400 "navbar_button_addBoard" perms.boards.add_board %}
                                             <li class="nav-item">
                                                 <span data-bs-toggle="collapse" data-bs-target="#navbarText">
                                                     <a class="nav-link"
@@ -139,7 +139,7 @@
                                             </li>
                                         {% endcached %}
                                     {% endif %}
-                                    {% cached None "navbar_user_menu" request.path request.user %}
+                                    {% cached 86400 "navbar_user_menu" request.path request.user %}
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle"
                                            href="#"
@@ -172,7 +172,7 @@
                                     </li>
                                 {% endcached %}
                             {% else %}
-                                {% cached None "navbar_login_menu" request.path %}
+                                {% cached 86400 "navbar_login_menu" request.path %}
                                 <li class="nav-item">
                                     <span data-bs-toggle="collapse" data-bs-target="#navbarText">
                                     <a class="nav-link"
@@ -256,7 +256,7 @@
 {% include "boards/components/modal.html" with num=2 %}
 {% if not request.htmx %}
     <script type="module" nonce="{{ CSP_NONCE }}">
-        /* beautify ignore:start */{% cached None "base-script-modals" %}/* beautify ignore:end */
+        /* beautify ignore:start */{% cached 86400 "base-script-modals" %}/* beautify ignore:end */
         htmx.on("hidden.bs.modal", function(e) {
           var modal2 = bootstrap.Modal.getInstance(
             document.getElementById("modal-2-div")

@@ -95,7 +95,7 @@
         </div>
     </form>
 </div>
-{% cached None "board_list_pagination" page_obj request.user.username querystring %}
+{% cached 86400 "board_list_pagination" page_obj request.user.username querystring %}
 <div>
     <ul class="pagination justify-content-center flex-wrap mb-4"
         hx-target="#board-list">
