@@ -81,7 +81,7 @@
             </span>
         </li>
     {% endif %}
-    {% cached_as board None "navbar_board_index" board.pk request.user %}
+    {% cached_as board 604800 "navbar_board_index" board.pk request.user %}
     {% if request.user == board.owner or user.is_staff %}
         <li class="nav-item dropdown">
             <a class="nav-link"

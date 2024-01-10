@@ -19,7 +19,7 @@
      x-data="{ isCollapsedReplies: $persist(false).as('isCollapsedReplies-{{ post.pk }}').using(sessionStorage), isShownParent{{ post.tree_depth }}: false }"
      x-init="postCount++"
      {% if not post.approved and not is_owner and not is_moderator %}hidden{% endif %}>
-    {% cached_as post None "post_cache" post.pk post.approved post.updated_at board.preferences request.session.session_key is_owner is_moderator reactions has_reacted post.additional_data.all %}
+    {% cached_as post 604800 "post_cache" post.pk post.approved post.updated_at board.preferences request.session.session_key is_owner is_moderator reactions has_reacted post.additional_data.all %}
     <div class="card post-card border-secondary-subtle avoid-pagebreak mb-2
                 {% if not post.approved and is_moderator %}opacity-75{% endif %}"
          id="post-{{ post.pk }}"

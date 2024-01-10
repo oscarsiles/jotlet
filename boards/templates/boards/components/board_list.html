@@ -31,7 +31,7 @@
                         {% if board_list_type != "own" %}- ({{ board.owner }}){% endif %}
                     </div>
                     <div>{{ board.description }}</div>
-                    {% cached_as board None "board_list_post_count" board.pk %}
+                    {% cached_as board 604800 "board_list_post_count" board.pk %}
                     <small class="text-body-secondary">{{ board.created_at|date:'d/m/Y' }} -
                         <span data-bs-toggle="tooltip"
                               data-bs-placement="right"

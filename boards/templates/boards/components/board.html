@@ -76,10 +76,10 @@
             </a>
         </div>
         <style nonce="{{ CSP_NONCE }}">
-        {% cached_as board.preferences None "board_style_cache" board.pk %}
+        {% cached_as board.preferences 604800 "board_style_cache" board.pk %}
             #main-content-div{
                 {% if board.preferences.background_type == 'i' and board.preferences.background_image.get_image_file_exists %}
-                {% cached_as bg_image None "board_style_bg_image_cache" bg_image.pk %}
+                {% cached_as bg_image 604800 "board_style_bg_image_cache" bg_image.pk %}
                     background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), url("{{ board.preferences.background_image.get_large_thumbnail.url }}");
                     background-image: linear-gradient(rgba(255,255,255,{{ board.preferences.get_inverse_opacity }}), rgba(255,255,255,{{ board.preferences.get_inverse_opacity }})), 
                     -webkit-image-set(
@@ -108,7 +108,7 @@
         {% endfor %}
         {% if request.user == board.owner or user.is_staff %}
             <div class="col-md-auto d-print-none px-2" id="boardControls-div">
-                {% cached_as board None "board_newTopic_cache" board.pk %}
+                {% cached_as board 604800 "board_newTopic_cache" board.pk %}
                 <div class="d-flex bg-body rounded my-2" id="newTopic-card-div">
                     <button class="btn btn-new-topic shadow-none card-link flex-grow-1 p-3 fs-4"
                             hx-get="{% url 'boards:topic-create' board.slug %}"
@@ -167,7 +167,7 @@
     <div id="offcanvasTopicList-body-div"
          class="offcanvas-body"
          data-bs-smooth-scroll="true">
-        {% cached_as board None "board_topic_list_cache" board.pk %}
+        {% cached_as board 604800 "board_topic_list_cache" board.pk %}
         <ul class="nav nav-pills flex-column">
             {% for topic in topics %}
                 <li class="nav-item">

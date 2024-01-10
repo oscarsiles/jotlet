@@ -4,7 +4,7 @@
     Jotlet - Privacy Policy
 {% endblock title %}
 {% block content %}
-    {% cached 43200 privacy_policy %}
+    {% cached 86400 "privacy_policy" %}
     <div class="flex-grow-1">{% include "privacy_policy_content.html" %}</div>
 {% endcached %}
 {% endblock content %}

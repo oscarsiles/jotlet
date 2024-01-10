@@ -305,6 +305,9 @@ if USE_S3:
     THUMBNAIL_FORCE_OVERWRITE = True
     PUBLIC_MEDIA_LOCATION = env.str("PUBLIC_MEDIA_LOCATION", default="media")
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    # s3 private media settings
+    PRIVATE_MEDIA_LOCATION = env.str("PRIVATE_MEDIA_LOCATION", default="private")
+    PRIVATE_MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PRIVATE_MEDIA_LOCATION}/"
 else:
     MEDIA_URL = "media/"
     if TESTING:
@@ -373,7 +376,7 @@ CHANNEL_LAYERS = {
 }
 
 CACHEOPS_ENABLED = env.bool("CACHEOPS_ENABLED", default=True)
-CACHEOPS_DEFAULTS = {"timeout": env.int("CACHEOPS_TIMEOUT", default=31556952)}
+CACHEOPS_DEFAULTS = {"timeout": env.int("CACHEOPS_TIMEOUT", default=60 * 60 * 24 * 7)}
 CACHEOPS = {
     "accounts.*": {"ops": "all", "timeout": 60 * 60 * 24},
     "auth.*": {"ops": "all", "timeout": 60 * 60 * 24},

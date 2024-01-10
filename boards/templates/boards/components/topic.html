@@ -9,7 +9,7 @@
      x-data="{ postCount: 0 }"
      x-init="$nextTick(() => { postCount = $refs.topicPosts_{{ topic.pk.hex }}.childElementCount - 1 })"
      @post-deleted.camel="postCount--">
-    {% cached_as topic None "topic_posts_list" topic topic.is_locked board.is_posting_allowed request.session.session_key request.user is_moderator %}
+    {% cached_as topic 604800 "topic_posts_list" topic topic.is_locked board.is_posting_allowed request.session.session_key request.user is_moderator %}
     <div class="card border border-secondary my-2"
          id="topic-{{ topic.pk }}-title">
         <div class="card-body">

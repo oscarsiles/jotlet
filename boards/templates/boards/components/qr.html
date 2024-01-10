@@ -1,5 +1,5 @@
 {% load board_extras cacheops static %}
-{% cached_as board None "board_qr" board.pk %}
+{% cached_as board 604800 "board_qr" board.pk %}
 <div class="flex-column justify-content-center">
     {% get_split_string board.slug as split_slug %}
     <div class="d-flex justify-content-center">

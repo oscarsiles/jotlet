@@ -4,7 +4,7 @@
     Jotlet - Terms
 {% endblock title %}
 {% block content %}
-    {% cached 43200 terms %}
+    {% cached 86400 "terms" %}
     <div class="flex-grow-1">{% include "terms_content.html" %}</div>
 {% endcached %}
 {% endblock content %}

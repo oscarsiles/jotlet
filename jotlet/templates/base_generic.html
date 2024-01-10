@@ -242,10 +242,10 @@
 </nav>
 <div class="d-flex flex-column flex-grow-1 overflow-auto bg-body gap-2 pt-2"
      id="main-content-div">
+    {{ request.user.is_authenticated|json_script:"is_logged_in" }}
     {% include "components/messages.html" %}
     {% block content %}
     {% endblock content %}
-    {{ request.user.is_authenticated|json_script:"is_logged_in" }}
     {% block footer %}
         {% include "components/footer.html" %}
     {% endblock footer %}

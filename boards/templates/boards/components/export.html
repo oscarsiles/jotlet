@@ -1,5 +1,5 @@
 {% load board_extras cacheops static %}
-{% cached_as board None "board_export" board.pk board.exports %}
+{% cached_as board 604800 "board_export" board.pk board.exports %}
 <div id="board-exports"
      hx-get="{% url 'boards:board-export-table' board.slug %}"
      hx-trigger="load, exportCreated, exportDeleted"
