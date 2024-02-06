@@ -13,5 +13,5 @@
         "--dist=loadscope"
     ],
     "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
+    "python.testing.unittestEnabled": false
 }
