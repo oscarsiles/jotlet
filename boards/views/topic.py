@@ -62,7 +62,7 @@ class UpdateTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
 
 
 class DeleteTopicView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
-    object: Topic  # noqa: A003
+    object: Topic
     model = Topic
     template_name = "boards/topic_confirm_delete.html"
 
