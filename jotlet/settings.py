@@ -122,7 +122,6 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "channels",
     "django_htmx",
-    "extra_views",
     "huey.contrib.djhuey",
     "hueymail",
     "bx_django_utils",
@@ -475,6 +474,7 @@ ANYMAIL = {
 ACCOUNT_ADAPTER = "accounts.adapter.CustomAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "accounts.adapter.CustomSocialAccountAdapter"
 ACCOUNT_EMAIL_REQUIRED = env.bool("ACCOUNT_EMAIL_REQUIRED", default=True)
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = env.bool("ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS", default=False)
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = env.str("ACCOUNT_EMAIL_VERIFICATION", default="optional")
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
