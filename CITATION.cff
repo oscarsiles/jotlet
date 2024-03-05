@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: Jotlet
+type: software
+authors:
+  - given-names: Oscar
+    family-names: Siles Brügge
+    email: oscar.silesbrugge@nottingham.ac.uk
+    affiliation: University of Chemistry
+    orcid: "https://orcid.org/0000-0003-3959-5411"
+repository-code: "https://github.com/oscarsiles/jotlet"
+keywords:
+  - audience participation
+  - web application
+  - collaboration
+license: AGPL-3.0
+message: If you use this software, please cite it using the metadata from this file.
