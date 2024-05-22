@@ -6,10 +6,22 @@
         <div class="qrcode img-fluid w-75 border border-white border-qr"
              x-init="$nextTick(() => { createQr($el, '{{ url }}') })"></div>
     </div>
-    <div class="d-flex justify-content-center">
-        <span class="badge text-bg-info mt-2 fs-5">{{ request.get_host }}
-            <i class="bi bi-arrow-right-square mx-2"></i>
-        {{ split_slug }}</span>
+    <div class="d-flex justify-content-center"
+         x-effect="initializeTooltips($el)">
+        <span class="d-flex badge text-bg-info mt-2 fs-5 gap-2">{{ request.get_host }}
+            <i class="bi bi-arrow-right-square"></i>
+            {{ split_slug }}
+            <div class="vr"></div>
+            <a class="link-dark link-underline link-underline-opacity-0"
+               role="button"
+               data-bs-toggle="tooltip"
+               :data-bs-original-title="text_initial"
+               x-data="{ icon: 'bi-copy', text_initial: 'Copy to clipboard', text_copied: 'Copied!', setTooltip(text){bootstrap.Tooltip.getInstance($el).setContent({'.tooltip-inner': text})} }"
+               @click="icon='bi-check2'; setTooltip(text_copied); setTimeout(() => {icon = 'bi-copy'; setTooltip(text_initial)}, 3000)"
+               x-clipboard="'{{ url }}'">
+                <i class="bi" :class="icon"></i>
+            </a>
+        </span>
     </div>
 </div>
 <div class="modal-footer" id="modal-1-footer-div" hx-swap-oob="true">
