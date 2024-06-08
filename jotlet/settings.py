@@ -569,3 +569,14 @@ if CF_TURNSTILE_ENABLED:
     CSP_STYLE_SRC += ["challenges.cloudflare.com"]
     CSP_CONNECT_SRC += ["challenges.cloudflare.com"]
     CSP_FRAME_SRC += ["challenges.cloudflare.com"]
+
+UMAMI_ENABLED = env.bool("UMAMI_ENABLED", default=False)
+if UMAMI_ENABLED and not DEBUG and not TESTING:
+    from urllib.parse import urlparse
+
+    UMAMI_SCRIPT_URL = env.str("UMAMI_SCRIPT_URL")
+    UMAMI_WEBSITE_ID = env.str("UMAMI_WEBSITE_ID")
+
+    url_domain = urlparse(UMAMI_SCRIPT_URL).netloc
+    CSP_SCRIPT_SRC += [url_domain]
+    CSP_CONNECT_SRC += [url_domain]
