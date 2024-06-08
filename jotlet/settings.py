@@ -484,6 +484,7 @@ ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_ALLOW_SIGNUPS = env.bool("ACCOUNT_ALLOW_SIGNUPS", default=True)
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = env.bool("ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD", default="country")
 
 SOCIALACCOUNT_ALLOW_SIGNUPS = env.bool("SOCIALACCOUNT_ALLOW_SIGNUPS", default=ACCOUNT_ALLOW_SIGNUPS)
 SOCIALACCOUNT_AUTO_SIGNUP = False
@@ -569,3 +570,14 @@ if CF_TURNSTILE_ENABLED:
     CSP_STYLE_SRC += ["challenges.cloudflare.com"]
     CSP_CONNECT_SRC += ["challenges.cloudflare.com"]
     CSP_FRAME_SRC += ["challenges.cloudflare.com"]
+
+UMAMI_ENABLED = env.bool("UMAMI_ENABLED", default=False)
+if UMAMI_ENABLED and not DEBUG and not TESTING:
+    from urllib.parse import urlparse
+
+    UMAMI_SCRIPT_URL = env.str("UMAMI_SCRIPT_URL")
+    UMAMI_WEBSITE_ID = env.str("UMAMI_WEBSITE_ID")
+
+    url_domain = urlparse(UMAMI_SCRIPT_URL).netloc
+    CSP_SCRIPT_SRC += [url_domain]
+    CSP_CONNECT_SRC += [url_domain]
