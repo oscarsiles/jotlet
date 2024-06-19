@@ -128,6 +128,7 @@ INSTALLED_APPS = [
     "huey_monitor",
     "django_filters",
     "sorl.thumbnail",
+    "template_partials",
     "cacheops",
     "notices",
     "accounts",

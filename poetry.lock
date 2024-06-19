@@ -1162,6 +1162,24 @@ django = "*"
 typing-extensions = "*"
 
 [[package]]
+name = "django-template-partials"
+version = "24.2"
+description = "django-template-partials"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-template-partials-24.2.tar.gz", hash = "sha256:e594063faec6d012df3a4170edf3c5dcc07c82b1c311aa42a1a5838493fd3a72"},
+    {file = "django_template_partials-24.2-py2.py3-none-any.whl", hash = "sha256:b859072e6b3cd780743399bf5e9cee8be1c56c88844425a4e669a65c136205b2"},
+]
+
+[package.dependencies]
+Django = "*"
+
+[package.extras]
+docs = ["Sphinx"]
+tests = ["coverage", "django_coverage_plugin"]
+
+[[package]]
 name = "django-tree-queries"
 version = "0.19.0"
 description = "Tree queries with explicit opt-in, without configurability"
@@ -3371,4 +3389,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "a7d5f329209b95dedc9a18b15be09c3d996bc71b16da727d2392685e9231b95f"
+content-hash = "e088b68a373fdc672ef7a855139675dd1997b95cf09ac7a63fdf7344cbcc70ca"
