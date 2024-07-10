@@ -62,7 +62,7 @@ crispy-bootstrap5 = "^2024.2"
 Django = { extras = ["argon2"], version = "^5.0.7" }
 django-allauth = { extras = ["socialaccount"], version = "^0.63.3" }
 django-anymail = { extras = ["mailgun", "sendgrid"], version = "^10.3" }
-django-auto-prefetch = "^1.8.0"
+django-auto-prefetch = "^1.9.0"
 django-axes = { extras = ["ipware"], version = "^6.5.0" }
 django-cacheops = "^7.0.2"
 django-cleanup = "^8.1.0"
