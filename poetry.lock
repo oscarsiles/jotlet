@@ -819,17 +819,17 @@ resend = ["svix"]
 
 [[package]]
 name = "django-auto-prefetch"
-version = "1.8.0"
+version = "1.9.0"
 description = "Automatically prefetch foreign key values as needed."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django_auto_prefetch-1.8.0-py3-none-any.whl", hash = "sha256:46a45a1cadae6d82d0b83294b0195203d514d6d65f24b10a163b3cd70bb84dc1"},
-    {file = "django_auto_prefetch-1.8.0.tar.gz", hash = "sha256:f466d4d512885c929e24362104e76f02547bacde0d9eab9b8ef8fd4a2a24a960"},
+    {file = "django_auto_prefetch-1.9.0-py3-none-any.whl", hash = "sha256:2bcc1d4551a952cc73124d339319570392aece390cedffbd9585d94f802eef47"},
+    {file = "django_auto_prefetch-1.9.0.tar.gz", hash = "sha256:b447a0342a734bd3c718f9721598042721edce1a95b81df5b5a167dd0997f347"},
 ]
 
 [package.dependencies]
-Django = ">=3.2"
+django = ">=3.2"
 
 [[package]]
 name = "django-axes"
@@ -3370,4 +3370,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0.0"
-content-hash = "b81b2a158d38de4fb307f3bba690e4beac61dd3cc989e7fe111b87a82027c8c5"
+content-hash = "787fed1336ec7aaa6a3d623e8bd8f34c3a9a2f762275452b74a693be4065885b"
