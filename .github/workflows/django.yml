@@ -54,7 +54,6 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Restore uv cache
-        id: cached-uv-dependencies
         uses: actions/cache@v4
         with:
           path: /tmp/.uv-cache
@@ -64,7 +63,6 @@ jobs:
             uv-${{ env.UV_VERSION }}-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}
 
       - name: Install Dependencies
-        if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
         run: |
           uv sync --all-extras
 
