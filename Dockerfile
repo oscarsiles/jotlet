@@ -1,22 +1,32 @@
-FROM python:3.12-slim-bookworm
+FROM ghcr.io/astral-sh/uv:0.4.5-python3.12-bookworm-slim
+
+WORKDIR /app
+
 ARG USERNAME=jotlet
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-RUN mkdir /app && chmod a+rwx -R /app
-WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     gcc \
     libpq-dev \
     libwebp-dev \
     python3-dev
-RUN python -m pip install --upgrade pip \
-    && pip install "poetry==1.8.2"
-COPY poetry.lock pyproject.toml /app/
-RUN poetry config virtualenvs.create false \
-    && poetry install --without dev,test --no-interaction --no-ansi
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
+
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+
 USER $USERNAME
+
+ENV PATH="/app/.venv/bin:$PATH"
+
 ADD . /app/
+
+ENTRYPOINT []
