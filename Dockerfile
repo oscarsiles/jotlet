@@ -1,6 +1,7 @@
 FROM ghcr.io/astral-sh/uv:0.4.5-python3.12-bookworm-slim
 
 WORKDIR /app
+ADD . /app/
 
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
@@ -18,7 +19,5 @@ RUN --mount=type=cache,target=/tmp/.uv-cache \
     uv sync --frozen --no-install-project --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
-
-ADD . /app/
 
 ENTRYPOINT []
