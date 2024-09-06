@@ -8,6 +8,7 @@ ARG USER_GID=$USER_UID
 
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
+ENV UV_CACHE_DIR=/tmp/uv-cache
 
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     gcc \
@@ -15,15 +16,15 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     libwebp-dev \
     python3-dev
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
-
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
 USER $USERNAME
+
+RUN --mount=type=cache,target=/tmp/uv-cache \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen
 
 ENV PATH="/app/.venv/bin:$PATH"
 
