@@ -39,6 +39,8 @@ class CustomLoginForm(LoginForm):
             Field("remember_me"),
         )
 
+        self.fields["password"].help_text = None
+
     def clean(self):
         if settings.HCAPTCHA_ENABLED:
             verify_hcaptcha(self.request)
