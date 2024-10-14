@@ -214,6 +214,9 @@ DATABASES = {
         "PASSWORD": env.str("DB_PASSWORD"),
         "HOST": env.str("DB_HOST", default="postgres"),
         "PORT": env.str("DB_PORT", default="5432"),
+        "OPTIONS": {
+            "pool": env.bool("DB_POOL", default=True),
+        },
     }
 }
 
