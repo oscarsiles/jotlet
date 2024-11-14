@@ -48,9 +48,12 @@ module = [
 
 [project]
 name = "jotlet"
-version = "1.14.3"
+version = "1.14.4"
 requires-python = ">=3.12"
 description = ""
+authors = [
+    { name = "Oscar Siles Brügge", email = "oscar.silesbrugge@nottingham.ac.uk" },
+]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 dependencies = [
@@ -105,14 +108,6 @@ dev-dependencies = [
     "types-pillow>=10.2.0.20240520,<11.0.0",
 ]
 
-
-[tool.poetry]
-name = "jotlet"
-version = "1.14.2"
-description = ""
-authors = ["Oscar Siles Brügge <siles.oscar@gmail.com>"]
-package-mode = false
-
 [project.optional-dependencies]
 test = [
     "daphne>=4.1.2,<5.0.0",
@@ -126,7 +121,6 @@ test = [
     "pytest-sugar>=1.0.0,<2.0.0",
     "pytest-xdist>=3.6.1,<4.0.0",
 ]
-
 
 [tool.pyright]
 ignore = ["*"]

@@ -48,7 +48,7 @@ SECRET_KEY = env.str("SECRET_KEY", default="unsafe-secret-key")
 # https://github.com/wemake-services/wemake-python-styleguide/blob/master/docs/conf.py#L22-L37
 VERSION = ""
 with Path.open(Path(BASE_DIR) / "pyproject.toml", mode="rb") as pyproject:
-    VERSION = tomli.load(pyproject)["tool"]["poetry"]["version"]
+    VERSION = tomli.load(pyproject)["project"]["version"]
 
 DEBUG = env.bool("DEBUG", default=TESTING)
 DEBUG_TOOLBAR_ENABLED = env.bool("DEBUG_TOOLBAR_ENABLED", default=False)
