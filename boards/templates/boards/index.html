@@ -35,6 +35,70 @@
                     <a class="btn btn-primary" href="{% url 'boards:index-all' %}">All Boards</a>
                 </p>
             {% endif %}
+            {% if not request.user.is_authenticated %}
+                <div class="col-md mt-4">
+                    <h1>Welcome to Jotlet!</h1>
+                    Jotlet is a free and easy-to-use bulletin board system that allows you to create and share boards.
+                    <div class="row text-center">
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-people display-4 mb-3"></i>
+                                    <h5 class="card-title">Collaborative</h5>
+                                    <p class="card-text">Work together seamlessly in real-time.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-share display-4 mb-3"></i>
+                                    <h5 class="card-title">Share Ideas</h5>
+                                    <p class="card-text">Express and exchange ideas effortlessly with your audience.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-plus-slash-minus display-4 mb-3"></i>
+                                    <h5 class="card-title">Mathematics</h5>
+                                    <p class="card-text">
+                                        Natively supports mathematical expressions via <a href="https://www.mathjax.org/">MathJax</a>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-download display-4 mb-3"></i>
+                                    <h5 class="card-title">Export Data</h5>
+                                    <p class="card-text">Download your boards in CSV format for easy backup.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-code-slash display-4 mb-3"></i>
+                                    <h5 class="card-title">Open-source</h5>
+                                    <p class="card-text">And also free to use, with no restrictions nor subscription.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card mb-4 border-0">
+                                <div class="card-body">
+                                    <i class="bi bi-shield-lock display-4 mb-3"></i>
+                                    <h5 class="card-title">Private</h5>
+                                    <p class="card-text">Jotlet respects your privacy and does not sell your data.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
         <div class="col-lg d-none d-lg-block"></div>
     </div>
