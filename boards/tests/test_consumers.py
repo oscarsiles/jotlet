@@ -8,7 +8,7 @@ from django.core.cache import cache
 from boards.routing import websocket_urlpatterns
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 class TestBoardConsumer:
     async def handle_communicator_connect(
         self, application, board_slug, expected_sessions, existing_communicator=None

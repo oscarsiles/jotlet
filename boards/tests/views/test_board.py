@@ -69,7 +69,7 @@ class TestBoardView:
 
 
 class TestBoardPreferencesView:
-    @pytest.fixture()
+    @pytest.fixture
     def get_board_preferences_url(self, board):
         return reverse("boards:board-preferences", kwargs={"slug": board.slug})
 
@@ -97,7 +97,7 @@ class TestBoardPreferencesView:
         preferences = BoardPreferences.objects.get(board=board)
         assert preferences.board == board
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_preferences_changed_websocket_message(self, client, board, user, get_board_preferences_url):
         application = URLRouter(websocket_urlpatterns)
@@ -234,7 +234,7 @@ class TestUpdateBoardView:
 
 
 class TestDeleteBoardView:
-    @pytest.fixture()
+    @pytest.fixture
     def get_board_delete_url(self, board):
         return reverse("boards:board-delete", kwargs={"slug": board.slug})
 

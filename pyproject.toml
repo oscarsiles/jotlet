@@ -148,7 +148,6 @@ ignore = [
     "EXE",
     "T10",
     "TD",
-    "TRIO",
     # Individual Rules
     "ARG002",
     "ARG003",

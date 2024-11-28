@@ -44,7 +44,7 @@ class TestExportTablePartialView:
 
 
 class TestExportCreateView:
-    @pytest.fixture()
+    @pytest.fixture
     def create_url(self, board):
         return reverse("boards:board-export-create", kwargs={"slug": board.slug})
 
@@ -80,7 +80,7 @@ class TestExportCreateView:
 
 
 class TestExportDeleteView:
-    @pytest.fixture()
+    @pytest.fixture
     def delete_url(self, export, delete_all):
         name = f"boards:board-export-delete{'-all' if delete_all else ''}"
         kwargs = {"slug": export.board.slug}
@@ -127,7 +127,7 @@ class TestExportDeleteView:
 
 
 class TestExportDownloadView:
-    @pytest.fixture()
+    @pytest.fixture
     def download_url(self, export):
         return reverse("boards:board-export-download", kwargs={"slug": export.board.slug, "pk": export.pk})
 
