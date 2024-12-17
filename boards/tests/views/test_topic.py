@@ -57,7 +57,7 @@ class TestTopicCreateView:
         assert response.status_code == HTTPStatus.OK
         assertFormError(response.context["form"], "subject", expected_error)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_topic_created_websocket_message(self, client, board, user):
         application = URLRouter(websocket_urlpatterns)
@@ -120,7 +120,7 @@ class TestTopicUpdateView:
         assert response.status_code == HTTPStatus.OK
         assertFormError(response.context["form"], "subject", expected_error)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_topic_updated_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)
@@ -162,7 +162,7 @@ class TestTopicDeleteView:
             pytest.raises(Topic.DoesNotExist, Topic.objects.get, pk=topic.pk)
             assert response.status_code == HTTPStatus.NO_CONTENT
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_topic_deleted_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)

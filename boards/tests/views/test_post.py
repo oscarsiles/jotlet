@@ -206,7 +206,7 @@ class TestPostCreateView:
         assert response.status_code == HTTPStatus.FOUND
         pytest.raises(Post.DoesNotExist, Post.objects.get, content="Test Post")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_post_created_websocket_message(self, client, board, topic, user):
         application = URLRouter(websocket_urlpatterns)
@@ -360,7 +360,7 @@ class TestPostUpdateView:
         else:
             assert Post.objects.get(pk=post.pk).content == original_content
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_post_updated_websocket_message(self, client, board, post, user):
         application = URLRouter(websocket_urlpatterns)
@@ -417,7 +417,7 @@ class TestPostDeleteView:
         assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.count() == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_post_deleted_websocket_message(self, client, board, post, user):
         application = URLRouter(websocket_urlpatterns)
@@ -448,11 +448,11 @@ class TestApprovePostsView:
         post_factory.create_batch(self.first_batch_count, topic=topic, approved=False)
         post_factory.create_batch(self.second_batch_count, topic=topic2, approved=False)
 
-    @pytest.fixture()
+    @pytest.fixture
     def board_posts_approve_url(self, board):
         return reverse("boards:board-posts-approve", kwargs={"slug": board.slug})
 
-    @pytest.fixture()
+    @pytest.fixture
     def topic_posts_approve_url(self, board, topic):
         return reverse("boards:topic-posts-approve", kwargs={"slug": board.slug, "topic_pk": topic.pk})
 
@@ -487,7 +487,7 @@ class TestApprovePostsView:
         assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.filter(topic__board=board, approved=True).count() == self.total_posts
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_topic_posts_approved_websocket_message(self, client, board, user, topic_posts_approve_url):
         application = URLRouter(websocket_urlpatterns)
@@ -502,7 +502,7 @@ class TestApprovePostsView:
         assert "topic_updated" in message
         await communicator.disconnect()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_board_posts_approved_websocket_message(self, client, board, user, board_posts_approve_url):
         application = URLRouter(websocket_urlpatterns)
@@ -529,11 +529,11 @@ class TestDeletePostsView:
         post_factory.create_batch(self.first_topic_count, topic=topic)
         post_factory.create_batch(self.second_topic_count, topic=topic2)
 
-    @pytest.fixture()
+    @pytest.fixture
     def board_posts_delete_url(self, board):
         return reverse("boards:board-posts-delete", kwargs={"slug": board.slug})
 
-    @pytest.fixture()
+    @pytest.fixture
     def topic_posts_delete_url(self, board, topic):
         return reverse("boards:topic-posts-delete", kwargs={"slug": board.slug, "topic_pk": topic.pk})
 
@@ -568,7 +568,7 @@ class TestDeletePostsView:
         assert response.status_code == HTTPStatus.NO_CONTENT
         assert Post.objects.filter(topic__board=board).count() == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_topic_posts_deleted_websocket_message(self, client, board, topic, user, topic_posts_delete_url):
         application = URLRouter(websocket_urlpatterns)
@@ -585,7 +585,7 @@ class TestDeletePostsView:
             assert "post_deleted" in message
         await communicator.disconnect()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_board_posts_deleted_websocket_message(self, client, board, user, board_posts_delete_url):
         application = URLRouter(websocket_urlpatterns)
@@ -695,7 +695,7 @@ class TestPostFooterFetchView:
         for reaction_type in REACTION_TYPE[1:]:
             reaction_factory(post=post, reaction_type=reaction_type[0], user=user)
 
-    @pytest.fixture()
+    @pytest.fixture
     def post_footer_fetch_url(self, board, topic, post):
         return reverse(
             "boards:post-footer-fetch",
@@ -763,7 +763,7 @@ class TestPostToggleApprovalView:
         post.approved = False
         post.save()
 
-    @pytest.fixture()
+    @pytest.fixture
     def post_approval_url(self, board, topic, post):
         return reverse(
             "boards:post-toggle-approval",
@@ -805,7 +805,7 @@ class TestPostToggleApprovalView:
         post.refresh_from_db()
         assert not post.approved
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_post_toggle_websocket_message(self, client, board, post, user, post_approval_url):
         application = URLRouter(websocket_urlpatterns)
@@ -832,7 +832,7 @@ class TestPostImageUploadView:
         board.preferences.allow_image_uploads = True
         board.preferences.save()
 
-    @pytest.fixture()
+    @pytest.fixture
     def upload_url(self, board):
         return reverse("boards:post-image-upload", kwargs={"slug": board.slug})
 

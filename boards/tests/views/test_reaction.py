@@ -82,7 +82,7 @@ class TestPostReactionView:
         assert response.status_code == HTTPStatus.NO_CONTENT
         assert Reaction.objects.count() == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_reaction_updated_websocket_message(self, client, board, post):
         application = URLRouter(websocket_urlpatterns)
@@ -111,11 +111,11 @@ class TestReactionsDeleteView:
         board.preferences.reaction_type = "l"
         board.preferences.save()
         post_factory.create_batch(4, topic=topic)
-        for post in Post.objects.all():
+        for p in Post.objects.all():
             for reaction_type in REACTION_TYPE[1:]:
                 reaction_factory.create_batch(
                     5,
-                    post=post,
+                    post=p,
                     reaction_type=reaction_type[0],
                     reaction_score="1",
                 )
@@ -176,7 +176,7 @@ class TestReactionsDeleteView:
         assert response.status_code == HTTPStatus.FORBIDDEN
         assert Reaction.objects.count() == 25 * (len(REACTION_TYPE) - 1)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     @pytest.mark.django_db(transaction=True)
     async def test_post_toggle_websocket_message(self, client, board, user):
         post = await Post.objects.afirst()
